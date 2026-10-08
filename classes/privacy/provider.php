@@ -33,7 +33,7 @@ final class provider implements
     /**
      * @var array Tables containing action actors, separate from declared authors.
      */
-    private const TABLES = ['revision', 'coursepolicy', 'publication', 'attribution', 'origin', 'plan', 'run', 'audit'];
+    private const TABLES = ['revision', 'coursepolicy', 'publication', 'attribution', 'origin', 'plan', 'run', 'log'];
 
     /**
      * Describe stored metadata.
@@ -127,8 +127,8 @@ final class provider implements
             return;
         }
         foreach (self::TABLES as $suffix) {
-            if ($suffix === 'audit') {
-                $DB->delete_records('local_coursebridge_audit');
+            if ($suffix === 'log') {
+                $DB->delete_records('local_coursebridge_log');
             } else {
                 $DB->set_field('local_coursebridge_' . $suffix, 'userid', 0);
             }
@@ -159,8 +159,8 @@ final class provider implements
         global $DB;
         $DB->set_field('local_coursebridge_run', 'cancelled', 1, ['userid' => $userid]);
         foreach (self::TABLES as $suffix) {
-            if ($suffix === 'audit') {
-                $DB->delete_records('local_coursebridge_audit', ['userid' => $userid]);
+            if ($suffix === 'log') {
+                $DB->delete_records('local_coursebridge_log', ['userid' => $userid]);
             } else {
                 $DB->set_field('local_coursebridge_' . $suffix, 'userid', 0, ['userid' => $userid]);
             }

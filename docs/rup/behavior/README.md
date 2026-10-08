@@ -1,5 +1,7 @@
 # Processes and stored states
 
+![Preserved log schema upgrade](../../diagrams/behavior/processes/log-upgrade.svg)
+
 Process diagrams describe decisions. State diagrams describe persisted records; they do not add conceptual review states that the schema does not store.
 
 ![Course and folder placement](../../diagrams/behavior/processes/course-and-placement-matching.svg)

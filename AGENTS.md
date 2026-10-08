@@ -8,3 +8,4 @@ This is a standalone Moodle plugin repository. Use the workspace conventions whe
 - Documentation, PlantUML and code comments are English; user communication is Spanish. Embed diagrams near their explanations and keep source/SVG siblings current.
 - Public documentation and UML describe implemented behavior and actual constraints. Keep iteration plans and unimplemented specifications outside plugin repositories in the suite engineering-notes directory. Strict author protection fails closed when pre-commit/later-editor protection is unproven.
 - Use a dedicated branch. Never commit or push for the user; provide relevant commands after changes.
+- End change reports with absolute-path commit commands, the branch, remaining work and the concrete next step. Use common terminology such as `log` for action records.

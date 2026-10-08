@@ -1,0 +1,152 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Existing installation upgrade tests.
+ *
+ * @package local_coursebridge
+ * @copyright 2026 CourseBridge contributors
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace local_coursebridge;
+
+/**
+ * Confirms that schema and permission changes preserve existing records.
+ */
+final class upgrade_test extends \advanced_testcase {
+    /**
+     * A conflicting installation stops without deleting either history.
+     */
+    public function test_conflicting_tables_stop_the_upgrade(): void {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+        require_once($CFG->libdir . '/upgradelib.php');
+        require_once(__DIR__ . '/../db/upgrade.php');
+        $dbman = $DB->get_manager();
+        $legacy = new \xmldb_table('local_coursebridge_audit');
+        $legacy->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $legacy->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $dbman->create_table($legacy);
+        set_config('version', 2026100800, 'local_coursebridge');
+        try {
+            try {
+                \xmldb_local_coursebridge_upgrade(2026100800);
+                $this->fail('Conflicting history tables must stop the upgrade.');
+            } catch (\coding_exception $exception) {
+                $this->assertStringContainsString('Both CourseBridge history tables exist', $exception->getMessage());
+            }
+            $this->assertTrue($dbman->table_exists($legacy));
+            $this->assertTrue($dbman->table_exists('local_coursebridge_log'));
+            $this->assertSame('2026100800', get_config('local_coursebridge', 'version'));
+        } finally {
+            $dbman->drop_table($legacy);
+        }
+    }
+
+    /**
+     * Upgrade a legacy table with a real record and preserve its ID and contents.
+     */
+    public function test_legacy_table_is_renamed_without_losing_records(): void {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        require_once($CFG->libdir . '/upgradelib.php');
+        require_once(__DIR__ . '/../db/upgrade.php');
+        $dbman = $DB->get_manager();
+        $table = new \xmldb_table('local_coursebridge_log');
+        $record = (object)['userid' => 2, 'action' => 'migration_batch', 'entityuuid' => 'existing-reference',
+            'details' => '{"state":"completed"}', 'timecreated' => 1700000000];
+        $record->id = $DB->insert_record('local_coursebridge_log', $record);
+        foreach (
+            [
+            new \xmldb_index('actionid', XMLDB_INDEX_NOTUNIQUE, ['action', 'id']),
+            new \xmldb_index('entityid', XMLDB_INDEX_NOTUNIQUE, ['entityuuid', 'id']),
+            ] as $index
+        ) {
+            $dbman->drop_index($table, $index);
+        }
+        $dbman->rename_table($table, 'local_coursebridge_audit');
+        set_config('version', 2026100800, 'local_coursebridge');
+        try {
+            $this->assertTrue(\xmldb_local_coursebridge_upgrade(2026100800));
+            $this->assertEquals($record, $DB->get_record('local_coursebridge_log', ['id' => $record->id], '*', MUST_EXIST));
+            $this->assertFalse($dbman->table_exists('local_coursebridge_audit'));
+            $this->assertTrue($dbman->index_exists(
+                $table,
+                new \xmldb_index('actionid', XMLDB_INDEX_NOTUNIQUE, ['action', 'id'])
+            ));
+            $this->assertTrue($dbman->index_exists(
+                $table,
+                new \xmldb_index('entityid', XMLDB_INDEX_NOTUNIQUE, ['entityuuid', 'id'])
+            ));
+            $this->assertSame('2026100801', get_config('local_coursebridge', 'version'));
+            $this->assertTrue(\xmldb_local_coursebridge_upgrade(2026100801));
+        } finally {
+            if ($dbman->table_exists('local_coursebridge_audit') && !$dbman->table_exists($table)) {
+                $dbman->rename_table(new \xmldb_table('local_coursebridge_audit'), 'local_coursebridge_log');
+            }
+        }
+    }
+
+    /**
+     * A completed rename can resume before its savepoint without duplicating records.
+     */
+    public function test_upgrade_resumes_after_table_rename(): void {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+        require_once($CFG->libdir . '/upgradelib.php');
+        require_once(__DIR__ . '/../db/upgrade.php');
+        set_config('version', 2026100800, 'local_coursebridge');
+        $this->assertTrue(\xmldb_local_coursebridge_upgrade(2026100800));
+        $this->assertSame('2026100801', get_config('local_coursebridge', 'version'));
+        $this->assertTrue($DB->get_manager()->table_exists('local_coursebridge_log'));
+    }
+
+    /**
+     * Moodle clones explicit grants and prohibitions before removing the old capability.
+     */
+    public function test_capability_rename_preserves_role_permissions(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $system = \context_system::instance();
+        $old = 'local/coursebridge:viewaudit';
+        $new = 'local/coursebridge:viewlog';
+        $definition = $DB->get_record('capabilities', ['name' => $new], '*', MUST_EXIST);
+        $DB->delete_records('role_capabilities', ['capability' => $new]);
+        $DB->delete_records('capabilities', ['name' => $new]);
+        unset($definition->id);
+        $definition->name = $old;
+        $DB->insert_record('capabilities', $definition);
+        $allowed = $this->getDataGenerator()->create_role();
+        $prohibited = $this->getDataGenerator()->create_role();
+        assign_capability($old, CAP_ALLOW, $allowed, $system->id);
+        assign_capability($old, CAP_PROHIBIT, $prohibited, $system->id);
+        update_capabilities('local_coursebridge');
+        $this->assertSame(CAP_ALLOW, (int)$DB->get_field(
+            'role_capabilities',
+            'permission',
+            ['roleid' => $allowed, 'contextid' => $system->id, 'capability' => $new]
+        ));
+        $this->assertSame(CAP_PROHIBIT, (int)$DB->get_field(
+            'role_capabilities',
+            'permission',
+            ['roleid' => $prohibited, 'contextid' => $system->id, 'capability' => $new]
+        ));
+        $this->assertFalse($DB->record_exists('capabilities', ['name' => $old]));
+        $this->assertFalse($DB->record_exists('role_capabilities', ['capability' => $old]));
+    }
+}

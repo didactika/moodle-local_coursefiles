@@ -27,7 +27,7 @@ The installable schema is [db/install.xml](../db/install.xml). XMLDB foreign-key
 | `local_coursebridge_plan` | Immutable preview JSON, digest, profile/revision, actor and state |
 | `local_coursebridge_operation` | Unique plan/operation key; native source locator, destination module, snapshots, decision/state and structured result |
 | `local_coursebridge_run` | Accountable bounded attempt, cancellation flag and outcome |
-| `local_coursebridge_audit` | Scoped actions and outcomes; actor identity removable through Privacy API |
+| `local_coursebridge_log` | Scoped actions and outcomes; actor identity removable through Privacy API |
 
 No `local_cb_*` aliases remain. These names fit the XMLDB limits for the required Moodle versions. Binary content, draft areas and native course usages remain in Moodle's own file subsystem.
 
@@ -43,9 +43,11 @@ A material asset is the virtual key `contenthash + filesize`. Moodle already com
 
 ![Attribution records](diagrams/design/attribution-data-model.svg)
 
-Author is declared text, not the importer's account ID. Audit and lineage records are separate from rebuildable course/file indexes. Course deletion or reindexing must not erase reviewed plan evidence. Source/target snapshots carry enough native information to detect stale content and placement.
+Author is declared text, not the importer's account ID. Log and lineage records are separate from rebuildable course/file indexes. Course deletion or reindexing must not erase reviewed plan evidence. Source/target snapshots carry enough native information to detect stale content and placement.
 
 ## Indexes and query execution
+
+The action log has composite action/ID and reference/ID indexes. Its reader uses a bounded descending-ID cursor and exact filters without a total-count query. The [log upgrade](12-log-and-upgrade.md) preserves records from the previous table name.
 
 Unique pathnamehash prevents multiple entries for a native occurrence. Membership indexes scope a query to an active revision/family and native course. File indexes cover course/contenthash and module. Plans/operations have deterministic unique keys. Candidate records are streamed in content order; live source/module access is checked before aggregation and origin display. Counts apply only to authorized results.
 

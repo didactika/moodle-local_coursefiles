@@ -68,7 +68,7 @@ final class profiles {
             $profile->name = $config['name'] ?? $profile->name;
             $DB->update_record('local_coursebridge', $profile);
             $transaction->allow_commit();
-            audit::record('profile_activated', $profile->uuid, ['revision' => $number]);
+            log::record('profile_activated', $profile->uuid, ['revision' => $number]);
             return $profileid;
         } finally {
             $lock->release();

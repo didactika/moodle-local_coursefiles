@@ -1,0 +1,25 @@
+@startuml
+!include ../../_style.puml
+title Process — Preserve records during log upgrade
+start
+if (Installed version below 2026100801?) then (yes)
+  if (Legacy table exists?) then (yes)
+    if (New log table also exists?) then (yes)
+      :Stop upgrade with conflict error;
+      stop
+    else (no)
+      :Rename legacy table with XMLDB;
+    endif
+  endif
+  if (New log table exists?) then (yes)
+    :Add missing action/ID and reference/ID indexes;
+    :Record version savepoint 2026100801;
+  else (no)
+    :Stop upgrade with missing-table error;
+    stop
+  endif
+endif
+:Return success;
+stop
+@enduml
+

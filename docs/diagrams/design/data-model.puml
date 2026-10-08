@@ -20,7 +20,7 @@ class "Governance and provenance" as Governance {
   local_coursebridge_publication
   local_coursebridge_attribution
   local_coursebridge_origin
-  local_coursebridge_audit
+  local_coursebridge_log
 }
 Catalog -[hidden]down-> Migration
 Migration -[hidden]down-> Governance

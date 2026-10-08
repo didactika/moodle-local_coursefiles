@@ -135,6 +135,6 @@ final class material_source {
         } else {
             $DB->insert_record('local_coursebridge_publication', $data);
         }
-        audit::record($revoked ? 'publication_revoked' : 'publication_granted', '', ['profileid' => $profileid, 'cmid' => $cmid]);
+        log::record($revoked ? 'publication_revoked' : 'publication_granted', '', ['profileid' => $profileid, 'cmid' => $cmid]);
     }
 }

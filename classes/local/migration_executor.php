@@ -55,7 +55,7 @@ final class migration_executor {
         $task->set_userid($USER->id);
         $task->set_custom_data(['runid' => $runid]);
         \core\task\manager::queue_adhoc_task($task);
-        audit::record('migration_queued', $plan->uuid, ['runid' => $runid]);
+        log::record('migration_queued', $plan->uuid, ['runid' => $runid]);
         return $runid;
     }
 
@@ -87,7 +87,7 @@ final class migration_executor {
         [$profile, $revision, $rules] = profiles::load($plan->profileid);
         if ((int)$revision->id !== (int)$plan->revisionid) {
             $DB->set_field('local_coursebridge_run', 'state', 'blocked', ['id' => $runid]);
-            audit::record('migration_blocked', $plan->uuid, ['runid' => $runid, 'reason' => 'planstale']);
+            log::record('migration_blocked', $plan->uuid, ['runid' => $runid, 'reason' => 'planstale']);
             return false;
         }
         $operations = $DB->get_records(
@@ -182,7 +182,7 @@ final class migration_executor {
         $DB->update_record('local_coursebridge_run', (object)[
             'id' => $runid, 'state' => $state, 'timemodified' => time(),
         ]);
-        audit::record('migration_batch', $plan->uuid, ['runid' => $runid, 'state' => $state]);
+        log::record('migration_batch', $plan->uuid, ['runid' => $runid, 'state' => $state]);
         return $more && !$cancelled;
     }
 

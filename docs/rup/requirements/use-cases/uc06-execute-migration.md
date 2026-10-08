@@ -31,6 +31,6 @@
 
 ![UC06 sequence](../../../diagrams/design/sequences/uc06-execute-migration.svg)
 
-[Sequence source](../../../diagrams/design/sequences/uc06-execute-migration.puml). Current collaborators: migration_executor, material_source, author_policy, folder_destination, audit, Moodle Task/Lock.
+[Sequence source](../../../diagrams/design/sequences/uc06-execute-migration.puml). Current collaborators: migration_executor, material_source, author_policy, folder_destination, log, Moodle Task/Lock.
 
 [All supported use cases](README.md) · [Stored behavior](../../behavior/README.md).

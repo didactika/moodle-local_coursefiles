@@ -1,5 +1,7 @@
 # Design views
 
+![Action log query](../../diagrams/design/sequences/log-query.svg)
+
 ![Components](../../diagrams/design/components.svg)
 
 ![Catalog classes](../../diagrams/design/classes.svg)

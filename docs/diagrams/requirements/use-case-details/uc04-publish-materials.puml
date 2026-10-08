@@ -5,7 +5,7 @@ top to bottom direction
 state "1. Select named module\nPublisher" as S1
 state "2. Check publication authority\nmaterial_source" as S2
 state "3. Store grant / revocation\nmaterial_source" as S3
-state "4. Record action\naudit" as S4
+state "4. Record action\nlog" as S4
 state "5. Show confirmation\nPublisher" as S5
 state "Refused / blocked outcome" as Refused
 [*] --> S1

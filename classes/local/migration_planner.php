@@ -189,7 +189,7 @@ final class migration_planner {
         }
         $transaction->allow_commit();
         $plan = $DB->get_record('local_coursebridge_plan', ['id' => $planid], '*', MUST_EXIST);
-        audit::record('migration_previewed', $plan->uuid, ['operations' => count($operations), 'blocked' => (bool)$blocked]);
+        log::record('migration_previewed', $plan->uuid, ['operations' => count($operations), 'blocked' => (bool)$blocked]);
         return $plan;
     }
 }

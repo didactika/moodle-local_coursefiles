@@ -4,6 +4,8 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 
 | Diagram | Source | Preview |
 |---|---|---|
+| design/sequences/log-query.puml | [Source](../diagrams/design/sequences/log-query.puml) | [SVG](../diagrams/design/sequences/log-query.svg) |
+| behavior/processes/log-upgrade.puml | [Source](../diagrams/behavior/processes/log-upgrade.puml) | [SVG](../diagrams/behavior/processes/log-upgrade.svg) |
 | analysis/boundary-control-entity.puml | [Source](../diagrams/analysis/boundary-control-entity.puml) | [SVG](../diagrams/analysis/boundary-control-entity.svg) |
 | analysis/domain-concepts.puml | [Source](../diagrams/analysis/domain-concepts.puml) | [SVG](../diagrams/analysis/domain-concepts.svg) |
 | behavior/processes/authorship-policy-resolution.puml | [Source](../diagrams/behavior/processes/authorship-policy-resolution.puml) | [SVG](../diagrams/behavior/processes/authorship-policy-resolution.svg) |

@@ -23,8 +23,11 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
+$canviewlog = has_capability('local/coursebridge:viewlog', context_system::instance());
+if ($hassiteconfig || $canviewlog) {
     $ADMIN->add('localplugins', new admin_category('local_coursebridge', get_string('pluginname', 'local_coursebridge')));
+}
+if ($hassiteconfig) {
     $settings = new admin_settingpage('local_coursebridge_settings', get_string('settings', 'local_coursebridge'));
     $settings->add(new admin_setting_configselect(
         'local_coursebridge/author_policy',
@@ -65,4 +68,12 @@ if ($hassiteconfig) {
             'local/coursebridge:' . ($page === 'profiles' ? 'manageprofiles' : 'planmigration')
         ));
     }
+}
+if ($canviewlog) {
+    $ADMIN->add('local_coursebridge', new admin_externalpage(
+        'local_coursebridge_log',
+        get_string('log', 'local_coursebridge'),
+        new moodle_url('/local/coursebridge/log.php'),
+        'local/coursebridge:viewlog'
+    ));
 }

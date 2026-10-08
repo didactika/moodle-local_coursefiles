@@ -40,7 +40,7 @@ final class view implements \renderable, \templatable {
      * @param array $data Plain presentation context.
      */
     public function __construct(string $template, array $data) {
-        if (!in_array($template, ['catalog', 'migration_report', 'policy', 'profile_list'], true)) {
+        if (!in_array($template, ['catalog', 'migration_report', 'policy', 'profile_list', 'log'], true)) {
             throw new \coding_exception('Unknown CourseBridge view');
         }
         $this->template = $template;

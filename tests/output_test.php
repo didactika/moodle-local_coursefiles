@@ -32,6 +32,28 @@ use local_coursebridge\output\view;
  */
 final class output_test extends \advanced_testcase {
     /**
+     * Personal action fields remain escaped and the log filters have labels.
+     */
+    public function test_log_escapes_records_and_labels_filters(): void {
+        $renderer = $this->renderer();
+        $html = $renderer->render(new view('log', [
+            'hasrecords' => true, 'formurl' => '/local/coursebridge/log.php',
+            'entityuuid' => '" autofocus onfocus="alert(1)',
+            'records' => [['date' => 'Today', 'action' => '<script>action</script>',
+                'user' => '<script>user</script>', 'reference' => '<script>reference</script>']],
+        ]));
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringContainsString('&lt;script&gt;user&lt;/script&gt;', $html);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML($html);
+        $xpath = new \DOMXPath($dom);
+        foreach ($xpath->query('//input | //select') as $control) {
+            $this->assertSame(1, $xpath->query('//label[@for="' . $control->getAttribute('id') . '"]')->length);
+            $this->assertFalse($control->hasAttribute('onfocus'));
+        }
+    }
+
+    /**
      * Prepare a native course renderer.
      *
      * @return \renderer_base Component renderer.

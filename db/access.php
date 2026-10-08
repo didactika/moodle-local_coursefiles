@@ -59,10 +59,12 @@ $capabilities = [
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursebridge:viewaudit' => [
+    'local/coursebridge:viewlog' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
+        'riskbitmask' => RISK_PERSONAL,
+        'clonepermissionsfrom' => 'local/coursebridge:viewaudit',
     ],
     'local/coursebridge:managecoursepolicy' => [
         'captype' => 'write',

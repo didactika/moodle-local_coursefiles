@@ -89,7 +89,7 @@ final class author_policy {
         } else {
             $DB->insert_record('local_coursebridge_coursepolicy', $data);
         }
-        audit::record('course_policy_changed', '', ['courseid' => $courseid, 'policy' => $policy]);
+        log::record('course_policy_changed', '', ['courseid' => $courseid, 'policy' => $policy]);
     }
 
     /**

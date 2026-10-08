@@ -31,6 +31,6 @@
 
 ![UC09 sequence](../../../diagrams/design/sequences/uc09-configure-material-policy.svg)
 
-[Sequence source](../../../diagrams/design/sequences/uc09-configure-material-policy.puml). Current collaborators: author_policy, Moodle admin settings, coursepolicy records, audit.
+[Sequence source](../../../diagrams/design/sequences/uc09-configure-material-policy.puml). Current collaborators: author_policy, Moodle admin settings, coursepolicy records, log.
 
 [All supported use cases](README.md) · [Stored behavior](../../behavior/README.md).

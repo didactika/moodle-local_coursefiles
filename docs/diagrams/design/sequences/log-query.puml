@@ -1,0 +1,22 @@
+@startuml
+!include ../../_style.puml
+skinparam maxMessageSize 200
+title Design — Read the action log
+actor "Site reader" as Reader
+boundary "log.php\nNative page" as Page
+control "local/log" as Log
+database "CourseBridge log\nXMLDB table" as DB
+Reader -> Page : select action / reference / older page
+Page -> Log : page(filters, before, limit=50)
+Log -> Log : require system viewlog capability
+alt Access allowed
+  Log -> DB : filtered id < cursor\norder by id DESC, limit 51
+  DB --> Log : bounded records
+  Log --> Page : 50 records and next cursor
+  Page --> Reader : escaped themed table
+else Access denied
+  Log --> Page : required capability exception
+  Page --> Reader : Moodle access error
+end
+@enduml
+

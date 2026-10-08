@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <XMLDB PATH="local/coursebridge/db" VERSION="20261008" COMMENT="CourseBridge metadata schema">
   <TABLES>
     <TABLE NAME="local_coursebridge" COMMENT="Relationship profiles">
@@ -210,7 +210,7 @@
         <INDEX NAME="planid" UNIQUE="false" FIELDS="planid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_audit" COMMENT="Scoped actor and outcome history">
+    <TABLE NAME="local_coursebridge_log" COMMENT="CourseBridge action log">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -225,6 +225,8 @@
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" />
         <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated" />
+        <INDEX NAME="actionid" UNIQUE="false" FIELDS="action,id" />
+        <INDEX NAME="entityid" UNIQUE="false" FIELDS="entityuuid,id" />
       </INDEXES>
     </TABLE>
   </TABLES>

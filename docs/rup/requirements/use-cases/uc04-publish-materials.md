@@ -18,7 +18,7 @@
 | 1 | Publisher | Selects a named folder or file resource in the course page. |
 | 2 | material_source | Checks source type, visibility, section restrictions and publication authority. |
 | 3 | material_source | Stores the grant or revocation flag and action actor. |
-| 4 | audit | Records the publication action. |
+| 4 | log | Records the publication action. |
 | 5 | Publisher | Receives confirmation and continues browsing. |
 
 ## Alternative outcomes
@@ -31,6 +31,6 @@
 
 ![UC04 sequence](../../../diagrams/design/sequences/uc04-publish-materials.svg)
 
-[Sequence source](../../../diagrams/design/sequences/uc04-publish-materials.puml). Current collaborators: material_source, profiles, audit.
+[Sequence source](../../../diagrams/design/sequences/uc04-publish-materials.puml). Current collaborators: material_source, profiles, log.
 
 [All supported use cases](README.md) · [Stored behavior](../../behavior/README.md).

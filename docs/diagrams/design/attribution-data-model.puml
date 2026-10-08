@@ -30,7 +30,7 @@ entity "local_coursebridge_publication" as publication {
   userid / timecreated
 }
 
-entity "local_coursebridge_audit" as audit {
+entity "local_coursebridge_log" as log {
   * id
   userid / action / entityuuid
   details / timecreated
@@ -38,7 +38,7 @@ entity "local_coursebridge_audit" as audit {
 
 attribution ||--o{ origin
 coursepolicy -[hidden]down-> publication
-publication -[hidden]down-> audit
+publication -[hidden]down-> log
 coursepolicy -[hidden]right-> attribution
 note bottom of attribution : Parent lineage uses a UUID; actor ID is not the declared author.
 @enduml
