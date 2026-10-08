@@ -24,7 +24,7 @@
 
 namespace local_coursebridge;
 
-use local_coursebridge\local\log;
+use local_coursebridge\local\logging\log;
 use local_coursebridge\privacy\provider;
 
 /**

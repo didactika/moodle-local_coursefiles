@@ -18,6 +18,7 @@ This plugin is installed at `local/coursebridge`. It owns relationship profiles,
 |---|---|
 | Teacher and administrator workflows | [User workflows](docs/02-vision-and-use-cases.md) |
 | Current services and native integration | [Architecture](docs/03-architecture.md) |
+| Source folders, page routes and template paths | [Source structure](docs/13-source-structure.md) |
 | Named captures, optional editions and matching | [Configuration](docs/04-configurable-rules.md) |
 | Installed tables and native storage | [Database](docs/05-data-model.md) |
 | Reviewed existing-folder copies | [Migration](docs/06-migrations.md) |

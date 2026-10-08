@@ -21,7 +21,10 @@
  * @copyright 2026 CourseBridge contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local;
+namespace local_coursebridge\local\migration;
+
+use local_coursebridge\local\profile\profile_config;
+use local_coursebridge\local\policy\author_policy;
 
 /**
  * Selects exact destinations without guessing across course-local IDs.

@@ -31,6 +31,6 @@ final class refresh_course extends \core\task\adhoc_task {
      * Execute a refresh.
      */
     public function execute(): void {
-        \local_coursebridge\local\indexer::refresh((int)$this->get_custom_data()->courseid);
+        \local_coursebridge\local\catalog\indexer::refresh((int)$this->get_custom_data()->courseid);
     }
 }

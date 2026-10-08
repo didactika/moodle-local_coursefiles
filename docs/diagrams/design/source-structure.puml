@@ -1,0 +1,25 @@
+@startuml
+!include ../_style.puml
+top to bottom direction
+title Design — Source folders and responsibilities
+package "local_coursebridge" {
+  component "Moodle root entries\nlib.php / settings.php / version.php\nLegacy URL forwarding scripts" as Entry
+  package "Controllers" as Controllers {
+    component "admin/\nprofiles / migration / log" as Admin
+    component "course/\ncatalog / policy" as Course
+    Admin -[hidden]down-> Course
+  }
+  package "classes/" as Classes {
+    component "local/ domain services\ncatalog / profile / policy\nmigration / logging" as Services
+    component "Moodle API classes\nform / output / privacy / task" as APIs
+    Services -[hidden]down-> APIs
+  }
+  package "templates/local/" as Templates {
+    component "Screen groups\ncatalog / profile / policy\nmigration / log" as Screens
+  }
+  Entry -[hidden]down-> Controllers
+  Controllers -[hidden]right-> Classes
+  Classes -[hidden]right-> Templates
+}
+@enduml
+

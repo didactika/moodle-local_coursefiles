@@ -55,5 +55,11 @@ function xmldb_local_coursebridge_upgrade(int $oldversion): bool {
         }
         upgrade_plugin_savepoint(true, 2026100801, 'local', 'coursebridge');
     }
+    if ($oldversion < 2026100802) {
+        $table = new xmldb_table('local_coursebridge_attribution');
+        $field = new xmldb_field('parentuuid', XMLDB_TYPE_CHAR, '36', null, XMLDB_NOTNULL, null, null);
+        $dbman->change_field_default($table, $field);
+        upgrade_plugin_savepoint(true, 2026100802, 'local', 'coursebridge');
+    }
     return true;
 }

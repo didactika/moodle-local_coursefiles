@@ -23,13 +23,13 @@
  */
 namespace local_coursebridge;
 
-use local_coursebridge\local\profile_config;
-use local_coursebridge\local\profiles;
-use local_coursebridge\local\indexer;
-use local_coursebridge\local\catalog;
-use local_coursebridge\local\copy_decision;
-use local_coursebridge\local\migration_planner;
-use local_coursebridge\local\migration_executor;
+use local_coursebridge\local\profile\profile_config;
+use local_coursebridge\local\profile\profiles;
+use local_coursebridge\local\catalog\indexer;
+use local_coursebridge\local\catalog\catalog;
+use local_coursebridge\local\migration\copy_decision;
+use local_coursebridge\local\migration\migration_planner;
+use local_coursebridge\local\migration\migration_executor;
 
 
 /**
@@ -56,11 +56,11 @@ final class profile_config_test extends \advanced_testcase {
             false
         );
         foreach ([$target->id, $source->id] as $courseid) {
-            \local_coursebridge\local\author_policy::save($source->id, 'inherit');
-            \local_coursebridge\local\author_policy::save($target->id, 'inherit');
-            \local_coursebridge\local\author_policy::save($courseid, 'preserve_locked');
+            \local_coursebridge\local\policy\author_policy::save($source->id, 'inherit');
+            \local_coursebridge\local\policy\author_policy::save($target->id, 'inherit');
+            \local_coursebridge\local\policy\author_policy::save($courseid, 'preserve_locked');
             try {
-                \local_coursebridge\local\folder_destination::copy(reset($files), $tfolder->cmid);
+                \local_coursebridge\local\migration\folder_destination::copy(reset($files), $tfolder->cmid);
                 $this->fail('A course lock must refuse the copy.');
             } catch (\moodle_exception $exception) {
                 $this->assertSame('lockedunsupported', $exception->errorcode);
@@ -99,7 +99,7 @@ final class profile_config_test extends \advanced_testcase {
             'id',
             false
         );
-        $saved = \local_coursebridge\local\folder_destination::copy(reset($sourcefiles), $tfolder->cmid);
+        $saved = \local_coursebridge\local\migration\folder_destination::copy(reset($sourcefiles), $tfolder->cmid);
         $kept = $fs->get_file($context->id, 'mod_folder', 'content', 0, '/existing/', 'teacher-notes.txt');
         $this->assertNotFalse($kept);
         $this->assertSame((int)$existing->get_id(), (int)$kept->get_id());
@@ -128,7 +128,7 @@ final class profile_config_test extends \advanced_testcase {
         $file = reset($files);
         $draftcount = $DB->count_records('files', ['component' => 'user', 'filearea' => 'draft']);
         try {
-            \local_coursebridge\local\folder_destination::copy($file, $tfolder->cmid);
+            \local_coursebridge\local\migration\folder_destination::copy($file, $tfolder->cmid);
             $this->fail('The adapter must refuse a strict copy.');
         } catch (\moodle_exception $exception) {
             $this->assertSame('lockedunsupported', $exception->errorcode);

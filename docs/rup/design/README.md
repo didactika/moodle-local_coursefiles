@@ -1,5 +1,7 @@
 # Design views
 
+![Source folders](../../diagrams/design/source-structure.svg)
+
 ![Action log query](../../diagrams/design/sequences/log-query.svg)
 
 ![Components](../../diagrams/design/components.svg)

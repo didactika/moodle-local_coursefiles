@@ -10,7 +10,7 @@ Select an action and optionally paste an exact reference. Filters reset paginati
 
 ![Authorized log query](diagrams/design/sequences/log-query.svg)
 
-The page displays escaped record values and does not print the stored JSON details. The `local_coursebridge/log` template is available for theme overrides. The service independently checks authorization before reading records. Privacy requests export approved actor records and delete that actor's log rows, including their details.
+The page displays escaped record values and does not print the stored JSON details. The `local_coursebridge/local/log/index` template is available for theme overrides. The service independently checks authorization before reading records. Privacy requests export approved actor records and delete that actor's log rows, including their details.
 
 ## Upgrade from version 2026100800
 
@@ -22,7 +22,13 @@ A retry can continue when the table has already been renamed but the upgrade sav
 
 Moodle migrates explicit role permissions from the old read capability to `local/coursebridge:viewlog`, including prohibitions, then removes the old capability. Historical names remain only in the upgrade compatibility code and its tests.
 
-Deploy both plugin versions together. The repository plugin requires local_coursebridge **2026100801**. Use Moodle's normal plugin upgrade; do not rename or recreate tables manually.
+## Version 2026100802
+
+This update removes the invalid empty-string default from the required `parentuuid` character field. The XMLDB field has no declared default; existing root and child provenance records remain unchanged. Fresh schema loading no longer needs XMLDB to normalize that declaration.
+
+The code uses the organized [source folders and template identifiers](13-source-structure.md). Existing root page URLs continue to forward requests to the new controllers.
+
+Deploy both plugin versions together. The repository plugin requires local_coursebridge **2026100802**. Use Moodle's normal plugin upgrade; do not rename or recreate tables manually.
 
 See [validation evidence](07-validation-and-decisions.md) and the [installed schema](05-data-model.md).
 

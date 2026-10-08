@@ -44,7 +44,7 @@ final class reconcile_catalog extends \core\task\scheduled_task {
         $after = (int)get_config('local_coursebridge', 'reconcile_cursor');
         $courses = $DB->get_records_select('course', 'id > ? AND id <> ?', [$after, SITEID], 'id', 'id', 0, 100);
         foreach ($courses as $course) {
-            \local_coursebridge\local\indexer::refresh($course->id);
+            \local_coursebridge\local\catalog\indexer::refresh($course->id);
             set_config('reconcile_cursor', $course->id, 'local_coursebridge');
         }
         if (count($courses) < 100) {

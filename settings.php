@@ -64,7 +64,7 @@ if ($hassiteconfig) {
         $ADMIN->add('local_coursebridge', new admin_externalpage(
             'local_coursebridge_' . $page,
             get_string($page === 'profiles' ? 'profiles' : 'preview', 'local_coursebridge'),
-            new moodle_url('/local/coursebridge/' . $page . '.php'),
+            new moodle_url('/local/coursebridge/admin/' . $page . '.php'),
             'local/coursebridge:' . ($page === 'profiles' ? 'manageprofiles' : 'planmigration')
         ));
     }
@@ -73,7 +73,7 @@ if ($canviewlog) {
     $ADMIN->add('local_coursebridge', new admin_externalpage(
         'local_coursebridge_log',
         get_string('log', 'local_coursebridge'),
-        new moodle_url('/local/coursebridge/log.php'),
+        new moodle_url('/local/coursebridge/admin/log.php'),
         'local/coursebridge:viewlog'
     ));
 }

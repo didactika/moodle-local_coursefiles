@@ -32,7 +32,7 @@ final class execute_migration extends \core\task\adhoc_task {
      */
     public function execute(): void {
         $runid = (int)$this->get_custom_data()->runid;
-        if (\local_coursebridge\local\migration_executor::execute($runid)) {
+        if (\local_coursebridge\local\migration\migration_executor::execute($runid)) {
             $next = new self();
             $next->set_userid($this->get_userid());
             $next->set_custom_data(['runid' => $runid]);

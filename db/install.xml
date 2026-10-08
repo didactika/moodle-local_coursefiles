@@ -115,7 +115,7 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
-        <FIELD NAME="parentuuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" DEFAULT="" />
+        <FIELD NAME="parentuuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="sourcehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="author" TYPE="text" NOTNULL="true" SEQUENCE="false" />

@@ -33,12 +33,12 @@ if ($options['help'] || $unrecognised) {
 }
 \core\session\manager::set_user(get_admin());
 if ($options['courseid']) {
-    \local_coursebridge\local\indexer::refresh((int)$options['courseid']);
+    \local_coursebridge\local\catalog\indexer::refresh((int)$options['courseid']);
 } else {
     $courses = $DB->get_recordset_select('course', 'id <> ?', [SITEID], 'id', 'id');
     try {
         foreach ($courses as $course) {
-            \local_coursebridge\local\indexer::refresh($course->id);
+            \local_coursebridge\local\catalog\indexer::refresh($course->id);
             cli_writeln((string)$course->id);
         }
     } finally {

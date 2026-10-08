@@ -16,6 +16,8 @@ An asset is a virtual content group. Authorization and author declarations belon
 
 ## Current service classes
 
+Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migration` and `logging`, with matching PHP namespaces. Administration and course controllers are separate. See the [source structure](13-source-structure.md).
+
 ![Catalog design classes](diagrams/design/classes.svg)
 
 `profiles` activates immutable JSON revisions; `profile_config` resolves generic families, optional editions and pairing dimensions. `indexer` rebuilds per-course metadata, while `catalog` streams candidates and `material_source` checks live visibility, native access or explicit grants.

@@ -16,25 +16,25 @@ Labels are associated with controls. Tables use column headers and responsive co
 
 | Template | Responsibility |
 |---|---|
-| `local_coursebridge/catalog` | Course page and secondary controls |
-| `local_coursebridge/catalog_filters` | Named GET filters |
-| `local_coursebridge/material_card` | One content group and exact origins |
-| `local_coursebridge/publication` | Named publication/revocation selector |
-| `local_coursebridge/migration_report` | Reviewed decisions and run state |
-| `local_coursebridge/policy` | Effective policy and allowed course selection |
-| `local_coursebridge/profile_list` | Named profiles, enabled state and active revision |
-| `local_coursebridge/log` | Labelled action/reference filters and paginated action records |
+| `local_coursebridge/local/catalog/index` | Course page and secondary controls |
+| `local_coursebridge/local/catalog/filters` | Named GET filters |
+| `local_coursebridge/local/catalog/material_card` | One content group and exact origins |
+| `local_coursebridge/local/catalog/publication` | Named publication/revocation selector |
+| `local_coursebridge/local/migration/report` | Reviewed decisions and run state |
+| `local_coursebridge/local/policy/course` | Effective policy and allowed course selection |
+| `local_coursebridge/local/profile/list` | Named profiles, enabled state and active revision |
+| `local_coursebridge/local/log/index` | Labelled action/reference filters and paginated action records |
 
 Page controllers pass plain data to `output/view`. `output/renderer::render_view()` selects the component template. Services own authorization and copying; a theme changes presentation without replacing those decisions.
 
 Override a template at:
 
 ```text
-theme/mytheme/templates/local_coursebridge/material_card.mustache
+theme/mytheme/templates/local_coursebridge/local/catalog/material_card.mustache
 ```
 
 Use the same basename for another listed template. The theme may also override the component renderer using Moodle's renderer factory. Stable hooks include `.coursebridge-catalog`, `.coursebridge-material`, `.coursebridge-migration`, `.coursebridge-policy` and `data-region` attributes.
 
-The companion repository documents its own `repository_coursebridge/search_form` override. Native picker lists, dialogs, file selection and save controls remain core presentation.
+The companion repository documents its own `repository_coursebridge/local/picker/search_form` override. Native picker lists, dialogs, file selection and save controls remain core presentation.
 
 References: [Moodle theme plugin API](https://moodledev.io/docs/4.5/apis/plugintypes/theme), [Output API](https://moodledev.io/docs/5.3/apis/subsystems/output), [templates](https://moodledev.io/docs/4.5/guides/templates).

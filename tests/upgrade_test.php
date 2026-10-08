@@ -29,6 +29,44 @@ namespace local_coursebridge;
  */
 final class upgrade_test extends \advanced_testcase {
     /**
+     * The real XMLDB parser loads the schema without normalizing an empty CHAR default.
+     */
+    public function test_install_schema_loads_without_invalid_char_defaults(): void {
+        $this->resetAfterTest();
+        $file = new \xmldb_file(__DIR__ . '/../db/install.xml');
+        $this->assertTrue($file->loadXMLStructure());
+        $structure = $file->getStructure();
+        $field = $structure->getTable('local_coursebridge_attribution')->getField('parentuuid');
+        $this->assertNull($field->getDefault());
+        $this->assertTrue($field->getNotNull());
+    }
+
+    /**
+     * Correcting the parent default preserves root and child attribution values.
+     */
+    public function test_parent_default_upgrade_preserves_lineage(): void {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+        $this->preventResetByRollback();
+        require_once($CFG->libdir . '/upgradelib.php');
+        require_once(__DIR__ . '/../db/upgrade.php');
+        $parentuuid = \core\uuid::generate();
+        $ids = [];
+        foreach (['' => $parentuuid, $parentuuid => \core\uuid::generate()] as $parent => $uuid) {
+            $ids[] = $DB->insert_record('local_coursebridge_attribution', (object)[
+                'uuid' => $uuid, 'parentuuid' => $parent, 'sourcehash' => str_repeat('a', 40),
+                'contenthash' => str_repeat('b', 40), 'author' => 'Original author', 'license' => 'cc',
+                'locked' => 0, 'userid' => 2, 'timecreated' => 1700000000,
+            ]);
+        }
+        $before = $DB->get_records_list('local_coursebridge_attribution', 'id', $ids, 'id');
+        set_config('version', 2026100801, 'local_coursebridge');
+        $this->assertTrue(\xmldb_local_coursebridge_upgrade(2026100801));
+        $this->assertEquals($before, $DB->get_records_list('local_coursebridge_attribution', 'id', $ids, 'id'));
+        $this->assertSame('2026100802', get_config('local_coursebridge', 'version'));
+    }
+
+    /**
      * A conflicting installation stops without deleting either history.
      */
     public function test_conflicting_tables_stop_the_upgrade(): void {
@@ -93,8 +131,8 @@ final class upgrade_test extends \advanced_testcase {
                 $table,
                 new \xmldb_index('entityid', XMLDB_INDEX_NOTUNIQUE, ['entityuuid', 'id'])
             ));
-            $this->assertSame('2026100801', get_config('local_coursebridge', 'version'));
-            $this->assertTrue(\xmldb_local_coursebridge_upgrade(2026100801));
+            $this->assertSame('2026100802', get_config('local_coursebridge', 'version'));
+            $this->assertTrue(\xmldb_local_coursebridge_upgrade(2026100802));
         } finally {
             if ($dbman->table_exists('local_coursebridge_audit') && !$dbman->table_exists($table)) {
                 $dbman->rename_table(new \xmldb_table('local_coursebridge_audit'), 'local_coursebridge_log');
@@ -112,7 +150,7 @@ final class upgrade_test extends \advanced_testcase {
         require_once(__DIR__ . '/../db/upgrade.php');
         set_config('version', 2026100800, 'local_coursebridge');
         $this->assertTrue(\xmldb_local_coursebridge_upgrade(2026100800));
-        $this->assertSame('2026100801', get_config('local_coursebridge', 'version'));
+        $this->assertSame('2026100802', get_config('local_coursebridge', 'version'));
         $this->assertTrue($DB->get_manager()->table_exists('local_coursebridge_log'));
     }
 

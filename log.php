@@ -23,41 +23,5 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->libdir . '/adminlib.php');
-
-admin_externalpage_setup('local_coursebridge_log');
-$action = optional_param('action', '', PARAM_ALPHANUMEXT);
-$entityuuid = optional_param('entityuuid', '', PARAM_RAW_TRIMMED);
-$before = optional_param('before', 0, PARAM_INT);
-$url = new moodle_url('/local/coursebridge/log.php', ['action' => $action, 'entityuuid' => $entityuuid]);
-$PAGE->set_url($url);
-$page = \local_coursebridge\local\log::page($action, $entityuuid, $before);
-$options = [];
-foreach (\local_coursebridge\local\log::actions() as $name) {
-    $options[] = ['value' => $name, 'label' => get_string('logaction_' . $name, 'local_coursebridge'),
-        'selected' => $action === $name];
-}
-$userids = array_unique(array_filter(array_column($page['records'], 'userid')));
-$users = $userids ? $DB->get_records_list('user', 'id', $userids) : [];
-$records = [];
-foreach ($page['records'] as $record) {
-    $user = $users[$record->userid] ?? null;
-    $records[] = [
-        'date' => userdate($record->timecreated),
-        'action' => in_array($record->action, \local_coursebridge\local\log::actions(), true)
-            ? get_string('logaction_' . $record->action, 'local_coursebridge') : $record->action,
-        'user' => $user && !$user->deleted ? fullname($user)
-            : get_string('logunknownuser', 'local_coursebridge'),
-        'reference' => $record->entityuuid,
-    ];
-}
-$nexturl = $page['nextbefore'] ? new moodle_url($url, ['before' => $page['nextbefore']]) : null;
-$renderer = $PAGE->get_renderer('local_coursebridge');
-echo $OUTPUT->header();
-echo $renderer->render(new \local_coursebridge\output\view('log', [
-    'formurl' => (new moodle_url('/local/coursebridge/log.php'))->out(false),
-    'options' => $options, 'entityuuid' => $entityuuid, 'records' => $records,
-    'hasrecords' => (bool)$records, 'nexturl' => $nexturl ? $nexturl->out(false) : '',
-    'clearurl' => (new moodle_url('/local/coursebridge/log.php'))->out(false),
-]));
-echo $OUTPUT->footer();
+require_login();
+require(__DIR__ . '/admin/log.php');

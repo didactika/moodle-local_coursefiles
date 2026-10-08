@@ -21,7 +21,10 @@
  * @copyright 2026 CourseBridge contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local;
+namespace local_coursebridge\local\catalog;
+
+use local_coursebridge\local\profile\profiles;
+use local_coursebridge\local\logging\log;
 
 /**
  * Resolves only declared teaching file areas and current permission.

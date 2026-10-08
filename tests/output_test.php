@@ -37,7 +37,7 @@ final class output_test extends \advanced_testcase {
     public function test_log_escapes_records_and_labels_filters(): void {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('log', [
-            'hasrecords' => true, 'formurl' => '/local/coursebridge/log.php',
+            'hasrecords' => true, 'formurl' => '/local/coursebridge/admin/log.php',
             'entityuuid' => '" autofocus onfocus="alert(1)',
             'records' => [['date' => 'Today', 'action' => '<script>action</script>',
                 'user' => '<script>user</script>', 'reference' => '<script>reference</script>']],
@@ -64,7 +64,7 @@ final class output_test extends \advanced_testcase {
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $PAGE->set_context(\context_course::instance($course->id));
-        $PAGE->set_url('/local/coursebridge/index.php', ['courseid' => $course->id]);
+        $PAGE->set_url('/local/coursebridge/course/index.php', ['courseid' => $course->id]);
         return $PAGE->get_renderer('local_coursebridge');
     }
 
@@ -75,7 +75,7 @@ final class output_test extends \advanced_testcase {
         $renderer = $this->renderer();
         $data = [
             'hasprofiles' => true, 'hasassets' => true, 'courseid' => 2,
-            'actionurl' => '/local/coursebridge/index.php', 'reseturl' => '/local/coursebridge/index.php',
+            'actionurl' => '/local/coursebridge/course/index.php', 'reseturl' => '/local/coursebridge/course/index.php',
             'profiles' => display::options([1 => '<script>profile</script>'], '1'),
             'filters' => ['q' => '" autofocus onfocus="alert(1)'],
             'modules' => display::options(['' => 'All activities'], ''),

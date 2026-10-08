@@ -1,9 +1,9 @@
 {{!
-    @template local_coursebridge/catalog
+    @template local_coursebridge/local/catalog/index
     Course-scoped material catalog. Labels use component language strings.
     Context: actionurl, courseid, profiles, filters, assets, hasassets, nexturl,
     reseturl, canrefresh, sesskey, publicationenabled, publicationmodules, policyurl.
-    Example context (json): {"actionurl":"/local/coursebridge/index.php","courseid":2,"profiles":[],"filters":{},"assets":[]}
+    Example context (json): {"actionurl":"/local/coursebridge/course/index.php","courseid":2,"profiles":[],"filters":{},"assets":[]}
 }}
 <section class="coursebridge-catalog" data-region="coursebridge-catalog" aria-labelledby="coursebridge-catalog-title">
     <div class="mb-4">
@@ -12,10 +12,10 @@
         {{#policyurl}}<a href="{{policyurl}}" class="btn btn-outline-secondary">{{#str}}coursepolicy, local_coursebridge{{/str}}</a>{{/policyurl}}
     </div>
     {{#hasprofiles}}
-    {{> local_coursebridge/catalog_filters}}
+    {{> local_coursebridge/local/catalog/filters}}
     {{#hasassets}}
     <p class="small text-muted">{{#str}}originhelp, local_coursebridge{{/str}}</p>
-    {{#assets}}{{> local_coursebridge/material_card}}{{/assets}}
+    {{#assets}}{{> local_coursebridge/local/catalog/material_card}}{{/assets}}
     {{/hasassets}}
     {{^hasassets}}
     <div class="card mb-4" data-region="coursebridge-empty">
@@ -45,5 +45,5 @@
         </div>
     </div>
     {{/canrefresh}}
-    {{#publicationenabled}}{{> local_coursebridge/publication}}{{/publicationenabled}}
+    {{#publicationenabled}}{{> local_coursebridge/local/catalog/publication}}{{/publicationenabled}}
 </section>

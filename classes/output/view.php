@@ -28,6 +28,14 @@ namespace local_coursebridge\output;
  * Carries plain data to a named component template.
  */
 final class view implements \renderable, \templatable {
+    /** @var array Named views and their organized component templates. */
+    private const TEMPLATES = [
+        'catalog' => 'local/catalog/index',
+        'migration_report' => 'local/migration/report',
+        'policy' => 'local/policy/course',
+        'profile_list' => 'local/profile/list',
+        'log' => 'local/log/index',
+    ];
     /** @var string Approved template name. */
     private string $template;
     /** @var array Presentation data. */
@@ -40,10 +48,10 @@ final class view implements \renderable, \templatable {
      * @param array $data Plain presentation context.
      */
     public function __construct(string $template, array $data) {
-        if (!in_array($template, ['catalog', 'migration_report', 'policy', 'profile_list', 'log'], true)) {
+        if (!isset(self::TEMPLATES[$template])) {
             throw new \coding_exception('Unknown CourseBridge view');
         }
-        $this->template = $template;
+        $this->template = self::TEMPLATES[$template];
         $this->data = $data;
     }
 

@@ -4,6 +4,8 @@ All application tables belong to **local_coursebridge**. The profile table is na
 
 The installable schema is [db/install.xml](../db/install.xml). XMLDB foreign-key metadata describes plugin-owned relationships; no business record is owned by a disposable index row. The repository plugin has no installation tables.
 
+`parentuuid` remains a required character field with no declared default. Root attribution records explicitly store an empty parent value; child records store the parent's UUID. Version 2026100802 removes the invalid empty-string XMLDB default without changing those stored values.
+
 ![Installed table relationships](diagrams/design/data-model.svg)
 
 ## Installed tables

@@ -33,14 +33,14 @@ function local_coursebridge_extend_navigation_course($navigation, $course, $cont
     if (has_capability('local/coursebridge:browse', $context)) {
         $navigation->add(
             get_string('dashboard', 'local_coursebridge'),
-            new moodle_url('/local/coursebridge/index.php', ['courseid' => $course->id]),
+            new moodle_url('/local/coursebridge/course/index.php', ['courseid' => $course->id]),
             navigation_node::TYPE_CUSTOM
         );
     }
     if (has_capability('local/coursebridge:managecoursepolicy', $context)) {
         $navigation->add(
             get_string('coursepolicy', 'local_coursebridge'),
-            new moodle_url('/local/coursebridge/policy.php', ['courseid' => $course->id]),
+            new moodle_url('/local/coursebridge/course/policy.php', ['courseid' => $course->id]),
             navigation_node::TYPE_CUSTOM
         );
     }

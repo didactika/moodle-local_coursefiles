@@ -21,7 +21,12 @@
  * @copyright 2026 CourseBridge contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local;
+namespace local_coursebridge\local\migration;
+
+use local_coursebridge\local\catalog\material_source;
+use local_coursebridge\local\profile\profiles;
+use local_coursebridge\local\policy\author_policy;
+use local_coursebridge\local\logging\log;
 
 /**
  * Creates explicit file decisions without writing course materials.
