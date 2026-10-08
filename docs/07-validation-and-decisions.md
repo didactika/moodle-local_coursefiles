@@ -1,13 +1,15 @@
 # Validation record
 
-Checks use isolated Moodle PHPUnit databases. They do not modify a production campus.
+Checks use isolated Moodle PHPUnit and Behat databases. They do not modify a production campus.
 
 | Core | PHP / database | Local plugin | Repository plugin |
 |---|---|---|---|
-| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 35 tests / 195 assertions passed | 8 tests / 30 assertions passed |
-| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 35 tests / 195 assertions passed | 8 tests / 30 assertions passed |
+| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 35 tests / 195 assertions passed | 8 tests / 31 assertions passed |
+| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 35 tests / 195 assertions passed | 8 tests / 31 assertions passed |
 
 Verified on 2026-10-08, plugin version 2026100802. Privacy coverage is expanded on `test/coursebridge-privacy`; the earlier structure and repository checks used `refactor/coursebridge-structure`. Moodle coding standards 3.7.0 report zero errors and warnings across both packages. The existing 55 PlantUML diagrams and the added privacy process render to SVG without syntax errors. Local Markdown links resolve.
+
+The repository suite and native browser checks were verified on 2026-10-09 in `test/coursebridge-native-picker`. All three Behat scenarios and 52 steps pass per core: explicitly published multi-edition origins, hidden-material exclusion, native AJAX filters, draft selection and folder save retaining existing files, plus Tab order and Enter submission. Moodle's axe check passes for the repository search region. These checks exercise a teacher enrolled only in the destination course.
 
 The integration tests exercise optional editions, ambiguous and invalid parsers, content/attribution conflicts, target authority, content grouping, edition filters, stale source visibility, strict-copy rejection, idempotent folder copies, cross-path duplicates, changed profiles and changed destinations.
 
@@ -24,6 +26,8 @@ Fresh isolated installations load the schema through Moodle XMLDB. The real pars
 ## Scope of the evidence
 
 Firefox rendered the actual component templates with each core's compiled Boost stylesheet at 1366 px and 390 px. Catalog, migration report, policy and picker search samples have no page-level horizontal overflow; search inputs accept typing. These are rendered fixture checks, not full native picker session acceptance or accessibility certification.
+
+The added native picker scenarios use the real modal and forms, separate from those earlier render fixtures. Visual checks also opened that modal at 1366 px and inside a same-origin 390 px viewport on both cores: the search grid fits in two desktop columns or one mobile column without page-level horizontal overflow. Automated search-region checks and keyboard focus tests do not establish complete site, screen-reader, browser or theme certification.
 
 The log template was also rendered with both Boost stylesheets at those widths. Its labelled filters and responsive record table have no page-level horizontal overflow.
 
