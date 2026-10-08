@@ -42,9 +42,14 @@ final class folder_destination {
         require_once($CFG->dirroot . '/mod/folder/lib.php');
         $cm = get_coursemodule_from_id('folder', $cmid, 0, false, MUST_EXIST);
         require_capability('moodle/course:manageactivities', \context_module::instance($cmid));
+        $sourcecontext = \context::instance_by_id($source->get_contextid())->get_course_context(false);
+        if (!$sourcecontext) {
+            throw new \moodle_exception('materialunavailable', 'local_coursebridge');
+        }
+        author_policy::require_native_copy($source, (int)$sourcecontext->instanceid, (int)$cm->course);
         $context = \context_module::instance($cmid);
         $fs = get_file_storage();
-        $draftid = file_get_unused_draft_itemid();
+        $draftid = 0;
         file_prepare_draft_area($draftid, $context->id, 'mod_folder', 'content', 0, ['subdirs' => true]);
         $record = ['contextid' => \context_user::instance($USER->id)->id, 'component' => 'user',
             'filearea' => 'draft', 'itemid' => $draftid, 'filepath' => $source->get_filepath(),

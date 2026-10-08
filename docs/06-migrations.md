@@ -37,6 +37,8 @@ Queue the exact reviewed digest under the acting administrator's user ID. Use bo
 
 Use the native folder update/draft contract while preserving existing contents and completion date metadata. Before copying, inspect the exact target path again. A crash after native save can be recovered as already present when bytes/author/license match; do not invent deletion provenance for an uncertain already-present file. Course caches/events are refreshed through native APIs.
 
+Draft preparation starts with an empty draft ID so Moodle allocates the area and loads the folder's existing contents. The source is added afterward. A native save keeps unrelated nested files, their existing IDs, contents, authors and licences. The destination adapter also checks effective author policy before draft creation.
+
 ![Plan lifecycle](diagrams/behavior/states/migration-plan.svg)
 
 ![Run lifecycle](diagrams/behavior/states/migration-run.svg)

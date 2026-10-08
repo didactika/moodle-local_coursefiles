@@ -38,6 +38,113 @@ use local_coursebridge\local\migration_executor;
  */
 final class profile_config_test extends \advanced_testcase {
     /**
+     * Either course can tighten an editable site policy before a folder write.
+     */
+    public function test_course_locks_are_checked_at_both_ends_of_folder_copy(): void {
+        global $CFG;
+        [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
+        set_config('author_policy', 'editable_with_provenance', 'local_coursebridge');
+        set_config('author_course_override', 'tighten_only', 'local_coursebridge');
+        $CFG->maintenance_enabled = 1;
+        $fs = get_file_storage();
+        $files = $fs->get_area_files(
+            \context_module::instance($sfolder->cmid)->id,
+            'mod_folder',
+            'content',
+            0,
+            'id',
+            false
+        );
+        foreach ([$target->id, $source->id] as $courseid) {
+            \local_coursebridge\local\author_policy::save($source->id, 'inherit');
+            \local_coursebridge\local\author_policy::save($target->id, 'inherit');
+            \local_coursebridge\local\author_policy::save($courseid, 'preserve_locked');
+            try {
+                \local_coursebridge\local\folder_destination::copy(reset($files), $tfolder->cmid);
+                $this->fail('A course lock must refuse the copy.');
+            } catch (\moodle_exception $exception) {
+                $this->assertSame('lockedunsupported', $exception->errorcode);
+            }
+            $this->assertCount(0, $fs->get_area_files(
+                \context_module::instance($tfolder->cmid)->id,
+                'mod_folder',
+                'content',
+                0,
+                'id',
+                false
+            ));
+        }
+    }
+
+    /**
+     * Native folder copying preserves existing nested files and their metadata.
+     */
+    public function test_folder_copy_preserves_existing_destination_files(): void {
+        global $CFG;
+        [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
+        set_config('author_policy', 'editable_with_provenance', 'local_coursebridge');
+        $CFG->maintenance_enabled = 1;
+        $fs = get_file_storage();
+        $context = \context_module::instance($tfolder->cmid);
+        $existing = $fs->create_file_from_string([
+            'contextid' => $context->id, 'component' => 'mod_folder', 'filearea' => 'content',
+            'itemid' => 0, 'filepath' => '/existing/', 'filename' => 'teacher-notes.txt',
+            'author' => 'Destination author', 'license' => 'allrightsreserved',
+        ], 'Existing teaching notes');
+        $sourcefiles = $fs->get_area_files(
+            \context_module::instance($sfolder->cmid)->id,
+            'mod_folder',
+            'content',
+            0,
+            'id',
+            false
+        );
+        $saved = \local_coursebridge\local\folder_destination::copy(reset($sourcefiles), $tfolder->cmid);
+        $kept = $fs->get_file($context->id, 'mod_folder', 'content', 0, '/existing/', 'teacher-notes.txt');
+        $this->assertNotFalse($kept);
+        $this->assertSame((int)$existing->get_id(), (int)$kept->get_id());
+        $this->assertSame('Existing teaching notes', $kept->get_content());
+        $this->assertSame('Destination author', $kept->get_author());
+        $this->assertSame('allrightsreserved', $kept->get_license());
+        $this->assertSame('Original author', $saved->get_author());
+        $this->assertCount(2, $fs->get_area_files($context->id, 'mod_folder', 'content', 0, 'id', false));
+    }
+
+    /**
+     * Calling the destination adapter directly cannot bypass the strict policy.
+     */
+    public function test_folder_adapter_checks_policy_before_creating_drafts(): void {
+        global $CFG, $DB;
+        [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
+        $CFG->maintenance_enabled = 1;
+        $files = get_file_storage()->get_area_files(
+            \context_module::instance($sfolder->cmid)->id,
+            'mod_folder',
+            'content',
+            0,
+            'id',
+            false
+        );
+        $file = reset($files);
+        $draftcount = $DB->count_records('files', ['component' => 'user', 'filearea' => 'draft']);
+        try {
+            \local_coursebridge\local\folder_destination::copy($file, $tfolder->cmid);
+            $this->fail('The adapter must refuse a strict copy.');
+        } catch (\moodle_exception $exception) {
+            $this->assertSame('lockedunsupported', $exception->errorcode);
+        }
+        $this->assertSame($draftcount, $DB->count_records('files', ['component' => 'user', 'filearea' => 'draft']));
+        $this->assertCount(0, get_file_storage()->get_area_files(
+            \context_module::instance($tfolder->cmid)->id,
+            'mod_folder',
+            'content',
+            0,
+            'id',
+            false
+        ));
+    }
+
+    /**
      * Load the institutional preset.
      *
      * @return array Document.
