@@ -1,0 +1,22 @@
+@startuml
+!include ../_style.puml
+title Publication and author policy
+left to right direction
+actor Publisher
+actor "Policy manager" as Manager
+rectangle "Course governance" {
+  usecase "UC04 Publish / revoke module" as Publish
+  usecase "UC09 Set site/course policy" as Policy
+}
+Publisher --> Publish
+Manager --> Policy
+Publish -[hidden]down-> Policy
+note right of Publish
+Visible unrestricted teaching sources only.
+Explicit family-publication profile.
+end note
+note right of Policy
+Courses inherit or tighten the site.
+Any source/target lock blocks native copying.
+end note
+@enduml

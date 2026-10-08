@@ -1,0 +1,32 @@
+@startuml
+!include ../_style.puml
+title Analysis — Boundary / control / entity
+left to right direction
+package Boundary {
+  class "Catalog / native picker" as Picker <<boundary>>
+  class "Administration" as Admin <<boundary>>
+  class "Course policy" as PolicyUI <<boundary>>
+}
+package Control {
+  class "Search and authorize" as Search <<control>>
+  class "Review and apply copies" as Migration <<control>>
+  class "Resolve author policy" as Policy <<control>>
+}
+package Entity {
+  class "Native occurrence / grant" as Occurrence <<entity>>
+  class "Plan / operation / run" as Plan <<entity>>
+  class "Policy / declaration" as Declaration <<entity>>
+}
+Picker --> Search
+Search --> Occurrence
+Admin --> Migration
+Migration --> Plan
+PolicyUI --> Policy
+Policy --> Declaration
+Picker -[hidden]down-> Admin
+Admin -[hidden]down-> PolicyUI
+Search -[hidden]down-> Migration
+Migration -[hidden]down-> Policy
+Occurrence -[hidden]down-> Plan
+Plan -[hidden]down-> Declaration
+@enduml

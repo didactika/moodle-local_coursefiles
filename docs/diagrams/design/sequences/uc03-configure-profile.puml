@@ -1,0 +1,19 @@
+@startuml
+!include ../../_style.puml
+title UC03 — Activate a relationship profile
+actor Administrator
+participant "Native profile form" as UI
+participant profiles as Profiles
+participant profile_config as Rules
+database "Profile / revision" as DB
+Administrator -> UI : Submit JSON
+UI -> Profiles : save(json, profileid)
+Profiles -> Rules : Validate constructor
+alt supported document
+  Profiles -> DB : Store / activate revision under lock
+  DB --> Profiles : Active revision
+  Profiles --> UI : Confirmation
+else invalid document
+  Profiles --> UI : Configuration error
+end
+@enduml

@@ -1,0 +1,30 @@
+@startuml
+!include ../_style.puml
+title Design — Catalog services
+top to bottom direction
+class catalog {
+  + search(...)
+}
+class material_source {
+  + resolve(...)
+  + publish(...)
+}
+class profiles {
+  + load(profileid)
+  + save(json, profileid)
+}
+class profile_config {
+  + resolve(course)
+  + get_config()
+}
+class indexer {
+  + refresh(courseid)
+}
+catalog --> material_source
+catalog --> profiles
+profiles --> profile_config
+indexer --> profiles
+material_source --> profiles
+catalog -[hidden]right-> indexer
+note bottom of material_source : Current visibility and source authority are decisive.
+@enduml

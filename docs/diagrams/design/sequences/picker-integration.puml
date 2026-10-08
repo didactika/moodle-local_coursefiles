@@ -1,0 +1,20 @@
+@startuml
+!include ../../_style.puml
+title Native picker integration
+actor Teacher
+participant "Core file picker" as Picker
+participant repository_coursebridge as Repository
+participant "Local catalog / source / policy" as Local
+participant "Moodle draft / module save" as Core
+Teacher -> Picker : Open related materials
+Picker -> Repository : Listing / search filters
+Repository -> Local : Authorized content groups
+Local --> Repository : Exact permitted origins
+Repository --> Picker : Native entries
+Teacher -> Picker : Choose origin
+Picker -> Repository : Source token / draft copy
+Repository -> Local : Live authorization and author policy
+Local --> Repository : Source and original declaration
+Repository -> Core : Copy native draft
+Teacher -> Core : Save editing form
+@enduml

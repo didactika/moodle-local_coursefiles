@@ -1,0 +1,64 @@
+{{!
+    @template local_coursebridge/migration_report
+    Readable reviewed migration report without internal JSON or raw locator IDs.
+    Context: planid, uuid, planstate, sourceedition, targetedition, metrics, operations,
+    issues, runs, executeurl, canexecute, digest, sesskey, newplanurl, actionurl.
+    Example context (json): {"planstate":"Ready for review","metrics":[],"operations":[],"runs":[]}
+}}
+<section class="coursebridge-migration" data-region="coursebridge-migration">
+    <h2>{{#str}}report, local_coursebridge{{/str}}</h2>
+    <p class="h5">{{sourceedition}} → {{targetedition}}</p>
+    <p>{{planstate}} <span class="small text-muted">{{#str}}planreference, local_coursebridge{{/str}}: {{uuid}}</span></p>
+    <div class="row mb-3">{{#metrics}}
+        <div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body">
+            <div class="h3">{{count}}</div><div>{{label}}</div>
+        </div></div></div>
+    {{/metrics}}</div>
+    {{#hasissues}}<div class="alert alert-warning">
+        <h3 class="h5">{{#str}}reviewissues, local_coursebridge{{/str}}</h3>
+        <ul class="mb-0">{{#issues}}<li>{{description}}</li>{{/issues}}</ul>
+    </div>{{/hasissues}}
+    {{#canexecute}}<form method="post" action="{{actionurl}}" class="mb-4">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <input type="hidden" name="planid" value="{{planid}}">
+        <input type="hidden" name="digest" value="{{digest}}">
+        <p class="text-muted">{{#str}}reviewbeforeexecute, local_coursebridge{{/str}}</p>
+        <button class="btn btn-primary" name="action" value="execute" type="submit">{{#str}}execute, local_coursebridge{{/str}}</button>
+    </form>{{/canexecute}}
+    <a class="btn btn-outline-secondary mb-4" href="{{newplanurl}}">{{#str}}newpreview, local_coursebridge{{/str}}</a>
+    {{#hasruns}}<section class="mb-4" aria-label="{{#str}}planprogress, local_coursebridge{{/str}}">
+        <h3 class="h5">{{#str}}planprogress, local_coursebridge{{/str}}</h3>
+        <p>{{planprogress}}</p>
+        <progress class="w-100" value="{{plancompleted}}" max="{{plantotal}}" aria-label="{{planprogress}}"></progress>
+    </section>{{/hasruns}}
+    {{#runs}}
+    <div class="card mb-3"><div class="card-body">
+        <h3 class="h5">{{#str}}runreference, local_coursebridge, {{id}}{{/str}} · {{statelabel}}</h3>
+        <p>{{progresslabel}}</p>
+        {{#cancancel}}<form method="post" action="{{actionurl}}">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <input type="hidden" name="planid" value="{{planid}}">
+            <input type="hidden" name="runid" value="{{id}}">
+            <button class="btn btn-outline-secondary" name="action" value="cancel" type="submit">{{#str}}cancelrun, local_coursebridge{{/str}}</button>
+        </form>{{/cancancel}}
+    </div></div>
+    {{/runs}}
+    {{#hasoperations}}
+    <div class="table-responsive"><table class="table table-striped">
+        <caption>{{#str}}migrationtablecaption, local_coursebridge{{/str}}</caption>
+        <thead><tr>
+            <th scope="col">{{#str}}source, local_coursebridge{{/str}}</th>
+            <th scope="col">{{#str}}destination, local_coursebridge{{/str}}</th>
+            <th scope="col">{{#str}}decision, local_coursebridge{{/str}}</th>
+            <th scope="col">{{#str}}state, local_coursebridge{{/str}}</th>
+        </tr></thead>
+        <tbody>{{#operations}}<tr>
+            <td>{{filename}}<div class="small text-muted">{{filepath}}</div><div class="small">{{author}} · {{license}}</div></td>
+            <td>{{targetcourse}}<div class="small text-muted">{{targetsection}} / {{targetfolder}}</div></td>
+            <td>{{decisionlabel}}</td>
+            <td>{{statelabel}}{{#resultlabel}}<div class="small">{{resultlabel}}</div>{{/resultlabel}}</td>
+        </tr>{{/operations}}</tbody>
+    </table></div>
+    {{/hasoperations}}
+    {{^hasoperations}}<div class="alert alert-info">{{#str}}nomigrationoperations, local_coursebridge{{/str}}</div>{{/hasoperations}}
+</section>

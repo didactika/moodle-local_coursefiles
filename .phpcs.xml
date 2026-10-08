@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ruleset name="CourseBridge Moodle standard">
+  <description>Moodle plugin coding conventions.</description>
+  <rule ref="moodle"/>
+  <arg name="extensions" value="php"/>
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>*/docs/*</exclude-pattern>
+  <exclude-pattern>*/.git/*</exclude-pattern>
+</ruleset>

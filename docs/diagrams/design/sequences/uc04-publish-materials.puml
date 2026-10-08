@@ -1,0 +1,17 @@
+@startuml
+!include ../../_style.puml
+title UC04 — Publish or revoke module materials
+actor Publisher
+participant "Course publication form" as UI
+participant material_source as Source
+database "Publication / audit" as DB
+Publisher -> UI : Named module + publish / revoke
+UI -> Source : publish(profileid, cmid, revoked)
+Source -> Source : Check capabilities / source eligibility
+alt eligible
+  Source -> DB : Store current flag and actor
+  Source --> UI : Confirmation
+else ineligible
+  Source --> UI : Refuse grant
+end
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+!include ../_style.puml
+title Installed tables — Ownership overview
+top to bottom direction
+hide circle
+hide methods
+class "Profiles and catalog" as Catalog {
+  local_coursebridge
+  local_coursebridge_revision
+  local_coursebridge_course
+  local_coursebridge_file
+}
+class "Reviewed migration" as Migration {
+  local_coursebridge_plan
+  local_coursebridge_operation
+  local_coursebridge_run
+}
+class "Governance and provenance" as Governance {
+  local_coursebridge_coursepolicy
+  local_coursebridge_publication
+  local_coursebridge_attribution
+  local_coursebridge_origin
+  local_coursebridge_audit
+}
+Catalog -[hidden]down-> Migration
+Migration -[hidden]down-> Governance
+note right of Catalog
+Table groups only.
+Detailed record relationships
+are in the separate views.
+end note
+@enduml

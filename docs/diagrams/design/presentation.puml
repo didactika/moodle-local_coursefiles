@@ -1,0 +1,16 @@
+@startuml
+!include ../_style.puml
+allowmixing
+title Design — Theme-overridable presentation
+left to right direction
+component "Page controller\ncapabilities and plain data" as Page
+class "output/view" as View
+class "output/renderer" as Renderer
+component "Component Mustache templates" as Templates
+component "Active Moodle theme\nlayout and styling" as Theme
+Page --> View
+View --> Renderer
+Renderer --> Templates
+Theme ..> Templates : override
+Templates -[hidden]down-> Theme
+@enduml

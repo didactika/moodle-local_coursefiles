@@ -1,0 +1,34 @@
+@startuml
+!include ../_style.puml
+title Design — Reviewed folder copying
+top to bottom direction
+class migration_planner {
+  + preview(...)
+}
+class placement {
+  + match(...)
+  + section(...)
+  + snapshot(cmid)
+}
+class copy_decision {
+  + snapshot(file)
+  + classify(source, target)
+}
+class migration_executor {
+  + queue(planid, digest)
+  + execute(runid)
+  + cancel(runid)
+}
+class folder_destination {
+  + copy(source, targetcmid)
+}
+migration_planner --> placement
+migration_planner --> copy_decision
+migration_executor --> placement
+migration_executor --> copy_decision
+migration_executor --> folder_destination
+migration_planner -[hidden]right-> migration_executor
+placement -[hidden]right-> copy_decision
+copy_decision -[hidden]right-> folder_destination
+note bottom of folder_destination : Native additive save under an exclusive maintenance window.
+@enduml

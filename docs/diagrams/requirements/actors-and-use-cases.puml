@@ -1,0 +1,22 @@
+@startuml
+!include ../_style.puml
+title CourseBridge — Actor responsibilities
+left to right direction
+actor Teacher
+actor "Course publisher" as Publisher
+actor "Policy manager" as Manager
+actor Administrator
+rectangle CourseBridge {
+  usecase "Search and attach materials\nUC01 · UC02" as Reuse
+  usecase "Publish or revoke\nUC04" as Publish
+  usecase "Site/course author policy\nUC09" as Policy
+  usecase "Profile and reviewed migration\nUC03 · UC05 · UC06 · UC07" as Migrate
+}
+Teacher --> Reuse
+Publisher --> Publish
+Manager --> Policy
+Administrator --> Migrate
+Reuse -[hidden]down-> Publish
+Publish -[hidden]down-> Policy
+Policy -[hidden]down-> Migrate
+@enduml

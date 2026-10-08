@@ -1,0 +1,112 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Native output escaping and form semantics tests.
+ *
+ * @package local_coursebridge
+ * @copyright 2026 CourseBridge contributors
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace local_coursebridge;
+
+use local_coursebridge\output\display;
+use local_coursebridge\output\view;
+
+/**
+ * Exercises actual templates through Moodle's renderer.
+ */
+final class output_test extends \advanced_testcase {
+    /**
+     * Prepare a native course renderer.
+     *
+     * @return \renderer_base Component renderer.
+     */
+    private function renderer(): \renderer_base {
+        global $PAGE;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $PAGE->set_context(\context_course::instance($course->id));
+        $PAGE->set_url('/local/coursebridge/index.php', ['courseid' => $course->id]);
+        return $PAGE->get_renderer('local_coursebridge');
+    }
+
+    /**
+     * Dynamic declarations are escaped and filter labels reference real controls.
+     */
+    public function test_catalog_escapes_origins_and_labels_controls(): void {
+        $renderer = $this->renderer();
+        $data = [
+            'hasprofiles' => true, 'hasassets' => true, 'courseid' => 2,
+            'actionurl' => '/local/coursebridge/index.php', 'reseturl' => '/local/coursebridge/index.php',
+            'profiles' => display::options([1 => '<script>profile</script>'], '1'),
+            'filters' => ['q' => '" autofocus onfocus="alert(1)'],
+            'modules' => display::options(['' => 'All activities'], ''),
+            'filetypes' => display::options(display::filetypes(), ''),
+            'assets' => [[
+                'filename' => '<script>file</script>.pdf', 'size' => '1 KB', 'origincount' => 1,
+                'occurrences' => [[
+                    'shortname' => 'BIO101', 'editionlabel' => '2025', 'modulename' => 'Class materials',
+                    'filepath' => '/week1/', 'authorlabel' => '<script>author</script>', 'license' => 'cc',
+                ]],
+            ]],
+        ];
+        $html = $renderer->render(new view('catalog', $data));
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringContainsString('&lt;script&gt;author&lt;/script&gt;', $html);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML($html);
+        $xpath = new \DOMXPath($dom);
+        foreach ($xpath->query('//input[not(@type="hidden")] | //select') as $control) {
+            $id = $control->getAttribute('id');
+            $this->assertSame(1, $xpath->query('//label[@for="' . $id . '"]')->length);
+        }
+    }
+
+    /**
+     * Site-controlled locked policy explains refusal without editable controls.
+     */
+    public function test_locked_policy_has_clear_effective_state(): void {
+        $renderer = $this->renderer();
+        $html = $renderer->render(new view('policy', [
+            'locked' => true, 'canoverride' => false,
+            'effectivelabel' => get_string('preserve_locked', 'local_coursebridge'),
+        ]));
+        $this->assertStringContainsString(get_string('lockedpolicyhelp', 'local_coursebridge'), $html);
+        $this->assertStringNotContainsString('<select', $html);
+    }
+
+    /**
+     * Reports show named destinations and translated outcomes.
+     */
+    public function test_migration_report_uses_readable_decisions(): void {
+        $renderer = $this->renderer();
+        $html = $renderer->render(new view('migration_report', [
+            'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025', 'targetedition' => '2026',
+            'hasoperations' => true, 'operations' => [[
+                'filename' => 'lesson.pdf', 'filepath' => '/week1/', 'author' => 'Original author', 'license' => 'cc',
+                'targetcourse' => 'BIO101-2026', 'targetsection' => 'Week 1', 'targetfolder' => 'Class materials',
+                'decisionlabel' => display::outcome('skip_content'), 'statelabel' => display::outcome('pending'),
+            ]],
+        ]));
+        $this->assertStringContainsString('BIO101-2026', $html);
+        $this->assertStringContainsString(get_string('outcome_skip_content', 'local_coursebridge'), $html);
+        $this->assertStringNotContainsString('<pre', $html);
+        $this->assertStringNotContainsString('skip_content', $html);
+    }
+}

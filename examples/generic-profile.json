@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "status": "development-preset",
+  "name": "Subject families with non-numeric term editions",
+  "scope": {"campus": "current", "category_ids": []},
+  "relationship": {
+    "ambiguity_policy": "block",
+    "parsers": [{
+      "name": "subject-at-term",
+      "field": "shortname",
+      "pattern": "~^(?<subject>[^@]+)@(?<term>.+)$~u",
+      "required_captures": ["subject", "term"],
+      "normalizers": {"subject": ["trim", "uppercase"], "term": ["trim"]}
+    }],
+    "family_key": "${subject}",
+    "display_label": "${subject}",
+    "edition": {"capture": "term", "optional": false, "comparison": "string"},
+    "pair_dimensions": []
+  },
+  "publication": {
+    "mode": "source-access-only",
+    "allowed_sources": ["mod_folder/content", "mod_resource/content"],
+    "allow_hidden": false,
+    "allow_restricted": false
+  },
+  "migration": {
+    "source_edition": "spring-2026",
+    "target_edition": "autumn-2026",
+    "source_module": {"type": "folder", "field": "idnumber", "pattern": "~^materials-(?<materialkey>.+)$~u"},
+    "target_module": {"type": "folder", "field": "idnumber", "template": "materials-${materialkey}"},
+    "section_match": {"strategy": "name", "missing_key": "block"},
+    "missing_target": "block",
+    "ambiguous_target": "block",
+    "same_path_same_content": "skip",
+    "same_path_different_content": "block",
+    "same_content_different_path": "skip-and-report",
+    "preserve_relative_paths": true,
+    "preserve_source": true,
+    "preserve_target_visibility": true,
+    "on_item_failure": "continue-unaffected"
+  }
+}

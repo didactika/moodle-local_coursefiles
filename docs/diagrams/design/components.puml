@@ -1,0 +1,22 @@
+@startuml
+!include ../_style.puml
+title CourseBridge — Native plugin boundaries
+top to bottom direction
+component "Native course file picker" as Picker
+component "Course / admin pages" as Pages
+component repository_coursebridge as Repository
+component local_coursebridge as Local
+database "CourseBridge metadata" as Metadata
+component "Moodle File /\nmodule APIs" as Files
+component "Moodle Task /\nLock APIs" as Tasks
+Picker --> Repository
+Repository --> Local
+Pages --> Local
+Local --> Metadata
+Local --> Files
+Local --> Tasks
+Picker -[hidden]right-> Pages
+Metadata -[hidden]right-> Files
+Files -[hidden]right-> Tasks
+note bottom of Metadata : No binary store or persistent asset table.
+@enduml

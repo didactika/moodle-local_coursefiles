@@ -1,0 +1,18 @@
+@startuml
+!include ../../_style.puml
+title Bounded existing-folder batch
+participant "execute_migration task" as Task
+participant migration_executor as Executor
+participant "Source / author policy" as Policy
+participant folder_destination as Folder
+database "Operation / run / provenance" as DB
+Task -> Executor : execute(runid) as actor
+Executor -> DB : Load reviewed plan / at most 25 pending items
+loop each item under destination lock
+  Executor -> Policy : Revalidate live source and policy
+  Executor -> Folder : copy(source, targetcmid) if needed
+  Folder --> Executor : Verified file / existing identical
+  Executor -> DB : Store outcome and provenance
+end
+Executor --> Task : Whether pending work remains
+@enduml

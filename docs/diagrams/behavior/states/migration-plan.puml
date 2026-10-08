@@ -1,0 +1,17 @@
+@startuml
+!include ../../_style.puml
+title Stored migration plan states
+left to right direction
+state "Preview not stored" as Preview
+state "reviewable" as Reviewable
+state "blocked" as Blocked
+[*] --> Preview
+Preview --> Reviewable : no preview blockers
+Preview --> Blocked : blockers found
+Reviewable --> [*]
+Blocked --> [*]
+note bottom of Reviewable
+The stored JSON and digest remain unchanged.
+Execution creates separate run records.
+end note
+@enduml

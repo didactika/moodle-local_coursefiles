@@ -1,0 +1,21 @@
+@startuml
+!include ../../_style.puml
+title Course and existing-folder matching
+start
+:Resolve family, edition and pair dimensions;
+if (Unique source / target pair?) then (yes)
+  :Match source folder predicate;
+  :Resolve reviewed destination section;
+  if (Exactly one target folder?) then (yes)
+    :Compare path, bytes and attribution;
+    :Store copy / skip / blocker decision;
+    stop
+  else (no)
+    :Record placement blocker;
+    stop
+  endif
+else (no)
+  :Record pair blocker;
+  stop
+endif
+@enduml

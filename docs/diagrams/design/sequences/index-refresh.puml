@@ -1,0 +1,16 @@
+@startuml
+!include ../../_style.puml
+title Course-scoped catalog refresh
+participant "Moodle event / cron" as Event
+participant "refresh_course" as Task
+participant indexer as Index
+participant profiles as Profiles
+database "Course / file catalog" as DB
+Event -> Task : Queue course ID
+Task -> Index : refresh(courseid)
+Index -> Profiles : Load active revisions
+Profiles --> Index : Validated rules
+Index -> DB : Replace course metadata in transaction / lock
+DB --> Index : Commit
+Index --> Task : Complete
+@enduml

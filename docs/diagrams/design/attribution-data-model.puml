@@ -1,0 +1,44 @@
+@startuml
+!include ../_style.puml
+title Governance and original provenance
+left to right direction
+hide methods
+entity "local_coursebridge_attribution" as attribution {
+  * id
+  uuid / parentuuid
+  sourcehash / contenthash
+  author / license / locked
+  userid / timecreated
+}
+
+entity "local_coursebridge_origin" as origin {
+  * id
+  pathnamehash
+  attributionid / contenthash
+  userid / timecreated
+}
+
+entity "local_coursebridge_coursepolicy" as coursepolicy {
+  * id
+  courseid / policy / revision
+  userid / timemodified
+}
+
+entity "local_coursebridge_publication" as publication {
+  * id
+  profileid / cmid / revoked
+  userid / timecreated
+}
+
+entity "local_coursebridge_audit" as audit {
+  * id
+  userid / action / entityuuid
+  details / timecreated
+}
+
+attribution ||--o{ origin
+coursepolicy -[hidden]down-> publication
+publication -[hidden]down-> audit
+coursepolicy -[hidden]right-> attribution
+note bottom of attribution : Parent lineage uses a UUID; actor ID is not the declared author.
+@enduml

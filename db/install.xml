@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<XMLDB PATH="local/coursebridge/db" VERSION="20261008" COMMENT="CourseBridge metadata schema">
+  <TABLES>
+    <TABLE NAME="local_coursebridge" COMMENT="Relationship profiles">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="activeid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="uuid" UNIQUE="true" FIELDS="uuid" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_revision" COMMENT="Immutable profile revisions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="revision" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="configjson" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="digest" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_coursebridge" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="profileid-revision" UNIQUE="true" FIELDS="profileid, revision" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_course" COMMENT="Rebuildable course family memberships">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="revisionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="familykey" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="familyhash" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="edition" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" />
+        <FIELD NAME="dimensions" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_coursebridge" REFFIELDS="id" />
+        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_coursebridge_revision" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="profileid-courseid" UNIQUE="true" FIELDS="profileid, courseid" />
+        <INDEX NAME="revisionid-familyhash" UNIQUE="false" FIELDS="revisionid, familyhash" />
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_file" COMMENT="Rebuildable supported material occurrences">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="pathnamehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="filesize" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="mimetype" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="pathnamehash" UNIQUE="true" FIELDS="pathnamehash" />
+        <INDEX NAME="courseid-contenthash" UNIQUE="false" FIELDS="courseid, contenthash" />
+        <INDEX NAME="cmid" UNIQUE="false" FIELDS="cmid" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_coursepolicy" COMMENT="Tighten-only course authorship policies">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="policy" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="revision" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid" UNIQUE="true" FIELDS="courseid" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_publication" COMMENT="Explicit module publication grants">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="revoked" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_coursebridge" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="profileid-cmid" UNIQUE="true" FIELDS="profileid, cmid" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_attribution" COMMENT="Durable original attribution declarations">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="parentuuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" DEFAULT="" />
+        <FIELD NAME="sourcehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="author" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="license" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="locked" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="uuid" UNIQUE="true" FIELDS="uuid" />
+        <INDEX NAME="sourcehash" UNIQUE="false" FIELDS="sourcehash" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_origin" COMMENT="Verified destination lineage bindings">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="pathnamehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="attributionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="attributionid" TYPE="foreign" FIELDS="attributionid" REFTABLE="local_coursebridge_attribution" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="pathnamehash" UNIQUE="true" FIELDS="pathnamehash" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_plan" COMMENT="Reviewed immutable migration specifications">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="revisionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="configjson" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="digest" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="state" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_coursebridge" REFFIELDS="id" />
+        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_coursebridge_revision" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="uuid" UNIQUE="true" FIELDS="uuid" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_operation" COMMENT="Deterministic file copy decisions and snapshots">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="opkey" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="sourcehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="targetcmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="snapshot" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="decision" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="state" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="result" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_coursebridge_plan" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="planid-opkey" UNIQUE="true" FIELDS="planid, opkey" />
+        <INDEX NAME="planid-state" UNIQUE="false" FIELDS="planid, state" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_run" COMMENT="Accountable migration execution attempts">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="state" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="cancelled" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_coursebridge_plan" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="planid" UNIQUE="false" FIELDS="planid" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_coursebridge_audit" COMMENT="Scoped actor and outcome history">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="action" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="entityuuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="details" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" />
+        <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated" />
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

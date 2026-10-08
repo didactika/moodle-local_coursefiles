@@ -1,0 +1,26 @@
+@startuml
+!include ../../_style.puml
+title UC06 — Execute a reviewed migration
+actor Administrator
+participant "Migration report" as UI
+participant migration_executor as Executor
+participant "Moodle task / lock" as Tasks
+participant folder_destination as Folder
+database "Run / operation / provenance" as DB
+Administrator -> UI : Execute reviewed digest
+UI -> Executor : queue(planid, digest)
+Executor -> Tasks : Actor-bound task
+Tasks -> Executor : execute(runid)
+Executor -> DB : Plan revision / pending operations
+loop at most 25 operations
+  Executor -> Executor : Lock / live access / snapshot checks
+  alt copy allowed
+    Executor -> Folder : copy(source, targetcmid)
+    Folder --> Executor : Verified native save
+  else identical / stale / forbidden
+    Executor -> Executor : Skip or block
+  end
+  Executor -> DB : Outcome / provenance
+end
+Executor --> Tasks : More pending work or final state
+@enduml

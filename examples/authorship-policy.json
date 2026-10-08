@@ -1,0 +1,11 @@
+{
+  "kind": "site-and-course-settings-reference",
+  "site": {
+    "author_policy": "preserve_locked",
+    "author_course_override": "tighten_only",
+    "author_missing_policy": "preserve_unknown"
+  },
+  "course": {
+    "policy": "inherit"
+  }
+}

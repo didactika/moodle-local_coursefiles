@@ -1,0 +1,22 @@
+@startuml
+!include ../_style.puml
+title Deployment — One Moodle site
+left to right direction
+node "Browser" {
+  artifact "Native Moodle pages / picker" as UI
+}
+node "Moodle application" {
+  artifact "local/coursebridge" as Local
+  artifact "repository/coursebridge" as Repository
+  artifact "Moodle core / cron" as Core
+}
+database "Moodle database" as DB
+folder "Native Moodle file pool" as Pool
+UI --> Repository
+UI --> Local
+Repository --> Local
+Local --> Core
+Core --> DB
+Core --> Pool
+DB -[hidden]down-> Pool
+@enduml
