@@ -4,6 +4,10 @@
 
 Process diagrams describe decisions. State diagrams describe persisted records; they do not add conceptual review states that the schema does not store.
 
+![Approved actor deletion](../../diagrams/behavior/processes/privacy-deletion.svg)
+
+Individual and approved multi-user deletion share the same actor scope. See the [privacy explanation](../../14-privacy.md) for system-wide deletion and native storage boundaries.
+
 ![Course and folder placement](../../diagrams/behavior/processes/course-and-placement-matching.svg)
 
 ![Author policy resolution](../../diagrams/behavior/processes/authorship-policy-resolution.svg)

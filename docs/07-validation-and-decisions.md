@@ -4,16 +4,18 @@ Checks use isolated Moodle PHPUnit databases. They do not modify a production ca
 
 | Core | PHP / database | Local plugin | Repository plugin |
 |---|---|---|---|
-| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 29 tests / 113 assertions passed | 8 tests / 30 assertions passed |
-| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 29 tests / 113 assertions passed | 8 tests / 30 assertions passed |
+| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 35 tests / 195 assertions passed | 8 tests / 30 assertions passed |
+| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 35 tests / 195 assertions passed | 8 tests / 30 assertions passed |
 
-Verified on 2026-10-08, development branch `refactor/coursebridge-structure`, plugin version 2026100802. Moodle coding standards 3.7.0 report zero errors and warnings across both packages. All 55 PlantUML sources render to SVG without syntax errors. Local Markdown links resolve.
+Verified on 2026-10-08, plugin version 2026100802. Privacy coverage is expanded on `test/coursebridge-privacy`; the earlier structure and repository checks used `refactor/coursebridge-structure`. Moodle coding standards 3.7.0 report zero errors and warnings across both packages. The existing 55 PlantUML diagrams and the added privacy process render to SVG without syntax errors. Local Markdown links resolve.
 
 The integration tests exercise optional editions, ambiguous and invalid parsers, content/attribution conflicts, target authority, content grouping, edition filters, stale source visibility, strict-copy rejection, idempotent folder copies, cross-path duplicates, changed profiles and changed destinations.
 
 Output checks render real component templates, exercise escaping and label/control associations, and verify readable states. The installed XMLDB schema validates against Moodle's XSD. PHP uses Moodle coding standards; PlantUML sources are rendered locally and Markdown links resolve.
 
 Log checks exercise denied access, a dedicated reader role, exact filters, cursor pagination after new inserts, escaped output and approved actor deletion. Upgrade checks preserve legacy record IDs and contents, create indexes, resume after a rename, refuse conflicting tables, and retain explicit role grants and prohibitions.
+
+Six dedicated privacy tests add 82 assertions per core: complete actor-scoped exports across all eight tables, context and empty-request boundaries, user discovery excluding unlinked actors, individual and bulk deletion, system-wide deletion, run cancellation and unchanged records for unapproved actors. The native folder file retains its contents, uploader and declared author. These tests verify technical actor unlinking; free-text author declarations are not resolved to Moodle user accounts. See [privacy behavior and boundaries](14-privacy.md).
 
 Native author/save checks exercise direct-adapter strict refusal before draft creation, source and target course locks, preservation of existing nested destination files and metadata, policy changes after picker selection, draft source serialization, save/reopen/rename and unchanged original attribution after current metadata edits. A failed core file-size check rolls back capture. These use core APIs rather than a complete browser form session.
 

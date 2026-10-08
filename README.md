@@ -25,6 +25,7 @@ This plugin is installed at `local/coursebridge`. It owns relationship profiles,
 | Site/course policy and author metadata | [Authorship](docs/09-authorship-policy.md) |
 | Theme overrides and interface conventions | [Presentation](docs/11-presentation-and-theming.md) |
 | Site actions and preserved installation records | [Log and upgrades](docs/12-log-and-upgrade.md) |
+| Approved actor export and deletion | [Privacy](docs/14-privacy.md) |
 | Tested core versions | [Compatibility](docs/10-compatibility-and-branches.md) |
 | Actors, analysis, design and behavior | [UML catalogue](docs/rup/README.md) |
 | Automated check results | [Validation](docs/07-validation-and-decisions.md) |
