@@ -4,17 +4,13 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 
 | Diagram | Source | Preview |
 |---|---|---|
-| design/source-structure.puml | [Source](../diagrams/design/source-structure.puml) | [SVG](../diagrams/design/source-structure.svg) |
-| design/sequences/log-query.puml | [Source](../diagrams/design/sequences/log-query.puml) | [SVG](../diagrams/design/sequences/log-query.svg) |
-| design/sequences/draft-batch.puml | [Source](../diagrams/design/sequences/draft-batch.puml) | [SVG](../diagrams/design/sequences/draft-batch.svg) |
-| design/sequences/form-scope.puml | [Source](../diagrams/design/sequences/form-scope.puml) | [SVG](../diagrams/design/sequences/form-scope.svg) |
-| behavior/processes/log-upgrade.puml | [Source](../diagrams/behavior/processes/log-upgrade.puml) | [SVG](../diagrams/behavior/processes/log-upgrade.svg) |
-| behavior/processes/privacy-deletion.puml | [Source](../diagrams/behavior/processes/privacy-deletion.puml) | [SVG](../diagrams/behavior/processes/privacy-deletion.svg) |
 | analysis/boundary-control-entity.puml | [Source](../diagrams/analysis/boundary-control-entity.puml) | [SVG](../diagrams/analysis/boundary-control-entity.svg) |
 | analysis/domain-concepts.puml | [Source](../diagrams/analysis/domain-concepts.puml) | [SVG](../diagrams/analysis/domain-concepts.svg) |
 | behavior/processes/authorship-policy-resolution.puml | [Source](../diagrams/behavior/processes/authorship-policy-resolution.puml) | [SVG](../diagrams/behavior/processes/authorship-policy-resolution.svg) |
 | behavior/processes/course-and-placement-matching.puml | [Source](../diagrams/behavior/processes/course-and-placement-matching.puml) | [SVG](../diagrams/behavior/processes/course-and-placement-matching.svg) |
+| behavior/processes/log-upgrade.puml | [Source](../diagrams/behavior/processes/log-upgrade.puml) | [SVG](../diagrams/behavior/processes/log-upgrade.svg) |
 | behavior/processes/migration-process.puml | [Source](../diagrams/behavior/processes/migration-process.puml) | [SVG](../diagrams/behavior/processes/migration-process.svg) |
+| behavior/processes/privacy-deletion.puml | [Source](../diagrams/behavior/processes/privacy-deletion.puml) | [SVG](../diagrams/behavior/processes/privacy-deletion.svg) |
 | behavior/states/attribution-lifecycle.puml | [Source](../diagrams/behavior/states/attribution-lifecycle.puml) | [SVG](../diagrams/behavior/states/attribution-lifecycle.svg) |
 | behavior/states/migration-plan.puml | [Source](../diagrams/behavior/states/migration-plan.puml) | [SVG](../diagrams/behavior/states/migration-plan.svg) |
 | behavior/states/migration-run.puml | [Source](../diagrams/behavior/states/migration-run.puml) | [SVG](../diagrams/behavior/states/migration-run.svg) |
@@ -29,7 +25,11 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 | design/migration-classes.puml | [Source](../diagrams/design/migration-classes.puml) | [SVG](../diagrams/design/migration-classes.svg) |
 | design/migration-data-model.puml | [Source](../diagrams/design/migration-data-model.puml) | [SVG](../diagrams/design/migration-data-model.svg) |
 | design/presentation.puml | [Source](../diagrams/design/presentation.puml) | [SVG](../diagrams/design/presentation.svg) |
+| design/sequences/draft-batch.puml | [Source](../diagrams/design/sequences/draft-batch.puml) | [SVG](../diagrams/design/sequences/draft-batch.svg) |
+| design/sequences/folder-selection.puml | [Source](../diagrams/design/sequences/folder-selection.puml) | [SVG](../diagrams/design/sequences/folder-selection.svg) |
+| design/sequences/form-scope.puml | [Source](../diagrams/design/sequences/form-scope.puml) | [SVG](../diagrams/design/sequences/form-scope.svg) |
 | design/sequences/index-refresh.puml | [Source](../diagrams/design/sequences/index-refresh.puml) | [SVG](../diagrams/design/sequences/index-refresh.svg) |
+| design/sequences/log-query.puml | [Source](../diagrams/design/sequences/log-query.puml) | [SVG](../diagrams/design/sequences/log-query.svg) |
 | design/sequences/migration-batch.puml | [Source](../diagrams/design/sequences/migration-batch.puml) | [SVG](../diagrams/design/sequences/migration-batch.svg) |
 | design/sequences/picker-integration.puml | [Source](../diagrams/design/sequences/picker-integration.puml) | [SVG](../diagrams/design/sequences/picker-integration.svg) |
 | design/sequences/uc01-search-materials.puml | [Source](../diagrams/design/sequences/uc01-search-materials.puml) | [SVG](../diagrams/design/sequences/uc01-search-materials.svg) |
@@ -40,6 +40,7 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 | design/sequences/uc06-execute-migration.puml | [Source](../diagrams/design/sequences/uc06-execute-migration.puml) | [SVG](../diagrams/design/sequences/uc06-execute-migration.svg) |
 | design/sequences/uc07-resume-or-cancel.puml | [Source](../diagrams/design/sequences/uc07-resume-or-cancel.puml) | [SVG](../diagrams/design/sequences/uc07-resume-or-cancel.svg) |
 | design/sequences/uc09-configure-material-policy.puml | [Source](../diagrams/design/sequences/uc09-configure-material-policy.puml) | [SVG](../diagrams/design/sequences/uc09-configure-material-policy.svg) |
+| design/source-structure.puml | [Source](../diagrams/design/source-structure.puml) | [SVG](../diagrams/design/source-structure.svg) |
 | requirements/actors-and-use-cases.puml | [Source](../diagrams/requirements/actors-and-use-cases.puml) | [SVG](../diagrams/requirements/actors-and-use-cases.svg) |
 | requirements/migration-use-cases.puml | [Source](../diagrams/requirements/migration-use-cases.puml) | [SVG](../diagrams/requirements/migration-use-cases.svg) |
 | requirements/operator-context.puml | [Source](../diagrams/requirements/operator-context.puml) | [SVG](../diagrams/requirements/operator-context.svg) |
@@ -54,3 +55,4 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 | requirements/use-case-details/uc06-execute-migration.puml | [Source](../diagrams/requirements/use-case-details/uc06-execute-migration.puml) | [SVG](../diagrams/requirements/use-case-details/uc06-execute-migration.svg) |
 | requirements/use-case-details/uc07-resume-or-cancel.puml | [Source](../diagrams/requirements/use-case-details/uc07-resume-or-cancel.puml) | [SVG](../diagrams/requirements/use-case-details/uc07-resume-or-cancel.svg) |
 | requirements/use-case-details/uc09-configure-material-policy.puml | [Source](../diagrams/requirements/use-case-details/uc09-configure-material-policy.puml) | [SVG](../diagrams/requirements/use-case-details/uc09-configure-material-policy.svg) |
+| requirements/use-case-details/uc10-select-materials.puml | [Source](../diagrams/requirements/use-case-details/uc10-select-materials.puml) | [SVG](../diagrams/requirements/use-case-details/uc10-select-materials.svg) |

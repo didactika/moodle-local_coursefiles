@@ -14,7 +14,7 @@ local/coursebridge/
 │   │   ├── profile/        profiles, profile_config
 │   │   ├── policy/         author_policy
 │   │   ├── migration/      planner, executor, placement, folder adapter, decisions
-│   │   ├── selection/      material_selection, draft_import, draft_scope
+│   │   ├── selection/      material_selection, draft_import, draft_scope, folder_form, selection_options
 │   │   └── logging/        log
 │   ├── form/               native Moodle forms, scoped_filemanager integration element
 │   ├── output/             shared view, renderer and display labels
@@ -25,6 +25,7 @@ local/coursebridge/
 │   ├── profile/            list
 │   ├── policy/             course
 │   ├── migration/          report
+│   ├── selection/          review
 │   └── log/                index
 ├── db/                     schema, upgrades, capabilities, task/event definitions
 ├── cli/                    reindex.php

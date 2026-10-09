@@ -6,10 +6,13 @@ actor Teacher
 rectangle "Authorized materials" {
   usecase "UC01 Search related materials" as Search
   usecase "UC02 Attach selected origin" as Attach
+  usecase "UC10 Select files and folders" as Batch
 }
 Teacher --> Search
 Teacher --> Attach
+Teacher --> Batch
 Search -[hidden]down-> Attach
+Attach -[hidden]down-> Batch
 note right of Search
 Filters precede authorized grouping.
 One result per content group.

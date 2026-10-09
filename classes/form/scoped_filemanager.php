@@ -53,17 +53,28 @@ class scoped_filemanager extends \MoodleQuickForm_filemanager {
      * @return array Native field, draft and normalized control limits.
      */
     public function get_contract(\context $context): array {
+        return self::read_contract($this, $context);
+    }
+
+    /**
+     * Read an existing native control using the parent class's protected extension contract.
+     *
+     * @param \MoodleQuickForm_filemanager $element Existing native control.
+     * @param \context $context Owning context.
+     * @return array Server-defined native contract.
+     */
+    public static function read_contract(\MoodleQuickForm_filemanager $element, \context $context): array {
         global $CFG;
-        if ($this->_flagFrozen || !$this->getName() || !($this->_options['return_types'] & FILE_INTERNAL)) {
+        if ($element->_flagFrozen || !$element->getName() || !($element->_options['return_types'] & FILE_INTERNAL)) {
             throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
         }
         [, $course] = get_context_info_array($context->id);
-        $maxbytes = max(0, (int)$this->getMaxbytes());
-        $types = (new \core_form\filetypes_util())->normalize_file_types($this->_options['accepted_types']);
-        return ['field' => $this->getName(), 'draftid' => (int)$this->getValue(), 'limits' => [
-            'maxfiles' => (int)$this->getMaxfiles(),
+        $maxbytes = max(0, (int)$element->getMaxbytes());
+        $types = (new \core_form\filetypes_util())->normalize_file_types($element->_options['accepted_types']);
+        return ['field' => $element->getName(), 'draftid' => (int)$element->getValue(), 'limits' => [
+            'maxfiles' => (int)$element->getMaxfiles(),
             'maxbytes' => get_user_max_upload_file_size($context, $CFG->maxbytes, $course->maxbytes, $maxbytes),
-            'areamaxbytes' => (int)$this->getAreamaxbytes(), 'subdirs' => (bool)$this->getSubdirs(),
+            'areamaxbytes' => (int)$element->getAreamaxbytes(), 'subdirs' => (bool)$element->getSubdirs(),
             'accepted_types' => $types ?: ['*'],
         ]];
     }

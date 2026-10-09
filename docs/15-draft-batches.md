@@ -4,6 +4,8 @@ The internal PHP services in `classes/local/selection/` resolve mixed file/folde
 
 Explicitly integrated native controls use [the owning-form scope API](16-native-form-scope.md) to bind their real options and reviewed selectors to the current session. Direct PHP callers still own their authoritative form contract.
 
+The [Folder Settings consumer](17-folder-selection.md) provides native mixed selection, review and form rerendering over these services. The service itself does not own the screen or permanent module saving.
+
 ## Selection and destination
 
 `material_selection::resolve()` accepts explicit native file occurrences (`pathnamehash`) and folder-module directories (`cmid`, `filepath`). A folder selects its files recursively. Parent/child/file overlaps are deduplicated by pathname hash. Empty folders, invalid paths and selections exceeding 200 files are rejected. SQL wildcard characters in directory names are literal. Only eligible native folder/resource teaching files are accepted, with current family, source visibility, access or explicit publication checks for each file.

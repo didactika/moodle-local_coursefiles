@@ -1,0 +1,30 @@
+@startuml
+!include ../../_style.puml
+title UC10 — Select files and folders together
+start
+:Teacher opens Folder Settings;
+:Moodle binds the native filemanager;
+:Teacher filters and selects files / folders;
+:CourseBridge retains selection across results;
+:Teacher requests review;
+:CourseBridge expands folders and checks
+access, declarations, paths and upload limits;
+if (Review can be applied?) then (yes)
+  :Teacher adds reviewed materials;
+  :CourseBridge rechecks the approval;
+  if (Approval is still current?) then (yes)
+    :Copy into the draft transactionally;
+    if (Teacher saves?) then (yes)
+      :Moodle saves the activity normally;
+    else (cancel)
+      :Saved activity remains unchanged;
+    endif
+  else (no)
+    :Explain the change and require a new review;
+  endif
+else (no)
+  :Explain blocked decisions;
+  :Keep the selector available;
+endif
+stop
+@enduml

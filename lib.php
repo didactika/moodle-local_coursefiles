@@ -45,3 +45,23 @@ function local_coursebridge_extend_navigation_course($navigation, $course, $cont
         );
     }
 }
+
+/**
+ * Add native related-material selection to folder editing forms.
+ *
+ * @param moodleform_mod $formwrapper Actual module form.
+ * @param MoodleQuickForm $mform Actual QuickForm.
+ */
+function local_coursebridge_coursemodule_standard_elements($formwrapper, $mform): void {
+    \local_coursebridge\local\selection\folder_form::define($formwrapper, $mform);
+}
+
+/**
+ * Review or apply a batch to the current form draft without submitting the activity.
+ *
+ * @param moodleform_mod $formwrapper Actual module form.
+ * @param MoodleQuickForm $mform Actual QuickForm.
+ */
+function local_coursebridge_coursemodule_definition_after_data($formwrapper, $mform): void {
+    \local_coursebridge\local\selection\folder_form::after_data($formwrapper, $mform);
+}

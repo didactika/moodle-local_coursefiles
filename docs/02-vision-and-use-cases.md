@@ -14,6 +14,12 @@ Open a course editing file picker and select **Materials from related courses**.
 
 The course Materials page uses the same authorized catalog with filters, grouped cards and origin tables. Only permitted origins contribute to names and counts. The importing account does not become the declared author.
 
+## Select several files and folders
+
+For several files and folders together, open a Folder activity's **Settings** and expand **Reuse related materials**. Select native autocomplete entries, review their paths/declarations/decisions, then add the approved batch to the current draft. Selections survive result filtering. Ordinary Save/Cancel controls permanent storage. See [Folder selection](17-folder-selection.md).
+
+![Mixed-selection conversation](diagrams/requirements/use-case-details/uc10-select-materials.svg)
+
 ## Eligible teaching content
 
 Public teaching content means visible, unrestricted course material eligible for the configured reuse policy. It does not mean anonymous web publication. The supported sources are native folder and file-resource content areas. Hidden or restricted courses, sections and modules, aliases, private drafts, submissions, backups and other file areas are excluded.

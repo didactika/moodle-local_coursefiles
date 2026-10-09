@@ -1,0 +1,46 @@
+{{!
+    @template local_coursebridge/local/selection/review
+
+    Native folder batch review.
+
+    Context variables:
+    * count - Resulting draft file count.
+    * size - Resulting native draft size.
+    * rows - Reviewed paths, declarations and readable decisions.
+
+    Example context (json):
+    {
+        "count": 2,
+        "size": "1 KB",
+        "rows": [{"filename": "lesson.txt", "filepath": "/", "author": "Teacher", "license": "cc", "decision": "Copy"}]
+    }
+}}
+<div class="coursebridge-selection-review">
+    <p>{{#str}}batchresult, local_coursebridge{{/str}} {{count}} ({{size}})</p>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <caption>{{#str}}batchreview, local_coursebridge{{/str}}</caption>
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}filenamefilter, local_coursebridge{{/str}}</th>
+                    <th scope="col">{{#str}}batchpath, local_coursebridge{{/str}}</th>
+                    <th scope="col">{{#str}}author, repository{{/str}}</th>
+                    <th scope="col">{{#str}}license, repository{{/str}}</th>
+                    <th scope="col">{{#str}}batchdecision, local_coursebridge{{/str}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#rows}}
+                <tr>
+                    <th scope="row">{{filename}}</th>
+                    <td>{{filepath}}</td>
+                    <td>{{author}}</td>
+                    <td>{{license}}</td>
+                    <td>{{decision}}</td>
+                </tr>
+                {{/rows}}
+            </tbody>
+        </table>
+    </div>
+</div>
+

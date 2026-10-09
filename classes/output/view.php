@@ -35,6 +35,7 @@ final class view implements \renderable, \templatable {
         'policy' => 'local/policy/course',
         'profile_list' => 'local/profile/list',
         'log' => 'local/log/index',
+        'selection_review' => 'local/selection/review',
     ];
     /** @var string Approved template name. */
     private string $template;

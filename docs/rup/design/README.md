@@ -12,6 +12,10 @@ Explicit owning forms bind their native controls through the [session scope API]
 
 ![Native owning-form scope](../../diagrams/design/sequences/form-scope.svg)
 
+The native Folder Settings consumer has its own [screen contract](../../17-folder-selection.md):
+
+![Folder mixed selection](../../diagrams/design/sequences/folder-selection.svg)
+
 ![Components](../../diagrams/design/components.svg)
 
 ![Catalog classes](../../diagrams/design/classes.svg)

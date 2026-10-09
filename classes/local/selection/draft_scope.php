@@ -38,16 +38,16 @@ final class draft_scope {
     /**
      * Register a real native form element, never browser-provided options.
      *
-     * @param scoped_filemanager $element Actual owning control.
+     * @param \MoodleQuickForm_filemanager $element Actual owning control.
      * @param \context $context Actual owning form context.
      * @param string $basepath Destination directory.
      * @return string Random session-local token.
      */
-    public static function open(scoped_filemanager $element, \context $context, string $basepath = '/'): string {
+    public static function open(\MoodleQuickForm_filemanager $element, \context $context, string $basepath = '/'): string {
         global $SESSION, $USER;
         self::require_context($context);
         $basepath = material_selection::path($basepath);
-        $contract = $element->get_contract($context);
+        $contract = scoped_filemanager::read_contract($element, $context);
         if ($contract['draftid'] <= 0) {
             $element->setValue(file_get_unused_draft_itemid());
             $contract['draftid'] = (int)$element->getValue();
@@ -90,6 +90,52 @@ final class draft_scope {
             'expires' => time() + self::LIFETIME];
         $SESSION->local_coursebridge_drafts = $scopes;
         return $token;
+    }
+
+    /**
+     * Refuse a token from a different form control or a changed native contract.
+     *
+     * @param string $token Existing binding.
+     * @param \MoodleQuickForm_filemanager $element Current live control.
+     * @param \context $context Owning context.
+     * @param string $sesskey Current session key.
+     */
+    public static function assert_control(
+        string $token,
+        \MoodleQuickForm_filemanager $element,
+        \context $context,
+        string $sesskey
+    ): void {
+        $scope = self::resolve($token, $sesskey);
+        $contract = scoped_filemanager::read_contract($element, $context);
+        if (
+            $scope['contextid'] !== $context->id || $scope['field'] !== $contract['field']
+                || $scope['draftid'] !== $contract['draftid'] || $scope['limits'] !== $contract['limits']
+        ) {
+            throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
+        }
+    }
+
+    /**
+     * Require the current form fields to describe exactly the approved profile and selection.
+     *
+     * @param string $token Form scope.
+     * @param int $profileid Current profile field.
+     * @param array $items Current normalized selection.
+     * @param string $digest Submitted approval.
+     * @param string $sesskey Current session key.
+     */
+    public static function assert_review(string $token, int $profileid, array $items, string $digest, string $sesskey): void {
+        global $SESSION;
+        $scope = self::resolve($token, $sesskey);
+        $review = $scope['review'] ?? null;
+        if (
+            !$review || $review['profileid'] !== $profileid || $review['items'] !== $items
+                || !hash_equals($review['digest'], $digest)
+        ) {
+            unset($SESSION->local_coursebridge_drafts[$token]['review']);
+            throw new \moodle_exception('batchconflict', 'local_coursebridge');
+        }
     }
 
     /**

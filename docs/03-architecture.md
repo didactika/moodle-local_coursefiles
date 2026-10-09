@@ -34,6 +34,10 @@ Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migrat
 
 `form/scoped_filemanager` inherits the native control and reads its server-defined limits. `draft_scope` binds an explicitly integrated control and its approval to the current session. See the [owning-form API](16-native-form-scope.md); existing module controls are not automatically replaced.
 
+`local/selection/folder_form` uses Moodle module-form callbacks to add native search, multiple selection and no-submit review/add actions to Folder Settings. `selection_options` labels authorized file origins and real folder paths, retaining off-page choices. The existing native `files` element supplies the trusted contract. See [Folder selection](17-folder-selection.md).
+
+![Folder settings sequence](diagrams/design/sequences/folder-selection.svg)
+
 ## Content and access
 
 Moodle File Storage owns binaries, drafts and native course usages. Identical bytes share native content storage; independent usages retain their native records. CourseBridge adds no binary pool or stored asset table.

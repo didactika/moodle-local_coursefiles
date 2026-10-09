@@ -12,5 +12,6 @@ Every supported goal has a step-by-step conversation, alternatives and a design 
 | UC06 | [Execute a reviewed migration](uc06-execute-migration.md) | Administrator |
 | UC07 | [Cancel or resume pending operations](uc07-resume-or-cancel.md) | Administrator |
 | UC09 | [Configure site or course author policy](uc09-configure-material-policy.md) | Policy manager |
+| UC10 | [Select files and folders together](uc10-select-materials.md) | Teacher |
 
 [Actor views](../README.md) · [Analysis](../../analysis/README.md) · [Design](../../design/README.md).

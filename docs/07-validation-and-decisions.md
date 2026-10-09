@@ -4,8 +4,8 @@ Checks use isolated Moodle PHPUnit and Behat databases. They do not modify a pro
 
 | Core | PHP / database | Local plugin | Repository plugin |
 |---|---|---|---|
-| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 59 tests / 293 assertions passed | 8 tests / 31 assertions passed |
-| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 59 tests / 293 assertions passed | 8 tests / 31 assertions passed |
+| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 64 tests / 324 assertions passed | 8 tests / 31 assertions passed |
+| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 64 tests / 324 assertions passed | 8 tests / 31 assertions passed |
 
 Verified on 2026-10-08, plugin version 2026100802. Privacy coverage is expanded on `test/coursebridge-privacy`; the earlier structure and repository checks used `refactor/coursebridge-structure`. Moodle coding standards 3.7.0 report zero errors and warnings across both packages. The existing 55 PlantUML diagrams and the added privacy process render to SVG without syntax errors. Local Markdown links resolve.
 
@@ -16,6 +16,12 @@ The local service checks were expanded on 2026-10-09 in `feat/coursebridge-draft
 The complete local suite was verified again on 2026-10-09 in `feat/coursebridge-form-scope`: 59 tests / 293 assertions per core. Thirteen owning-form cases add 46 assertions. They compare real registered native control options with core normalization, simulate a no-submit form refresh preserving pending data, verify unchanged activity content before ordinary saving, and cover session keys, actor binding, expiry, replay, changed limits, upload ceilings, explicit close, frozen fields, new/foreign drafts, revoked module permissions and the 32-entry session bound. Moodle coding standards report zero errors and warnings. The [scope API and rendered design sequence](16-native-form-scope.md) describe this developer integration; no automatic module-form replacement, batch endpoint or multiple-selection browser screen is installed.
 
 The integration tests exercise optional editions, ambiguous and invalid parsers, content/attribution conflicts, target authority, content grouping, edition filters, stale source visibility, strict-copy rejection, idempotent folder copies, cross-path duplicates, changed profiles and changed destinations.
+
+On 2026-10-09, `feat/coursebridge-folder-selection` adds five real Folder Settings integration cases. Both complete local suites passed 64 tests / 324 assertions. After ordering folders before their descendants, the five focused cases passed again with 32 assertions per core, including the added ordering assertion. They cover native control binding, reviewed mixed draft copies, retained pending title, unchanged activity content before saving, changed-selection refusal, grouped file choices with distinct folders, off-page selection, malformed selectors, usable choices after an empty review and escaped source labels.
+
+Two packaged local Behat scenarios pass on each core (38 steps): two published source folders plus a resource, selection retained after filtering, reviewed copy into the real folder settings draft, ordinary saving with existing content and nested files, and cancellation retaining the previous activity name/files. The plugin review-region axe check passes; this excludes the native autocomplete and does not establish whole-screen compliance.
+
+The full native reuse-section axe check reports two core-autocomplete violations on both required checkouts: `aria-allowed-role` on its input/combobox and `aria-required-children` on the empty selection listbox. These are recorded rather than silently excluded from a claimed whole-screen pass. The plugin does not patch core or replace this native control. No complete accessibility certification is claimed.
 
 Output checks render real component templates, exercise escaping and label/control associations, and verify readable states. The installed XMLDB schema validates against Moodle's XSD. PHP uses Moodle coding standards; PlantUML sources are rendered locally and Markdown links resolve.
 
@@ -34,6 +40,8 @@ Firefox rendered the actual component templates with each core's compiled Boost 
 The added native picker scenarios use the real modal and forms, separate from those earlier render fixtures. Visual checks also opened that modal at 1366 px and inside a same-origin 390 px viewport on both cores: the search grid fits in two desktop columns or one mobile column without page-level horizontal overflow. Automated search-region checks and keyboard focus tests do not establish complete site, screen-reader, browser or theme certification.
 
 The log template was also rendered with both Boost stylesheets at those widths. Its labelled filters and responsive record table have no page-level horizontal overflow.
+
+The actual Folder Settings selection and review were inspected in native Firefox/Boost sessions at 1366 px and in a same-origin 390 px viewport on both cores. The review uses a full-width native static field and an internally responsive table, keeping page width within the viewport. Selected-item labels wrap using the core autocomplete styling.
 
 These are alpha checks of the documented service and presentation contracts. The tested upgrades cover 2026100800 through 2026100802; they do not establish a stable-release upgrade history. The package has no plugin-specific backup lineage remapping. Native author editing remains permitted under editable policy and strict copying is blocked.
 

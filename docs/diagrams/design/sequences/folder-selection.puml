@@ -1,0 +1,38 @@
+@startuml
+!include ../../_style.puml
+skinparam maxMessageSize 240
+title Folder settings — mixed selection
+actor Teacher
+participant "Native module form" as Form
+participant "folder_form" as Integration
+participant "draft_scope" as Scope
+participant "draft_import" as Batch
+database "Native draft / activity" as Files
+
+Teacher -> Form : Open Settings
+Form -> Integration : Module form callbacks
+Integration -> Scope : Bind live filemanager and actual limits
+Integration --> Form : Native filters and multiple choices
+Teacher -> Form : Select files / folders; request review
+Form -> Integration : No-submit POST
+Integration -> Scope : Review token / profile / selectors
+Scope -> Batch : Expand and review authoritative draft contract
+Batch -> Files : Read source and destination snapshots
+Batch --> Scope : Decisions and digest
+Scope --> Form : Remembered approval; rendered review
+
+Teacher -> Form : Add reviewed materials
+Form -> Integration : No-submit POST
+Integration -> Scope : Check live control and visible selection
+Scope -> Batch : Recheck and apply stored approval
+Batch -> Files : Transactional draft copies and provenance
+Scope --> Form : Rerender native filemanager; retain pending fields
+
+alt Save
+  Teacher -> Form : Save and display
+  Form -> Files : Native folder update
+else Cancel
+  Teacher -> Form : Cancel
+  note over Form, Files : Saved activity remains unchanged
+end
+@enduml

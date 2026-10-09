@@ -24,6 +24,7 @@ Labels are associated with controls. Tables use column headers and responsive co
 | `local_coursebridge/local/policy/course` | Effective policy and allowed course selection |
 | `local_coursebridge/local/profile/list` | Named profiles, enabled state and active revision |
 | `local_coursebridge/local/log/index` | Labelled action/reference filters and paginated action records |
+| `local_coursebridge/local/selection/review` | Mixed-selection paths, declarations, decisions and resulting draft totals |
 
 Page controllers pass plain data to `output/view`. `output/renderer::render_view()` selects the component template. Services own authorization and copying; a theme changes presentation without replacing those decisions.
 
