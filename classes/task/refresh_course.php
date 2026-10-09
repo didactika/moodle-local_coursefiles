@@ -17,11 +17,11 @@
 /**
  * Bounded course catalog refresh task.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\task;
+namespace local_multipicker\task;
 
 /**
  * Refreshes one dirty course independently of migration execution.
@@ -31,6 +31,6 @@ final class refresh_course extends \core\task\adhoc_task {
      * Execute a refresh.
      */
     public function execute(): void {
-        \local_coursebridge\local\catalog\indexer::refresh((int)$this->get_custom_data()->courseid);
+        \local_multipicker\local\catalog\indexer::refresh((int)$this->get_custom_data()->courseid);
     }
 }

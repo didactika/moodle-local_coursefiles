@@ -17,19 +17,19 @@
 /**
  * Published course edition fixtures for browser acceptance.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_coursebridge\local\profile\profiles;
-use local_coursebridge\local\catalog\indexer;
-use local_coursebridge\local\catalog\material_source;
+use local_multipicker\local\profile\profiles;
+use local_multipicker\local\catalog\indexer;
+use local_multipicker\local\catalog\material_source;
 
 /**
  * Native folder form fixtures, isolated by Moodle's test environment.
  */
-final class local_coursebridge_generator extends component_generator_base {
+final class local_multipicker_generator extends component_generator_base {
     /**
      * Create exact source/destination placement for the administration workflow.
      *
@@ -68,17 +68,17 @@ final class local_coursebridge_generator extends component_generator_base {
         $previoususer = $USER;
         $this->set_user(get_admin());
         try {
-            $example = $CFG->dirroot . '/local/coursebridge/examples/institutional-profile.json';
+            $example = $CFG->dirroot . '/local/multipicker/examples/institutional-profile.json';
             $config = json_decode(file_get_contents($example), true);
             $config['name'] = $record['name'];
             $config['publication']['mode'] = 'explicit-family-publication';
             $profileid = profiles::save(json_encode($config));
-            set_config('author_policy', 'editable_with_provenance', 'local_coursebridge');
+            set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
             $uuid = \core\uuid::generate();
             $courses = [];
             foreach ([2024, 2025, 2026] as $edition) {
                 $courses[$edition] = $this->datagenerator->create_course([
-                    'fullname' => 'CourseBridge ' . $edition, 'shortname' => 'CB' . $edition,
+                    'fullname' => 'MultiPicker ' . $edition, 'shortname' => 'CB' . $edition,
                     'idnumber' => $uuid . '||CB||' . $edition,
                 ]);
                 $folder = $this->datagenerator->create_module('folder', [
@@ -142,6 +142,21 @@ final class local_coursebridge_generator extends component_generator_base {
                 'existing.txt'
             );
             $mainfile->set_sortorder(1);
+            $assignment = $this->datagenerator->create_module('assign', [
+                'course' => $courses[2025]->id, 'name' => 'Public assignment handouts', 'alwaysshowdescription' => 1,
+            ]);
+            foreach (['introattachment' => 'handout.txt', 'submission_files' => 'student-private.txt'] as $area => $filename) {
+                get_file_storage()->create_file_from_string([
+                    'contextid' => context_module::instance($assignment->cmid)->id,
+                    'component' => $area === 'introattachment' ? 'mod_assign' : 'assignsubmission_file',
+                    'filearea' => $area, 'itemid' => $area === 'introattachment' ? 0 : 1,
+                    'filepath' => '/', 'filename' => $filename, 'author' => 'Original teacher', 'license' => 'cc',
+                ], $filename);
+            }
+            material_source::publish($profileid, $assignment->cmid, false);
+            $this->datagenerator->create_module('url', ['course' => $courses[2026]->id,
+                'name' => 'Target URL', 'externalurl' => 'https://example.org',
+                'intro' => '<p>Existing description</p>', 'introformat' => FORMAT_HTML]);
             $hidden = $this->datagenerator->create_module('folder', [
                 'course' => $courses[2025]->id, 'name' => 'Hidden materials', 'visible' => 0,
             ]);
@@ -151,9 +166,9 @@ final class local_coursebridge_generator extends component_generator_base {
             }
             $teacher = $this->datagenerator->create_user(['username' => 'cbteacher', 'password' => 'cbteacher']);
             $this->datagenerator->enrol_user($teacher->id, $courses[2026]->id, 'editingteacher');
-            if (is_file($CFG->dirroot . '/repository/coursebridge/lib.php')) {
-                require_once($CFG->dirroot . '/repository/coursebridge/lib.php');
-                (new \repository_type('coursebridge'))->create(false);
+            if (is_file($CFG->dirroot . '/repository/multipicker/lib.php')) {
+                require_once($CFG->dirroot . '/repository/multipicker/lib.php');
+                (new \repository_type('multipicker'))->create(false);
             }
             return ['targetcmid' => $targetcmid, 'targetcourse' => $courses[2026]->id, 'profileid' => $profileid,
                 'teacherid' => $teacher->id, 'wwwroot' => $CFG->wwwroot];

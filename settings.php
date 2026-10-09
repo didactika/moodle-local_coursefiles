@@ -17,24 +17,24 @@
 /**
  * Administration page registration.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
-$pages = \local_coursebridge\output\navigation::pages();
+$pages = \local_multipicker\output\navigation::pages();
 $visible = array_filter($pages, static fn($page) => has_capability($page['capability'], context_system::instance()));
 if ($visible) {
     $ADMIN->add(
         $hassiteconfig ? 'localplugins' : 'root',
-        new admin_category('local_coursebridge', get_string('pluginname', 'local_coursebridge'))
+        new admin_category('local_multipicker', get_string('pluginname', 'local_multipicker'))
     );
     foreach ($visible as $name => $page) {
-        $ADMIN->add('local_coursebridge', new admin_externalpage(
-            'local_coursebridge_' . $name,
-            get_string($page['label'], 'local_coursebridge'),
-            new moodle_url('/local/coursebridge/admin/' . $name . '.php'),
+        $ADMIN->add('local_multipicker', new admin_externalpage(
+            'local_multipicker_' . $name,
+            get_string($page['label'], 'local_multipicker'),
+            new moodle_url('/local/multipicker/admin/' . $name . '.php'),
             $page['capability'],
             $name !== array_key_first($visible)
         ));

@@ -3,21 +3,21 @@
 title Profile and reconstructible catalog records
 left to right direction
 hide methods
-entity "local_coursebridge" as profile {
+entity "local_multipicker" as profile {
   * id
   uuid
   name / enabled
   activeid
 }
 
-entity "local_coursebridge_revision" as revision {
+entity "local_multipicker_revision" as revision {
   * id
   profileid / revision
   configjson / digest
   userid / timecreated
 }
 
-entity "local_coursebridge_course" as course {
+entity "local_multipicker_course" as course {
   * id
   profileid / revisionid
   courseid
@@ -25,15 +25,22 @@ entity "local_coursebridge_course" as course {
   edition / dimensions
 }
 
-entity "local_coursebridge_file" as file {
+entity "local_multipicker_file" as file {
   * id
   courseid / cmid
   pathnamehash / contenthash
   filesize / filename / mimetype
 }
 
+entity "local_multipicker_value" as value {
+  * id
+  profileid / revisionid / courseid
+  name / value
+}
+
 profile ||--o{ revision
 revision ||--o{ course
+course ||--o{ value
 course -[hidden]down-> file
 note bottom of file : File locators are independently reconstructible per native course.
 @enduml

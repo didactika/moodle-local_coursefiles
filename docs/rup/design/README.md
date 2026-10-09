@@ -41,3 +41,13 @@ The native File consumer retains its [main-file choice](../../18-resource-select
 Installed table details are in the [database document](../../05-data-model.md). Each [use case](../requirements/use-cases/README.md) embeds its own design sequence. Shared integrations are described in [architecture](../../03-architecture.md).
 
 ![Native browser classes](../../diagrams/design/native-browser-classes.svg)
+
+## Component rename
+
+![Preserved installation metadata](../../diagrams/design/sequences/component-rename.svg)
+
+The post-install hooks adopt legacy tables, settings, role overrides and repository instances without replacing native course files. See [the migration procedure](../../21-component-rename.md).
+
+[Public source provider classes](../../diagrams/design/public-source-providers.svg) separate core/community public-area adapters from the registry and live authorization.
+
+![Native Tiny Link completion](../../diagrams/design/sequences/editor-selection.svg)

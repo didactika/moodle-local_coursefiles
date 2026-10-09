@@ -1,16 +1,16 @@
 # Administration and review screens
 
-CourseBridge opens from **Site administration → Plugins → Local plugins → CourseBridge**. Only the first authorized page appears in the administration menu; Settings is the entry for a site administrator, while a delegated manager enters through their own authorized page. Settings, Profiles, Migrations and Log share permission-aware page tabs. They are regular Moodle pages and remain usable without custom JavaScript. Each page independently checks its system capability; hiding a tab is not its authorization boundary.
+MultiPicker opens from **Site administration → Plugins → Local plugins → MultiPicker**. Only the first authorized page appears in the administration menu; Settings is the entry for a site administrator, while a delegated manager enters through their own authorized page. Settings, Profiles, Migrations and Log share permission-aware page tabs. They are regular Moodle pages and remain usable without custom JavaScript. Each page independently checks its system capability; hiding a tab is not its authorization boundary.
 
 ![Administration pages](diagrams/design/administration-pages.svg)
 
 ## Settings
 
-`admin/settings.php` edits the existing site author policy, course override policy and missing-author policy through a native Moodle form. Existing values and strict defaults are preserved. Only users with `moodle/site:config` can enter or save it. Changes appear in the native configuration log and the CourseBridge Log tab.
+`admin/settings.php` edits the existing site author policy, course override policy and missing-author policy through a native Moodle form. Existing values and strict defaults are preserved. Only users with `moodle/site:config` can enter or save it. Changes appear in the native configuration log and the MultiPicker Log tab.
 
 ## Profiles
 
-Moodle 4.5 does not build the Local plugins category for delegated users without site configuration access. CourseBridge registers their authorized entry in the administration root instead; it does not grant site configuration capability.
+Moodle 4.5 does not build the Local plugins category for delegated users without site configuration access. MultiPicker registers their authorized entry in the administration root instead; it does not grant site configuration capability.
 
 `admin/profiles.php` lists named profile cards, status and active revision. Creating or editing opens `admin/profile.php`; the large rule editor is absent from the list. **Preview rules** validates the submitted JSON and describes relationship, section, source/destination and duplicate rules without writing or activating a revision. **Save profile** activates a validated revision and returns to the list. Cancel discards the form values. A delegated `manageprofiles` role can use these pages without site configuration access.
 
@@ -35,3 +35,8 @@ Course material browsing and course author policy share a single course navigati
 Templates are organized under `local/navigation`, `local/profile`, `local/migration`, `local/catalog` and `local/log`. Native forms and shared Bootstrap classes retain the active Moodle theme's controls, spacing and focus behavior. There is no added framework, stylesheet or client-side tab controller. See [presentation and theme overrides](11-presentation-and-theming.md).
 
 References: [Moodle 4.5 Navigation API](https://moodledev.io/docs/4.5/apis/core/navigation), [administration external pages](https://phpdoc.moodledev.io/4.5/d9/dd6/classadmin__externalpage.html), [Moodle 5.3 Forms API](https://moodledev.io/docs/5.3/apis/subsystems/form).
+
+
+## Guided profile controls
+
+The profile form starts with a name, one course parser field/pattern and the grouping template. Search filters are repeatable capture/label/optional rows in a collapsed native section. Advanced JSON is collapsed and remains available for multiple parsers or placement rules. Rule previews show grouping/filter information first and put folder migration details in a disclosure. These controls preserve Moodle's form labels, validation, layout and theme overrides.

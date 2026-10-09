@@ -17,62 +17,62 @@
 /**
  * Capability definitions.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-    'local/coursebridge:browse' => [
+    'local/multipicker:browse' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
     ],
-    'local/coursebridge:reuse' => [
+    'local/multipicker:reuse' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursebridge:publish' => [
+    'local/multipicker:publish' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursebridge:manageprofiles' => [
+    'local/multipicker:manageprofiles' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursebridge:planmigration' => [
+    'local/multipicker:planmigration' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursebridge:executemigration' => [
+    'local/multipicker:executemigration' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursebridge:viewlog' => [
+    'local/multipicker:viewlog' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_PERSONAL,
-        'clonepermissionsfrom' => 'local/coursebridge:viewaudit',
+        'clonepermissionsfrom' => 'local/multipicker:viewaudit',
     ],
-    'local/coursebridge:managecoursepolicy' => [
+    'local/multipicker:managecoursepolicy' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursebridge:correctattribution' => [
+    'local/multipicker:correctattribution' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],

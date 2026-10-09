@@ -17,11 +17,11 @@
 /**
  * Edition and layout selection before preview.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\form;
+namespace local_multipicker\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -38,7 +38,7 @@ final class migration_form extends \moodleform {
         $form->addElement('hidden', 'profileid', $this->_customdata['profileid']);
         $form->setType('profileid', PARAM_INT);
         foreach (['sourceedition', 'targetedition'] as $name) {
-            $form->addElement('text', $name, get_string($name, 'local_coursebridge'), ['list' => 'cb-editions']);
+            $form->addElement('text', $name, get_string($name, 'local_multipicker'), ['list' => 'cb-editions']);
             $form->setType($name, PARAM_TEXT);
             $form->addRule($name, null, 'required');
         }
@@ -48,10 +48,10 @@ final class migration_form extends \moodleform {
         }
         $form->addElement('html', \html_writer::tag('datalist', $options, ['id' => 'cb-editions']));
         if ($this->_customdata['ordinal']) {
-            $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_coursebridge'));
-            $form->addElement('static', 'layouthelp', '', get_string('layouthelp', 'local_coursebridge'));
+            $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_multipicker'));
+            $form->addElement('static', 'layouthelp', '', get_string('layouthelp', 'local_multipicker'));
         }
-        $this->add_action_buttons(false, get_string('createpreview', 'local_coursebridge'));
+        $this->add_action_buttons(false, get_string('createpreview', 'local_multipicker'));
     }
 
     /**
@@ -64,10 +64,10 @@ final class migration_form extends \moodleform {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
         if ($data['sourceedition'] === $data['targetedition']) {
-            $errors['targetedition'] = get_string('differenteditions', 'local_coursebridge');
+            $errors['targetedition'] = get_string('differenteditions', 'local_multipicker');
         }
         if ($this->_customdata['ordinal'] && empty($data['layoutconfirmed'])) {
-            $errors['layoutconfirmed'] = get_string('layoutrequired', 'local_coursebridge');
+            $errors['layoutconfirmed'] = get_string('layoutrequired', 'local_multipicker');
         }
         return $errors;
     }

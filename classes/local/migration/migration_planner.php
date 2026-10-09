@@ -17,16 +17,16 @@
 /**
  * Reviewed immutable family migration planning.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\migration;
+namespace local_multipicker\local\migration;
 
-use local_coursebridge\local\catalog\material_source;
-use local_coursebridge\local\profile\profiles;
-use local_coursebridge\local\policy\author_policy;
-use local_coursebridge\local\logging\log;
+use local_multipicker\local\catalog\material_source;
+use local_multipicker\local\profile\profiles;
+use local_multipicker\local\policy\author_policy;
+use local_multipicker\local\logging\log;
 
 /**
  * Creates explicit file decisions without writing course materials.
@@ -48,17 +48,17 @@ final class migration_planner {
         bool $layoutconfirmed = false
     ): \stdClass {
         global $DB, $USER;
-        require_capability('local/coursebridge:planmigration', \context_system::instance());
+        require_capability('local/multipicker:planmigration', \context_system::instance());
         [$profile, $revision, $rules] = profiles::load($profileid);
         $config = $rules->get_config()['migration'] ?? [];
         if (
             $sourceedition === '' || $targetedition === '' || $sourceedition === $targetedition
                 || (($config['section_match']['strategy'] ?? 'ordinal') === 'ordinal' && !$layoutconfirmed)
         ) {
-            throw new \moodle_exception('layoutrequired', 'local_coursebridge');
+            throw new \moodle_exception('layoutrequired', 'local_multipicker');
         }
         $pairs = [];
-        $members = $DB->get_records('local_coursebridge_course', ['revisionid' => $revision->id], 'courseid');
+        $members = $DB->get_records('local_multipicker_course', ['revisionid' => $revision->id], 'courseid');
         foreach ($members as $member) {
             $course = $DB->get_record('course', ['id' => $member->courseid]);
             if (!$course || !($identity = $rules->resolve($course))) {
@@ -101,7 +101,7 @@ final class migration_planner {
                         }
                     }
                     if (count($targets) !== 1 || $sourcecm->modname !== 'folder' || $targets[0]->modname !== 'folder') {
-                        throw new \moodle_exception('placementambiguous', 'local_coursebridge');
+                        throw new \moodle_exception('placementambiguous', 'local_multipicker');
                     }
                     $target = $targets[0];
                     $targetcontent = [];
@@ -180,20 +180,20 @@ final class migration_planner {
         $blocked = $issues || array_filter($operations, static fn($operation) =>
             strpos($operation['decision'], 'blocked_') === 0);
         $transaction = $DB->start_delegated_transaction();
-        $planid = $DB->insert_record('local_coursebridge_plan', (object)[
+        $planid = $DB->insert_record('local_multipicker_plan', (object)[
             'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
             'userid' => $USER->id, 'configjson' => $json, 'digest' => hash('sha256', $json),
             'state' => $blocked ? 'blocked' : 'reviewable', 'timecreated' => time(),
         ]);
         foreach ($operations as $operation) {
-            $DB->insert_record('local_coursebridge_operation', (object)[
+            $DB->insert_record('local_multipicker_operation', (object)[
                 'planid' => $planid, 'opkey' => $operation['opkey'], 'sourcehash' => $operation['sourcehash'],
                 'targetcmid' => $operation['targetcmid'], 'snapshot' => json_encode($operation['snapshot']),
                 'decision' => $operation['decision'], 'state' => 'pending', 'result' => '{}', 'timemodified' => time(),
             ]);
         }
         $transaction->allow_commit();
-        $plan = $DB->get_record('local_coursebridge_plan', ['id' => $planid], '*', MUST_EXIST);
+        $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
         log::record('migration_previewed', $plan->uuid, ['operations' => count($operations), 'blocked' => (bool)$blocked]);
         return $plan;
     }

@@ -15,16 +15,16 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * CourseBridge native material import integration.
+ * MultiPicker native material import integration.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge\local\selection;
+namespace local_multipicker\local\selection;
 
-use local_coursebridge\local\catalog\catalog;
+use local_multipicker\local\catalog\catalog;
 
 /**
  * Presents bounded authorized file and folder cards.
@@ -39,11 +39,12 @@ final class browser_listing {
      */
     public static function page(array $scope, array $state): array {
         $filters = $state['filters'];
+        $filters['excludedcontext'] = $scope['contextid'];
         $folder = null;
         if ($state['folder'] !== '') {
             $folder = selection_options::parse([$state['folder']])[0];
             if (!isset($folder['cmid'])) {
-                throw new \moodle_exception('invalidselection', 'local_coursebridge');
+                throw new \moodle_exception('invalidselection', 'local_multipicker');
             }
             $filters['cmid'] = $folder['cmid'];
             $filters['sourcepath'] = $folder['filepath'];
@@ -51,31 +52,47 @@ final class browser_listing {
         $result = catalog::search($scope['courseid'], $state['profileid'], $filters, $state['after'], 50);
         $cards = [];
         $seen = [];
+        $suggestions = [];
         foreach ($result['assets'] as $asset) {
             foreach ($asset['occurrences'] as $origin) {
                 if ($scope['contextid'] === (int)\context_module::instance($origin['cmid'])->id) {
                     continue;
                 }
+                foreach ($origin['captures'] ?? [] as $name => $value) {
+                    if ($value !== '' && count($suggestions[$name] ?? []) < 100) {
+                        $suggestions[$name][$value] = $value;
+                    }
+                }
                 $path = $folder['filepath'] ?? '/';
                 if ($folder && !str_starts_with($origin['filepath'], $path)) {
                     continue;
                 }
-                $filecard = $origin['module'] !== 'folder' || $folder || $filters['q'] !== '';
+                $filecard = ($origin['module'] !== 'folder' || $origin['filearea'] !== 'content') || $folder || $filters['q'] !== '';
                 if ($filecard && (!$folder || $origin['filepath'] === $path)) {
                     $value = 'file:' . $origin['pathnamehash'];
                     if (!isset($seen[$asset['contenthash']])) {
-                        $cards[$value] = ['value' => $value, 'title' => $origin['filename'], 'isfolder' => false,
-                            'origin' => $origin['shortname'] . ' / ' . $origin['modulename'],
+                        $cards[$value] = ['value' => $value, 'title' => s($origin['filename']), 'isfolder' => false,
+                            'origin' => \local_multipicker\output\display::name(
+                                $origin['shortname'],
+                                \context_course::instance($origin['courseid'])
+                            ) . ' / '
+                                . \local_multipicker\output\display::name(
+                                    $origin['modulename'],
+                                    \context_module::instance($origin['cmid'])
+                                ),
                             'details' => $origin['author'] . ' / ' . $origin['license'] . ' / ' . display_size($asset['filesize']),
                             'icon' => get_file_storage()->get_file_by_hash($origin['pathnamehash'])->get_mimetype(),
                             'open' => ''];
                         $seen[$asset['contenthash']] = true;
                     }
                 }
-                if ($origin['module'] === 'folder') {
+                if ($origin['module'] === 'folder' && $origin['filearea'] === 'content' && $filters['q'] === '' && empty($filters['mimetype'])) {
                     if (!$folder) {
                         $targetpath = '/';
-                        $title = $origin['modulename'];
+                        $title = \local_multipicker\output\display::name(
+                            $origin['modulename'],
+                            \context_module::instance($origin['cmid'])
+                        );
                     } else {
                         $remaining = substr($origin['filepath'], strlen($path));
                         if ($remaining === '') {
@@ -83,11 +100,14 @@ final class browser_listing {
                         }
                         $name = explode('/', $remaining)[0];
                         $targetpath = $path . $name . '/';
-                        $title = $name;
+                        $title = s($name);
                     }
                     $value = 'folder:' . $origin['cmid'] . ':' . base64_encode($targetpath);
                     $cards[$value] = ['value' => $value, 'title' => $title, 'isfolder' => true,
-                        'origin' => $origin['shortname'], 'details' => $targetpath,
+                        'origin' => \local_multipicker\output\display::name(
+                            $origin['shortname'],
+                            \context_course::instance($origin['courseid'])
+                        ), 'details' => $targetpath,
                         'open' => $value];
                 }
             }
@@ -110,7 +130,8 @@ final class browser_listing {
             $parentpath = dirname(rtrim($folder['filepath'], '/'));
             $parent = 'folder:' . $folder['cmid'] . ':' . base64_encode($parentpath === '/' ? '/' : $parentpath . '/');
         }
-        return ['cards' => array_values($cards), 'retained' => $retained, 'next' => $result['next'],
+        return ['cards' => array_values($cards), 'suggestions' => $suggestions,
+            'retained' => $retained, 'next' => $result['next'],
             'parent' => $parent, 'infolder' => $folder !== null, 'path' => $folder['filepath'] ?? '',
             'count' => count($state['selected'])];
     }

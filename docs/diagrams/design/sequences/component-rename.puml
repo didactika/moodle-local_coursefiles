@@ -1,0 +1,20 @@
+@startuml
+!include ../../_style.puml
+title Component rename - preserve installation data
+actor Administrator
+participant "Moodle upgrade" as Upgrade
+participant "local_multipicker install" as Local
+participant "repository_multipicker install" as Repository
+database "Plugin / core metadata" as DB
+Administrator -> Upgrade : Install both new component packages
+Upgrade -> DB : Create new local tables with XMLDB
+Upgrade -> Local : Run post-install hook
+Local -> DB : Check old tables and empty new tables
+Local -> DB : Import IDs, history, rules and grants
+Local -> DB : Transfer settings / role overrides / adhoc tasks
+Local -> DB : Reset sequences; retire old version registration
+Upgrade -> Repository : Run post-install hook
+Repository -> DB : Rename type; retain instance and reference IDs
+Upgrade -> DB : Clear caches
+Administrator -> Upgrade : Refresh catalog; reopen native forms
+@enduml

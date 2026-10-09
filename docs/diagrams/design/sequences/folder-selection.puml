@@ -1,30 +1,33 @@
 @startuml
 !include ../../_style.puml
-skinparam maxMessageSize 160
-title Native picker - mixed selection
+skinparam maxMessageSize 120
+title Native picker - multiple material selection
 actor Teacher
-participant "Owning native form" as Form
+participant "Native form / picker" as Form
 participant "Embedded browser" as Browser
-participant "Repository / draft_scope" as Scope
-database "Native files / attribution" as Files
-Teacher -> Form : Open Folder Edit or activity Settings
-Form -> Scope : Bind actual native field and limits
-Teacher -> Form : Import materials
-Form -> Browser : Native picker embeds scoped browser
-Teacher -> Browser : Filter, browse and select cards
-Teacher -> Browser : Choose destination / folder mode; review
-Browser -> Scope : Validate current authority and selection
-Scope -> Files : Read authorized sources and draft snapshots
-Scope --> Browser : Decisions and review digest
+participant "Local scope / catalog" as Scope
+participant "Repository transfer" as Transfer
+database "Native draft / provenance" as Files
+Teacher -> Form : Open existing or new activity
+Form -> Scope : Bind actual field, draft, context and limits
+Teacher -> Form : Add files; select MultiPicker
+Form -> Browser : Embed scoped HTML chooser
+Teacher -> Browser : Filter / browse / check materials
+Browser -> Scope : Authenticated Fragment request
+Scope --> Browser : Authorized page; retained selection
+Teacher -> Browser : Review selection
+Browser -> Scope : Expand and recheck selected sources
+Scope --> Browser : Separate tree review and approval
 Teacher -> Browser : Import reviewed materials
-Browser -> Scope : Native chooser callback and protected download
-Scope -> Files : Recheck; copy batch transactionally
-Scope --> Form : Native draft response / filemanager refresh
+Browser -> Transfer : Documented native chooser callback
+Transfer -> Scope : Revalidate digest and destination
+Scope -> Files : Transactional copies / original declarations
+Transfer --> Form : Native response / owning draft refresh
 alt Save
  Teacher -> Form : Native Save
- Form -> Files : Core permanent module save
+ Form -> Files : Core permanent activity save
 else Cancel
  Teacher -> Form : Native Cancel
- note over Form, Files : Saved activity content remains unchanged
+ note over Form, Files : Previously saved activity is unchanged
 end
 @enduml

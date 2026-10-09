@@ -58,3 +58,6 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 | requirements/use-case-details/uc07-resume-or-cancel.puml | [Source](../diagrams/requirements/use-case-details/uc07-resume-or-cancel.puml) | [SVG](../diagrams/requirements/use-case-details/uc07-resume-or-cancel.svg) |
 | requirements/use-case-details/uc09-configure-material-policy.puml | [Source](../diagrams/requirements/use-case-details/uc09-configure-material-policy.puml) | [SVG](../diagrams/requirements/use-case-details/uc09-configure-material-policy.svg) |
 | requirements/use-case-details/uc10-select-materials.puml | [Source](../diagrams/requirements/use-case-details/uc10-select-materials.puml) | [SVG](../diagrams/requirements/use-case-details/uc10-select-materials.svg) |
+
+| design/public-source-providers.puml | [Source](../diagrams/design/public-source-providers.puml) | [SVG](../diagrams/design/public-source-providers.svg) |
+| design/sequences/editor-selection.puml | [Source](../diagrams/design/sequences/editor-selection.puml) | [SVG](../diagrams/design/sequences/editor-selection.svg) |

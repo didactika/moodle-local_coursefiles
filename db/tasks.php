@@ -17,14 +17,14 @@
 /**
  * Scheduled catalog task registration.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 $tasks = [
     [
-        'classname' => '\local_coursebridge\task\reconcile_catalog',
+        'classname' => '\local_multipicker\task\reconcile_catalog',
         'blocking' => 0, 'minute' => '*/5', 'hour' => '*', 'day' => '*', 'month' => '*', 'dayofweek' => '*',
     ],
 ];

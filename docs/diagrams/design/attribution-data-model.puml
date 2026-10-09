@@ -3,7 +3,7 @@
 title Governance and original provenance
 left to right direction
 hide methods
-entity "local_coursebridge_attribution" as attribution {
+entity "local_multipicker_attribution" as attribution {
   * id
   uuid / parentuuid
   sourcehash / contenthash
@@ -11,26 +11,26 @@ entity "local_coursebridge_attribution" as attribution {
   userid / timecreated
 }
 
-entity "local_coursebridge_origin" as origin {
+entity "local_multipicker_origin" as origin {
   * id
   pathnamehash
   attributionid / contenthash
   userid / timecreated
 }
 
-entity "local_coursebridge_coursepolicy" as coursepolicy {
+entity "local_multipicker_coursepolicy" as coursepolicy {
   * id
   courseid / policy / revision
   userid / timemodified
 }
 
-entity "local_coursebridge_publication" as publication {
+entity "local_multipicker_publication" as publication {
   * id
   profileid / cmid / revoked
   userid / timecreated
 }
 
-entity "local_coursebridge_log" as log {
+entity "local_multipicker_log" as log {
   * id
   userid / action / entityuuid
   details / timecreated

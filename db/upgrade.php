@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * CourseBridge database upgrades.
+ * MultiPicker database upgrades.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,20 +28,20 @@
  * @param int $oldversion Installed version.
  * @return bool Upgrade completed.
  */
-function xmldb_local_coursebridge_upgrade(int $oldversion): bool {
+function xmldb_local_multipicker_upgrade(int $oldversion): bool {
     global $DB;
     $dbman = $DB->get_manager();
     if ($oldversion < 2026100801) {
-        $oldtable = new xmldb_table('local_coursebridge_audit');
-        $newtable = new xmldb_table('local_coursebridge_log');
+        $oldtable = new xmldb_table('local_multipicker_audit');
+        $newtable = new xmldb_table('local_multipicker_log');
         if ($dbman->table_exists($oldtable)) {
             if ($dbman->table_exists($newtable)) {
-                throw new coding_exception('Both CourseBridge history tables exist; resolve the conflict before upgrading.');
+                throw new coding_exception('Both MultiPicker history tables exist; resolve the conflict before upgrading.');
             }
-            $dbman->rename_table($oldtable, 'local_coursebridge_log');
+            $dbman->rename_table($oldtable, 'local_multipicker_log');
         }
         if (!$dbman->table_exists($newtable)) {
-            throw new coding_exception('CourseBridge log table is missing.');
+            throw new coding_exception('MultiPicker log table is missing.');
         }
         foreach (
             [
@@ -53,13 +53,24 @@ function xmldb_local_coursebridge_upgrade(int $oldversion): bool {
                 $dbman->add_index($newtable, $index);
             }
         }
-        upgrade_plugin_savepoint(true, 2026100801, 'local', 'coursebridge');
+        upgrade_plugin_savepoint(true, 2026100801, 'local', 'multipicker');
     }
     if ($oldversion < 2026100802) {
-        $table = new xmldb_table('local_coursebridge_attribution');
+        $table = new xmldb_table('local_multipicker_attribution');
         $field = new xmldb_field('parentuuid', XMLDB_TYPE_CHAR, '36', null, XMLDB_NOTNULL, null, null);
         $dbman->change_field_default($table, $field);
-        upgrade_plugin_savepoint(true, 2026100802, 'local', 'coursebridge');
+        upgrade_plugin_savepoint(true, 2026100802, 'local', 'multipicker');
+    }
+    if ($oldversion < 2026100902) {
+        $file = new xmldb_file(__DIR__ . '/install.xml');
+        if (!$file->loadXMLStructure()) {
+            throw new coding_exception('Unable to load the MultiPicker XMLDB schema.');
+        }
+        $table = $file->getStructure()->getTable('local_multipicker_value');
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        upgrade_plugin_savepoint(true, 2026100902, 'local', 'multipicker');
     }
     return true;
 }

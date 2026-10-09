@@ -3,14 +3,14 @@
 title Stored reviewed intent and run attempts
 left to right direction
 hide methods
-entity "local_coursebridge_plan" as plan {
+entity "local_multipicker_plan" as plan {
   * id
   uuid / profileid / revisionid
   userid / timecreated
   configjson / digest / state
 }
 
-entity "local_coursebridge_operation" as operation {
+entity "local_multipicker_operation" as operation {
   * id
   planid / opkey
   sourcehash / targetcmid
@@ -18,7 +18,7 @@ entity "local_coursebridge_operation" as operation {
   state / result / timemodified
 }
 
-entity "local_coursebridge_run" as run {
+entity "local_multipicker_run" as run {
   * id
   planid / userid
   state / cancelled

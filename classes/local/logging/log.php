@@ -17,11 +17,11 @@
 /**
  * Structured actor and outcome log.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\logging;
+namespace local_multipicker\local\logging;
 
 /**
  * Records actions without credentials or binaries.
@@ -48,7 +48,7 @@ final class log {
      */
     public static function page(string $action = '', string $entityuuid = '', int $before = 0, int $limit = 50): array {
         global $DB;
-        require_capability('local/coursebridge:viewlog', \context_system::instance());
+        require_capability('local/multipicker:viewlog', \context_system::instance());
         $limit = max(1, min(100, $limit));
         $where = ['1 = 1'];
         $params = [];
@@ -63,7 +63,7 @@ final class log {
             $params['before'] = $before;
         }
         $records = array_values($DB->get_records_select(
-            'local_coursebridge_log',
+            'local_multipicker_log',
             implode(' AND ', $where),
             $params,
             'id DESC',
@@ -85,7 +85,7 @@ final class log {
      */
     public static function record(string $action, string $uuid, array $details): void {
         global $DB, $USER;
-        $DB->insert_record('local_coursebridge_log', (object)[
+        $DB->insert_record('local_multipicker_log', (object)[
             'userid' => (int)($USER->id ?? 0), 'action' => $action, 'entityuuid' => $uuid,
             'details' => json_encode($details), 'timecreated' => time(),
         ]);

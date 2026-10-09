@@ -3,7 +3,7 @@
 title UC02 — Attach a selected material
 actor Teacher
 participant "Native picker" as Picker
-participant repository_coursebridge as Repository
+participant repository_multipicker as Repository
 participant "material_source / author_policy" as Policy
 participant "Core native draft copier" as Draft
 Teacher -> Picker : Choose an exact source

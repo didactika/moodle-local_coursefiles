@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * CourseBridge native material import integration.
+ * MultiPicker native material import integration.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,6 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 $callbacks = [
     [
         'hook' => \core\hook\after_config::class,
-        'callback' => \local_coursebridge\local\selection\native_integration::class . '::register',
+        'callback' => \local_multipicker\local\selection\native_integration::class . '::register',
     ],
 ];

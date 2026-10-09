@@ -1,37 +1,40 @@
 # Visual folder and file selection
 
-Press **Import materials** beside a Folder activity's native filemanager, or open **Materials from related courses** through its Add file button. The material browser opens inside Moodle's existing picker. It also works in the separate **Edit** content form; opening activity Settings is unnecessary.
+Open **Add files** in the native Folder filemanager and select **MultiPicker** in the repository sidebar. The browser stays inside Moodle's picker. This entry works in Folder **Edit** content, activity **Settings**, and new activity forms. There is no second import button or additional activity tab.
 
-1. Enter an optional filename or edition. **More filters and copy options** contains course shortname, source activity, file type, destination directory and folder structure. A Collection selector appears there only when several relationship profiles are enabled.
-2. Tick file or folder cards. **Open folder** browses its children; **Back** returns to the parent. Choices survive navigation, filtering and pagination. **Select this page** and **Clear selection** act on the bounded selection.
-3. Press **Review selection** to see destination paths, original author/licence, copy/skip/block decisions and resulting draft totals. Review creates no file copies.
-4. Press **Import reviewed materials** after an unblocked review. Moodle closes the picker and refreshes the original native filemanager. Pending activity fields remain in the same form.
-5. Save or cancel using Moodle's ordinary buttons. Cancelling leaves permanent activity content unchanged; abandoned drafts follow Moodle's normal cleanup.
+1. The **Source activity** filter initially matches the destination activity. Choose All to reuse other public activity materials. File name, file type and the first two profile-defined capture filters appear together; secondary filters and copy placement remain in **More filters and copy options**.
+2. Search updates after a short typing delay; selects update immediately through Moodle's Fragment API. The embedded document, search focus and caret remain in place. Cards/List buttons change the actual result layout.
+3. Tick file or folder cards. The arrow button opens a folder; Back returns to its parent. Selection survives filtering, folder navigation and result pages. **Select this page** selects visible cards, and **Selected materials** allows removing off-page choices.
+4. **Review selection** opens a separate page within the same modal. A collapsible folder tree shows destination paths, original author/licence and Copy/Skip/Blocked decisions. Back returns to the checks and chosen layout. Review copies no files.
+5. **Import reviewed materials** transfers an approved batch through Moodle's protected repository download. The original filemanager refreshes, leaving pending native fields intact.
+6. Save or cancel using Moodle's ordinary form buttons. Cancel leaves permanent activity content unchanged; abandoned drafts use normal Moodle cleanup.
 
 ![Mixed-selection conversation](diagrams/requirements/use-case-details/uc10-select-materials.svg)
 
 ## Folder structure and duplicates
 
-Selecting a folder includes eligible descendant files, including descendants outside the visible search filters. Empty directories are not transferred. At most 200 source occurrences are resolved; overlapping parent/child/file selections include each occurrence once.
+A folder checkbox denotes the complete eligible descendant tree, including files outside the current search. Filename/type searches show individual files instead of whole-folder shortcuts. Empty directories are not transferred. Each batch resolves at most 200 source occurrences; overlapping parent, child and file selections resolve each occurrence once.
 
-| Folder structure | Selected `/notes/` containing `/notes/week1/lesson.txt` |
+| Folder structure | Selected /notes/ containing /notes/week1/lesson.txt |
 |---|---|
-| Keep original paths | `/notes/week1/lesson.txt` |
-| Include the selected folder | `/notes/week1/lesson.txt` |
-| Copy only its contents | `/week1/lesson.txt` |
+| Keep original paths | /notes/week1/lesson.txt |
+| Include the selected folder | /notes/week1/lesson.txt |
+| Copy only its contents | /week1/lesson.txt |
 
-Selecting an entire source activity with **Include the selected folder** uses its cleaned activity name as the enclosing directory. The widest selected parent determines overlapping folder placement. Existing draft destination directories prefix these relative paths. Changing the destination, mode, profile or selected items invalidates approval. A deleted destination, changed source or changed draft requires another review.
+Selecting an activity root with Include the selected folder uses its cleaned activity name as the enclosing directory. The widest selected parent determines overlapping placement. An existing destination directory prefixes these paths. Changing placement, profile or items invalidates approval; changed sources, drafts or deleted destinations require another review.
 
-File results group identical content and retain an authorized source declaration. Edition/shortname filters choose the desired origin. Folder cards describe real source activities/directories, never synthetic content groups. Identical files are skipped according to profile rules; conflicting bytes or declarations block copying instead of overwriting.
+Each content page is bounded to 50 groups with Next/Previous cursors. File results group identical bytes while retaining an authorized occurrence and its declaration. Source capture/course filters choose the desired origin. Folder cards always describe real Folder content directories. Equal content/declarations are skipped according to the profile; conflicting paths, bytes or declarations block copying instead of overwriting.
 
 ## Native integration and permissions
 
-On supported controller routes, the `after_config` hook registers `form/native_filemanager` using Moodle's public QuickForm element factory. It inherits the native filemanager and delegates its presentation and normal save/cancel behavior. Only `files_filemanager` on `/mod/folder/edit.php` and `files` on Folder/File `/course/modedit.php` bind a material browser. Subdirectory Moodle installations are supported. Newly created activities bind the native draft before their first save.
+The after_config hook registers inherited native filemanager and editor elements through Moodle's public QuickForm factory on /mod/folder/edit.php and /course/modedit.php. Native fields supply context, actor-owned draft, accepted types and count/byte/directory limits. Empty existing drafts receive their own root before binding. Browser parameters cannot create authority or override limits.
 
-The live field supplies context, draft ownership, file types and count/byte/directory limits. A session-bound token connects that actual field to the embedded `/local/coursebridge/selection/index.php` page. Browser requests cannot provide their own upload limits or destination draft. Repository transfer uses Moodle's documented external chooser callback and existing protected download endpoint.
-
-Folder content editors require `mod/folder:managefiles`, `local/coursebridge:browse`, `local/coursebridge:reuse` and repository access. They do not require `moodle/course:manageactivities`. Folder/File Settings and new activities retain their native activity-management permission. Custom roles must receive the CourseBridge capabilities explicitly; existing grants/prohibitions are preserved.
+Folder content editors require mod/folder:managefiles, local/multipicker:browse, local/multipicker:reuse and repository access. They do not need moodle/course:manageactivities. Other activity settings/new forms retain their actual native editing permission. Custom roles need the MultiPicker capabilities explicitly.
 
 ![Native picker and draft sequence](diagrams/design/sequences/folder-selection.svg)
 
-Other modules and single-file controls keep their ordinary individual picker. Custom themes may override the browser and review templates. Strict author protection still blocks unsupported native copies; explicitly choosing editable-with-provenance retains original attribution while allowing later native metadata edits. See [author policy](09-authorship-policy.md), [scope binding](16-native-form-scope.md), [File main-file behavior](18-resource-selection.md) and [validation](07-validation-and-decisions.md).
+Supported Tiny activity editors use the same picker. Tiny's native Link browser inserts the first link and the local adapter adds remaining approved links through the public editor instance, in one undoable insertion. Image/media subpickers retain one-file selection and their native accepted types. Editors without a verified multi-link adapter and unregistered controls retain their ordinary native behavior. No student submission or private profile form is automatically batch-enabled.
+
+![Native Tiny multiple-link sequence](diagrams/design/sequences/editor-selection.svg)
+
+See [public source areas](22-public-material-sources.md), [author policy](09-authorship-policy.md), [scope binding](16-native-form-scope.md), [File main-file behavior](18-resource-selection.md) and [validation](07-validation-and-decisions.md).

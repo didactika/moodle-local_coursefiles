@@ -5,18 +5,18 @@ Moodle discovers plugin metadata, callbacks and repository entry classes at thei
 ## Local plugin layout
 
 ```text
-local/coursebridge/
+local/multipicker/
 ├── admin/                  settings.php, profiles.php, profile.php, migration.php, migration_review.php, log.php
 ├── course/                 index.php, policy.php
 ├── classes/
 │   ├── local/
-│   │   ├── catalog/        catalog, indexer, material_source
+│   │   ├── catalog/        catalog, indexer, material_source, source_provider, native_source_provider, source_registry
 │   │   ├── profile/        profiles, profile_config
 │   │   ├── policy/         author_policy
 │   │   ├── migration/      planner, executor, placement, folder adapter, decisions
-│   │   ├── selection/      material_selection, draft_import, draft_scope, browser_listing, destination_access, native_integration, selection_options
+│   │   ├── selection/      material_selection, draft_import, draft_scope, browser_controller, browser_listing, selection_basket, destination_access, native_integration, selection_options
 │   │   └── logging/        log
-│   ├── form/               native Moodle forms, scoped_filemanager, native_filemanager integration element
+│   ├── form/               native Moodle forms, scoped_filemanager, native_filemanager, native_editor integration elements
 │   ├── output/             view, renderer, display, navigation, profile_summary, migration_report
 │   ├── privacy/            Moodle Privacy API provider
 │   └── task/               Moodle task entry classes
@@ -35,31 +35,31 @@ local/coursebridge/
 
 ![Source responsibilities](diagrams/design/source-structure.svg)
 
-For example, `classes/local/catalog/indexer.php` defines `local_coursebridge\\local\\catalog\\indexer`. Cross-domain dependencies use explicit imports. The root observer, task class names and Privacy API provider retain their Moodle entry contracts.
+For example, `classes/local/catalog/indexer.php` defines `local_multipicker\\local\\catalog\\indexer`. Cross-domain dependencies use explicit imports. The root observer, task class names and Privacy API provider retain their Moodle entry contracts.
 
 ## Page routes
 
 | Purpose | Canonical route |
 |---|---|
-| Course catalog | `/local/coursebridge/course/index.php` |
-| Course policy | `/local/coursebridge/course/policy.php` |
-| Site settings | `/local/coursebridge/admin/settings.php` |
-| Relationship profiles | `/local/coursebridge/admin/profiles.php` |
-| Profile editor and unsaved preview | `/local/coursebridge/admin/profile.php` |
-| Migration administration | `/local/coursebridge/admin/migration.php` |
-| Stored migration review and execution | `/local/coursebridge/admin/migration_review.php?planid=...` |
-| Action log | `/local/coursebridge/admin/log.php` |
+| Course catalog | `/local/multipicker/course/index.php` |
+| Course policy | `/local/multipicker/course/policy.php` |
+| Site settings | `/local/multipicker/admin/settings.php` |
+| Relationship profiles | `/local/multipicker/admin/profiles.php` |
+| Profile editor and unsaved preview | `/local/multipicker/admin/profile.php` |
+| Migration administration | `/local/multipicker/admin/migration.php` |
+| Stored migration review and execution | `/local/multipicker/admin/migration_review.php?planid=...` |
+| Action log | `/local/multipicker/admin/log.php` |
 
 The five previous root page URLs remain authenticated forwarding entry scripts. They include the actual controller, preserving request parameters and POST handling. Controllers retain their course/system capability and session-key checks. New navigation links and form actions use the canonical routes.
 
 ## Templates and theme overrides
 
-Templates use a `local/` first subdirectory, following Moodle's component namespace rules. `output/view` maps approved logical names to the organized identifiers documented in [presentation](11-presentation-and-theming.md), including navigation, rule summaries and the migration setup/review screens.
+Templates use a `local/` first subdirectory, following Moodle's component namespace rules. `output/view` maps approved logical names to the organized identifiers documented in [presentation](11-presentation-and-theming.md), including navigation, the browser/review/review_node, rule summaries and the migration setup/review screens.
 
 Existing custom theme overrides must use the new paths, for example:
 
 ```text
-theme/mytheme/templates/local_coursebridge/local/catalog/material_card.mustache
+theme/mytheme/templates/local_multipicker/local/catalog/material_card.mustache
 ```
 
 Replace the plugin code as a complete package so removed class/template files do not remain as stale copies, then run Moodle's normal plugin upgrade and cache purge. Business table names and stored task class names are unchanged.
@@ -67,4 +67,4 @@ Replace the plugin code as a complete package so removed class/template files do
 References: [Moodle templates and subdirectories](https://moodledev.io/docs/4.5/guides/templates), [autoloaded common files](https://moodledev.io/docs/4.5/apis/commonfiles).
 
 
-`selection/index.php` owns the embedded browsing/review page. `amd/src/browser.js` contains native picker entry/completion and selection count presentation; `amd/build` contains the core-generated AMD assets.
+`selection/index.php` owns browsing, `selection/review.php` owns review, and `selection/status.php` returns an actor-bound completed-editor receipt. `lib.php` exposes the authenticated native Fragment callback. AMD browser/editor_import modules contain presentation and public native chooser/editor coordination; their core-generated assets live in `amd/build`.

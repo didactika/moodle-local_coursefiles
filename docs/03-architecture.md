@@ -1,6 +1,6 @@
 # Architecture
 
-CourseBridge has two components. **local_coursebridge** owns data, rules, authorization and administration. **repository_coursebridge** owns native picker listing, filters, origin selection and draft copying. It delegates business decisions to the local plugin.
+MultiPicker has two components. **local_multipicker** owns data, rules, authorization and administration. **repository_multipicker** owns native picker listing, filters, origin selection and draft copying. It delegates business decisions to the local plugin.
 
 ![Components](diagrams/design/components.svg)
 
@@ -30,17 +30,17 @@ Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migrat
 
 `author_policy` resolves site/course/source protection and captures the original declaration. Native editor paths allow later author changes, so strict copying is refused. The repository cannot turn metadata preservation into universal editing prevention.
 
-`material_selection` expands bounded file/folder selections; `draft_import` reviews and applies them to an existing native form draft. This is an internal server contract, separate from the repository's single-file dialog. See the [batch service and its sequence](15-draft-batches.md).
+`material_selection` expands bounded file/folder selections; `draft_import` reviews and applies them to an existing native form draft. The scoped native repository browser consumes this contract; unregistered upload controls keep individual selection. See the [batch service and its sequence](15-draft-batches.md).
 
-`form/scoped_filemanager` inherits the native control and reads its server-defined limits. `draft_scope` binds an explicitly integrated control and its approval to the current session. See the [owning-form API](16-native-form-scope.md); existing module controls are not automatically replaced.
+`form/scoped_filemanager` inherits the native control and reads its server-defined limits. `draft_scope` binds an explicitly integrated control and its approval to the current session. See the [owning-form API](16-native-form-scope.md); the native activity adapters bind existing authorized controls through the same authority model.
 
-`form/native_filemanager` binds supported live native fields through the public QuickForm element factory. `draft_scope` stores actual limits and review authority; `browser_listing` supplies cards to the embedded browser. `amd/src/browser.js` opens the native repository and completes its documented external chooser contract. The companion repository revalidates and transfers reviewed selections through core download. See [Folder selection](17-folder-selection.md) and [File selection](18-resource-selection.md).
+`form/native_filemanager` binds supported live native fields through the public QuickForm element factory. `draft_scope` stores actual limits and review authority; `browser_listing` supplies cards to the embedded browser. `browser_controller` shares bounded state between the embedded page and Moodle Fragment callbacks. `amd/src/browser.js` updates filters/layouts and completes the documented external chooser contract; `editor_import.js` inserts additional approved Tiny links. The companion repository revalidates and transfers reviewed selections through core download. See [Folder selection](17-folder-selection.md) and [File selection](18-resource-selection.md).
 
 ![Folder settings sequence](diagrams/design/sequences/folder-selection.svg)
 
 ## Content and access
 
-Moodle File Storage owns binaries, drafts and native course usages. Identical bytes share native content storage; independent usages retain their native records. CourseBridge adds no binary pool or stored asset table.
+Moodle File Storage owns binaries, drafts and native course usages. Identical bytes share native content storage; independent usages retain their native records. MultiPicker adds no binary pool or stored asset table.
 
 The occurrence index is reconstructible. Refresh replaces one course's cached records in a transaction under a lock. Module/course events enqueue refresh work; reconciliation visits up to 100 courses per invocation. Active profile revisions exclude stale membership.
 
@@ -57,3 +57,5 @@ Page controllers prepare plain data, component renderers select Mustache templat
 ## Lifecycle
 
 The package uses Moodle DML/XMLDB, Task, Lock, capabilities, language strings and Privacy APIs. Native copied files survive plugin removal. Core course backup includes copied files; this package does not remap plugin lineage on restore. Technical actor exports and anonymization remain distinct from material author declarations.
+
+Public activity adapters are described in [public material sources](22-public-material-sources.md). The registry separates enumerating public areas from native read permission and rechecks source eligibility at transfer.

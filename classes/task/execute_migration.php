@@ -17,11 +17,11 @@
 /**
  * Bounded accountable migration task.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\task;
+namespace local_multipicker\task;
 
 /**
  * Requeues only bounded pending work under the original acting user.
@@ -32,7 +32,7 @@ final class execute_migration extends \core\task\adhoc_task {
      */
     public function execute(): void {
         $runid = (int)$this->get_custom_data()->runid;
-        if (\local_coursebridge\local\migration\migration_executor::execute($runid)) {
+        if (\local_multipicker\local\migration\migration_executor::execute($runid)) {
             $next = new self();
             $next->set_userid($this->get_userid());
             $next->set_custom_data(['runid' => $runid]);

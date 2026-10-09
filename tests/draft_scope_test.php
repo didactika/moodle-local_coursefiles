@@ -17,18 +17,18 @@
 /**
  * Owning native form scope integration checks.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge;
+namespace local_multipicker;
 
-use local_coursebridge\fixture\scoped_form;
-use local_coursebridge\form\scoped_filemanager;
-use local_coursebridge\local\catalog\material_source;
-use local_coursebridge\local\profile\profiles;
-use local_coursebridge\local\selection\draft_scope;
+use local_multipicker\fixture\scoped_form;
+use local_multipicker\form\scoped_filemanager;
+use local_multipicker\local\catalog\material_source;
+use local_multipicker\local\profile\profiles;
+use local_multipicker\local\selection\draft_scope;
 
 /**
  * Tests actual owning form options, session authority and native draft rendering.
@@ -51,7 +51,7 @@ final class draft_scope_test extends \advanced_testcase {
         $token = $form->control()->open_scope($context);
         draft_scope::select_destination($token, $path, sesskey());
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invalidselection', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('invalidselection', 'local_multipicker'));
         draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
     }
 
@@ -73,7 +73,7 @@ final class draft_scope_test extends \advanced_testcase {
         $token = $control->open_scope($context);
         $this->assertSame(['/' => '/'], draft_scope::destinations($token, sesskey()));
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('batchlimit', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('batchlimit', 'local_multipicker'));
         draft_scope::select_destination($token, '/chosen/', sesskey());
     }
 
@@ -92,7 +92,7 @@ final class draft_scope_test extends \advanced_testcase {
         );
         $token = $form->control()->open_scope($context);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_multipicker'));
         draft_scope::select_destination($token, '/foreign/', sesskey());
     }
 
@@ -114,7 +114,7 @@ final class draft_scope_test extends \advanced_testcase {
         $review = draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
         $directory->delete();
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_multipicker'));
         draft_scope::apply($token, $review['digest'], sesskey());
     }
 
@@ -150,7 +150,7 @@ final class draft_scope_test extends \advanced_testcase {
         $items = [['cmid' => $source->cmid, 'filepath' => '/']];
         $review = draft_scope::review($token, $profileid, $items, sesskey());
         $this->assertSame(3, $review['filecount']);
-        $this->assertSame(0, $DB->count_records('local_coursebridge_attribution'));
+        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
         draft_scope::apply($token, $review['digest'], sesskey());
         $draftid = (int)$control->getValue();
         $files = get_file_storage()->get_area_files(
@@ -174,7 +174,7 @@ final class draft_scope_test extends \advanced_testcase {
         $this->assertStringContainsString('filemanager', $html);
         $this->assertSame($draftid, (int)$control->getValue());
         $this->assertSame($draftid, (int)$refreshed->control()->getValue());
-        $this->assertSame(2, $DB->count_records('local_coursebridge_attribution'));
+        $this->assertSame(2, $DB->count_records('local_multipicker_attribution'));
         $this->assertCount(1, get_file_storage()->get_area_files($context->id, 'mod_folder', 'content', 0, 'id', false));
         file_save_draft_area_files($draftid, $context->id, 'mod_folder', 'content', 0, ['subdirs' => true]);
         $this->assertCount(3, get_file_storage()->get_area_files($context->id, 'mod_folder', 'content', 0, 'id', false));
@@ -184,7 +184,7 @@ final class draft_scope_test extends \advanced_testcase {
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchconflict', $exception->errorcode);
         }
-        $this->assertSame(2, $DB->count_records('local_coursebridge_attribution'));
+        $this->assertSame(2, $DB->count_records('local_multipicker_attribution'));
     }
 
     /**
@@ -207,11 +207,11 @@ final class draft_scope_test extends \advanced_testcase {
         $token = $form->control()->open_scope($context);
         $actor = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($actor->id, $target->course, 'editingteacher');
-        $scopes = $SESSION->local_coursebridge_drafts;
+        $scopes = $SESSION->local_multipicker_drafts;
         $this->setUser($actor);
-        $SESSION->local_coursebridge_drafts = $scopes;
+        $SESSION->local_multipicker_drafts = $scopes;
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
         draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
     }
 
@@ -222,9 +222,9 @@ final class draft_scope_test extends \advanced_testcase {
         global $SESSION;
         [$form, $profileid, $source, , $context] = $this->fixture();
         $token = $form->control()->open_scope($context);
-        $SESSION->local_coursebridge_drafts[$token]['expires'] = time() - 1;
+        $SESSION->local_multipicker_drafts[$token]['expires'] = time() - 1;
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
         draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
     }
 
@@ -264,7 +264,7 @@ final class draft_scope_test extends \advanced_testcase {
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchconflict', $exception->errorcode);
         }
-        $this->assertSame(0, $DB->count_records('local_coursebridge_attribution'));
+        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
     }
 
     /**
@@ -284,7 +284,7 @@ final class draft_scope_test extends \advanced_testcase {
             false
         ));
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
         draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
     }
 
@@ -295,7 +295,7 @@ final class draft_scope_test extends \advanced_testcase {
         [$form, , , , $context] = $this->fixture();
         $form->control()->freeze();
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
         $form->control()->open_scope($context);
     }
 
@@ -344,7 +344,7 @@ final class draft_scope_test extends \advanced_testcase {
         get_file_storage()->create_directory(\context_user::instance($actor->id)->id, 'user', 'draft', $draftid, '/');
         $form->control()->setValue($draftid);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursebridge'));
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_multipicker'));
         $form->control()->open_scope($context);
     }
 
@@ -361,9 +361,9 @@ final class draft_scope_test extends \advanced_testcase {
             $token = $control->open_scope($context);
             $firsttoken = $firsttoken ?: $token;
         }
-        $this->assertCount(draft_scope::MAX_SCOPES, $SESSION->local_coursebridge_drafts);
-        $this->assertArrayNotHasKey($firsttoken, $SESSION->local_coursebridge_drafts);
-        $this->assertArrayHasKey($token, $SESSION->local_coursebridge_drafts);
+        $this->assertCount(draft_scope::MAX_SCOPES, $SESSION->local_multipicker_drafts);
+        $this->assertArrayNotHasKey($firsttoken, $SESSION->local_multipicker_drafts);
+        $this->assertArrayHasKey($token, $SESSION->local_multipicker_drafts);
     }
 
     /**
@@ -377,8 +377,8 @@ final class draft_scope_test extends \advanced_testcase {
         $this->setAdminUser();
         require_once($CFG->libdir . '/formslib.php');
         require_once(__DIR__ . '/fixtures/scoped_form.php');
-        set_config('author_policy', 'editable_with_provenance', 'local_coursebridge');
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/coursebridge/examples/institutional-profile.json'), true);
+        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
+        $config = json_decode(file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json'), true);
         $config['publication']['mode'] = 'explicit-family-publication';
         $profileid = profiles::save(json_encode($config));
         $uuid = '550e8400-e29b-41d4-a716-446655440000';
