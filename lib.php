@@ -36,42 +36,11 @@ function local_coursebridge_extend_navigation_course($navigation, $course, $cont
             new moodle_url('/local/coursebridge/course/index.php', ['courseid' => $course->id]),
             navigation_node::TYPE_CUSTOM
         );
-    }
-    if (has_capability('local/coursebridge:managecoursepolicy', $context)) {
+    } else if (has_capability('local/coursebridge:managecoursepolicy', $context)) {
         $navigation->add(
             get_string('coursepolicy', 'local_coursebridge'),
             new moodle_url('/local/coursebridge/course/policy.php', ['courseid' => $course->id]),
             navigation_node::TYPE_CUSTOM
         );
     }
-}
-
-/**
- * Add native related-material selection to Folder and File editing forms.
- *
- * @param moodleform_mod $formwrapper Actual module form.
- * @param MoodleQuickForm $mform Actual QuickForm.
- */
-function local_coursebridge_coursemodule_standard_elements($formwrapper, $mform): void {
-    \local_coursebridge\local\selection\module_form::define($formwrapper, $mform);
-}
-
-/**
- * Review or apply a batch to the current form draft without submitting the activity.
- *
- * @param moodleform_mod $formwrapper Actual module form.
- * @param MoodleQuickForm $mform Actual QuickForm.
- */
-function local_coursebridge_coursemodule_definition_after_data($formwrapper, $mform): void {
-    \local_coursebridge\local\selection\module_form::after_data($formwrapper, $mform);
-}
-
-/**
- * Add the native activity settings route to related-material selection.
- *
- * @param settings_navigation $navigation Native settings tree.
- * @param context $context Current context.
- */
-function local_coursebridge_extend_settings_navigation($navigation, $context): void {
-    \local_coursebridge\local\selection\activity_navigation::extend($navigation, $context);
 }

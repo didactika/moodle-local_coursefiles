@@ -75,6 +75,8 @@ $data = [
     'actionurl' => $PAGE->url->out(false), 'courseid' => $courseid, 'profileid' => $profileid,
     'sesskey' => sesskey(), 'profiles' => display::options($options, (string)$profileid),
     'hasprofiles' => (bool)$profiles, 'filters' => $filters, 'reseturl' => $reseturl->out(false),
+    'multipleprofiles' => count($profiles) > 1,
+    'advancedfilters' => $filters['shortname'] !== '' || $filters['module'] !== '' || $filters['mimetype'] !== '',
     'modules' => display::options([
         '' => get_string('allmodules', 'local_coursebridge'),
         'folder' => get_string('modulename', 'folder'),
@@ -137,5 +139,6 @@ if ($profileid) {
 }
 $data['hasassets'] = (bool)$data['assets'];
 echo $OUTPUT->header();
+echo $PAGE->get_renderer('local_coursebridge')->render(\local_coursebridge\output\navigation::course('index', $courseid));
 echo $PAGE->get_renderer('local_coursebridge')->render(new view('catalog', $data));
 echo $OUTPUT->footer();

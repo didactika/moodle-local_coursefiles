@@ -49,7 +49,7 @@ final class catalog {
         global $DB;
         require_capability('local/coursebridge:browse', \context_course::instance($targetcourse));
         require_capability('local/coursebridge:reuse', \context_course::instance($targetcourse));
-        require_capability('moodle/course:manageactivities', \context_course::instance($targetcourse));
+        \local_coursebridge\local\selection\destination_access::require($targetcourse);
         if ($after !== '' && !preg_match('/^[a-f0-9]{40}$/', $after)) {
             throw new \moodle_exception('invalidcursor', 'local_coursebridge');
         }
@@ -61,6 +61,15 @@ final class catalog {
         $limit = max(1, min(50, $limit));
         $params = ['revisionid' => $revision->id, 'familyhash' => $identity['familyhash'], 'after' => $after];
         $where = 'c.revisionid = :revisionid AND c.familyhash = :familyhash AND f.contenthash > :after';
+        if (!empty($filters['cmid'])) {
+            $where .= ' AND f.cmid = :cmid';
+            $params['cmid'] = (int)$filters['cmid'];
+        }
+        if (!empty($filters['sourcepath'])) {
+            $sourcepath = \local_coursebridge\local\selection\material_selection::path($filters['sourcepath']);
+            $where .= ' AND ' . $DB->sql_like('n.filepath', ':sourcepath', true);
+            $params['sourcepath'] = $DB->sql_like_escape($sourcepath) . '%';
+        }
         foreach (['edition' => 'c.edition', 'q' => 'f.filename', 'mimetype' => 'f.mimetype'] as $key => $field) {
             if (!empty($filters[$key])) {
                 if ($key === 'q') {
@@ -74,6 +83,7 @@ final class catalog {
         }
         $sql = 'SELECT f.*, c.edition FROM {local_coursebridge_file} f
                   JOIN {local_coursebridge_course} c ON c.courseid = f.courseid
+                  JOIN {files} n ON n.pathnamehash = f.pathnamehash
                  WHERE ' . $where . ' ORDER BY f.contenthash, f.id';
         $records = $DB->get_recordset_sql($sql, $params);
         $assets = [];

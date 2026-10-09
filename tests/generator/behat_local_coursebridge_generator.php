@@ -34,6 +34,8 @@ final class behat_local_coursebridge_generator extends behat_generator_base {
     protected function get_creatable_entities(): array {
         return ['folder fixtures' => [
             'singular' => 'folder fixture', 'datagenerator' => 'folder_fixture', 'required' => ['name'],
+        ], 'migration fixtures' => [
+            'singular' => 'migration fixture', 'datagenerator' => 'migration_fixture', 'required' => ['name'],
         ]];
     }
 }

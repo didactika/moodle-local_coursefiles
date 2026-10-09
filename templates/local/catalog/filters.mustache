@@ -1,47 +1,50 @@
 {{!
     @template local_coursebridge/local/catalog/filters
-    Native GET filters; selected options are supplied by the presenter.
-    Context: actionurl, courseid, profiles, filters, modules, filetypes, reseturl.
-    Example context (json): {"courseid":2,"profiles":[],"filters":{},"modules":[],"filetypes":[]}
+    Compact native GET filters with optional advanced fields.
+    Example context (json): {"courseid":2,"profiles":[],"profileid":1,"filters":{},"modules":[],"filetypes":[]}
 }}
 <form method="get" action="{{actionurl}}" class="card mb-4" aria-label="{{#str}}filtermaterials, local_coursebridge{{/str}}">
     <div class="card-body">
         <input type="hidden" name="courseid" value="{{courseid}}">
+        {{^multipleprofiles}}<input type="hidden" name="profileid" value="{{profileid}}">{{/multipleprofiles}}
         <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="cb-profile">{{#str}}profile, local_coursebridge{{/str}}</label>
-                <select class="form-control" name="profileid" id="cb-profile">{{#profiles}}
-                    <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
-                {{/profiles}}</select>
-            </div>
             <div class="col-md-8 mb-3">
                 <label for="cb-query">{{#str}}filenamefilter, local_coursebridge{{/str}}</label>
                 <input type="search" class="form-control" name="q" id="cb-query" value="{{filters.q}}">
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
                 <label for="cb-edition">{{#str}}editionfilter, local_coursebridge{{/str}}</label>
                 <input class="form-control" name="edition" id="cb-edition" value="{{filters.edition}}">
             </div>
-            <div class="col-md-3 mb-3">
-                <label for="cb-course">{{#str}}shortnamecourse, core{{/str}}</label>
-                <input class="form-control" name="shortname" id="cb-course" value="{{filters.shortname}}">
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="cb-module">{{#str}}modulefilter, local_coursebridge{{/str}}</label>
-                <select class="form-control" name="module" id="cb-module">{{#modules}}
-                    <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
-                {{/modules}}</select>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="cb-filetype">{{#str}}filetypefilter, local_coursebridge{{/str}}</label>
-                <select class="form-control" name="mimetype" id="cb-filetype">{{#filetypes}}
-                    <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
-                {{/filetypes}}</select>
-            </div>
         </div>
-        <div class="d-flex flex-wrap">
-            <button class="btn btn-primary mb-2" type="submit">{{#str}}search, core{{/str}}</button>
-            <a class="btn btn-link mb-2" href="{{reseturl}}">{{#str}}clearfilters, local_coursebridge{{/str}}</a>
-        </div>
+        <details class="mb-3" {{#advancedfilters}}open{{/advancedfilters}}>
+            <summary>{{#str}}morefilters, local_coursebridge{{/str}}</summary>
+            <div class="row mt-3">
+                {{#multipleprofiles}}<div class="col-md-6 mb-3">
+                    <label for="cb-profile">{{#str}}profile, local_coursebridge{{/str}}</label>
+                    <select class="form-control" name="profileid" id="cb-profile">{{#profiles}}
+                        <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                    {{/profiles}}</select>
+                </div>{{/multipleprofiles}}
+                <div class="col-md-6 mb-3">
+                    <label for="cb-course">{{#str}}shortnamecourse, core{{/str}}</label>
+                    <input class="form-control" name="shortname" id="cb-course" value="{{filters.shortname}}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="cb-module">{{#str}}modulefilter, local_coursebridge{{/str}}</label>
+                    <select class="form-control" name="module" id="cb-module">{{#modules}}
+                        <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                    {{/modules}}</select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="cb-filetype">{{#str}}filetypefilter, local_coursebridge{{/str}}</label>
+                    <select class="form-control" name="mimetype" id="cb-filetype">{{#filetypes}}
+                        <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                    {{/filetypes}}</select>
+                </div>
+            </div>
+        </details>
+        <button class="btn btn-primary" type="submit">{{#str}}search, core{{/str}}</button>
+        <a class="btn btn-link" href="{{reseturl}}">{{#str}}clearfilters, local_coursebridge{{/str}}</a>
     </div>
 </form>

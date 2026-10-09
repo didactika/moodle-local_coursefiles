@@ -42,6 +42,7 @@ final class draft_import {
      * @param array $items Source selectors.
      * @param array $limits Owning form's authoritative options.
      * @param string $basepath Current draft destination directory.
+     * @param string $mode Folder placement mode.
      * @return array Decisions, resulting file count/size and eligibility.
      */
     public static function review(
@@ -50,11 +51,11 @@ final class draft_import {
         int $draftid,
         array $items,
         array $limits,
-        string $basepath = '/'
+        string $basepath = '/',
+        string $mode = 'paths'
     ): array {
         global $USER;
-        require_capability('local/coursebridge:reuse', \context_course::instance($courseid));
-        require_capability('moodle/course:manageactivities', \context_course::instance($courseid));
+        destination_access::require($courseid);
         self::validate_limits($limits);
         $basepath = material_selection::path($basepath);
         $fs = get_file_storage();
@@ -79,11 +80,16 @@ final class draft_import {
         $skipcontent = ($rules->get_config()['migration']['same_content_different_path'] ?? '') === 'skip-and-report';
         $operations = [];
         $blocked = false;
-        foreach (material_selection::resolve($courseid, $profileid, $items) as $hash => $file) {
+        $files = material_selection::resolve($courseid, $profileid, $items);
+        $mapping = material_selection::map_paths($files, $items, $mode);
+        foreach ($files as $hash => $file) {
             [$file, $cm] = material_source::resolve($hash, $courseid, $profileid);
             author_policy::require_native_copy($file, (int)$cm->course, $courseid);
             $source = copy_decision::snapshot($file);
-            $path = $basepath . ltrim($file->get_filepath(), '/');
+            $path = $basepath . ltrim($mapping[$hash], '/');
+            if (\core_text::strlen($path) > 255) {
+                throw new \moodle_exception('invalidselection', 'local_coursebridge');
+            }
             $key = $path . $file->get_filename();
             $decision = copy_decision::classify($source, $paths[$key] ?? null);
             if ($decision === 'copy' && $skipcontent) {
@@ -124,7 +130,7 @@ final class draft_import {
             throw new \moodle_exception('batchlimit', 'local_coursebridge');
         }
         $digest = hash('sha256', json_encode([
-            $USER->id, $courseid, $profileid, $revision->id, $draftid, $basepath, $limits, $draftsnapshot, $operations,
+            $USER->id, $courseid, $profileid, $revision->id, $draftid, $basepath, $mode, $limits, $draftsnapshot, $operations,
         ], JSON_THROW_ON_ERROR));
         return ['operations' => $operations, 'filecount' => $count, 'bytes' => $bytes,
             'blocked' => $blocked, 'digest' => $digest];
@@ -140,6 +146,7 @@ final class draft_import {
      * @param array $limits Authoritative owning form options.
      * @param string $digest Previously approved review digest.
      * @param string $basepath Destination directory.
+     * @param string $mode Folder placement mode.
      * @return array Applied review.
      */
     public static function apply(
@@ -149,7 +156,8 @@ final class draft_import {
         array $items,
         array $limits,
         string $digest,
-        string $basepath = '/'
+        string $basepath = '/',
+        string $mode = 'paths'
     ): array {
         global $DB, $USER;
         $lock = \core\lock\lock_config::get_lock_factory('local_coursebridge')
@@ -159,7 +167,7 @@ final class draft_import {
         }
         try {
             $transaction = $DB->start_delegated_transaction();
-            $review = self::review($courseid, $profileid, $draftid, $items, $limits, $basepath);
+            $review = self::review($courseid, $profileid, $draftid, $items, $limits, $basepath, $mode);
             if ($review['blocked'] || !hash_equals($review['digest'], $digest)) {
                 throw new \moodle_exception('batchconflict', 'local_coursebridge');
             }

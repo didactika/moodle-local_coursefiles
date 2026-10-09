@@ -1,64 +1,81 @@
 {{!
     @template local_coursebridge/local/migration/report
-    Readable reviewed migration report without internal JSON or raw locator IDs.
-    Context: planid, uuid, planstate, sourceedition, targetedition, metrics, operations,
-    issues, runs, executeurl, canexecute, digest, sesskey, newplanurl, actionurl.
-    Example context (json): {"planstate":"Ready for review","metrics":[],"operations":[],"runs":[]}
+    Paged, grouped review of the immutable preview and its execution state.
+    Example context (json): {"planstate":"Ready for review","metrics":[],"groups":[],"runs":[],"filters":[]}
 }}
 <section class="coursebridge-migration" data-region="coursebridge-migration">
     <h2>{{#str}}report, local_coursebridge{{/str}}</h2>
+    <ol class="list-inline mb-4" aria-label="{{#str}}migrationsteps, local_coursebridge{{/str}}">
+        <li class="list-inline-item"><a href="{{newplanurl}}">1. {{#str}}migrationstep_configure, local_coursebridge{{/str}}</a></li>
+        <li class="list-inline-item"><strong>2. {{#str}}migrationstep_review, local_coursebridge{{/str}}</strong></li>
+        <li class="list-inline-item">3. {{#str}}migrationstep_execute, local_coursebridge{{/str}}</li>
+    </ol>
     <p class="h5">{{sourceedition}} → {{targetedition}}</p>
-    <p>{{planstate}} <span class="small text-muted">{{#str}}planreference, local_coursebridge{{/str}}: {{uuid}}</span></p>
+    <p>{{planstate}}</p>
     <div class="row mb-3">{{#metrics}}
         <div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body">
             <div class="h3">{{count}}</div><div>{{label}}</div>
         </div></div></div>
     {{/metrics}}</div>
+    <details class="mb-4">
+        <summary>{{#str}}reviewedrules, local_coursebridge{{/str}}</summary>
+        <div class="mt-3">{{#summary}}{{> local_coursebridge/local/profile/summary}}{{/summary}}</div>
+        <p class="small text-muted text-break">{{#str}}planreference, local_coursebridge{{/str}}: {{uuid}}</p>
+    </details>
+    {{#blocked}}<div class="alert alert-warning">{{#str}}blockedpreviewhelp, local_coursebridge{{/str}}</div>{{/blocked}}
     {{#hasissues}}<div class="alert alert-warning">
         <h3 class="h5">{{#str}}reviewissues, local_coursebridge{{/str}}</h3>
-        <ul class="mb-0">{{#issues}}<li>{{description}}</li>{{/issues}}</ul>
+        <ul class="mb-0">{{#issues}}<li>{{description}}{{#context}}<div class="small text-break">{{context}}</div>{{/context}}</li>{{/issues}}</ul>
     </div>{{/hasissues}}
-    {{#canexecute}}<form method="post" action="{{actionurl}}" class="mb-4">
-        <input type="hidden" name="sesskey" value="{{sesskey}}">
-        <input type="hidden" name="planid" value="{{planid}}">
-        <input type="hidden" name="digest" value="{{digest}}">
-        <p class="text-muted">{{#str}}reviewbeforeexecute, local_coursebridge{{/str}}</p>
-        <button class="btn btn-primary" name="action" value="execute" type="submit">{{#str}}execute, local_coursebridge{{/str}}</button>
-    </form>{{/canexecute}}
-    <a class="btn btn-outline-secondary mb-4" href="{{newplanurl}}">{{#str}}newpreview, local_coursebridge{{/str}}</a>
+    <nav class="mb-3" aria-label="{{#str}}decision, local_coursebridge{{/str}}">
+        <ul class="nav nav-pills flex-wrap">{{#filters}}<li class="nav-item">
+            <a href="{{url}}" class="nav-link {{#active}}active{{/active}}" {{#active}}aria-current="page"{{/active}}>{{label}} ({{count}})</a>
+        </li>{{/filters}}</ul>
+    </nav>
+    <p class="small text-muted">{{pageinfo}}</p>
+    {{#groups}}<div class="card mb-4"><div class="card-body">
+        <h3 class="h5 text-break">{{sourcecourse}} → {{targetcourse}}</h3>
+        <p class="text-muted text-break">{{targetsection}} / {{targetfolder}}</p>
+        <ul class="list-group list-group-flush">{{#operations}}<li class="list-group-item px-0">
+            <div class="row"><div class="col-md-7">
+                <strong class="text-break">{{filename}}</strong><div class="small text-muted text-break">{{filepath}}</div>
+                <div class="small text-break">{{author}} · {{license}}</div>
+            </div><div class="col-md-5 mt-2 mt-md-0">
+                <strong>{{decisionlabel}}</strong><div class="small">{{statelabel}}</div>
+                {{#resultlabel}}<div class="small">{{resultlabel}}</div>{{/resultlabel}}
+            </div></div>
+        </li>{{/operations}}</ul>
+    </div></div>{{/groups}}
+    {{^hasoperations}}<p class="alert alert-info">{{#str}}nofilteredoperations, local_coursebridge{{/str}}</p>{{/hasoperations}}
+    <nav class="mb-4" aria-label="{{#str}}pagination, local_coursebridge{{/str}}">
+        {{#previousurl}}<a class="btn btn-outline-secondary" href="{{previousurl}}">{{#str}}previous, core{{/str}}</a>{{/previousurl}}
+        {{#nexturl}}<a class="btn btn-outline-secondary" href="{{nexturl}}">{{#str}}next, core{{/str}}</a>{{/nexturl}}
+    </nav>
     {{#hasruns}}<section class="mb-4" aria-label="{{#str}}planprogress, local_coursebridge{{/str}}">
         <h3 class="h5">{{#str}}planprogress, local_coursebridge{{/str}}</h3>
         <p>{{planprogress}}</p>
         <progress class="w-100" value="{{plancompleted}}" max="{{plantotal}}" aria-label="{{planprogress}}"></progress>
+        <p><a href="{{refreshurl}}" class="btn btn-outline-secondary">{{#str}}refreshstatus, local_coursebridge{{/str}}</a></p>
     </section>{{/hasruns}}
-    {{#runs}}
-    <div class="card mb-3"><div class="card-body">
+    {{#runs}}<div class="card mb-3"><div class="card-body">
         <h3 class="h5">{{#str}}runreference, local_coursebridge, {{id}}{{/str}} · {{statelabel}}</h3>
-        <p>{{progresslabel}}</p>
         {{#cancancel}}<form method="post" action="{{actionurl}}">
             <input type="hidden" name="sesskey" value="{{sesskey}}">
-            <input type="hidden" name="planid" value="{{planid}}">
             <input type="hidden" name="runid" value="{{id}}">
             <button class="btn btn-outline-secondary" name="action" value="cancel" type="submit">{{#str}}cancelrun, local_coursebridge{{/str}}</button>
         </form>{{/cancancel}}
-    </div></div>
-    {{/runs}}
-    {{#hasoperations}}
-    <div class="table-responsive"><table class="table table-striped">
-        <caption>{{#str}}migrationtablecaption, local_coursebridge{{/str}}</caption>
-        <thead><tr>
-            <th scope="col">{{#str}}source, local_coursebridge{{/str}}</th>
-            <th scope="col">{{#str}}destination, local_coursebridge{{/str}}</th>
-            <th scope="col">{{#str}}decision, local_coursebridge{{/str}}</th>
-            <th scope="col">{{#str}}state, local_coursebridge{{/str}}</th>
-        </tr></thead>
-        <tbody>{{#operations}}<tr>
-            <td>{{filename}}<div class="small text-muted">{{filepath}}</div><div class="small">{{author}} · {{license}}</div></td>
-            <td>{{targetcourse}}<div class="small text-muted">{{targetsection}} / {{targetfolder}}</div></td>
-            <td>{{decisionlabel}}</td>
-            <td>{{statelabel}}{{#resultlabel}}<div class="small">{{resultlabel}}</div>{{/resultlabel}}</td>
-        </tr>{{/operations}}</tbody>
-    </table></div>
-    {{/hasoperations}}
-    {{^hasoperations}}<div class="alert alert-info">{{#str}}nomigrationoperations, local_coursebridge{{/str}}</div>{{/hasoperations}}
+    </div></div>{{/runs}}
+    {{#canexecute}}<div class="card mb-4"><div class="card-body">
+        <h3 class="h5">3. {{#str}}migrationstep_execute, local_coursebridge{{/str}}</h3>
+        <p>{{#str}}reviewbeforeexecute, local_coursebridge{{/str}}</p>
+        {{^maintenance}}<p class="alert alert-info">{{#str}}maintenancepreviewhelp, local_coursebridge{{/str}}</p>{{/maintenance}}
+        <form method="post" action="{{actionurl}}">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <input type="hidden" name="digest" value="{{digest}}">
+            <label class="d-block mb-3"><input type="checkbox" name="confirmed" value="1" required>
+                {{#str}}confirmmigration, local_coursebridge{{/str}}</label>
+            <button class="btn btn-primary" name="action" value="execute" type="submit" {{^maintenance}}disabled{{/maintenance}}>{{#str}}execute, local_coursebridge{{/str}}</button>
+        </form>
+    </div></div>{{/canexecute}}
+    <a class="btn btn-outline-secondary mb-4" href="{{newplanurl}}">{{#str}}changescope, local_coursebridge{{/str}}</a>
 </section>

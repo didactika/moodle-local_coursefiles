@@ -35,6 +35,90 @@ use local_coursebridge\local\selection\draft_scope;
  */
 final class draft_scope_test extends \advanced_testcase {
     /**
+     * Prefixing source directories cannot exceed the native filepath column length.
+     */
+    public function test_combined_destination_path_cannot_exceed_native_storage(): void {
+        global $USER;
+        [$form, $profileid, $source, , $context] = $this->fixture();
+        $path = '/' . str_repeat('a', 249) . '/';
+        get_file_storage()->create_directory(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            (int)$form->control()->getValue(),
+            $path
+        );
+        $token = $form->control()->open_scope($context);
+        draft_scope::select_destination($token, $path, sesskey());
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('invalidselection', 'local_coursebridge'));
+        draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
+    }
+
+    /**
+     * Destination choices include only this draft and obey the real subdirectory setting.
+     */
+    public function test_destination_choices_and_native_subdirectory_limit(): void {
+        global $USER;
+        [$form, , , , $context] = $this->fixture();
+        $control = $form->control();
+        $fs = get_file_storage();
+        $usercontext = \context_user::instance($USER->id)->id;
+        $fs->create_directory($usercontext, 'user', 'draft', (int)$control->getValue(), '/chosen/');
+        $otherdraft = file_get_unused_draft_itemid();
+        $fs->create_directory($usercontext, 'user', 'draft', $otherdraft, '/other/');
+        $token = $control->open_scope($context);
+        $this->assertSame(['/' => '/', '/chosen/' => '/chosen/'], draft_scope::destinations($token, sesskey()));
+        $control->setSubdirs(false);
+        $token = $control->open_scope($context);
+        $this->assertSame(['/' => '/'], draft_scope::destinations($token, sesskey()));
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('batchlimit', 'local_coursebridge'));
+        draft_scope::select_destination($token, '/chosen/', sesskey());
+    }
+
+    /**
+     * A directory from another draft cannot be bound by forging a submitted path.
+     */
+    public function test_destination_must_exist_in_bound_draft(): void {
+        global $USER;
+        [$form, , , , $context] = $this->fixture();
+        get_file_storage()->create_directory(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            file_get_unused_draft_itemid(),
+            '/foreign/'
+        );
+        $token = $form->control()->open_scope($context);
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursebridge'));
+        draft_scope::select_destination($token, '/foreign/', sesskey());
+    }
+
+    /**
+     * Deleting an approved destination prevents copying even when leaf snapshots are unchanged.
+     */
+    public function test_deleted_destination_cannot_apply(): void {
+        global $USER;
+        [$form, $profileid, $source, , $context] = $this->fixture();
+        $directory = get_file_storage()->create_directory(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            (int)$form->control()->getValue(),
+            '/chosen/'
+        );
+        $token = $form->control()->open_scope($context);
+        draft_scope::select_destination($token, '/chosen/', sesskey());
+        $review = draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
+        $directory->delete();
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursebridge'));
+        draft_scope::apply($token, $review['digest'], sesskey());
+    }
+
+    /**
      * The registered subclass uses actual native options, including MIME normalization and upload ceilings.
      */
     public function test_control_contract_matches_core(): void {

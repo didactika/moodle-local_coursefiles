@@ -9,7 +9,6 @@
     <div class="mb-4">
         <h2 id="coursebridge-catalog-title">{{#str}}dashboard, local_coursebridge{{/str}}</h2>
         <p class="text-muted">{{#str}}catalogintro, local_coursebridge{{/str}}</p>
-        {{#policyurl}}<a href="{{policyurl}}" class="btn btn-outline-secondary">{{#str}}coursepolicy, local_coursebridge{{/str}}</a>{{/policyurl}}
     </div>
     {{#hasprofiles}}
     {{> local_coursebridge/local/catalog/filters}}
@@ -32,6 +31,7 @@
     {{/hasprofiles}}
     {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_coursebridge{{/str}}</div>{{/hasprofiles}}
     {{#canrefresh}}
+    <details class="mb-4"><summary>{{#str}}catalogmaintenance, local_coursebridge{{/str}}</summary>
     <div class="card mb-4">
         <div class="card-body">
             <h3 class="h5">{{#str}}catalogmaintenance, local_coursebridge{{/str}}</h3>
@@ -44,6 +44,10 @@
             </form>
         </div>
     </div>
+    </details>
     {{/canrefresh}}
-    {{#publicationenabled}}{{> local_coursebridge/local/catalog/publication}}{{/publicationenabled}}
+    {{#publicationenabled}}<details class="mb-4">
+        <summary>{{#str}}publicationtitle, local_coursebridge{{/str}}</summary>
+        {{> local_coursebridge/local/catalog/publication}}
+    </details>{{/publicationenabled}}
 </section>

@@ -1,8 +1,8 @@
 # Action log and existing installations
 
-Open Site administration → Plugins → Local plugins → CourseBridge → Recent log. The page requires `local/coursebridge:viewlog` at system context. Managers receive this capability by default; a separate reader role can be granted access without profile or migration editing permissions.
+Open CourseBridge from Site administration and choose the Log tab. A delegated log reader enters through their authorized administration entry. The page requires `local/coursebridge:viewlog` at system context. Managers receive this capability by default; a separate reader role can be granted access without profile or migration editing permissions.
 
-The page shows the date, readable action, actor and reference. Actions cover profile activation, course author policy changes, publication changes, migration previews, queueing, blocked plans and processed batches. Profile and plan UUIDs are references; actions without a shared reference leave that column empty. System actions and removed actors have a common fallback label.
+The page shows the date, readable action, actor and reference. Actions cover profile activation, site/course author policy changes, publication changes, migration previews, queueing, blocked plans and processed batches. Profile and plan UUIDs are references; site policy changes have their own action reference. Actions without a shared reference leave that column empty. System actions and removed actors have a common fallback label.
 
 ## Reading records
 

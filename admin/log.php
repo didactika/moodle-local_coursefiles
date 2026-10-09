@@ -54,6 +54,8 @@ foreach ($page['records'] as $record) {
 $nexturl = $page['nextbefore'] ? new moodle_url($url, ['before' => $page['nextbefore']]) : null;
 $renderer = $PAGE->get_renderer('local_coursebridge');
 echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('pluginname', 'local_coursebridge'));
+echo $PAGE->get_renderer('local_coursebridge')->render(\local_coursebridge\output\navigation::site('log'));
 echo $renderer->render(new \local_coursebridge\output\view('log', [
     'formurl' => (new moodle_url('/local/coursebridge/admin/log.php'))->out(false),
     'options' => $options, 'entityuuid' => $entityuuid, 'records' => $records,

@@ -120,10 +120,12 @@ final class output_test extends \advanced_testcase {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('migration_report', [
             'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025', 'targetedition' => '2026',
-            'hasoperations' => true, 'operations' => [[
+            'hasoperations' => true, 'groups' => [[
+                'sourcecourse' => 'BIO101-2025', 'targetcourse' => 'BIO101-2026',
+                'targetsection' => 'Week 1', 'targetfolder' => 'Class materials', 'operations' => [[
                 'filename' => 'lesson.pdf', 'filepath' => '/week1/', 'author' => 'Original author', 'license' => 'cc',
-                'targetcourse' => 'BIO101-2026', 'targetsection' => 'Week 1', 'targetfolder' => 'Class materials',
                 'decisionlabel' => display::outcome('skip_content'), 'statelabel' => display::outcome('pending'),
+                ]],
             ]],
         ]));
         $this->assertStringContainsString('BIO101-2026', $html);
