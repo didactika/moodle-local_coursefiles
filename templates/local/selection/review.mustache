@@ -15,32 +15,15 @@
         "rows": [{"filename": "lesson.txt", "filepath": "/", "author": "Teacher", "license": "cc", "decision": "Copy"}]
     }
 }}
-<div class="coursebridge-selection-review">
+<div class="coursebridge-selection-review mt-3">
+    <h3 class="h5">{{#str}}batchreview, local_coursebridge{{/str}}</h3>
     <p>{{#str}}batchresult, local_coursebridge{{/str}} {{count}} ({{size}})</p>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <caption>{{#str}}batchreview, local_coursebridge{{/str}}</caption>
-            <thead>
-                <tr>
-                    <th scope="col">{{#str}}filenamefilter, local_coursebridge{{/str}}</th>
-                    <th scope="col">{{#str}}batchpath, local_coursebridge{{/str}}</th>
-                    <th scope="col">{{#str}}author, repository{{/str}}</th>
-                    <th scope="col">{{#str}}license, repository{{/str}}</th>
-                    <th scope="col">{{#str}}batchdecision, local_coursebridge{{/str}}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#rows}}
-                <tr>
-                    <th scope="row">{{filename}}</th>
-                    <td>{{filepath}}</td>
-                    <td>{{author}}</td>
-                    <td>{{license}}</td>
-                    <td>{{decision}}</td>
-                </tr>
-                {{/rows}}
-            </tbody>
-        </table>
-    </div>
+    <ul class="list-group">
+        {{#rows}}
+        <li class="list-group-item text-break">
+            <div><strong>{{filepath}}{{filename}}</strong> <span class="badge bg-secondary text-white">{{decision}}</span></div>
+            <div class="small">{{#str}}author, repository{{/str}}: {{author}} / {{#str}}license, repository{{/str}}: {{license}}</div>
+        </li>
+        {{/rows}}
+    </ul>
 </div>
-

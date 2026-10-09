@@ -15,37 +15,60 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Edition and placement review form.
+ * Edition and layout selection before preview.
  *
  * @package local_coursebridge
  * @copyright 2026 CourseBridge contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_coursebridge\form;
+
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 
 /**
- * Selects exact editions before any write.
+ * Uses an explicit selected profile and native edition suggestions.
  */
 final class migration_form extends \moodleform {
     /**
-     * Define migration scope.
+     * Define the selected migration scope.
      */
     public function definition(): void {
-        global $DB;
         $form = $this->_form;
-        $options = [];
-        foreach ($DB->get_records('local_coursebridge', ['enabled' => 1], 'name') as $profile) {
-            $options[$profile->id] = $profile->name;
-        }
-        $form->addElement('select', 'profileid', get_string('profile', 'local_coursebridge'), $options);
+        $form->addElement('hidden', 'profileid', $this->_customdata['profileid']);
+        $form->setType('profileid', PARAM_INT);
         foreach (['sourceedition', 'targetedition'] as $name) {
-            $form->addElement('text', $name, get_string($name, 'local_coursebridge'));
+            $form->addElement('text', $name, get_string($name, 'local_coursebridge'), ['list' => 'cb-editions']);
             $form->setType($name, PARAM_TEXT);
             $form->addRule($name, null, 'required');
         }
-        $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_coursebridge'));
-        $this->add_action_buttons(false, get_string('preview', 'local_coursebridge'));
+        $options = '';
+        foreach ($this->_customdata['editions'] as $edition) {
+            $options .= \html_writer::tag('option', '', ['value' => $edition]);
+        }
+        $form->addElement('html', \html_writer::tag('datalist', $options, ['id' => 'cb-editions']));
+        if ($this->_customdata['ordinal']) {
+            $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_coursebridge'));
+            $form->addElement('static', 'layouthelp', '', get_string('layouthelp', 'local_coursebridge'));
+        }
+        $this->add_action_buttons(false, get_string('createpreview', 'local_coursebridge'));
+    }
+
+    /**
+     * Explain common scope errors before calling the planner.
+     *
+     * @param array $data Submitted scope.
+     * @param array $files Submitted files.
+     * @return array Validation errors.
+     */
+    public function validation($data, $files): array {
+        $errors = parent::validation($data, $files);
+        if ($data['sourceedition'] === $data['targetedition']) {
+            $errors['targetedition'] = get_string('differenteditions', 'local_coursebridge');
+        }
+        if ($this->_customdata['ordinal'] && empty($data['layoutconfirmed'])) {
+            $errors['layoutconfirmed'] = get_string('layoutrequired', 'local_coursebridge');
+        }
+        return $errors;
     }
 }

@@ -1,16 +1,16 @@
 # Reviewed draft batches
 
-The internal PHP services in `classes/local/selection/` resolve mixed file/folder selections and copy a reviewed batch into an existing, current-user native draft. They do not expose a web endpoint or add multiple selection to the repository dialog. The current native picker still selects one file at a time.
+The internal PHP services in `classes/local/selection/` resolve mixed file/folder selections and copy a reviewed batch into an existing, current-user native draft. The embedded browser consumes these services through an owning-form session binding; the repository performs the approved transfer through Moodle's existing download action.
 
 Explicitly integrated native controls use [the owning-form scope API](16-native-form-scope.md) to bind their real options and reviewed selectors to the current session. Direct PHP callers still own their authoritative form contract.
 
-The [Folder Settings consumer](17-folder-selection.md) and [File Settings consumer](18-resource-selection.md) provide native mixed selection, review and form rerendering over these services. The service itself does not own the screen or permanent module saving. Added files use `sortorder = 0` so a source main-file marker cannot change the destination's main file.
+The [Folder Settings consumer](17-folder-selection.md) and [File Settings consumer](18-resource-selection.md) provide embedded multiple selection, review and native filemanager refresh over these services. The service itself does not own the screen or permanent module saving. Added files use `sortorder = 0` so a source main-file marker cannot change the destination's main file.
 
 ## Selection and destination
 
 `material_selection::resolve()` accepts explicit native file occurrences (`pathnamehash`) and folder-module directories (`cmid`, `filepath`). A folder selects its files recursively. Parent/child/file overlaps are deduplicated by pathname hash. Empty folders, invalid paths and selections exceeding 200 files are rejected. SQL wildcard characters in directory names are literal. Only eligible native folder/resource teaching files are accepted, with current family, source visibility, access or explicit publication checks for each file.
 
-`draft_import::review()` requires target reuse and activity-management capabilities. The draft destination directory must already exist in the current account's draft area. Source paths are merged below that directory: source `/notes/lesson.txt` copied at destination `/materials/` becomes `/materials/notes/lesson.txt`. Source module display names do not create additional directories; empty directories are not copied.
+`draft_import::review()` requires target reuse and the owning workflow's native editing capability. The draft destination directory must already exist in the current account's draft area. Source paths are merged below that directory: source `/notes/lesson.txt` copied at destination `/materials/` becomes `/materials/notes/lesson.txt`. The explicit folder mode preserves original paths, includes the selected folder/activity name, or strips the selected root. The widest overlapping selected parent wins; empty directories are not copied.
 
 The caller supplies the owning form's actual server-side `maxfiles`, `maxbytes`, `areamaxbytes`, `subdirs` and `accepted_types`. Incomplete contracts are rejected. Browser-supplied values cannot establish this authority. A control with `maxfiles = 1` cannot receive a batch resulting in several files. Native conventions apply: `maxfiles = -1` and `areamaxbytes = -1` are unlimited; `maxbytes = 0` is unlimited after the caller has resolved the applicable form/site/course limit.
 
@@ -30,5 +30,5 @@ The normal owning form performs permanent saving. Tests exercise native folder s
 
 The strict site/course author policy still refuses native copies because later native metadata edits cannot be universally prevented. Explicit editable policy preserves the original declaration in provenance; it does not prohibit later editing. See [authorship](09-authorship-policy.md).
 
-Integration tests cover mixed overlapping selections, multiple source folders, content skipping, conflicts, destination limits, draft ownership, hidden sources, changed drafts/profiles/policies and rollback after a second-copy failure. Exact core results are recorded in [validation](07-validation-and-decisions.md). No tables or new browser endpoints are introduced.
+Integration tests cover mixed overlapping selections, multiple source folders, content skipping, conflicts, destination limits, draft ownership, hidden sources, changed drafts/profiles/policies and rollback after a second-copy failure. Exact core results are recorded in [validation](07-validation-and-decisions.md). No new tables are introduced. The browser page reviews selections; the existing native repository endpoint performs transfer.
 

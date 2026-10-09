@@ -1,0 +1,72 @@
+{{!
+    @template local_coursebridge/local/selection/browser
+
+    Native embedded material browser with bounded mixed selection.
+
+    Example context (json):
+    {"action":"#","sesskey":"example","scope":"example","profiles":[],"cards":[],"count":0}
+}}
+<form method="post" action="{{action}}" class="coursebridge-browser p-3">
+    <input type="hidden" name="sesskey" value="{{sesskey}}">
+    <input type="hidden" name="scope" value="{{scope}}">
+    {{^multipleprofiles}}<input type="hidden" name="profileid" value="{{profileid}}">{{/multipleprofiles}}
+    {{#retained}}<input type="hidden" name="items[]" value="{{value}}">{{/retained}}
+    <h2 class="h4">{{#str}}importmaterials, local_coursebridge{{/str}}</h2>
+    {{#locked}}<div class="alert alert-warning" role="status">{{#str}}browserlocked, local_coursebridge{{/str}}</div>{{/locked}}
+    <div class="row">
+        <div class="col-12 col-sm-8 mb-2">
+            <label for="cbq">{{#str}}filenamefilter, local_coursebridge{{/str}}</label>
+            <input type="search" name="q" id="cbq" value="{{filters.q}}" class="form-control">
+        </div>
+        <div class="col-12 col-sm-4 mb-2">
+            <label for="cbedition">{{#str}}editionfilter, local_coursebridge{{/str}}</label>
+            <input type="text" name="edition" id="cbedition" value="{{filters.edition}}" class="form-control">
+        </div>
+    </div>
+    <details class="mb-2">
+        <summary>{{#str}}browseroptions, local_coursebridge{{/str}}</summary>
+        <div class="row mt-2">
+            {{#multipleprofiles}}
+            <div class="col-12 mb-2">
+            <label for="cbprofile">{{#str}}browserprofile, local_coursebridge{{/str}}</label>
+            <select name="profileid" id="cbprofile" class="form-control">{{#profiles}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/profiles}}</select>
+        </div>
+{{/multipleprofiles}}
+            <div class="col-12 col-sm-4 mb-2"><label for="cbshortname">{{#str}}shortnamefilter, local_coursebridge{{/str}}</label><input type="text" name="shortname" id="cbshortname" value="{{filters.shortname}}" class="form-control"></div>
+            <div class="col-12 col-sm-4 mb-2"><label for="cbmodule">{{#str}}modulefilter, local_coursebridge{{/str}}</label><select name="module" id="cbmodule" class="form-control">{{#modules}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/modules}}</select></div>
+            <div class="col-12 col-sm-4 mb-2"><label for="cbtype">{{#str}}filetypefilter, local_coursebridge{{/str}}</label><select name="mimetype" id="cbtype" class="form-control">{{#types}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/types}}</select></div>
+            <div class="col-12 col-md-6 mb-2"><label for="cbdestination">{{#str}}batchdestination, local_coursebridge{{/str}}</label><select name="destination" id="cbdestination" class="form-control">{{#destinations}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/destinations}}</select></div>
+            <div class="col-12 col-md-6 mb-2"><label for="cbmode">{{#str}}copymode, local_coursebridge{{/str}}</label><select name="mode" id="cbmode" class="form-control">{{#modes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/modes}}</select></div>
+        </div>
+    </details>
+    <div class="d-flex flex-wrap mb-3">
+        <button name="search" value="1" class="btn btn-secondary mx-2 mb-1">{{#str}}batchsearch, local_coursebridge{{/str}}</button>
+        <button name="selectpage" value="1" class="btn btn-link mb-1">{{#str}}selectpage, local_coursebridge{{/str}}</button>
+        <button name="clear" value="1" class="btn btn-link mb-1">{{#str}}clearselection, local_coursebridge{{/str}}</button>
+    </div>
+    {{#infolder}}<div class="mb-2"><button name="openfolder" value="{{parent}}" class="btn btn-link">{{#str}}back, core{{/str}}</button><span>{{path}}</span></div>{{/infolder}}
+    <div class="row">
+        {{#cards}}
+        <div class="col-12 col-sm-6 col-lg-4 mb-2">
+            <div class="card h-100"><div class="card-body p-3">
+                <div class="d-flex align-items-start">
+                    <input class="mt-1 mx-2" type="checkbox" id="{{id}}" name="items[]" value="{{value}}" {{#checked}}checked{{/checked}}>
+                    <div class="w-100 text-break">
+                        <label for="{{id}}" class="mb-1">{{#isfolder}}{{#pix}}f/folder, core{{/pix}}{{/isfolder}}{{^isfolder}}{{#pix}}f/document, core{{/pix}}{{/isfolder}} {{title}}</label>
+                        <div class="small">{{origin}}</div><div class="small text-muted">{{details}}</div>
+                        {{#isfolder}}<button name="openfolder" value="{{open}}" class="btn btn-link px-0 py-1">{{#str}}openfolder, local_coursebridge{{/str}}</button>{{/isfolder}}
+                    </div>
+                </div>
+            </div></div>
+        </div>
+        {{/cards}}
+    </div>
+    {{^cards}}<div class="alert alert-info">{{#str}}batchempty, local_coursebridge{{/str}}</div>{{/cards}}
+    {{#next}}<button name="next" value="{{next}}" class="btn btn-secondary mb-3">{{#str}}batchnext, local_coursebridge{{/str}}</button>{{/next}}
+    <div class="border-top pt-3 mt-2">
+        <button name="review" value="1" class="btn btn-primary">{{#str}}batchreview, local_coursebridge{{/str}}</button>
+        <span class="mx-2"><span data-coursebridge-count>{{count}}</span> {{#str}}selecteditems, local_coursebridge{{/str}}</span>
+    </div>
+    {{{reviewhtml}}}
+    {{#approved}}<button type="button" data-coursebridge-confirm disabled class="btn btn-primary mt-2">{{#str}}importselection, local_coursebridge{{/str}}</button>{{/approved}}
+</form>

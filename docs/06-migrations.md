@@ -1,6 +1,6 @@
 # Reviewed bulk copying
 
-The initial implementation is additive copying into existing folders. It preserves sources, nested paths and destination visibility/settings. It does not rename, overwrite or delete native files, create sections/folders, compensate a run or correct declared authors; these actions are outside the current package.
+Migrations copy additively into existing folders. They preserve sources, nested paths and destination visibility/settings. Renaming, overwriting or deleting native files, creating sections/folders, compensating a run and correcting declared authors are outside the current package. The [administration screens](20-administration-layout.md) separate configuration, stored review and execution.
 
 ![Migration goal package](diagrams/requirements/migration-use-cases.svg)
 

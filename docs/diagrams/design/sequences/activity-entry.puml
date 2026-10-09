@@ -1,26 +1,17 @@
 @startuml
 !include ../../_style.puml
-skinparam maxMessageSize 240
-title Activity navigation - open mixed selection
+title Native filemanager - import entry
 actor Teacher
-participant "Native activity page" as Activity
-participant "activity_navigation" as Navigation
-participant "Native Settings form" as Form
-participant "module_form" as Selection
-
-Teacher -> Activity : Open Folder / File activity
-Activity -> Navigation : Extend settings navigation
-Navigation -> Navigation : Check module, capabilities and enabled profiles
-Navigation --> Activity : Reuse related materials entry
-note over Activity, Navigation
-On the separate Folder Edit page,
-save or cancel pending changes before leaving.
+participant "Native filemanager" as Manager
+participant "Moodle picker" as Picker
+participant "Scoped browser" as Browser
+Teacher -> Manager : Import materials
+Manager -> Picker : Open Add file; select CourseBridge
+Picker -> Browser : Embed documented HTML chooser
+Browser --> Teacher : Filters, folders and checkbox cards
+note over Manager, Browser
+The pending native form stays open.
+Folder Edit-content needs managefiles,
+not activity Settings permission.
 end note
-Teacher -> Activity : Choose Reuse related materials
-Activity -> Form : Native modedit route; coursebridge=1 and section fragment
-Form -> Selection : Native module-form callbacks
-Selection -> Selection : Check writable control and current authority
-Selection --> Form : Expanded reuse section and current draft scope
-Teacher -> Form : Select, review and add materials
-note over Activity, Form : Native Save / Cancel owns permanent activity changes.
 @enduml

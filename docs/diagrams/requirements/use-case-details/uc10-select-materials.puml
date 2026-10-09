@@ -1,32 +1,38 @@
 @startuml
 !include ../../_style.puml
-title UC10 — Select files and folders together
+title UC10 - select and import materials
+|Teacher|
 start
-:Teacher opens Folder or File Settings;
-:Moodle binds the native filemanager;
-:Teacher presses Select several files or folders;
-:System opens the same form's reuse section;
-:Teacher filters and selects files / folders;
-:CourseBridge retains selection across results;
-:Teacher requests review;
-:CourseBridge expands folders and checks
-access, declarations, paths and upload limits;
-if (Review can be applied?) then (yes)
-  :Teacher adds reviewed materials;
-  :CourseBridge rechecks the approval;
-  if (Approval is still current?) then (yes)
-    :Copy into the draft transactionally;
-    if (Teacher saves?) then (yes)
-      :Moodle saves the activity normally;
-    else (cancel)
-      :Saved activity remains unchanged;
-    endif
-  else (no)
-    :Explain the change and require a new review;
-  endif
+:Open native Folder content or Folder/File Settings;
+:Press Import materials;
+|Moodle / CourseBridge|
+:Open scoped browser inside native picker;
+|Teacher|
+:Choose profile and optional compact filters;
+:Browse folders and tick files/folders;
+:Choose destination and folder structure;
+:Review selection;
+|CourseBridge|
+:Expand authorized descendants once;
+:Check policies, current draft and native limits;
+if (Review allowed?) then (yes)
+ :Show paths, original declarations and copy/skip decisions;
+ |Teacher|
+ :Press Import reviewed materials;
+ |CourseBridge|
+ :Recheck approval and copy transactionally to native draft;
+ :Refresh the original filemanager;
+ |Teacher|
+ if (Save?) then (yes)
+  |Moodle|
+  :Save native activity content;
+ else (cancel)
+  |Moodle|
+  :Keep saved activity unchanged;
+ endif
 else (no)
-  :Explain blocked decisions;
-  :Keep the selector available;
+ :Explain conflicts or policy/permission/limit failure;
+ :Retain choices for correction and another review;
 endif
 stop
 @enduml

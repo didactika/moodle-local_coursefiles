@@ -1,6 +1,10 @@
 # Design views
 
-The [activity navigation entry](../../19-activity-navigation.md) opens the supported native Settings workflow:
+The [administration pages](../../20-administration-layout.md) share a permission-aware navigation contract:
+
+![Administration pages](../../diagrams/design/administration-pages.svg)
+
+The [native filemanager entry](../../19-activity-navigation.md) opens the embedded picker workflow:
 
 ![Activity entry](../../diagrams/design/sequences/activity-entry.svg)
 
@@ -16,7 +20,7 @@ Explicit owning forms bind their native controls through the [session scope API]
 
 ![Native owning-form scope](../../diagrams/design/sequences/form-scope.svg)
 
-The native Folder Settings consumer has its own [screen contract](../../17-folder-selection.md):
+The native Folder content/Settings consumer has its own [screen contract](../../17-folder-selection.md):
 
 ![Folder mixed selection](../../diagrams/design/sequences/folder-selection.svg)
 
@@ -35,3 +39,5 @@ The native File consumer retains its [main-file choice](../../18-resource-select
 ![Theme presentation boundary](../../diagrams/design/presentation.svg)
 
 Installed table details are in the [database document](../../05-data-model.md). Each [use case](../requirements/use-cases/README.md) embeds its own design sequence. Shared integrations are described in [architecture](../../03-architecture.md).
+
+![Native browser classes](../../diagrams/design/native-browser-classes.svg)

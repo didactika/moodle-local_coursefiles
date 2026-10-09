@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Site policy and administration navigation.
+ * Administration page registration.
  *
  * @package local_coursebridge
  * @copyright 2026 CourseBridge contributors
@@ -23,57 +23,20 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$canviewlog = has_capability('local/coursebridge:viewlog', context_system::instance());
-if ($hassiteconfig || $canviewlog) {
-    $ADMIN->add('localplugins', new admin_category('local_coursebridge', get_string('pluginname', 'local_coursebridge')));
-}
-if ($hassiteconfig) {
-    $settings = new admin_settingpage('local_coursebridge_settings', get_string('settings', 'local_coursebridge'));
-    $settings->add(new admin_setting_configselect(
-        'local_coursebridge/author_policy',
-        get_string('author_policy', 'local_coursebridge'),
-        get_string('author_policy_desc', 'local_coursebridge'),
-        'preserve_locked',
-        [
-            'preserve_locked' => get_string('preserve_locked', 'local_coursebridge'),
-            'editable_with_provenance' => get_string('editable_with_provenance', 'local_coursebridge'),
-        ]
-    ));
-    $settings->add(new admin_setting_configselect(
-        'local_coursebridge/author_course_override',
-        get_string('author_course_override', 'local_coursebridge'),
-        get_string('author_course_override_desc', 'local_coursebridge'),
-        'disabled',
-        [
-            'disabled' => get_string('disabled', 'local_coursebridge'),
-            'tighten_only' => get_string('tighten_only', 'local_coursebridge'),
-        ]
-    ));
-    $settings->add(new admin_setting_configselect(
-        'local_coursebridge/author_missing_policy',
-        get_string('author_missing_policy', 'local_coursebridge'),
-        get_string('author_missing_policy_desc', 'local_coursebridge'),
-        'preserve_unknown',
-        [
-            'preserve_unknown' => get_string('preserve_unknown', 'local_coursebridge'),
-            'block_reuse' => get_string('block_reuse', 'local_coursebridge'),
-        ]
-    ));
-    $ADMIN->add('local_coursebridge', $settings);
-    foreach (['profiles', 'migration'] as $page) {
+$pages = \local_coursebridge\output\navigation::pages();
+$visible = array_filter($pages, static fn($page) => has_capability($page['capability'], context_system::instance()));
+if ($visible) {
+    $ADMIN->add(
+        $hassiteconfig ? 'localplugins' : 'root',
+        new admin_category('local_coursebridge', get_string('pluginname', 'local_coursebridge'))
+    );
+    foreach ($visible as $name => $page) {
         $ADMIN->add('local_coursebridge', new admin_externalpage(
-            'local_coursebridge_' . $page,
-            get_string($page === 'profiles' ? 'profiles' : 'preview', 'local_coursebridge'),
-            new moodle_url('/local/coursebridge/admin/' . $page . '.php'),
-            'local/coursebridge:' . ($page === 'profiles' ? 'manageprofiles' : 'planmigration')
+            'local_coursebridge_' . $name,
+            get_string($page['label'], 'local_coursebridge'),
+            new moodle_url('/local/coursebridge/admin/' . $name . '.php'),
+            $page['capability'],
+            $name !== array_key_first($visible)
         ));
     }
-}
-if ($canviewlog) {
-    $ADMIN->add('local_coursebridge', new admin_externalpage(
-        'local_coursebridge_log',
-        get_string('log', 'local_coursebridge'),
-        new moodle_url('/local/coursebridge/admin/log.php'),
-        'local/coursebridge:viewlog'
-    ));
 }

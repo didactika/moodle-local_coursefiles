@@ -1,0 +1,36 @@
+{{!
+    @template local_coursebridge/local/migration/setup
+    Profile choice, exact rule summary and bounded recent-preview list.
+    Example context (json): {"profiles":[],"hasprofiles":false,"recent":[],"hasrecent":false}
+}}
+<section data-region="coursebridge-migration-setup">
+    <h2>{{#str}}migrations, local_coursebridge{{/str}}</h2>
+    <p class="text-muted">{{#str}}migrationintro, local_coursebridge{{/str}}</p>
+    <ol class="list-inline mb-4" aria-label="{{#str}}migrationsteps, local_coursebridge{{/str}}">
+        <li class="list-inline-item"><strong>1. {{#str}}migrationstep_configure, local_coursebridge{{/str}}</strong></li>
+        <li class="list-inline-item">2. {{#str}}migrationstep_review, local_coursebridge{{/str}}</li>
+        <li class="list-inline-item">3. {{#str}}migrationstep_execute, local_coursebridge{{/str}}</li>
+    </ol>
+    {{#hasrecent}}<details class="mb-4">
+        <summary>{{#str}}recentpreviews, local_coursebridge{{/str}}</summary>
+        <ul class="list-group mt-3">{{#recent}}<li class="list-group-item">
+            <a href="{{url}}">{{name}}</a><div class="small text-muted">{{date}} · {{state}}</div>
+        </li>{{/recent}}</ul>
+    </details>{{/hasrecent}}
+    {{#hasprofiles}}
+    <form method="get" action="{{actionurl}}" class="mb-4">
+        <label for="cb-migration-profile">{{#str}}profile, local_coursebridge{{/str}}</label>
+        <div class="row"><div class="col-md-8 mb-2">
+            <select class="form-control" name="profileid" id="cb-migration-profile">{{#profiles}}
+                <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+            {{/profiles}}</select>
+        </div><div class="col-md-4 mb-2">
+            <button class="btn btn-outline-secondary" type="submit">{{#str}}useprofile, local_coursebridge{{/str}}</button>
+        </div></div>
+    </form>
+    {{#summary}}{{> local_coursebridge/local/profile/summary}}{{/summary}}
+    {{^haseditions}}<p class="alert alert-info">{{#str}}editionindexhelp, local_coursebridge{{/str}}</p>{{/haseditions}}
+    {{/hasprofiles}}
+    {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_coursebridge{{/str}}</div>{{/hasprofiles}}
+    {{#canmanageprofiles}}<p><a href="{{profilesurl}}">{{#str}}manageprofiles, local_coursebridge{{/str}}</a></p>{{/canmanageprofiles}}
+</section>

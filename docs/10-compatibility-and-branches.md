@@ -1,6 +1,9 @@
 # Compatibility
 
-Required targets: **Moodle 4.5 and Moodle 5.3**. The same PHP/native template package is tested on both cores. There is no custom AMD, React, TS or TSX bundle.
+This distribution declares Moodle 5.3 support. The Moodle 4.5 maintenance package is separate. The shared validation matrix below records both distributions.
+
+
+Required targets: **Moodle 4.5 and Moodle 5.3**. The same PHP/native template package is tested on both cores. A small core-built AMD adapter connects the inherited native filemanager and documented embedded repository chooser. The Moodle 5 maintenance distribution is kept separately. React is unnecessary here: the interactive picker and filemanager remain core widgets, and the browser uses server-rendered native templates. No React/ESM imports are added to the Moodle 4.5 distribution.
 
 | Tested core | Application layout | PHP / database |
 |---|---|---|
