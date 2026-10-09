@@ -32,6 +32,7 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 | design/sequences/log-query.puml | [Source](../diagrams/design/sequences/log-query.puml) | [SVG](../diagrams/design/sequences/log-query.svg) |
 | design/sequences/migration-batch.puml | [Source](../diagrams/design/sequences/migration-batch.puml) | [SVG](../diagrams/design/sequences/migration-batch.svg) |
 | design/sequences/picker-integration.puml | [Source](../diagrams/design/sequences/picker-integration.puml) | [SVG](../diagrams/design/sequences/picker-integration.svg) |
+| design/sequences/resource-selection.puml | [Source](../diagrams/design/sequences/resource-selection.puml) | [SVG](../diagrams/design/sequences/resource-selection.svg) |
 | design/sequences/uc01-search-materials.puml | [Source](../diagrams/design/sequences/uc01-search-materials.puml) | [SVG](../diagrams/design/sequences/uc01-search-materials.svg) |
 | design/sequences/uc02-attach-material.puml | [Source](../diagrams/design/sequences/uc02-attach-material.puml) | [SVG](../diagrams/design/sequences/uc02-attach-material.svg) |
 | design/sequences/uc03-configure-profile.puml | [Source](../diagrams/design/sequences/uc03-configure-profile.puml) | [SVG](../diagrams/design/sequences/uc03-configure-profile.svg) |

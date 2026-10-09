@@ -4,8 +4,8 @@ Checks use isolated Moodle PHPUnit and Behat databases. They do not modify a pro
 
 | Core | PHP / database | Local plugin | Repository plugin |
 |---|---|---|---|
-| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 64 tests / 324 assertions passed | 8 tests / 31 assertions passed |
-| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 64 tests / 324 assertions passed | 8 tests / 31 assertions passed |
+| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 65 tests / 343 assertions passed (Folder/File integration) | 8 tests / 31 assertions passed |
+| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 65 tests / 343 assertions passed (Folder/File integration) | 8 tests / 31 assertions passed |
 
 Verified on 2026-10-08, plugin version 2026100802. Privacy coverage is expanded on `test/coursebridge-privacy`; the earlier structure and repository checks used `refactor/coursebridge-structure`. Moodle coding standards 3.7.0 report zero errors and warnings across both packages. The existing 55 PlantUML diagrams and the added privacy process render to SVG without syntax errors. Local Markdown links resolve.
 
@@ -20,6 +20,12 @@ The integration tests exercise optional editions, ambiguous and invalid parsers,
 On 2026-10-09, `feat/coursebridge-folder-selection` adds five real Folder Settings integration cases. Both complete local suites passed 64 tests / 324 assertions. After ordering folders before their descendants, the five focused cases passed again with 32 assertions per core, including the added ordering assertion. They cover native control binding, reviewed mixed draft copies, retained pending title, unchanged activity content before saving, changed-selection refusal, grouped file choices with distinct folders, off-page selection, malformed selectors, usable choices after an empty review and escaped source labels.
 
 Two packaged local Behat scenarios pass on each core (38 steps): two published source folders plus a resource, selection retained after filtering, reviewed copy into the real folder settings draft, ordinary saving with existing content and nested files, and cancellation retaining the previous activity name/files. The plugin review-region axe check passes; this excludes the native autocomplete and does not establish whole-screen compliance.
+
+On 2026-10-09, `feat/coursebridge-resource-selection` extends the same native coordinator to File Settings. The resource integration case verifies mixed recursive draft copying, unchanged permanent files before saving, native resource saving and destination main-file preservation in both draft and permanent storage. The source main-file marker remains unchanged. The test isolates Moodle's request-wide no-submit cache; PHPUnit 9 annotations and PHPUnit 11 attributes supply equivalent process isolation.
+
+Both complete local suites pass 65 tests / 343 assertions on this branch. Moodle coding standards 3.7.0 report zero errors and warnings. All 53 local PlantUML source/preview pairs render and documentation links resolve. The repository package is unchanged; its listed results remain the earlier verified baseline.
+
+The expanded local Behat suite passes four scenarios / 63 steps on each required core. The two added File scenarios exercise mixed folder/resource selection, native saving, reopening with all supporting files and cancellation leaving one existing file. The earlier Folder scenarios and review-region accessibility check continue to pass. These resource checks do not add a whole-screen accessibility claim or a new visual viewport certification.
 
 The full native reuse-section axe check reports two core-autocomplete violations on both required checkouts: `aria-allowed-role` on its input/combobox and `aria-required-children` on the empty selection listbox. These are recorded rather than silently excluded from a claimed whole-screen pass. The plugin does not patch core or replace this native control. No complete accessibility certification is claimed.
 

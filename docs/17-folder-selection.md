@@ -24,7 +24,7 @@ Overlapping selections resolve each occurrence once. Existing destination files 
 
 ![Folder settings sequence](diagrams/design/sequences/folder-selection.svg)
 
-`lib.php` delegates Moodle's `coursemodule_standard_elements` and `coursemodule_definition_after_data` callbacks to `local/selection/folder_form`. Only the real `mod_folder_mod_form` with a writable `files` filemanager and current browse/reuse/activity-management permissions is eligible. Enabled profiles are required.
+`lib.php` delegates Moodle's `coursemodule_standard_elements` and `coursemodule_definition_after_data` callbacks to `local/selection/module_form`. Native Folder and File forms with a writable `files` filemanager and current browse/reuse/activity-management permissions are eligible. Enabled profiles are required. File activities also retain their [main-file choice](18-resource-selection.md).
 
 `form/scoped_filemanager::read_contract()` reads the existing native element's actual options. `draft_scope` binds its actor, context, field, draft and normalized upload limits to the current session. Every action requires a session key; applying also verifies the current visible profile/selection against the stored review. Changed drafts, sources, policies, profile revisions or control limits require another review. No request can supply trusted upload limits or a different destination.
 
@@ -32,7 +32,7 @@ Search, paging, review and addition use registered no-submit buttons. The native
 
 ## Supported entry points
 
-This integration is in the activity settings form (`/course/modedit.php`). The separate Folder **Edit** content page (`/mod/folder/edit.php`) has a different form without these module-extension callbacks. The repository modal and single-file controls continue to select one file. Other module forms are not automatically integrated.
+This integration is in the Folder and File activity settings form (`/course/modedit.php`). The separate Folder **Edit** content page (`/mod/folder/edit.php`) has a different form without these module-extension callbacks. The repository modal and single-file controls continue to select one file. Other module forms are not automatically integrated.
 
 After replacing an existing plugin installation, purge Moodle caches so its callback-discovery cache loads the new module-form callbacks. No schema migration is required for this screen.
 

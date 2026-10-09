@@ -16,7 +16,7 @@ The course Materials page uses the same authorized catalog with filters, grouped
 
 ## Select several files and folders
 
-For several files and folders together, open a Folder activity's **Settings** and expand **Reuse related materials**. Select native autocomplete entries, review their paths/declarations/decisions, then add the approved batch to the current draft. Selections survive result filtering. Ordinary Save/Cancel controls permanent storage. See [Folder selection](17-folder-selection.md).
+For several files and folders together, open a Folder or File activity's **Settings** and expand **Reuse related materials**. Select native autocomplete entries, review their paths/declarations/decisions, then add the approved batch to the current draft. Selections survive result filtering. Ordinary Save/Cancel controls permanent storage. File activities retain their existing main file; use the native manager to choose a different one. See [Folder selection](17-folder-selection.md) and [File selection](18-resource-selection.md).
 
 ![Mixed-selection conversation](diagrams/requirements/use-case-details/uc10-select-materials.svg)
 

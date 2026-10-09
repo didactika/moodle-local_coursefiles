@@ -80,7 +80,35 @@ final class local_coursebridge_generator extends component_generator_base {
                 'course' => $courses[2025]->id, 'name' => 'Published resource',
             ]);
             $this->create_file($resource->cmid, 'mod_resource', 'resource.txt', 'Resource content');
+            $sourcefile = get_file_storage()->get_file(
+                context_module::instance($resource->cmid)->id,
+                'mod_resource',
+                'content',
+                0,
+                '/',
+                'resource.txt'
+            );
+            $sourcefile->set_sortorder(1);
             material_source::publish($profileid, $resource->cmid, false);
+            $targetresource = $this->datagenerator->create_module('resource', [
+                'course' => $courses[2026]->id, 'name' => 'Target resource', 'display' => RESOURCELIB_DISPLAY_EMBED,
+            ]);
+            get_file_storage()->delete_area_files(
+                context_module::instance($targetresource->cmid)->id,
+                'mod_resource',
+                'content',
+                0
+            );
+            $this->create_file($targetresource->cmid, 'mod_resource', 'existing.txt', 'Existing resource content');
+            $mainfile = get_file_storage()->get_file(
+                context_module::instance($targetresource->cmid)->id,
+                'mod_resource',
+                'content',
+                0,
+                '/',
+                'existing.txt'
+            );
+            $mainfile->set_sortorder(1);
             $hidden = $this->datagenerator->create_module('folder', [
                 'course' => $courses[2025]->id, 'name' => 'Hidden materials', 'visible' => 0,
             ]);

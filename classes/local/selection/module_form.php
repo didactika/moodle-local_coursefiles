@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Native folder editing form batch selection.
+ * Native activity editing form batch selection.
  *
  * @package local_coursebridge
  * @copyright 2026 CourseBridge contributors
@@ -28,11 +28,11 @@ use local_coursebridge\output\display;
 use local_coursebridge\output\view;
 
 /**
- * Course-module callbacks keep the real folder's filemanager and its normal save/cancel lifecycle.
+ * Course-module callbacks retain the native filemanager and its normal save/cancel lifecycle.
  */
-final class folder_form {
+final class module_form {
     /**
-     * Add native selection controls beside the folder content settings.
+     * Add native selection controls beside the activity content settings.
      *
      * @param \moodleform_mod $wrapper Actual module form.
      * @param \MoodleQuickForm $mform Actual QuickForm.
@@ -48,6 +48,9 @@ final class folder_form {
         }
         self::add($mform, 'header', 'cbheader', get_string('batchheading', 'local_coursebridge'));
         self::add($mform, 'static', 'cbintro', '', get_string('batchintro', 'local_coursebridge'));
+        if ($wrapper instanceof \mod_resource_mod_form) {
+            self::add($mform, 'static', 'cbmainfilehelp', '', get_string('batchmainfilehelp', 'local_coursebridge'));
+        }
         self::add($mform, 'select', 'cbprofile', get_string('profiles', 'local_coursebridge'), $profiles);
         $mform->setDefault('cbprofile', array_key_first($profiles));
         $mform->setType('cbprofile', PARAM_INT);
@@ -190,14 +193,15 @@ final class folder_form {
     }
 
     /**
-     * Restrict automatic integration to authorized real folder forms with a writable native field.
+     * Restrict automatic integration to authorized Folder/File forms with a writable native field.
      *
      * @param \moodleform_mod $wrapper Module form.
      * @param \MoodleQuickForm $mform QuickForm.
      * @return bool Eligible.
      */
     private static function eligible(\moodleform_mod $wrapper, \MoodleQuickForm $mform): bool {
-        return $wrapper instanceof \mod_folder_mod_form && $mform->elementExists('files')
+        return ($wrapper instanceof \mod_folder_mod_form || $wrapper instanceof \mod_resource_mod_form)
+            && $mform->elementExists('files')
             && $mform->getElement('files') instanceof \MoodleQuickForm_filemanager
             && !$mform->getElement('files')->isFrozen()
             && has_capability('local/coursebridge:browse', \context_course::instance($wrapper->get_course()->id))

@@ -196,6 +196,7 @@ $string['batchnext'] = 'Más materiales';
 $string['batchreview'] = 'Revisar selección';
 $string['batchapply'] = 'Añadir materiales revisados';
 $string['batchadded'] = 'Materiales añadidos al borrador. Guarda la actividad para conservarlos.';
+$string['batchmainfilehelp'] = 'Los archivos añadidos conservan el archivo principal actual. Usa la acción "Establecer como archivo principal" del gestor de archivos de Moodle para elegir qué archivo abre esta actividad.';
 $string['batchfile'] = 'Archivo';
 $string['batchfolder'] = 'Carpeta';
 $string['batchretained'] = 'Elemento seleccionado {$a} (fuera de los resultados actuales)';

@@ -4,7 +4,7 @@ skinparam maxMessageSize 240
 title Folder settings — mixed selection
 actor Teacher
 participant "Native module form" as Form
-participant "folder_form" as Integration
+participant "module_form" as Integration
 participant "draft_scope" as Scope
 participant "draft_import" as Batch
 database "Native draft / activity" as Files

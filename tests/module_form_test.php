@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Real native folder form batch integration checks.
+ * Real native activity form batch integration checks.
  *
  * @package local_coursebridge
  * @copyright 2026 CourseBridge contributors
@@ -30,9 +30,70 @@ use local_coursebridge\local\profile\profiles;
 use local_coursebridge\local\selection\selection_options;
 
 /**
- * Exercises the actual folder settings form and its native plugin callbacks.
+ * Exercises actual Folder and File settings forms and their native plugin callbacks.
  */
-final class folder_form_test extends \advanced_testcase {
+final class module_form_test extends \advanced_testcase {
+    // PHPUnit 9 requires this isolation tag; PHPUnit 11 uses the equivalent attributes below.
+    // phpcs:disable moodle.Commenting.ValidTags.Invalid
+    /**
+     * Native File settings retain their main file when importing another activity's main file.
+     *
+     * Isolate Moodle's request-wide no-submit cache from other simulated requests.
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    // phpcs:enable moodle.Commenting.ValidTags.Invalid
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
+    public function test_resource_form_preserves_destination_main_file(): void {
+        global $USER, $DB;
+        [$course, $cm, $profileid, $sourcefolder, $resource] = $this->fixture('resource');
+        $resource->set_sortorder(1);
+        $html = $this->request($course, $cm)->render();
+        $this->assertStringContainsString('Set main file', $html);
+        $data = $this->hidden($html);
+        $selected = ['folder:' . $sourcefolder->cmid . ':' . base64_encode('/'), 'file:' . $resource->get_pathnamehash()];
+        $reviewdata = $this->hidden($this->request($course, $cm, array_replace($data, [
+            'cbitems' => $selected, 'cbreview' => 'Review selection', 'cbprofile' => $profileid,
+        ]))->render());
+        $this->assertNotEmpty($reviewdata['cbdigest']);
+        $applyform = $this->request($course, $cm, array_replace($reviewdata, [
+            'name' => 'Pending resource title', 'cbitems' => $selected, 'cbapply' => 'Add reviewed materials',
+            'cbprofile' => $profileid,
+        ]));
+        $this->assertStringContainsString('Materials added to the draft', $applyform->render());
+        $fs = get_file_storage();
+        $files = $fs->get_area_files(\context_user::instance($USER->id)->id, 'user', 'draft', (int)$data['files'], 'id', false);
+        $this->assertCount(4, $files);
+        foreach ($files as $file) {
+            $this->assertSame($file->get_filename() === 'existing.txt' ? 1 : 0, (int)$file->get_sortorder());
+        }
+        $this->assertSame(1, (int)$resource->get_sortorder());
+        $this->assertCount(1, $fs->get_area_files(
+            \context_module::instance($cm->id)->id,
+            'mod_resource',
+            'content',
+            0,
+            'id',
+            false
+        ));
+        $this->assertSame('Target materials', $DB->get_field('resource', 'name', ['id' => $cm->instance]));
+        $saveform = $this->request($course, $cm, array_replace($this->hidden($applyform->render()), [
+            'name' => 'Saved resource title', 'submitbutton' => 'Save and display',
+            'availabilityconditionsjson' => '', 'introeditor' => ['text' => '', 'format' => FORMAT_HTML, 'itemid' => 0],
+        ]));
+        $savedata = $saveform->get_data();
+        $this->assertNotNull($savedata);
+        update_moduleinfo($cm, $savedata, $course, $saveform);
+        $savedfiles = $fs->get_area_files(\context_module::instance($cm->id)->id, 'mod_resource', 'content', 0, 'id', false);
+        $this->assertCount(4, $savedfiles);
+        foreach ($savedfiles as $file) {
+            $this->assertSame($file->get_filename() === 'existing.txt' ? 1 : 0, (int)$file->get_sortorder());
+        }
+        $this->assertSame('Saved resource title', $DB->get_field('resource', 'name', ['id' => $cm->instance]));
+    }
+
     /**
      * Real native fields use their actual contract and mixed choices fill only the current draft.
      */
@@ -186,14 +247,16 @@ final class folder_form_test extends \advanced_testcase {
     /**
      * Create current source files, publication and a destination-only teacher.
      *
+     * @param string $modulename Destination module type.
      * @return array Destination course/module, profile, source folder and resource file.
      */
-    private function fixture(): array {
+    private function fixture(string $modulename = 'folder'): array {
         global $CFG, $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
         require_once($CFG->dirroot . '/course/modlib.php');
         require_once($CFG->dirroot . '/mod/folder/mod_form.php');
+        require_once($CFG->dirroot . '/mod/resource/mod_form.php');
         $config = json_decode(file_get_contents($CFG->dirroot . '/local/coursebridge/examples/institutional-profile.json'), true);
         $config['publication']['mode'] = 'explicit-family-publication';
         $profileid = profiles::save(json_encode($config));
@@ -216,11 +279,16 @@ final class folder_form_test extends \advanced_testcase {
             'filepath' => '/', 'filename' => 'extra.txt', 'author' => 'Resource author', 'license' => 'cc'], 'extra');
         material_source::publish($profileid, $folder->cmid, false);
         material_source::publish($profileid, $resourcemodule->cmid, false);
-        $destination = $this->getDataGenerator()->create_module('folder', ['course' => $target->id, 'name' => 'Target materials']);
-        $cm = get_coursemodule_from_id('folder', $destination->cmid, $target->id, false, MUST_EXIST);
+        $destination = $this->getDataGenerator()->create_module($modulename, [
+            'course' => $target->id, 'name' => 'Target materials',
+        ]);
+        $cm = get_coursemodule_from_id($modulename, $destination->cmid, $target->id, false, MUST_EXIST);
+        // The resource test generator creates a sample file; establish an explicit one-file fixture instead.
+        $fs->delete_area_files(\context_module::instance($cm->id)->id, 'mod_' . $modulename, 'content', 0);
         $fs->create_file_from_string(['contextid' => \context_module::instance($cm->id)->id,
-            'component' => 'mod_folder', 'filearea' => 'content', 'itemid' => 0,
-            'filepath' => '/', 'filename' => 'existing.txt', 'author' => 'Existing author', 'license' => 'cc'], 'existing');
+            'component' => 'mod_' . $modulename, 'filearea' => 'content', 'itemid' => 0,
+            'filepath' => '/', 'filename' => 'existing.txt', 'author' => 'Existing author', 'license' => 'cc',
+            'sortorder' => $modulename === 'resource' ? 1 : 0], 'existing');
         indexer::refresh($source->id);
         indexer::refresh($target->id);
         $teacher = $this->getDataGenerator()->create_user();
@@ -238,15 +306,16 @@ final class folder_form_test extends \advanced_testcase {
      * @param \stdClass $course Destination course.
      * @param \stdClass $cm Destination module.
      * @param array $submission Optional request values.
-     * @return \mod_folder_mod_form Actual form.
+     * @return \moodleform_mod Actual form.
      */
-    private function request(\stdClass $course, \stdClass $cm, array $submission = []): \mod_folder_mod_form {
+    private function request(\stdClass $course, \stdClass $cm, array $submission = []): \moodleform_mod {
         $_POST = [];
+        $classname = '\\mod_' . $cm->modname . '_mod_form';
         if ($submission) {
-            \mod_folder_mod_form::mock_submit($submission);
+            $classname::mock_submit($submission);
         }
         [$cm, , , $data, $section] = get_moduleinfo_data($cm, $course);
-        $form = new \mod_folder_mod_form($data, $section->section, $cm, $course);
+        $form = new $classname($data, $section->section, $cm, $course);
         $form->set_data($data);
         return $form;
     }

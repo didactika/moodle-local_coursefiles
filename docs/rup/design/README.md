@@ -16,6 +16,10 @@ The native Folder Settings consumer has its own [screen contract](../../17-folde
 
 ![Folder mixed selection](../../diagrams/design/sequences/folder-selection.svg)
 
+The native File consumer retains its [main-file choice](../../18-resource-selection.md):
+
+![File main-file preservation](../../diagrams/design/sequences/resource-selection.svg)
+
 ![Components](../../diagrams/design/components.svg)
 
 ![Catalog classes](../../diagrams/design/classes.svg)

@@ -2,7 +2,7 @@
 
 An explicitly integrated form can register `form/scoped_filemanager` as a custom QuickForm element. It inherits Moodle's native filemanager presentation, validation and saving behavior. Its server-side contract is read from the live element; browser requests cannot supply destination limits.
 
-This is a developer integration API. Existing module controls are not replaced. The [Folder Settings integration](17-folder-selection.md) also binds a standard native filemanager through this API; the repository dialog still selects one file. There is no standalone batch browser endpoint.
+This is a developer integration API. Existing module controls are not replaced. The [Folder Settings integration](17-folder-selection.md) and [File Settings integration](18-resource-selection.md) bind standard native filemanagers through this API; the repository dialog still selects one file. There is no standalone batch browser endpoint.
 
 ## Register and bind a native control
 
@@ -45,7 +45,7 @@ An apply attempt consumes its stored approval, including failed attempts; a new 
 
 The test fixture uses a real registered QuickForm element and a native no-submit refresh button. A simulated form submission retains the pending title and the same draft ID. `get_data()` returns no save payload for that refresh, and the native control renders again after the batch is added. The destination activity remains unchanged until the normal File API save.
 
-This establishes the developer element's PHP round trip, including native registration and rendering. The separately documented Folder Settings consumer provides the shipped native selection screen.
+This establishes the developer element's PHP round trip, including native registration and rendering. The separately documented Folder and File Settings consumers provide the shipped native selection screens.
 
 Thirteen integration cases also cover session-key rejection, stolen actor bindings, expiry, changed native limits, changed upload ceilings, explicit close, replay rejection, frozen controls, new and foreign drafts, current permission revocation and bounded session storage. See [validation](07-validation-and-decisions.md) and the underlying [batch contract](15-draft-batches.md).
 

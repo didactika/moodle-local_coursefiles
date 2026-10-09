@@ -196,6 +196,7 @@ $string['batchnext'] = 'More materials';
 $string['batchreview'] = 'Review selection';
 $string['batchapply'] = 'Add reviewed materials';
 $string['batchadded'] = 'Materials added to the draft. Save the activity to keep them.';
+$string['batchmainfilehelp'] = 'Added files do not replace the current main file. Use the native file manager action "Set main file" to choose which file this activity opens.';
 $string['batchfile'] = 'File';
 $string['batchfolder'] = 'Folder';
 $string['batchretained'] = 'Selected item {$a} (outside current results)';

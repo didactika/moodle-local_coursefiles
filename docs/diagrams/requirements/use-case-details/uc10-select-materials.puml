@@ -2,7 +2,7 @@
 !include ../../_style.puml
 title UC10 — Select files and folders together
 start
-:Teacher opens Folder Settings;
+:Teacher opens Folder or File Settings;
 :Moodle binds the native filemanager;
 :Teacher filters and selects files / folders;
 :CourseBridge retains selection across results;

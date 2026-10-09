@@ -34,7 +34,7 @@ Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migrat
 
 `form/scoped_filemanager` inherits the native control and reads its server-defined limits. `draft_scope` binds an explicitly integrated control and its approval to the current session. See the [owning-form API](16-native-form-scope.md); existing module controls are not automatically replaced.
 
-`local/selection/folder_form` uses Moodle module-form callbacks to add native search, multiple selection and no-submit review/add actions to Folder Settings. `selection_options` labels authorized file origins and real folder paths, retaining off-page choices. The existing native `files` element supplies the trusted contract. See [Folder selection](17-folder-selection.md).
+`local/selection/module_form` uses Moodle module-form callbacks to add native search, multiple selection and no-submit review/add actions to Folder and File Settings. `selection_options` labels authorized file origins and real folder paths, retaining off-page choices. The existing native `files` element supplies the trusted contract. See [Folder selection](17-folder-selection.md) and [File selection](18-resource-selection.md). Draft copies do not inherit source main-file markers.
 
 ![Folder settings sequence](diagrams/design/sequences/folder-selection.svg)
 

@@ -4,7 +4,7 @@ The internal PHP services in `classes/local/selection/` resolve mixed file/folde
 
 Explicitly integrated native controls use [the owning-form scope API](16-native-form-scope.md) to bind their real options and reviewed selectors to the current session. Direct PHP callers still own their authoritative form contract.
 
-The [Folder Settings consumer](17-folder-selection.md) provides native mixed selection, review and form rerendering over these services. The service itself does not own the screen or permanent module saving.
+The [Folder Settings consumer](17-folder-selection.md) and [File Settings consumer](18-resource-selection.md) provide native mixed selection, review and form rerendering over these services. The service itself does not own the screen or permanent module saving. Added files use `sortorder = 0` so a source main-file marker cannot change the destination's main file.
 
 ## Selection and destination
 

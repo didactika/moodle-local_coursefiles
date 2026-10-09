@@ -47,13 +47,13 @@ function local_coursebridge_extend_navigation_course($navigation, $course, $cont
 }
 
 /**
- * Add native related-material selection to folder editing forms.
+ * Add native related-material selection to Folder and File editing forms.
  *
  * @param moodleform_mod $formwrapper Actual module form.
  * @param MoodleQuickForm $mform Actual QuickForm.
  */
 function local_coursebridge_coursemodule_standard_elements($formwrapper, $mform): void {
-    \local_coursebridge\local\selection\folder_form::define($formwrapper, $mform);
+    \local_coursebridge\local\selection\module_form::define($formwrapper, $mform);
 }
 
 /**
@@ -63,5 +63,5 @@ function local_coursebridge_coursemodule_standard_elements($formwrapper, $mform)
  * @param MoodleQuickForm $mform Actual QuickForm.
  */
 function local_coursebridge_coursemodule_definition_after_data($formwrapper, $mform): void {
-    \local_coursebridge\local\selection\folder_form::after_data($formwrapper, $mform);
+    \local_coursebridge\local\selection\module_form::after_data($formwrapper, $mform);
 }

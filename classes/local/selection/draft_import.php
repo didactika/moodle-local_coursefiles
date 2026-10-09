@@ -179,6 +179,8 @@ final class draft_import {
                     'contextid' => $context->id, 'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid,
                     'filepath' => $operation['filepath'], 'filename' => $file->get_filename(), 'userid' => $USER->id,
                     'author' => $file->get_author(), 'license' => $file->get_license(),
+                    // A source activity's main-file choice must not replace the destination's choice.
+                    'sortorder' => 0,
                     'source' => serialize((object)['source' => json_encode(['coursebridge' => $uuid])]),
                 ], $file);
             }
