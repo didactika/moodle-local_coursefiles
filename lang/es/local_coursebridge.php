@@ -182,3 +182,7 @@ $string['logaction_migration_previewed'] = 'Vista previa de migración creada';
 $string['logaction_migration_queued'] = 'Migración en cola';
 $string['logaction_migration_blocked'] = 'Migración bloqueada';
 $string['logaction_migration_batch'] = 'Lote de migración procesado';
+$string['invalidselection'] = 'Selecciona archivos disponibles o carpetas con contenido, hasta 200 archivos por lote.';
+$string['invaliddraft'] = 'La carpeta de destino del borrador no está disponible para tu cuenta.';
+$string['batchlimit'] = 'La selección supera los límites del control de destino o contiene un tipo de archivo o carpeta no permitido.';
+$string['batchconflict'] = 'La selección entra en conflicto con archivos existentes o ha cambiado tras la revisión. Revísala de nuevo antes de copiar.';

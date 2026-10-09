@@ -4,6 +4,10 @@
 
 ![Action log query](../../diagrams/design/sequences/log-query.svg)
 
+The internal [draft batch service](../../15-draft-batches.md) has a separate sequence:
+
+![Reviewed draft batch](../../diagrams/design/sequences/draft-batch.svg)
+
 ![Components](../../diagrams/design/components.svg)
 
 ![Catalog classes](../../diagrams/design/classes.svg)

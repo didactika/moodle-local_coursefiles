@@ -182,3 +182,7 @@ $string['logaction_migration_previewed'] = 'Migration preview created';
 $string['logaction_migration_queued'] = 'Migration queued';
 $string['logaction_migration_blocked'] = 'Migration blocked';
 $string['logaction_migration_batch'] = 'Migration batch processed';
+$string['invalidselection'] = 'Select available files or non-empty folders, up to 200 files per batch.';
+$string['invaliddraft'] = 'The destination draft directory is unavailable for your account.';
+$string['batchlimit'] = 'The selection exceeds the destination control limits or contains an unsupported file type or directory.';
+$string['batchconflict'] = 'The selection conflicts with existing files or changed after review. Review it again before copying.';

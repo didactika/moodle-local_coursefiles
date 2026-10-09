@@ -6,6 +6,7 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 |---|---|---|
 | design/source-structure.puml | [Source](../diagrams/design/source-structure.puml) | [SVG](../diagrams/design/source-structure.svg) |
 | design/sequences/log-query.puml | [Source](../diagrams/design/sequences/log-query.puml) | [SVG](../diagrams/design/sequences/log-query.svg) |
+| design/sequences/draft-batch.puml | [Source](../diagrams/design/sequences/draft-batch.puml) | [SVG](../diagrams/design/sequences/draft-batch.svg) |
 | behavior/processes/log-upgrade.puml | [Source](../diagrams/behavior/processes/log-upgrade.puml) | [SVG](../diagrams/behavior/processes/log-upgrade.svg) |
 | behavior/processes/privacy-deletion.puml | [Source](../diagrams/behavior/processes/privacy-deletion.puml) | [SVG](../diagrams/behavior/processes/privacy-deletion.svg) |
 | analysis/boundary-control-entity.puml | [Source](../diagrams/analysis/boundary-control-entity.puml) | [SVG](../diagrams/analysis/boundary-control-entity.svg) |

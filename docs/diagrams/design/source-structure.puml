@@ -10,7 +10,7 @@ package "local_coursebridge" {
     Admin -[hidden]down-> Course
   }
   package "classes/" as Classes {
-    component "local/ domain services\ncatalog / profile / policy\nmigration / logging" as Services
+    component "local/ domain services\ncatalog / profile / policy\nmigration / selection / logging" as Services
     component "Moodle API classes\nform / output / privacy / task" as APIs
     Services -[hidden]down-> APIs
   }

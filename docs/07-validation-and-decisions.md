@@ -4,12 +4,14 @@ Checks use isolated Moodle PHPUnit and Behat databases. They do not modify a pro
 
 | Core | PHP / database | Local plugin | Repository plugin |
 |---|---|---|---|
-| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 35 tests / 195 assertions passed | 8 tests / 31 assertions passed |
-| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 35 tests / 195 assertions passed | 8 tests / 31 assertions passed |
+| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 46 tests / 247 assertions passed | 8 tests / 31 assertions passed |
+| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 46 tests / 247 assertions passed | 8 tests / 31 assertions passed |
 
 Verified on 2026-10-08, plugin version 2026100802. Privacy coverage is expanded on `test/coursebridge-privacy`; the earlier structure and repository checks used `refactor/coursebridge-structure`. Moodle coding standards 3.7.0 report zero errors and warnings across both packages. The existing 55 PlantUML diagrams and the added privacy process render to SVG without syntax errors. Local Markdown links resolve.
 
 The repository suite and native browser checks were verified on 2026-10-09 in `test/coursebridge-native-picker`. All three Behat scenarios and 52 steps pass per core: explicitly published multi-edition origins, hidden-material exclusion, native AJAX filters, draft selection and folder save retaining existing files, plus Tab order and Enter submission. Moodle's axe check passes for the repository search region. These checks exercise a teacher enrolled only in the destination course.
+
+The local service checks were expanded on 2026-10-09 in `feat/coursebridge-draft-batches`. Per core, the complete 45-test suite passed with 244 assertions, followed by the added multiple-folder case (one test / three assertions). Eleven batch cases add 52 assertions to the previous local suite. They exercise mixed overlapping selections, several source folders, configured cross-path content skipping, per-file declarations through native saving, repeat application, control limits, foreign drafts, hidden modules, stale drafts/profile revisions, changed strict policy and a real core-hook failure during the second addition. That failure rolls back all batch file/attribution records and preserves existing content. These are internal PHP integration checks; multiple selection and browser filemanager refresh are not implemented. See [the service contract](15-draft-batches.md).
 
 The integration tests exercise optional editions, ambiguous and invalid parsers, content/attribution conflicts, target authority, content grouping, edition filters, stale source visibility, strict-copy rejection, idempotent folder copies, cross-path duplicates, changed profiles and changed destinations.
 

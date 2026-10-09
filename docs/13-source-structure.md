@@ -14,6 +14,7 @@ local/coursebridge/
 │   │   ├── profile/        profiles, profile_config
 │   │   ├── policy/         author_policy
 │   │   ├── migration/      planner, executor, placement, folder adapter, decisions
+│   │   ├── selection/      material_selection, draft_import (internal draft batches)
 │   │   └── logging/        log
 │   ├── form/               native Moodle forms
 │   ├── output/             shared view, renderer and display labels

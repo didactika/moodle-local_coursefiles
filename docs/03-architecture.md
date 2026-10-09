@@ -16,7 +16,7 @@ An asset is a virtual content group. Authorization and author declarations belon
 
 ## Current service classes
 
-Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migration` and `logging`, with matching PHP namespaces. Administration and course controllers are separate. See the [source structure](13-source-structure.md).
+Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migration`, `selection` and `logging`, with matching PHP namespaces. Administration and course controllers are separate. See the [source structure](13-source-structure.md).
 
 ![Catalog design classes](diagrams/design/classes.svg)
 
@@ -29,6 +29,8 @@ Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migrat
 ![Author policy classes](diagrams/design/authorship-classes.svg)
 
 `author_policy` resolves site/course/source protection and captures the original declaration. Native editor paths allow later author changes, so strict copying is refused. The repository cannot turn metadata preservation into universal editing prevention.
+
+`material_selection` expands bounded file/folder selections; `draft_import` reviews and applies them to an existing native form draft. This is an internal server contract, separate from the repository's single-file dialog. See the [batch service and its sequence](15-draft-batches.md).
 
 ## Content and access
 

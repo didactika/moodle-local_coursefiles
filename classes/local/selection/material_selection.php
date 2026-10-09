@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Bounded file and recursive folder selection.
@@ -25,6 +25,7 @@
 namespace local_coursebridge\local\selection;
 
 use local_coursebridge\local\catalog\material_source;
+use local_coursebridge\local\profile\profiles;
 
 /**
  * Expands bounded native occurrences without relying on catalog cache freshness.
@@ -47,12 +48,14 @@ final class material_selection {
             throw new \moodle_exception('invalidselection', 'local_coursebridge');
         }
         $files = [];
+        $profiledata = profiles::load($profileid);
+        $scope = [];
         foreach ($items as $item) {
             if (!is_array($item)) {
                 throw new \moodle_exception('invalidselection', 'local_coursebridge');
             }
             if (isset($item['pathnamehash'])) {
-                [$file] = material_source::resolve((string)$item['pathnamehash'], $courseid, $profileid);
+                [$file] = material_source::resolve((string)$item['pathnamehash'], $courseid, $profileid, $profiledata, $scope);
                 $files[$file->get_pathnamehash()] = $file;
             } else if (isset($item['cmid'], $item['filepath'])) {
                 $path = self::path((string)$item['filepath']);
@@ -64,13 +67,19 @@ final class material_selection {
                 $params = ['contextid' => $context->id, 'component' => 'mod_folder', 'filearea' => 'content',
                     'directory' => '.', 'path' => $DB->sql_like_escape($path) . '%'];
                 $candidates = $DB->get_records_select(
-                    'files', $conditions, $params, 'filepath, filename, id', 'id, pathnamehash', 0, self::MAX_FILES + 1
+                    'files',
+                    $conditions,
+                    $params,
+                    'filepath, filename, id',
+                    'id, pathnamehash',
+                    0,
+                    self::MAX_FILES + 1
                 );
                 if (!$candidates || count($candidates) > self::MAX_FILES) {
                     throw new \moodle_exception('invalidselection', 'local_coursebridge');
                 }
                 foreach ($candidates as $candidate) {
-                    [$file] = material_source::resolve($candidate->pathnamehash, $courseid, $profileid);
+                    [$file] = material_source::resolve($candidate->pathnamehash, $courseid, $profileid, $profiledata, $scope);
                     $files[$file->get_pathnamehash()] = $file;
                 }
             } else {

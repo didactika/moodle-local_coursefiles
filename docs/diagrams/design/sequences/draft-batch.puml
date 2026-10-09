@@ -1,0 +1,41 @@
+@startuml
+!include ../../_style.puml
+skinparam maxMessageSize 240
+title Reviewed batch into an existing form draft
+participant "Trusted server caller" as Caller
+participant "draft_import" as Batch
+participant "material_selection" as Selection
+database "Native files / attribution" as Files
+
+Caller -> Batch : review(scope, selection, form limits)
+Batch -> Files : Read current-user draft and active profile
+Batch -> Selection : Expand bounded file / folder selection
+Selection -> Files : Check each source and permission
+Selection --> Batch : Unique authorized occurrences
+Batch -> Batch : Check policy, conflicts and limits
+Batch --> Caller : Decisions + approval digest
+
+Caller -> Batch : apply(same scope, approved digest)
+Batch -> Batch : Lock actor / draft; start transaction
+Batch -> Batch : Review again; compare digest
+alt Changed approval or blocked decision
+  Batch -> Files : Roll back
+  Batch --> Caller : Require new review
+else Eligible batch
+  loop Each copy operation
+    Batch -> Files : Recheck; capture author; copy to draft
+  end
+  alt Core copy failure
+    Batch -> Files : Roll back all additions
+    Batch --> Caller : Error; existing content retained
+  else Success
+    Batch -> Files : Commit additions
+    Batch --> Caller : Applied decisions
+  end
+end
+note over Caller, Batch
+Internal PHP service only.
+No multiple-selection browser integration.
+end note
+@enduml
+

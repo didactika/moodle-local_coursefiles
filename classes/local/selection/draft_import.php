@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Reviewed batches for existing native form drafts.
@@ -59,7 +59,7 @@ final class draft_import {
         $basepath = material_selection::path($basepath);
         $fs = get_file_storage();
         $context = \context_user::instance($USER->id);
-        if ($draftid <= 0 || !$fs->get_file($context->id, 'user', 'draft', $draftid, '/', '.')) {
+        if ($draftid <= 0 || !$fs->get_file($context->id, 'user', 'draft', $draftid, $basepath, '.')) {
             throw new \moodle_exception('invaliddraft', 'local_coursebridge');
         }
         $current = $fs->get_area_files($context->id, 'user', 'draft', $draftid, 'id', false);
@@ -67,13 +67,15 @@ final class draft_import {
         $content = [];
         $count = count($current);
         $bytes = 0;
+        $draftsnapshot = [];
         foreach ($current as $file) {
             $snapshot = copy_decision::snapshot($file);
+            $draftsnapshot[] = $snapshot;
             $paths[$file->get_filepath() . $file->get_filename()] = $snapshot;
             $content[$file->get_contenthash()][] = $snapshot;
             $bytes += $file->get_filesize();
         }
-        [, , $rules] = profiles::load($profileid);
+        [, $revision, $rules] = profiles::load($profileid);
         $skipcontent = ($rules->get_config()['migration']['same_content_different_path'] ?? '') === 'skip-and-report';
         $operations = [];
         $blocked = false;
@@ -121,7 +123,11 @@ final class draft_import {
         ) {
             throw new \moodle_exception('batchlimit', 'local_coursebridge');
         }
-        return ['operations' => $operations, 'filecount' => $count, 'bytes' => $bytes, 'blocked' => $blocked];
+        $digest = hash('sha256', json_encode([
+            $USER->id, $courseid, $profileid, $revision->id, $draftid, $basepath, $limits, $draftsnapshot, $operations,
+        ], JSON_THROW_ON_ERROR));
+        return ['operations' => $operations, 'filecount' => $count, 'bytes' => $bytes,
+            'blocked' => $blocked, 'digest' => $digest];
     }
 
     /**
@@ -132,6 +138,7 @@ final class draft_import {
      * @param int $draftid Current-user draft.
      * @param array $items Source selectors.
      * @param array $limits Authoritative owning form options.
+     * @param string $digest Previously approved review digest.
      * @param string $basepath Destination directory.
      * @return array Applied review.
      */
@@ -141,6 +148,7 @@ final class draft_import {
         int $draftid,
         array $items,
         array $limits,
+        string $digest,
         string $basepath = '/'
     ): array {
         global $DB, $USER;
@@ -152,7 +160,7 @@ final class draft_import {
         try {
             $transaction = $DB->start_delegated_transaction();
             $review = self::review($courseid, $profileid, $draftid, $items, $limits, $basepath);
-            if ($review['blocked']) {
+            if ($review['blocked'] || !hash_equals($review['digest'], $digest)) {
                 throw new \moodle_exception('batchconflict', 'local_coursebridge');
             }
             $context = \context_user::instance($USER->id);
