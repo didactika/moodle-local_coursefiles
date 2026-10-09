@@ -13,4 +13,4 @@ Native forms, repository drafts, folder save contracts, templates, permission ch
 
 Presentation follows the active Moodle theme. The templates use shared native form/card/table classes and accessible HTML; version-specific visual utilities are not required for controls or decisions. [Theme overrides](11-presentation-and-theming.md) document the current extension points.
 
-Maintenance branches for this delivery: `feat/multipicker-45` and `feat/multipicker-5`. The Moodle 5 artifact declares Moodle 5.3 as its minimum; use the Moodle 4.5 artifact for that release. Shared PHP, database, capability and draft contracts are aligned.
+Maintenance branches for this delivery: `feat/multipicker-ui-45` and `feat/multipicker-ui-5`. The Moodle 5 artifact declares Moodle 5.3 as its minimum; use the Moodle 4.5 artifact for that release. Shared PHP, database, capability and draft contracts are aligned. The administration and browser modules are built against each exact core separately.

@@ -29,9 +29,25 @@ admin_externalpage_setup('local_multipicker_log');
 $action = optional_param('action', '', PARAM_ALPHANUMEXT);
 $entityuuid = optional_param('entityuuid', '', PARAM_RAW_TRIMMED);
 $before = optional_param('before', 0, PARAM_INT);
-$url = new moodle_url('/local/multipicker/admin/log.php', ['action' => $action, 'entityuuid' => $entityuuid]);
+$from = optional_param('from', '', PARAM_RAW_TRIMMED);
+$until = optional_param('until', '', PARAM_RAW_TRIMMED);
+$dates = [];
+foreach (['from' => $from, 'until' => $until] as $key => $value) {
+    if ($value === '') {
+        $dates[$key] = 0;
+        continue;
+    }
+    $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value, \core_date::get_user_timezone_object());
+    if (!$date || $date->format('Y-m-d') !== $value) {
+        throw new invalid_parameter_exception('Invalid date filter');
+    }
+    $dates[$key] = ($key === 'until' ? $date->modify('+1 day') : $date)->getTimestamp();
+}
+$url = new moodle_url('/local/multipicker/admin/log.php', [
+    'action' => $action, 'entityuuid' => $entityuuid, 'from' => $from, 'until' => $until,
+]);
 $PAGE->set_url($url);
-$page = \local_multipicker\local\logging\log::page($action, $entityuuid, $before);
+$page = \local_multipicker\local\logging\log::page($action, $entityuuid, $before, 50, $dates['from'], $dates['until']);
 $options = [];
 foreach (\local_multipicker\local\logging\log::actions() as $name) {
     $options[] = ['value' => $name, 'label' => get_string('logaction_' . $name, 'local_multipicker'),
@@ -59,7 +75,7 @@ echo $PAGE->get_renderer('local_multipicker')->render(\local_multipicker\output\
 echo $renderer->render(new \local_multipicker\output\view('log', [
     'formurl' => (new moodle_url('/local/multipicker/admin/log.php'))->out(false),
     'options' => $options, 'entityuuid' => $entityuuid, 'records' => $records,
-    'hasrecords' => (bool)$records, 'nexturl' => $nexturl ? $nexturl->out(false) : '',
+    'from' => $from, 'until' => $until, 'hasrecords' => (bool)$records, 'nexturl' => $nexturl ? $nexturl->out(false) : '',
     'clearurl' => (new moodle_url('/local/multipicker/admin/log.php'))->out(false),
 ]));
 echo $OUTPUT->footer();

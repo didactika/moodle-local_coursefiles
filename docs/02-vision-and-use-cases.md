@@ -30,7 +30,7 @@ Source-access-only profiles require current access to the source. Explicit famil
 
 ## Review a migration
 
-Select different source and target editions, review the section layout and inspect every file decision. The preview resolves unique course pairs and matching existing folders, preserving source materials and target settings. Execution revalidates the reviewed plan and reports copied, skipped and blocked outcomes.
+The wizard separates profile, source/destination, review and execution. Select an edition or any configured capture filter as the migration dimension, then choose different source and destination values. The preview resolves every unique course pair and matching existing folder. Its review shows 50 file decisions per page with search, per-file checkboxes and whole-plan inclusion controls. Exclusions persist across pages; queueing processes all included matches. Source materials and target settings are preserved. Execution revalidates the reviewed plan and reports copied, skipped and blocked outcomes.
 
 ![Administrative goals](diagrams/requirements/migration-use-cases.svg)
 

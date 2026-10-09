@@ -37,18 +37,24 @@ if ($planid) {
 }
 $profiles = $DB->get_records('local_multipicker', ['enabled' => 1], 'name');
 $profileid = optional_param('profileid', 0, PARAM_INT);
+$step = optional_param('step', 'profile', PARAM_ALPHA);
+if (!in_array($step, ['profile', 'scope'], true)) {
+    throw new invalid_parameter_exception('Unknown migration step');
+}
 if (!$profileid && $profiles) {
     $profileid = (int)reset($profiles)->id;
 }
+$data = [];
 $form = null;
 $data = ['profiles' => [], 'hasprofiles' => (bool)$profiles, 'recent' => [],
     'actionurl' => (new moodle_url('/local/multipicker/admin/migration.php'))->out(false),
     'canmanageprofiles' => has_capability('local/multipicker:manageprofiles', context_system::instance()),
     'profilesurl' => (new moodle_url('/local/multipicker/admin/profiles.php'))->out(false)];
 foreach ($profiles as $profile) {
-    $data['profiles'][] = ['value' => $profile->id, 'label' => \local_multipicker\output\display::name($profile->name), 'selected' => $profile->id == $profileid];
+    $data['profiles'][] = ['value' => $profile->id, 'label' => display::name($profile->name),
+        'selected' => $profile->id == $profileid];
 }
-if ($profileid) {
+if ($profileid && $step === 'scope') {
     [$profile, $revision, $rules] = \local_multipicker\local\profile\profiles::load($profileid);
     $config = $rules->get_config();
     $data['summary'] = profile_summary::data($config) + ['revision' => $revision->revision];
@@ -65,9 +71,12 @@ if ($profileid) {
     $editions = array_values(array_filter($editions, static fn($edition) => $edition !== ''));
     natsort($editions);
     $data['haseditions'] = (bool)$editions;
-    $form = new \local_multipicker\form\migration_form(null, ['profileid' => $profileid, 'editions' => $editions,
-        'ordinal' => ($config['migration']['section_match']['strategy'] ?? 'ordinal') === 'ordinal']);
-    if ($submitted = $form->get_data()) {
+    $dimensions = \local_multipicker\local\migration\course_scope::choices($rules);
+    $data['hasscope'] = (bool)$dimensions;
+    $form = $dimensions ? new \local_multipicker\form\migration_form(null, [
+        'profileid' => $profileid, 'dimensions' => $dimensions, 'editions' => $editions,
+        'ordinal' => ($config['migration']['section_match']['strategy'] ?? 'ordinal') === 'ordinal']) : null;
+    if ($form && ($submitted = $form->get_data())) {
         if ((int)$submitted->profileid !== $profileid) {
             throw new invalid_parameter_exception('The selected profile changed');
         }
@@ -75,13 +84,15 @@ if ($profileid) {
             $profileid,
             $submitted->sourceedition,
             $submitted->targetedition,
-            !empty($submitted->layoutconfirmed)
+            !empty($submitted->layoutconfirmed),
+            $submitted->scopekey
         );
         redirect(new moodle_url('/local/multipicker/admin/migration_review.php', ['planid' => $plan->id]));
     }
-    if (!$form->is_submitted()) {
+    if ($form && !$form->is_submitted()) {
         $form->set_data(['sourceedition' => optional_param('sourceedition', '', PARAM_TEXT),
-            'targetedition' => optional_param('targetedition', '', PARAM_TEXT)]);
+            'targetedition' => optional_param('targetedition', '', PARAM_TEXT),
+            'scopekey' => optional_param('scopekey', array_key_first($dimensions), PARAM_ALPHANUMEXT)]);
     }
 }
 foreach (
@@ -98,13 +109,17 @@ foreach (
         'url' => (new moodle_url('/local/multipicker/admin/migration_review.php', ['planid' => $plan->id]))->out(false)];
 }
 $data['hasrecent'] = (bool)$data['recent'];
+$data['chooseprofile'] = $step === 'profile';
+$data['choosescope'] = $step === 'scope';
+$data['profileurl'] = (new moodle_url('/local/multipicker/admin/migration.php', ['profileid' => $profileid]))->out(false);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
 $renderer = $PAGE->get_renderer('local_multipicker');
 echo $renderer->render(navigation::site('migration'));
 echo $renderer->render(new view('migration_setup', $data));
 if ($form !== null) {
-    echo $OUTPUT->heading(get_string('migrationstep_configure', 'local_multipicker'), 3);
+    echo html_writer::start_div('multipicker-admin multipicker-panel');
     $form->display();
+    echo html_writer::end_div();
 }
 echo $OUTPUT->footer();

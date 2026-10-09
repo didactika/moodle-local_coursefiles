@@ -32,6 +32,25 @@ use local_multipicker\privacy\provider;
  */
 final class log_test extends \advanced_testcase {
     /**
+     * Date bounds remain effective on subsequent cursor pages.
+     */
+    public function test_date_bounds_apply_before_pagination(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        foreach ([100, 200, 300, 400] as $timestamp) {
+            $DB->insert_record('local_multipicker_log', (object)[
+                'userid' => 0, 'action' => 'migration_batch', 'entityuuid' => 'date-filter',
+                'details' => '{}', 'timecreated' => $timestamp,
+            ]);
+        }
+        $first = log::page('', '', 0, 1, 200, 400);
+        $this->assertSame(300, (int)$first['records'][0]->timecreated);
+        $second = log::page('', '', $first['nextbefore'], 1, 200, 400);
+        $this->assertSame(200, (int)$second['records'][0]->timecreated);
+        $this->assertSame(0, $second['nextbefore']);
+    }
+    /**
      * A dedicated reader needs no profile or migration editing permission.
      */
     public function test_reader_role_can_read_without_editing_permissions(): void {

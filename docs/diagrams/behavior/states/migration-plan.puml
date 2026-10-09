@@ -10,8 +10,12 @@ Preview --> Reviewable : no preview blockers
 Preview --> Blocked : blockers found
 Reviewable --> [*]
 Blocked --> [*]
+Reviewable --> Blocked : include a blocked operation
+Blocked --> Reviewable : exclude all blocked operations\n(no unresolved placement issues)
 note bottom of Reviewable
-The stored JSON and digest remain unchanged.
+Snapshots and decisions remain unchanged.
+Inclusion changes update the approval digest
+before the first run only.
 Execution creates separate run records.
 end note
 @enduml

@@ -284,7 +284,7 @@ final class profile_config_test extends \advanced_testcase {
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $this->assertSame('blocked', $plan->state);
         $document = json_decode($plan->configjson, true);
-        $this->assertSame('blocked_policy', $document['operations'][0]['decision']);
+        $this->assertSame('blocked_policy', $GLOBALS['DB']->get_field('local_multipicker_operation', 'decision', ['planid' => $plan->id]));
     }
 
     /**
@@ -315,7 +315,7 @@ final class profile_config_test extends \advanced_testcase {
         $this->assertNotFalse($saved);
         $this->assertSame('Original author', $saved->get_author());
         $second = migration_planner::preview($profileid, '2025', '2026', true);
-        $this->assertSame('skip_identical', json_decode($second->configjson, true)['operations'][0]['decision']);
+        $this->assertSame('skip_identical', $DB->get_field('local_multipicker_operation', 'decision', ['planid' => $second->id]));
         $this->assertCount(1, get_file_storage()->get_area_files(
             \context_module::instance($tfolder->cmid)->id,
             'mod_folder',
@@ -354,7 +354,7 @@ final class profile_config_test extends \advanced_testcase {
         ], reset($sourcefile));
         $CFG->maintenance_enabled = 1;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
-        $this->assertSame('skip_content', json_decode($plan->configjson, true)['operations'][0]['decision']);
+        $this->assertSame('skip_content', $DB->get_field('local_multipicker_operation', 'decision', ['planid' => $plan->id]));
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $this->assertFalse(migration_executor::execute($runid));
         $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
@@ -366,6 +366,70 @@ final class profile_config_test extends \advanced_testcase {
             'id',
             false
         ));
+    }
+
+    /**
+     * Configured captures support matching without an annual edition rule.
+     */
+    public function test_migration_uses_configured_dimension(): void {
+        [$profileid, $source, $target] = $this->fixture();
+        $config = $this->config();
+        unset($config['relationship']['edition']);
+        $config['relationship']['filters'] = ['cohort' => ['capture' => 'edition', 'label' => 'Cohort']];
+        profiles::save(json_encode($config), $profileid);
+        foreach ([$source, $target] as $course) {
+            indexer::refresh($course->id);
+        }
+        $plan = migration_planner::preview($profileid, '2025', '2026', true, 'cohort');
+        $document = json_decode($plan->configjson, true);
+        $this->assertSame('cohort', $document['scopekey']);
+        $this->assertSame(1, $document['operationcount']);
+        $this->assertArrayNotHasKey('operations', $document);
+    }
+
+    /**
+     * Exclusions invalidate approval, persist across pages and never execute.
+     */
+    public function test_migration_exclusions_are_not_executed(): void {
+        global $CFG, $DB;
+        [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
+        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
+        $CFG->maintenance_enabled = 1;
+        $sourcefiles = get_file_storage()->get_area_files(
+            \context_module::instance($sfolder->cmid)->id,
+            'mod_folder',
+            'content',
+            0,
+            'id',
+            false
+        );
+        $sourcefile = reset($sourcefiles);
+        get_file_storage()->create_file_from_storedfile(['filename' => 'second.pdf'], $sourcefile);
+        indexer::refresh($source->id);
+        $plan = migration_planner::preview($profileid, '2025', '2026', true);
+        $ids = array_map('intval', $DB->get_fieldset_select('local_multipicker_operation', 'id', 'planid = ?', [$plan->id]));
+        \local_multipicker\local\migration\plan_selection::save($plan->id, $plan->digest, $ids, [$ids[0]]);
+        $changed = $DB->get_record('local_multipicker_plan', ['id' => $plan->id]);
+        $this->assertNotSame($plan->digest, $changed->digest);
+        try {
+            migration_executor::queue($plan->id, $plan->digest);
+            $this->fail('Old approval must not queue a changed selection.');
+        } catch (\moodle_exception $exception) {
+            $this->assertSame('planstale', $exception->errorcode);
+        }
+        $run = migration_executor::queue($plan->id, $changed->digest);
+        $this->assertFalse(migration_executor::execute($run));
+        $this->assertCount(1, get_file_storage()->get_area_files(
+            \context_module::instance($tfolder->cmid)->id,
+            'mod_folder',
+            'content',
+            0,
+            'id',
+            false
+        ));
+        $this->assertSame('pending', $DB->get_field('local_multipicker_operation', 'state', ['id' => $ids[1]]));
+        $this->expectException(\moodle_exception::class);
+        \local_multipicker\local\migration\plan_selection::save($plan->id, $changed->digest, [], [], 'all');
     }
 
     /**

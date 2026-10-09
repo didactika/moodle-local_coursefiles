@@ -45,6 +45,7 @@ final class profile_form extends \moodleform {
             'advanced' => get_string('advancedmode', 'local_multipicker'),
         ]);
         $form->setDefault('editmode', 'guided');
+        $form->addElement('header', 'identitysettings', get_string('courseidentity', 'local_multipicker'));
         $form->addElement('select', 'coursefield', get_string('coursefield', 'local_multipicker'), [
             'idnumber' => get_string('idnumbercourse'), 'shortname' => get_string('shortnamecourse'),
             'fullname' => get_string('fullnamecourse'),
@@ -56,6 +57,18 @@ final class profile_form extends \moodleform {
         foreach (['coursefield', 'coursepattern', 'familytemplate'] as $name) {
             $form->hideIf($name, 'editmode', 'eq', 'advanced');
         }
+        foreach (['displaytemplate', 'editioncapture', 'pairdimensions'] as $name) {
+            $form->addElement('text', $name, get_string($name, 'local_multipicker'), ['class' => 'w-100']);
+            $form->setType($name, PARAM_RAW_TRIMMED);
+            $form->hideIf($name, 'editmode', 'eq', 'advanced');
+        }
+        $form->addElement('advcheckbox', 'editionoptional', get_string('filteroptional', 'local_multipicker'));
+        $form->hideIf('editionoptional', 'editmode', 'eq', 'advanced');
+        $form->addElement('select', 'categoryids', get_string('categories'), \core_course_category::make_categories_list());
+        $form->getElement('categoryids')->setMultiple(true);
+        $form->hideIf('categoryids', 'editmode', 'eq', 'advanced');
+        $form->addElement('hidden', 'guidedsettings', 1);
+        $form->setType('guidedsettings', PARAM_BOOL);
         $form->addElement('header', 'capturefilters', get_string('capturefilters', 'local_multipicker'));
         $form->setExpanded('capturefilters', false);
         $form->addElement('static', 'filterhelp', '', get_string('capturefiltershelp', 'local_multipicker'));
@@ -82,6 +95,11 @@ final class profile_form extends \moodleform {
         $form->addElement('header', 'sourcesettings', get_string('publicsources', 'local_multipicker'));
         $form->setExpanded('sourcesettings', false);
         $form->addElement('static', 'sourceshelp', '', get_string('publicsourceshelp', 'local_multipicker'));
+        $form->addElement('select', 'publicationmode', get_string('publicationmode', 'local_multipicker'), [
+            'source-access-only' => get_string('publication_source-access-only', 'local_multipicker'),
+            'explicit-family-publication' => get_string('publication_explicit-family-publication', 'local_multipicker'),
+        ]);
+        $form->hideIf('publicationmode', 'editmode', 'eq', 'advanced');
         $form->addElement('hidden', 'sourcesdefined', 1);
         $form->setType('sourcesdefined', PARAM_BOOL);
         foreach (self::source_controls() as $key => $area) {
@@ -95,6 +113,39 @@ final class profile_form extends \moodleform {
             $form->setDefault('sources[' . $key . ']', in_array($area, $this->_customdata['sources'] ?? [], true));
             $form->hideIf('sources[' . $key . ']', 'editmode', 'eq', 'advanced');
         }
+        $form->addElement('header', 'migrationrules', get_string('migrationrules', 'local_multipicker'));
+        $form->setExpanded('migrationrules', false);
+        foreach (['source', 'target'] as $side) {
+            $form->addElement('select', $side . 'folderfield', get_string($side . 'folderfield', 'local_multipicker'), [
+                'name' => get_string('name'), 'idnumber' => get_string('idnumber'),
+            ]);
+            $form->addElement('select', $side . 'foldermatch', get_string('matchmethod', 'local_multipicker'), [
+                'equals' => get_string('exactmatch', 'local_multipicker'),
+                'pattern' => get_string('regexmatch', 'local_multipicker'),
+                'template' => get_string('templatematch', 'local_multipicker'),
+            ]);
+            $form->addElement(
+                'text',
+                $side . 'foldervalue',
+                get_string($side . 'foldervalue', 'local_multipicker'),
+                ['class' => 'w-100', 'maxlength' => 2048]
+            );
+            $form->setType($side . 'foldervalue', PARAM_RAW_TRIMMED);
+            foreach (['field', 'match', 'value'] as $part) {
+                $form->hideIf($side . 'folder' . $part, 'editmode', 'eq', 'advanced');
+            }
+        }
+        $form->addElement('select', 'sectionstrategy', get_string('sectionstrategy', 'local_multipicker'), [
+            'ordinal' => get_string('section_ordinal', 'local_multipicker'),
+            'name' => get_string('section_name', 'local_multipicker'),
+            'mapping' => get_string('section_mapping', 'local_multipicker'),
+        ]);
+        $form->addElement('select', 'duplicatepolicy', get_string('duplicatepolicy', 'local_multipicker'), [
+            'skip-and-report' => get_string('duplicateskip', 'local_multipicker'),
+            'keep' => get_string('duplicatekeep', 'local_multipicker'),
+        ]);
+        $form->hideIf('sectionstrategy', 'editmode', 'eq', 'advanced');
+        $form->hideIf('duplicatepolicy', 'editmode', 'eq', 'advanced');
         $form->addElement('header', 'rules', get_string('advancedmode', 'local_multipicker'));
         $form->setExpanded('rules', false);
         $form->addElement(
@@ -104,7 +155,7 @@ final class profile_form extends \moodleform {
             ['rows' => 14, 'class' => 'w-100']
         );
         $form->setType('configjson', PARAM_RAW);
-        $form->addRule('configjson', null, 'required');
+        $form->hideIf('configjson', 'editmode', 'neq', 'advanced');
         $buttons = [];
         $buttons[] = $form->createElement('submit', 'saveprofile', get_string('saveprofile', 'local_multipicker'));
         $buttons[] = $form->createElement('submit', 'previewrules', get_string('previewrules', 'local_multipicker'));
@@ -117,11 +168,13 @@ final class profile_form extends \moodleform {
      * Parse and validate the complete document before saving or previewing.
      *
      * @param array $data Submitted fields.
+     * @param array $base Server-loaded configuration for guided editing.
      * @return array Validated configuration.
      */
-    public static function document(array $data): array {
+    public static function document(array $data, array $base = []): array {
         try {
-            $config = json_decode($data['configjson'], true, 64, JSON_THROW_ON_ERROR);
+            $config = ($data['editmode'] ?? 'advanced') === 'guided' && $base ? $base
+                : json_decode($data['configjson'] ?? '', true, 64, JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
             throw new \moodle_exception('invalidprofile', 'local_multipicker');
         }
@@ -170,6 +223,7 @@ final class profile_form extends \moodleform {
                     array_filter($controls, static fn($key) => !empty($data['sources'][$key]), ARRAY_FILTER_USE_KEY)
                 ));
             }
+            $config = \local_multipicker\local\profile\guided_config::apply($config, $data);
         }
         $config['name'] = trim($data['profilename']);
         if ($config['name'] === '' || \core_text::strlen($config['name']) > 255) {
@@ -205,9 +259,9 @@ final class profile_form extends \moodleform {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
         try {
-            self::document($data);
+            self::document($data, $this->_customdata['config'] ?? []);
         } catch (\moodle_exception $exception) {
-            $errors['configjson'] = $exception->getMessage();
+            $errors[($data['editmode'] ?? 'advanced') === 'guided' ? 'coursepattern' : 'configjson'] = $exception->getMessage();
         }
         return $errors;
     }

@@ -179,6 +179,7 @@
         <FIELD NAME="targetcmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="snapshot" TYPE="text" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="decision" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="included" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1" />
         <FIELD NAME="state" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="result" TYPE="text" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -190,6 +191,7 @@
       <INDEXES>
         <INDEX NAME="planid-opkey" UNIQUE="true" FIELDS="planid, opkey" />
         <INDEX NAME="planid-state" UNIQUE="false" FIELDS="planid, state" />
+        <INDEX NAME="planid-included-state" UNIQUE="false" FIELDS="planid, included, state" />
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_multipicker_run" COMMENT="Accountable migration execution attempts">

@@ -1,0 +1,22 @@
+@startuml
+!include ../../_style.puml
+title UC12 - Import portable profiles
+top to bottom direction
+state "1. Open Import profiles\nProfile manager" as Open
+state "2. Upload JSON\nNative Moodle file control" as Upload
+state "3. Validate actor draft / size\nprofile_import_form" as File
+state "4. Validate every document\nprofile_bundle / profile_config" as Validate
+state "5. Save all as new profiles\nOne transaction" as Save
+state "6. Show imported count\nProfiles page" as Result
+state "Refused\nNo partial import" as Refused
+[*] --> Open
+Open --> Upload
+Upload --> File
+File --> Validate
+Validate --> Save : all documents valid
+Validate -right-> Refused : malformed / unsupported
+File -right-> Refused : invalid draft / file
+Save --> Result
+Result --> [*]
+Refused --> [*]
+@enduml

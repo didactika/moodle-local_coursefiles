@@ -46,7 +46,7 @@ if ($profileid) {
 }
 $rules = new \local_multipicker\local\profile\profile_config($config);
 $definitions = $rules->filter_definitions();
-$form = new profile_form(null, ['profileid' => $profileid, 'filtercount' => max(2, count($definitions)),
+$form = new profile_form(null, ['profileid' => $profileid, 'config' => $config, 'filtercount' => max(2, count($definitions)),
     'sources' => $config['publication']['allowed_sources'] ?? ['mod_folder/content', 'mod_resource/content']]);
 $listurl = new moodle_url('/local/multipicker/admin/profiles.php');
 if ($form->is_cancelled()) {
@@ -54,7 +54,7 @@ if ($form->is_cancelled()) {
 }
 $summary = null;
 if ($data = $form->get_data()) {
-    $config = profile_form::document((array)$data);
+    $config = profile_form::document((array)$data, $config);
     if (!empty($data->previewrules)) {
         $summary = profile_summary::data($config);
     } else {
@@ -80,7 +80,7 @@ if (!$form->is_submitted()) {
         $defaults['filteroptional'][] = !empty($definition['optional']);
         $defaults['filterkey'][] = $key;
     }
-    $form->set_data($defaults);
+    $form->set_data($defaults + \local_multipicker\local\profile\guided_config::defaults($config));
 }
 
 echo $OUTPUT->header();
@@ -94,5 +94,7 @@ if ($summary !== null) {
     echo $OUTPUT->notification(get_string('unsavedpreview', 'local_multipicker'), 'info');
     echo $renderer->render(new view('profile_summary', $summary));
 }
+echo html_writer::start_div('multipicker-admin multipicker-panel');
 $form->display();
+echo html_writer::end_div();
 echo $OUTPUT->footer();

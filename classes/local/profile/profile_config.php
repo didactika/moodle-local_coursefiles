@@ -71,18 +71,32 @@ final class profile_config {
             ) {
                 throw new \moodle_exception('invalidprofile', 'local_multipicker');
             }
-            $this->matchpattern($parser['pattern'], '');
-            foreach (($parser['normalizers'] ?? []) as $normalizers) {
-                if (array_diff($normalizers, ['trim', 'lowercase', 'uppercase'])) {
+            foreach (['required_captures', 'normalizers'] as $key) {
+                if (isset($parser[$key]) && !is_array($parser[$key])) {
                     throw new \moodle_exception('invalidprofile', 'local_multipicker');
                 }
             }
+            $this->matchpattern($parser['pattern'], '');
+            foreach (($parser['normalizers'] ?? []) as $normalizers) {
+                if (!is_array($normalizers) || array_diff($normalizers, ['trim', 'lowercase', 'uppercase'])) {
+                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                }
+            }
+        }
+        foreach (['edition', 'pair_dimensions', 'filters'] as $key) {
+            if (isset($config['relationship'][$key]) && !is_array($config['relationship'][$key])) {
+                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            }
+        }
+        if (isset($config['publication']['allowed_sources']) && !is_array($config['publication']['allowed_sources'])) {
+            throw new \moodle_exception('invalidprofile', 'local_multipicker');
         }
         if (!in_array($config['relationship']['ambiguity_policy'] ?? 'block', ['block', 'first-match'], true)) {
             throw new \moodle_exception('invalidprofile', 'local_multipicker');
         }
         foreach (
-            ['relationship' => ['ambiguity_policy', 'parsers', 'family_key', 'display_label', 'edition', 'pair_dimensions', 'filters'],
+            ['relationship' => ['ambiguity_policy', 'parsers', 'family_key', 'display_label',
+                'edition', 'pair_dimensions', 'filters'],
                 'scope' => ['campus', 'category_ids'],
                 'publication' => ['mode', 'allowed_sources', 'allow_hidden', 'allow_restricted']] as $name => $keys
         ) {

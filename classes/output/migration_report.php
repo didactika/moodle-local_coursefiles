@@ -33,9 +33,19 @@ final class migration_report {
      * @param int $planid Stored preview.
      * @param string $decision Decision group.
      * @param int $page Zero-based page.
+     * @param string $search Course, folder or filename search.
+     * @param bool $execution Display the execution step.
+     * @param int $issuepage Independent zero-based course/placement issue page.
      * @return array Template context.
      */
-    public static function data(int $planid, string $decision = '', int $page = 0): array {
+    public static function data(
+        int $planid,
+        string $decision = '',
+        int $page = 0,
+        string $search = '',
+        bool $execution = false,
+        int $issuepage = 0
+    ): array {
         global $CFG, $DB;
         require_capability('local/multipicker:planmigration', \context_system::instance());
         if (!in_array($decision, ['', 'copy', 'skip', 'blocked'], true)) {
@@ -48,30 +58,35 @@ final class migration_report {
         $url = new \moodle_url('/local/multipicker/admin/migration_review.php', ['planid' => $planid]);
         $data = ['planid' => $planid, 'uuid' => $plan->uuid, 'planstate' => display::outcome($plan->state),
             'sourceedition' => $document['sourceedition'], 'targetedition' => $document['targetedition'],
+            'executionstep' => $execution, 'reviewstep' => !$execution, 'search' => $search,
+            'selectioneditable' => !$DB->record_exists('local_multipicker_run', ['planid' => $planid]),
+            'reviewurl' => $url->out(false), 'executionurl' => (new \moodle_url($url, ['step' => 'execute']))->out(false),
             'summary' => profile_summary::data($config) + ['revision' => $revision->revision],
             'actionurl' => $url->out(false), 'sesskey' => sesskey(), 'digest' => $plan->digest,
             'issues' => [], 'runs' => [], 'groups' => [], 'filters' => [],
             'newplanurl' => (new \moodle_url(
                 '/local/multipicker/admin/migration.php',
                 ['profileid' => $plan->profileid, 'sourceedition' => $document['sourceedition'],
-                'targetedition' => $document['targetedition']]
+                'targetedition' => $document['targetedition'], 'scopekey' => $document['scopekey'] ?? 'edition', 'step' => 'scope']
             ))->out(false),
             'maintenance' => !empty($CFG->maintenance_enabled), 'blocked' => $plan->state === 'blocked',
             'refreshurl' => $url->out(false),
         ];
         $counts = ['copy' => 0, 'skip' => 0, 'blocked' => 0];
         $total = 0;
+        $includedtotal = 0;
         $completed = 0;
         $totals = $DB->get_recordset_sql(
-            'SELECT decision, state, COUNT(1) AS amount FROM {local_multipicker_operation}
-              WHERE planid = ? GROUP BY decision, state',
+            'SELECT decision, state, included, COUNT(1) AS amount FROM {local_multipicker_operation}
+              WHERE planid = ? GROUP BY decision, state, included',
             [$planid]
         );
         foreach ($totals as $row) {
             $counts[$row->decision === 'copy' ? 'copy' : (strpos($row->decision, 'skip_') === 0 ? 'skip' : 'blocked')]
                 += (int)$row->amount;
             $total += (int)$row->amount;
-            $completed += $row->state !== 'pending' ? (int)$row->amount : 0;
+            $includedtotal += $row->included ? (int)$row->amount : 0;
+            $completed += $row->included && $row->state !== 'pending' ? (int)$row->amount : 0;
         }
         $totals->close();
         foreach ($counts as $key => $count) {
@@ -80,7 +95,7 @@ final class migration_report {
         foreach (['' => $total] + $counts as $key => $count) {
             $data['filters'][] = ['label' => get_string($key === '' ? 'allfiles' : 'metric_' . $key, 'local_multipicker'),
                 'count' => $count, 'active' => $decision === $key,
-                'url' => (new \moodle_url($url, ['decision' => $key]))->out(false)];
+                'url' => (new \moodle_url($url, ['decision' => $key, 'q' => $search]))->out(false)];
         }
         $condition = 'planid = :planid';
         $params = ['planid' => $planid];
@@ -91,8 +106,22 @@ final class migration_report {
             $condition .= ' AND ' . $DB->sql_like('decision', ':decision');
             $params['decision'] = $DB->sql_like_escape($decision . '_') . '%';
         }
-        $filtered = $decision === '' ? $total : $counts[$decision];
+        if ($search !== '') {
+            // Cross-database text search covers immutable file/folder snapshots and current course shortnames.
+            $condition .= ' AND (' . $DB->sql_like('snapshot', ':snapshotsearch', false)
+                . ' OR targetcmid IN (SELECT cm.id FROM {course_modules} cm JOIN {course} c ON c.id = cm.course WHERE '
+                . $DB->sql_like('c.shortname', ':coursesearch', false) . '))';
+            $params['snapshotsearch'] = '%' . $DB->sql_like_escape($search) . '%';
+            $params['coursesearch'] = $params['snapshotsearch'];
+        }
+        $filtered = $DB->count_records_select('local_multipicker_operation', $condition, $params);
+        $data['included'] = $DB->count_records('local_multipicker_operation', ['planid' => $planid, 'included' => 1]);
+        $data['includedlabel'] = get_string('includedcount', 'local_multipicker', $data['included']);
+        $data['editable'] = $data['selectioneditable'];
+        $data['page'] = $page;
+        $data['decision'] = $decision;
         $page = max(0, min($page, max(0, (int)ceil($filtered / 50) - 1)));
+        $data['page'] = $page;
         $courses = [];
         $groups = [];
         foreach (
@@ -121,9 +150,20 @@ final class migration_report {
                         'local_multipicker',
                         $target['sectionnum']
                     ), 'operations' => []];
+                $sourcecontext = \context_course::instance($snapshot['sourcecourse'], IGNORE_MISSING)
+                    ?: \context_system::instance();
+                $targetcontext = \context_course::instance($target['courseid'], IGNORE_MISSING) ?: \context_system::instance();
+                $foldercontext = \context_module::instance($operation->targetcmid, IGNORE_MISSING) ?: $targetcontext;
+                $groups[$key] += [
+                    'sourcecoursehtml' => display::name($courses[$snapshot['sourcecourse']], $sourcecontext),
+                    'targetcoursehtml' => display::name($courses[$target['courseid']], $targetcontext),
+                    'targetfolderhtml' => display::name($target['name'], $foldercontext),
+                    'targetsectionhtml' => display::name($groups[$key]['targetsection'], $targetcontext),
+                ];
             }
             $result = json_decode($operation->result, true);
-            $groups[$key]['operations'][] = ['filename' => $snapshot['source']['filename'],
+            $groups[$key]['operations'][] = ['id' => $operation->id, 'included' => (bool)$operation->included,
+                'filename' => $snapshot['source']['filename'],
                 'filepath' => $snapshot['source']['filepath'],
                 'author' => $snapshot['source']['author'] ?: get_string('unknownauthor', 'local_multipicker'),
                 'license' => $snapshot['source']['license'], 'decisionlabel' => display::outcome($operation->decision),
@@ -132,7 +172,13 @@ final class migration_report {
                     : (!empty($result['outcome']) ? display::outcome($result['outcome']) : '')];
         }
         $data['groups'] = array_values($groups);
-        foreach ($document['issues'] as $issue) {
+        $issuecount = count($document['issues']);
+        $issuepage = max(0, min($issuepage, max(0, (int)ceil($issuecount / 50) - 1)));
+        $data['issuepage'] = $issuepage;
+        $data['issuepageinfo'] = get_string('reviewissuepage', 'local_multipicker', (object)[
+            'page' => $issuepage + 1, 'pages' => max(1, (int)ceil($issuecount / 50)), 'total' => $issuecount,
+        ]);
+        foreach (array_slice($document['issues'], $issuepage * 50, 50) as $issue) {
             $references = [];
             $courseids = array_merge(
                 $issue['courses']['source'] ?? [],
@@ -154,7 +200,8 @@ final class migration_report {
             $data['issues'][] = ['description' => display::reason($issue['reason']), 'context' => implode(' / ', $references)];
         }
         $canexecute = has_capability('local/multipicker:executemigration', \context_system::instance());
-        $data['canexecute'] = $plan->state === 'reviewable' && $canexecute && $total > $completed;
+        $data['canexecute'] = $plan->state === 'reviewable' && $canexecute
+            && $DB->record_exists('local_multipicker_operation', ['planid' => $planid, 'included' => 1, 'state' => 'pending']);
         foreach ($DB->get_records('local_multipicker_run', ['planid' => $planid], 'id DESC') as $run) {
             $active = in_array($run->state, ['queued', 'running'], true);
             $data['runs'][] = ['id' => $run->id, 'statelabel' => display::outcome($run->state),
@@ -163,15 +210,23 @@ final class migration_report {
                 $data['canexecute'] = false;
             }
         }
-        $data['hasissues'] = (bool)$data['issues'];
+        $data['hasissues'] = $issuecount > 0;
+        foreach (['issuepreviousurl' => $issuepage - 1, 'issuenexturl' => $issuepage + 1] as $name => $number) {
+            if ($number >= 0 && $number * 50 < $issuecount) {
+                $data[$name] = (new \moodle_url($url, [
+                    'decision' => $decision, 'page' => $page, 'q' => $search, 'issuepage' => $number,
+                    'step' => $execution ? 'execute' : '',
+                ]))->out(false);
+            }
+        }
         $data['hasruns'] = (bool)$data['runs'];
         $data['hasoperations'] = (bool)$data['groups'];
         $data['plancompleted'] = $completed;
-        $data['plantotal'] = max(1, $total);
+        $data['plantotal'] = max(1, $includedtotal);
         $data['planprogress'] = get_string(
             'progresslabel',
             'local_multipicker',
-            (object)['done' => $completed, 'total' => $total]
+            (object)['done' => $completed, 'total' => $includedtotal]
         );
         $data['pageinfo'] = get_string(
             'reviewpage',
@@ -180,7 +235,9 @@ final class migration_report {
         );
         foreach (['previousurl' => $page - 1, 'nexturl' => $page + 1] as $name => $number) {
             if ($number >= 0 && $number * 50 < $filtered) {
-                $data[$name] = (new \moodle_url($url, ['decision' => $decision, 'page' => $number]))->out(false);
+                $data[$name] = (new \moodle_url($url, [
+                    'decision' => $decision, 'page' => $number, 'q' => $search, 'issuepage' => $issuepage,
+                ]))->out(false);
             }
         }
         return $data;

@@ -4,16 +4,27 @@
     Context: profiles, hasprofiles, newprofileurl.
     Example context (json): {"profiles":[],"hasprofiles":false}
 }}
-<section class="multipicker-profiles mb-4">
+<section class="multipicker-admin multipicker-profiles mb-4">
     <h2>{{#str}}profiles, local_multipicker{{/str}}</h2>
     <p class="text-muted">{{#str}}profilesintro, local_multipicker{{/str}}</p>
-    <a class="btn btn-primary mb-4" href="{{newprofileurl}}">{{#str}}newprofile, local_multipicker{{/str}}</a>
+    <div class="d-flex flex-wrap mb-3">
+        <a class="btn btn-primary multipicker-gap-end mb-2" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_multipicker{{/str}}</a>
+        <a class="btn btn-outline-secondary mb-2" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_multipicker{{/str}}</a>
+    </div>
+    <form method="post" action="{{actionurl}}" data-multipicker-profiles>
+    <input type="hidden" name="sesskey" value="{{sesskey}}">
+    {{#hasprofiles}}<div class="multipicker-panel d-flex align-items-center flex-wrap">
+        <label class="mb-0 multipicker-gap-end-lg"><input type="checkbox" data-multipicker-selectall> {{#str}}selectall{{/str}}</label>
+        <button name="action" value="export" class="btn btn-sm btn-outline-primary multipicker-gap-end">{{#str}}exportselectedprofiles, local_multipicker{{/str}}</button>
+        <button name="action" value="exportall" class="btn btn-sm btn-link">{{#str}}exportallprofiles, local_multipicker{{/str}}</button>
+    </div>{{/hasprofiles}}
     <div class="row">{{#profiles}}
         <div class="col-lg-6 mb-3"><div class="card h-100"><div class="card-body">
-            <h3 class="h5"><a href="{{url}}">{{{name}}}</a></h3>
-            <p>{{status}} · {{#str}}revision, local_multipicker{{/str}} {{revision}}</p>
-            <a class="btn btn-outline-secondary" href="{{url}}">{{#str}}edit, core{{/str}}</a>
+            <div class="d-flex align-items-start"><input type="checkbox" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_multipicker{{/str}}" class="mt-1 multipicker-gap-end"><h3 class="h5"><a href="{{url}}">{{{name}}}</a></h3></div>
+            <p><span class="multipicker-chip">{{status}}</span> <span class="small text-muted">{{#str}}revision, local_multipicker{{/str}} {{revision}}</span></p>
+            <a class="btn btn-sm btn-outline-secondary" href="{{url}}">{{#str}}edit, core{{/str}}</a>
         </div></div></div>
     {{/profiles}}</div>
     {{^hasprofiles}}<p>{{#str}}noprofile, local_multipicker{{/str}}</p>{{/hasprofiles}}
+    </form>
 </section>

@@ -199,8 +199,8 @@ export const selection = () => {
         }
     };
     // Remember disclosures without changing server-side authority or selection.
-    for (const detail of form.querySelectorAll('details[data-multipicker-options], details[data-multipicker-basket]')) {
-        const key = `multipicker-${detail.hasAttribute('data-multipicker-basket') ? 'basket' : 'options'}`;
+    for (const detail of form.querySelectorAll('details[data-multipicker-options]')) {
+        const key = 'multipicker-options';
         try {
             detail.open = sessionStorage.getItem(key) === 'open';
         } catch (error) {
@@ -227,6 +227,17 @@ export const selection = () => {
         if (event.target.matches('select[data-multipicker-filter]')) {
             clearTimeout(timer);
             apply();
+        }
+    });
+    form.addEventListener('click', event => {
+        const card = event.target.closest('.multipicker-card');
+        if (!card || event.target.closest('button, a, input, label, summary')) {
+            return;
+        }
+        const checkbox = card.querySelector('input[type=checkbox]');
+        if (!checkbox.disabled && !loading) {
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change', {bubbles: true}));
         }
     });
     form.addEventListener('submit', event => {

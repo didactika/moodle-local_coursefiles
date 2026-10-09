@@ -1,24 +1,24 @@
 @startuml
 !include ../../_style.puml
-title Process - configure, review and execute
+title Process - configure, select, review and execute
 start
-:Choose an enabled profile;
-:Read placement and duplicate rules;
-:Choose source and destination editions;
-:Confirm ordinal section layout when needed;
-:Create immutable preview;
-:Read whole-plan counts and exact profile revision;
-:Review grouped files through decision filters and pages;
-if (Unresolved blocks?) then (yes)
-  :Correct configuration or destination;
-  :Create a new preview;
+:Step 1: choose an enabled profile;
+:Step 2: choose edition or configured capture;
+:Enter source and destination values;
+:Review folder / section matching;
+:Prepare all matching operations;
+:Step 3: search and review pages of 50 files;
+:Include all or save page-specific exclusions;
+:Update review digest and log selection;
+if (Included blockers or unresolved placement issues?) then (yes)
+  :Exclude conflicting files or create a corrected preview;
   stop
 else (no)
-  :Coordinate exclusive editing window;
-  :Enable site maintenance separately;
-  :Confirm complete review;
-  :Queue authorized execution with the reviewed digest;
-  :Refresh progress or request cancellation;
+  :Step 4: confirm the whole included set;
+  :Require maintenance and execution permission;
+  :Validate digest under the shared plan lock;
+  :Queue every included operation;
+  :Freeze selection and show progress / cancellation;
   stop
 endif
 @enduml
