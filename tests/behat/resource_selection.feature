@@ -10,7 +10,7 @@ Feature: Reuse mixed materials in native File settings
       | Resource acceptance |
     And I am on the "Target resource" "resource activity" page logged in as "cbteacher"
     And I navigate to "Settings" in current page administration
-    And I expand all fieldsets
+    And I press "Select several files or folders"
 
   Scenario: Add a folder and a source main file and save supporting files
     When I set the field "Files and folders" to "Folder: CB2025: Published materials/, File: CB2025: Published resource/resource.txt"

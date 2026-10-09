@@ -46,6 +46,9 @@ final class module_form {
         if (!$profiles) {
             return;
         }
+        $shortcut = $mform->createElement('submit', 'cbopen', get_string('batchopen', 'local_coursebridge'), null, false);
+        $shortcut->updateAttributes(['formaction' => strtok($mform->getAttribute('action'), '#') . '#id_cbheader']);
+        $mform->insertElementBefore($shortcut, 'files');
         self::add($mform, 'header', 'cbheader', get_string('batchheading', 'local_coursebridge'));
         self::add($mform, 'static', 'cbintro', '', get_string('batchintro', 'local_coursebridge'));
         if ($wrapper instanceof \mod_resource_mod_form) {
@@ -66,7 +69,10 @@ final class module_form {
         foreach (['cbmodule', 'cbmimetype'] as $name) {
             $mform->setType($name, PARAM_TEXT);
         }
-        self::add($mform, 'submit', 'cbsearch', get_string('batchsearch', 'local_coursebridge'));
+        foreach (['cbshortname', 'cbmodule', 'cbmimetype'] as $name) {
+            $mform->setAdvanced($name);
+        }
+        self::add($mform, 'submit', 'cbsearch', get_string('batchsearch', 'local_coursebridge'), null, false);
         self::add(
             $mform,
             'autocomplete',
@@ -76,13 +82,14 @@ final class module_form {
             ['multiple' => true, 'tags' => false]
         );
         $mform->setType('cbitems', PARAM_RAW);
-        self::add($mform, 'static', 'cbselectionhelp', '', get_string('batchselectionhelp', 'local_coursebridge'));
-        self::add($mform, 'submit', 'cbnext', get_string('batchnext', 'local_coursebridge'));
+        $mform->addHelpButton('cbitems', 'batchselection', 'local_coursebridge');
+        self::add($mform, 'static', 'cbselectionhelp', '', '');
+        self::add($mform, 'submit', 'cbnext', get_string('batchnext', 'local_coursebridge'), null, false);
         self::add($mform, 'submit', 'cbreview', get_string('batchreview', 'local_coursebridge'));
         self::add($mform, 'static', 'cbreport', '', '');
         $mform->getElement('cbreport')->updateAttributes(['class' => 'w-100']);
         self::add($mform, 'submit', 'cbapply', get_string('batchapply', 'local_coursebridge'));
-        foreach (['cbsearch', 'cbnext', 'cbreview', 'cbapply'] as $button) {
+        foreach (['cbopen', 'cbsearch', 'cbnext', 'cbreview', 'cbapply'] as $button) {
             $mform->registerNoSubmitButton($button);
         }
         foreach (['cbscope', 'cbdigest', 'cbafter', 'cbnextafter'] as $name) {
@@ -106,7 +113,7 @@ final class module_form {
         $values = $mform->exportValues();
         $profileid = (int)($values['cbprofile'] ?? 0);
         $action = '';
-        foreach (['cbsearch', 'cbnext', 'cbreview', 'cbapply'] as $button) {
+        foreach (['cbopen', 'cbsearch', 'cbnext', 'cbreview', 'cbapply'] as $button) {
             if ($wrapper->is_submitted() && !empty($mform->getSubmitValue($button))) {
                 if ($action !== '') {
                     throw new \invalid_parameter_exception('Several CourseBridge actions');
@@ -170,15 +177,16 @@ final class module_form {
             );
             $mform->getElement('cbitems')->loadArray(array_map('s', $page['choices']), $selected);
             if ($page['limited']) {
-                $mform->getElement('cbselectionhelp')->setValue(get_string('batchselectionhelp', 'local_coursebridge')
-                    . $OUTPUT->notification(get_string('batchlimited', 'local_coursebridge'), 'info'));
+                $mform->getElement('cbselectionhelp')->setValue(
+                    $OUTPUT->notification(get_string('batchlimited', 'local_coursebridge'), 'info')
+                );
             }
             if (!$page['choices']) {
                 $report .= $OUTPUT->notification(get_string('batchempty', 'local_coursebridge'), 'info');
             }
             $mform->setConstant('cbnextafter', $page['next']);
             if (!$page['next']) {
-                $mform->getElement('cbnext')->updateAttributes(['disabled' => 'disabled']);
+                $mform->removeElement('cbnext');
             }
         } catch (\moodle_exception $exception) {
             $report .= $OUTPUT->notification(display::reason($exception->errorcode), 'error');

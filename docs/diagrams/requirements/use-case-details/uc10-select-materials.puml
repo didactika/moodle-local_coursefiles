@@ -4,6 +4,8 @@ title UC10 — Select files and folders together
 start
 :Teacher opens Folder or File Settings;
 :Moodle binds the native filemanager;
+:Teacher presses Select several files or folders;
+:System opens the same form's reuse section;
 :Teacher filters and selects files / folders;
 :CourseBridge retains selection across results;
 :Teacher requests review;

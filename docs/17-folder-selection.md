@@ -1,12 +1,16 @@
 # Mixed selection in folder settings
 
-Open an existing Folder activity's **Settings**, then expand **Reuse related materials**. CourseBridge adds native Moodle form controls beside the existing filemanager. It does not replace that control or save the activity independently.
+Open an existing Folder activity's **Settings**, then press **Select several files or folders** beside the native filemanager. The same form opens **Reuse related materials** and jumps to that section, retaining pending fields and the current draft. CourseBridge uses native Moodle controls; ordinary saving remains in control.
 
-1. Choose a relationship profile and optionally filter by filename, edition, course shortname, source module or file type. Press **Search materials**.
+1. Choose a relationship profile and optionally filter by filename or edition. **Show more** exposes course shortname, source module and file type. Press **Search materials**.
 2. Use **Files and folders** to select several entries. Each entry identifies its source course and activity. Moodle's native autocomplete supports searching the displayed choices and removing selected items.
 3. Press **Review selection**. Check every destination path, original author/licence and copy/skip/block decision, together with the resulting draft count and size.
 4. Press **Add reviewed materials** after an unblocked review. The form reloads with the copied files in its native draft and retains pending activity fields.
 5. Use Moodle's ordinary **Save and display** / **Save and return to course**, or **Cancel**. Cancelling leaves the saved activity unchanged; Moodle cleans abandoned drafts through its usual lifecycle.
+
+The selection's native help icon explains folder expansion and retained choices. Search controls use Moodle's ordinary aligned form rows and advanced-field disclosure. The individual repository picker explains how to close its dialog and reach this same-form action.
+
+Opening, searching and paging use native secondary buttons; review and addition use primary buttons. **More materials** appears only when another result page is available.
 
 ![Mixed-selection conversation](diagrams/requirements/use-case-details/uc10-select-materials.svg)
 

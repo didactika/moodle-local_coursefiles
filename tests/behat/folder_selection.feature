@@ -10,7 +10,7 @@ Feature: Review mixed materials in the native folder settings form
       | Folder acceptance |
     And I am on the "Target materials" "folder activity" page logged in as "cbteacher"
     And I navigate to "Settings" in current page administration
-    And I expand all fieldsets
+    And I press "Select several files or folders"
 
   Scenario: Review two folders and a resource, retain selection during filtering, and save
     When I set the field "Name" to "Pending folder title"

@@ -11,8 +11,8 @@
 
 | Step | Responsibility | Action |
 |---|---|---|
-| 1 | Teacher | Opens Folder or File Settings and the reuse section |
-| 2 | Moodle / module_form | Binds the real filemanager and displays authorized choices |
+| 1 | Teacher | Opens Folder or File Settings and presses Select several files or folders beside the filemanager |
+| 2 | Moodle / module_form | Retains pending fields, opens the reuse section and displays authorized choices against the real filemanager |
 | 3 | Teacher | Filters and selects files and real folders across results |
 | 4 | draft_scope / draft_import | Expands eligible descendants and reviews current limits, declarations and conflicts |
 | 5 | Teacher | Checks the review and adds the approved selection |

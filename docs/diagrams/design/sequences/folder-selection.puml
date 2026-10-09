@@ -13,6 +13,9 @@ Teacher -> Form : Open Settings
 Form -> Integration : Module form callbacks
 Integration -> Scope : Bind live filemanager and actual limits
 Integration --> Form : Native filters and multiple choices
+Teacher -> Form : Select several files or folders beside filemanager
+Form -> Integration : No-submit POST; retain pending form fields
+Integration --> Form : Expand reuse section; jump to section
 Teacher -> Form : Select files / folders; request review
 Form -> Integration : No-submit POST
 Integration -> Scope : Review token / profile / selectors

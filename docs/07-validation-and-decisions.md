@@ -25,6 +25,12 @@ On 2026-10-09, `feat/coursebridge-resource-selection` extends the same native co
 
 Both complete local suites pass 65 tests / 343 assertions on this branch. Moodle coding standards 3.7.0 report zero errors and warnings. All 53 local PlantUML source/preview pairs render and documentation links resolve. The repository package is unchanged; its listed results remain the earlier verified baseline.
 
+On `feat/coursebridge-simple-form`, seven focused module-form cases pass with 58 assertions per required core. The added shortcut case verifies pending title, unchanged draft ID and scope, available choices, unchanged saved activity and absence of copied attribution records. The no-submit action uses the native form action with a section fragment. Less-used filters use native advanced fields; folder-selection guidance uses a native help popover. No plugin frontend is added.
+
+All four local browser scenarios / 63 steps pass again on each core using the new shortcut in their background, covering mixed selection, review, normal saving and cancellation. The repository's three scenarios / 52 steps also pass on each required core with its compact batch guidance.
+
+Native Firefox/Boost checks of the simplified section at 1366 px and in a 390 px viewport retain aligned filter controls and native secondary/primary button styles. Page widths are 1354 px and 378 px respectively on both cores. Advanced filters are initially hidden and the shortcut's form action retains the section fragment. These checks cover the sampled form layout, not every theme or browser.
+
 The expanded local Behat suite passes four scenarios / 63 steps on each required core. The two added File scenarios exercise mixed folder/resource selection, native saving, reopening with all supporting files and cancellation leaving one existing file. The earlier Folder scenarios and review-region accessibility check continue to pass. These resource checks do not add a whole-screen accessibility claim or a new visual viewport certification.
 
 The full native reuse-section axe check reports two core-autocomplete violations on both required checkouts: `aria-allowed-role` on its input/combobox and `aria-required-children` on the empty selection listbox. These are recorded rather than silently excluded from a claimed whole-screen pass. The plugin does not patch core or replace this native control. No complete accessibility certification is claimed.

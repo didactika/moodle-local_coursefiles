@@ -33,6 +33,34 @@ use local_coursebridge\local\selection\selection_options;
  * Exercises actual Folder and File settings forms and their native plugin callbacks.
  */
 final class module_form_test extends \advanced_testcase {
+    /**
+     * Opening batch selection beside the native control retains the current form and draft.
+     */
+    public function test_shortcut_preserves_pending_form_data(): void {
+        global $DB, $USER;
+        [$course, $cm] = $this->fixture();
+        $data = $this->hidden($this->request($course, $cm)->render());
+        $form = $this->request($course, $cm, array_replace($data, [
+            'name' => 'Pending shortcut title', 'cbopen' => 'Select several files or folders',
+        ]));
+        $html = $form->render();
+        $this->assertStringContainsString('#id_cbheader', $html);
+        $this->assertStringContainsString('value="Pending shortcut title"', $html);
+        $this->assertSame($data['files'], $this->hidden($html)['files']);
+        $this->assertSame($data['cbscope'], $this->hidden($html)['cbscope']);
+        $this->assertStringContainsString('Source materials/', $html);
+        $this->assertSame('Target materials', $DB->get_field('folder', 'name', ['id' => $cm->instance]));
+        $this->assertCount(1, get_file_storage()->get_area_files(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            (int)$data['files'],
+            'id',
+            false
+        ));
+        $this->assertSame(0, $DB->count_records('local_coursebridge_attribution'));
+    }
+
     // PHPUnit 9 requires this isolation tag; PHPUnit 11 uses the equivalent attributes below.
     // phpcs:disable moodle.Commenting.ValidTags.Invalid
     /**

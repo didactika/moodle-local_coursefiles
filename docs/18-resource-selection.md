@@ -1,6 +1,6 @@
 # Mixed selection in File settings
 
-Open a File activity's **Settings** and expand **Reuse related materials**. The native filters, multiple choices, review and draft addition follow the [same workflow as Folder settings](17-folder-selection.md). Select published files and real source folders together; nested paths and original author/licence declarations are retained.
+Open a File activity's **Settings** and press **Select several files or folders** beside its native filemanager. The same form opens the reuse section without losing pending fields. Filters, multiple choices, review and draft addition follow the [same workflow as Folder settings](17-folder-selection.md). Select published files and real source folders together; nested paths and original author/licence declarations are retained.
 
 ## Main file and supporting files
 
