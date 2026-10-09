@@ -1,19 +1,19 @@
 {{!
-    @template local_coursebridge/local/profile/list
+    @template local_multipicker/local/profile/list
     Named profile list with active status and revision.
     Context: profiles, hasprofiles, newprofileurl.
     Example context (json): {"profiles":[],"hasprofiles":false}
 }}
-<section class="coursebridge-profiles mb-4">
-    <h2>{{#str}}profiles, local_coursebridge{{/str}}</h2>
-    <p class="text-muted">{{#str}}profilesintro, local_coursebridge{{/str}}</p>
-    <a class="btn btn-primary mb-4" href="{{newprofileurl}}">{{#str}}newprofile, local_coursebridge{{/str}}</a>
+<section class="multipicker-profiles mb-4">
+    <h2>{{#str}}profiles, local_multipicker{{/str}}</h2>
+    <p class="text-muted">{{#str}}profilesintro, local_multipicker{{/str}}</p>
+    <a class="btn btn-primary mb-4" href="{{newprofileurl}}">{{#str}}newprofile, local_multipicker{{/str}}</a>
     <div class="row">{{#profiles}}
         <div class="col-lg-6 mb-3"><div class="card h-100"><div class="card-body">
-            <h3 class="h5"><a href="{{url}}">{{name}}</a></h3>
-            <p>{{status}} · {{#str}}revision, local_coursebridge{{/str}} {{revision}}</p>
+            <h3 class="h5"><a href="{{url}}">{{{name}}}</a></h3>
+            <p>{{status}} · {{#str}}revision, local_multipicker{{/str}} {{revision}}</p>
             <a class="btn btn-outline-secondary" href="{{url}}">{{#str}}edit, core{{/str}}</a>
         </div></div></div>
     {{/profiles}}</div>
-    {{^hasprofiles}}<p>{{#str}}noprofile, local_coursebridge{{/str}}</p>{{/hasprofiles}}
+    {{^hasprofiles}}<p>{{#str}}noprofile, local_multipicker{{/str}}</p>{{/hasprofiles}}
 </section>

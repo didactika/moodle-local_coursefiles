@@ -3,9 +3,9 @@
 title UC02 — Attach a selected material: conversation
 top to bottom direction
 state "1. Select source occurrence\nTeacher" as S1
-state "2. Decode and check token\nrepository_coursebridge" as S2
+state "2. Decode and check token\nrepository_multipicker" as S2
 state "3. Validate access / copy policy\nmaterial_source / author_policy" as S3
-state "4. Copy native draft\nrepository_coursebridge" as S4
+state "4. Copy native draft\nrepository_multipicker" as S4
 state "5. Save native editing form\nTeacher / Moodle" as S5
 state "Refused / blocked outcome" as Refused
 [*] --> S1

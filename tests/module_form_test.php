@@ -17,17 +17,17 @@
 /**
  * Real native activity form batch integration checks.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge;
+namespace local_multipicker;
 
-use local_coursebridge\local\catalog\indexer;
-use local_coursebridge\local\catalog\material_source;
-use local_coursebridge\local\profile\profiles;
-use local_coursebridge\local\selection\selection_options;
+use local_multipicker\local\catalog\indexer;
+use local_multipicker\local\catalog\material_source;
+use local_multipicker\local\profile\profiles;
+use local_multipicker\local\selection\selection_options;
 
 /**
  * Exercises native controls, browser selections and restricted folder editing.
@@ -42,12 +42,12 @@ final class module_form_test extends \advanced_testcase {
         $html = $form->render();
         $this->assertStringNotContainsString('cbheader', $html);
         $this->assertStringNotContainsString('cbitems', $html);
-        $control = \local_coursebridge\fixture\native_form::control($form, 'files');
-        $this->assertInstanceOf(\local_coursebridge\form\native_filemanager::class, $control);
+        $control = \local_multipicker\fixture\native_form::control($form, 'files');
+        $this->assertInstanceOf(\local_multipicker\form\native_filemanager::class, $control);
         $context = \context_module::instance($cm->id);
-        $token = \local_coursebridge\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
+        $token = \local_multipicker\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
         $this->assertNotEmpty($token);
-        $scope = \local_coursebridge\local\selection\draft_scope::describe($token, sesskey());
+        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
         $this->assertSame((int)$this->hidden($html)['files'], $scope['draftid']);
         $this->assertSame('files', $scope['field']);
     }
@@ -63,7 +63,7 @@ final class module_form_test extends \advanced_testcase {
         $context = \context_course::instance($course->id);
         $PAGE->set_context($context);
         $PAGE->set_url('/course/modedit.php', ['add' => 'folder', 'course' => $course->id]);
-        $control = new \local_coursebridge\form\native_filemanager(
+        $control = new \local_multipicker\form\native_filemanager(
             'files',
             'Files',
             null,
@@ -72,7 +72,7 @@ final class module_form_test extends \advanced_testcase {
         $control->updateAttributes(['id' => 'id_files']);
         $html = $control->toHtml();
         $this->assertStringContainsString('name="files"', $html);
-        $this->assertNotEmpty(\local_coursebridge\local\selection\draft_scope::find(
+        $this->assertNotEmpty(\local_multipicker\local\selection\draft_scope::find(
             $context,
             (int)$control->getValue(),
             sesskey()
@@ -114,17 +114,17 @@ final class module_form_test extends \advanced_testcase {
         );
         $form = new \mod_folder_edit_form(null, ['data' => $data, 'options' => $options]);
         $form->render();
-        $control = \local_coursebridge\fixture\native_form::control($form, 'files_filemanager');
-        $token = \local_coursebridge\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
+        $control = \local_multipicker\fixture\native_form::control($form, 'files_filemanager');
+        $token = \local_multipicker\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
         $this->assertNotEmpty($token);
-        $review = \local_coursebridge\local\selection\draft_scope::review(
+        $review = \local_multipicker\local\selection\draft_scope::review(
             $token,
             $profileid,
             [['cmid' => $source->cmid, 'filepath' => '/']],
             sesskey()
         );
         $this->assertFalse($review['blocked']);
-        \local_coursebridge\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
+        \local_multipicker\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
         $this->assertNotFalse(get_file_storage()->get_file(
             \context_user::instance($USER->id)->id,
             'user',
@@ -142,21 +142,21 @@ final class module_form_test extends \advanced_testcase {
         [$course, $cm, $profileid, $source, $resource] = $this->fixture();
         $form = $this->request($course, $cm);
         $form->render();
-        $control = \local_coursebridge\fixture\native_form::control($form, 'files');
-        $token = \local_coursebridge\local\selection\draft_scope::find(
+        $control = \local_multipicker\fixture\native_form::control($form, 'files');
+        $token = \local_multipicker\local\selection\draft_scope::find(
             \context_module::instance($cm->id),
             (int)$control->getValue(),
             sesskey()
         );
-        $scope = \local_coursebridge\local\selection\draft_scope::describe($token, sesskey());
+        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
         $state = ['profileid' => $profileid, 'selected' => ['file:' . $resource->get_pathnamehash()],
             'filters' => ['q' => '', 'edition' => '', 'shortname' => '', 'module' => '', 'mimetype' => ''],
             'after' => '', 'folder' => ''];
-        $page = \local_coursebridge\local\selection\browser_listing::page($scope, $state);
+        $page = \local_multipicker\local\selection\browser_listing::page($scope, $state);
         $this->assertContains('Source materials', array_column($page['cards'], 'title'));
         $this->assertNotContains('existing.txt', array_column($page['cards'], 'title'));
         $state['folder'] = 'folder:' . $source->cmid . ':' . base64_encode('/');
-        $page = \local_coursebridge\local\selection\browser_listing::page($scope, $state);
+        $page = \local_multipicker\local\selection\browser_listing::page($scope, $state);
         $this->assertContains('first.txt', array_column($page['cards'], 'title'));
         $this->assertContains('notes', array_column($page['cards'], 'title'));
         $this->assertSame([['value' => 'file:' . $resource->get_pathnamehash()]], $page['retained']);
@@ -170,25 +170,25 @@ final class module_form_test extends \advanced_testcase {
         [$course, $cm, $profileid, $source] = $this->fixture();
         $form = $this->request($course, $cm);
         $form->render();
-        $control = \local_coursebridge\fixture\native_form::control($form, 'files');
-        $token = \local_coursebridge\local\selection\draft_scope::find(
+        $control = \local_multipicker\fixture\native_form::control($form, 'files');
+        $token = \local_multipicker\local\selection\draft_scope::find(
             \context_module::instance($cm->id),
             (int)$control->getValue(),
             sesskey()
         );
         $items = [['cmid' => $source->cmid, 'filepath' => '/']];
-        \local_coursebridge\local\selection\draft_scope::select_mode($token, 'folder', sesskey());
-        $review = \local_coursebridge\local\selection\draft_scope::review($token, $profileid, $items, sesskey());
-        \local_coursebridge\local\selection\draft_scope::select_mode($token, 'contents', sesskey());
+        \local_multipicker\local\selection\draft_scope::select_mode($token, 'folder', sesskey());
+        $review = \local_multipicker\local\selection\draft_scope::review($token, $profileid, $items, sesskey());
+        \local_multipicker\local\selection\draft_scope::select_mode($token, 'contents', sesskey());
         try {
-            \local_coursebridge\local\selection\draft_scope::approved($token, $review['digest'], sesskey());
+            \local_multipicker\local\selection\draft_scope::approved($token, $review['digest'], sesskey());
             $this->fail('Changing folder structure must invalidate approval.');
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchconflict', $exception->errorcode);
         }
-        \local_coursebridge\local\selection\draft_scope::select_mode($token, 'folder', sesskey());
-        $review = \local_coursebridge\local\selection\draft_scope::review($token, $profileid, $items, sesskey());
-        \local_coursebridge\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
+        \local_multipicker\local\selection\draft_scope::select_mode($token, 'folder', sesskey());
+        $review = \local_multipicker\local\selection\draft_scope::review($token, $profileid, $items, sesskey());
+        \local_multipicker\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
         $copied = get_file_storage()->get_file(
             \context_user::instance($USER->id)->id,
             'user',
@@ -210,16 +210,16 @@ final class module_form_test extends \advanced_testcase {
         $resource->set_sortorder(1);
         $form = $this->request($course, $cm);
         $form->render();
-        $control = \local_coursebridge\fixture\native_form::control($form, 'files');
+        $control = \local_multipicker\fixture\native_form::control($form, 'files');
         $context = \context_module::instance($cm->id);
-        $token = \local_coursebridge\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
-        $review = \local_coursebridge\local\selection\draft_scope::review(
+        $token = \local_multipicker\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
+        $review = \local_multipicker\local\selection\draft_scope::review(
             $token,
             $profileid,
             [['cmid' => $source->cmid, 'filepath' => '/'], ['pathnamehash' => $resource->get_pathnamehash()]],
             sesskey()
         );
-        \local_coursebridge\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
+        \local_multipicker\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
         file_save_draft_area_files((int)$control->getValue(), $context->id, 'mod_resource', 'content', 0, ['subdirs' => true]);
         $files = get_file_storage()->get_area_files($context->id, 'mod_resource', 'content', 0, 'id', false);
         $this->assertCount(4, $files);
@@ -236,11 +236,11 @@ final class module_form_test extends \advanced_testcase {
         [$course, , $profileid, $source] = $this->fixture();
         $items = [['cmid' => $source->cmid, 'filepath' => '/notes/'],
             ['cmid' => $source->cmid, 'filepath' => '/']];
-        $files = \local_coursebridge\local\selection\material_selection::resolve($course->id, $profileid, $items);
+        $files = \local_multipicker\local\selection\material_selection::resolve($course->id, $profileid, $items);
         $this->assertCount(2, $files);
-        $mapped = \local_coursebridge\local\selection\material_selection::map_paths($files, $items, 'folder');
+        $mapped = \local_multipicker\local\selection\material_selection::map_paths($files, $items, 'folder');
         $this->assertContains('/Source materials/notes/', $mapped);
-        $mapped = \local_coursebridge\local\selection\material_selection::map_paths($files, [$items[0]], 'contents');
+        $mapped = \local_multipicker\local\selection\material_selection::map_paths($files, [$items[0]], 'contents');
         $this->assertSame(['/', '/'], array_values($mapped));
     }
 
@@ -258,10 +258,10 @@ final class module_form_test extends \advanced_testcase {
         require_once($CFG->dirroot . '/course/modlib.php');
         require_once($CFG->dirroot . '/mod/folder/mod_form.php');
         require_once($CFG->dirroot . '/mod/resource/mod_form.php');
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/coursebridge/examples/institutional-profile.json'), true);
+        $config = json_decode(file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json'), true);
         $config['publication']['mode'] = 'explicit-family-publication';
         $profileid = profiles::save(json_encode($config));
-        set_config('author_policy', 'editable_with_provenance', 'local_coursebridge');
+        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
         $uuid = \core\uuid::generate();
         $source = $this->getDataGenerator()->create_course(['shortname' => 'SOURCE2025', 'idnumber' => $uuid . '||CB||2025']);
         $target = $this->getDataGenerator()->create_course(['shortname' => 'TARGET2026', 'idnumber' => $uuid . '||CB||2026']);
@@ -297,7 +297,7 @@ final class module_form_test extends \advanced_testcase {
         $this->setUser($teacher);
         $PAGE->set_course($target);
         $PAGE->set_cm($cm, $target);
-        \local_coursebridge\form\native_filemanager::register_native(new \core\hook\after_config());
+        \local_multipicker\form\native_filemanager::register_native(new \core\hook\after_config());
         $PAGE->set_url('/course/modedit.php', ['update' => $cm->id]);
         return [$target, $cm, $profileid, $folder, $resource];
     }

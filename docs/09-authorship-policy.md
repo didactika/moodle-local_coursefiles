@@ -1,6 +1,6 @@
 # Author metadata and site/course policy
 
-The selected occurrence supplies its declared `author` and `license`. The importing teacher and technical uploader are action actors. CourseBridge does not infer authorship from their accounts or rewrite authors embedded in document contents.
+The selected occurrence supplies its declared `author` and `license`. The importing teacher and technical uploader are action actors. MultiPicker does not infer authorship from their accounts or rewrite authors embedded in document contents.
 
 ![Policy and provenance classes](diagrams/design/authorship-classes.svg)
 

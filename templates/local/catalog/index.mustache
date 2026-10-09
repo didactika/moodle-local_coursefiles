@@ -1,53 +1,53 @@
 {{!
-    @template local_coursebridge/local/catalog/index
+    @template local_multipicker/local/catalog/index
     Course-scoped material catalog. Labels use component language strings.
     Context: actionurl, courseid, profiles, filters, assets, hasassets, nexturl,
     reseturl, canrefresh, sesskey, publicationenabled, publicationmodules, policyurl.
-    Example context (json): {"actionurl":"/local/coursebridge/course/index.php","courseid":2,"profiles":[],"filters":{},"assets":[]}
+    Example context (json): {"actionurl":"/local/multipicker/course/index.php","courseid":2,"profiles":[],"filters":{},"assets":[]}
 }}
-<section class="coursebridge-catalog" data-region="coursebridge-catalog" aria-labelledby="coursebridge-catalog-title">
+<section class="multipicker-catalog" data-region="multipicker-catalog" aria-labelledby="multipicker-catalog-title">
     <div class="mb-4">
-        <h2 id="coursebridge-catalog-title">{{#str}}dashboard, local_coursebridge{{/str}}</h2>
-        <p class="text-muted">{{#str}}catalogintro, local_coursebridge{{/str}}</p>
+        <h2 id="multipicker-catalog-title">{{#str}}dashboard, local_multipicker{{/str}}</h2>
+        <p class="text-muted">{{#str}}catalogintro, local_multipicker{{/str}}</p>
     </div>
     {{#hasprofiles}}
-    {{> local_coursebridge/local/catalog/filters}}
+    {{> local_multipicker/local/catalog/filters}}
     {{#hasassets}}
-    <p class="small text-muted">{{#str}}originhelp, local_coursebridge{{/str}}</p>
-    {{#assets}}{{> local_coursebridge/local/catalog/material_card}}{{/assets}}
+    <p class="small text-muted">{{#str}}originhelp, local_multipicker{{/str}}</p>
+    {{#assets}}{{> local_multipicker/local/catalog/material_card}}{{/assets}}
     {{/hasassets}}
     {{^hasassets}}
-    <div class="card mb-4" data-region="coursebridge-empty">
+    <div class="card mb-4" data-region="multipicker-empty">
         <div class="card-body text-center">
-            <h3 class="h5">{{#str}}none, local_coursebridge{{/str}}</h3>
-            <p class="text-muted">{{#str}}emptyhelp, local_coursebridge{{/str}}</p>
-            <a href="{{reseturl}}" class="btn btn-outline-secondary">{{#str}}clearfilters, local_coursebridge{{/str}}</a>
+            <h3 class="h5">{{#str}}none, local_multipicker{{/str}}</h3>
+            <p class="text-muted">{{#str}}emptyhelp, local_multipicker{{/str}}</p>
+            <a href="{{reseturl}}" class="btn btn-outline-secondary">{{#str}}clearfilters, local_multipicker{{/str}}</a>
         </div>
     </div>
     {{/hasassets}}
-    {{#nexturl}}<nav class="mb-4" aria-label="{{#str}}pagination, local_coursebridge{{/str}}">
-        <a href="{{nexturl}}" class="btn btn-outline-primary">{{#str}}nextpage, local_coursebridge{{/str}}</a>
+    {{#nexturl}}<nav class="mb-4" aria-label="{{#str}}pagination, local_multipicker{{/str}}">
+        <a href="{{nexturl}}" class="btn btn-outline-primary">{{#str}}nextpage, local_multipicker{{/str}}</a>
     </nav>{{/nexturl}}
     {{/hasprofiles}}
-    {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_coursebridge{{/str}}</div>{{/hasprofiles}}
+    {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_multipicker{{/str}}</div>{{/hasprofiles}}
     {{#canrefresh}}
-    <details class="mb-4"><summary>{{#str}}catalogmaintenance, local_coursebridge{{/str}}</summary>
+    <details class="mb-4"><summary>{{#str}}catalogmaintenance, local_multipicker{{/str}}</summary>
     <div class="card mb-4">
         <div class="card-body">
-            <h3 class="h5">{{#str}}catalogmaintenance, local_coursebridge{{/str}}</h3>
-            <p class="text-muted">{{#str}}refreshhelp, local_coursebridge{{/str}}</p>
+            <h3 class="h5">{{#str}}catalogmaintenance, local_multipicker{{/str}}</h3>
+            <p class="text-muted">{{#str}}refreshhelp, local_multipicker{{/str}}</p>
             <form method="post" action="{{actionurl}}">
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
                 <input type="hidden" name="courseid" value="{{courseid}}">
                 <input type="hidden" name="profileid" value="{{profileid}}">
-                <button class="btn btn-outline-secondary" type="submit" name="action" value="refresh">{{#str}}reindex, local_coursebridge{{/str}}</button>
+                <button class="btn btn-outline-secondary" type="submit" name="action" value="refresh">{{#str}}reindex, local_multipicker{{/str}}</button>
             </form>
         </div>
     </div>
     </details>
     {{/canrefresh}}
     {{#publicationenabled}}<details class="mb-4">
-        <summary>{{#str}}publicationtitle, local_coursebridge{{/str}}</summary>
-        {{> local_coursebridge/local/catalog/publication}}
+        <summary>{{#str}}publicationtitle, local_multipicker{{/str}}</summary>
+        {{> local_multipicker/local/catalog/publication}}
     </details>{{/publicationenabled}}
 </section>

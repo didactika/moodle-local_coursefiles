@@ -3,23 +3,25 @@
 title UC10 - select and import materials
 |Teacher|
 start
-:Open native Folder content or Folder/File Settings;
-:Press Import materials;
-|Moodle / CourseBridge|
+:Open native Folder content or activity form;
+:Open Add files / editor Link browser;
+:Select MultiPicker;
+|Moodle / MultiPicker|
 :Open scoped browser inside native picker;
 |Teacher|
 :Choose profile and optional compact filters;
 :Browse folders and tick files/folders;
 :Choose destination and folder structure;
 :Review selection;
-|CourseBridge|
+|MultiPicker|
 :Expand authorized descendants once;
 :Check policies, current draft and native limits;
 if (Review allowed?) then (yes)
- :Show paths, original declarations and copy/skip decisions;
+ :Open separate folder-tree review;
+:Show paths, declarations and decisions;
  |Teacher|
  :Press Import reviewed materials;
- |CourseBridge|
+ |MultiPicker|
  :Recheck approval and copy transactionally to native draft;
  :Refresh the original filemanager;
  |Teacher|

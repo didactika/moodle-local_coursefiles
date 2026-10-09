@@ -17,24 +17,24 @@
 /**
  * Administration authorization and bounded review tests.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge;
+namespace local_multipicker;
 
-use local_coursebridge\form\profile_form;
-use local_coursebridge\local\profile\profiles;
-use local_coursebridge\output\migration_report;
-use local_coursebridge\output\navigation;
+use local_multipicker\form\profile_form;
+use local_multipicker\local\profile\profiles;
+use local_multipicker\output\migration_report;
+use local_multipicker\output\navigation;
 
 /**
  * Tests the real presentation contracts and permissions.
  *
- * @covers \local_coursebridge\output\migration_report
- * @covers \local_coursebridge\output\navigation
- * @covers \local_coursebridge\form\profile_form
+ * @covers \local_multipicker\output\migration_report
+ * @covers \local_multipicker\output\navigation
+ * @covers \local_multipicker\form\profile_form
  */
 final class admin_layout_test extends \advanced_testcase {
     /**
@@ -45,11 +45,11 @@ final class admin_layout_test extends \advanced_testcase {
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();
         $roleid = create_role('Profile manager', 'profilemanager', '');
-        assign_capability('local/coursebridge:manageprofiles', CAP_ALLOW, $roleid, \context_system::instance()->id);
+        assign_capability('local/multipicker:manageprofiles', CAP_ALLOW, $roleid, \context_system::instance()->id);
         role_assign($roleid, $user->id, \context_system::instance()->id);
         $this->setUser($user);
         $PAGE->set_context(\context_system::instance());
-        $PAGE->set_url('/local/coursebridge/admin/profiles.php');
+        $PAGE->set_url('/local/multipicker/admin/profiles.php');
         $tabs = navigation::site('profiles')->export_for_template($PAGE->get_renderer('core'));
         $this->assertCount(1, $tabs['tabs']);
         $this->assertTrue($tabs['tabs'][0]['active']);
@@ -65,10 +65,10 @@ final class admin_layout_test extends \advanced_testcase {
         global $CFG, $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $json = file_get_contents($CFG->dirroot . '/local/coursebridge/examples/institutional-profile.json');
+        $json = file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json');
         $document = profile_form::document(['configjson' => $json, 'profilename' => 'Preview only']);
         $this->assertSame('Preview only', $document['name']);
-        $this->assertSame(0, $DB->count_records('local_coursebridge_revision'));
+        $this->assertSame(0, $DB->count_records('local_multipicker_revision'));
         $this->expectException(\moodle_exception::class);
         profile_form::document(['configjson' => 'null', 'profilename' => 'Invalid']);
     }
@@ -80,11 +80,11 @@ final class admin_layout_test extends \advanced_testcase {
         global $CFG, $DB, $USER;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/coursebridge/examples/institutional-profile.json'), true);
+        $config = json_decode(file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json'), true);
         $profileid = profiles::save(json_encode($config));
         [$profile, $revision] = profiles::load($profileid);
         $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026', 'issues' => []]);
-        $planid = $DB->insert_record('local_coursebridge_plan', (object)[
+        $planid = $DB->insert_record('local_multipicker_plan', (object)[
             'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
             'userid' => $USER->id, 'configjson' => $document, 'digest' => hash('sha256', $document),
             'state' => 'blocked', 'timecreated' => time(),
@@ -92,7 +92,7 @@ final class admin_layout_test extends \advanced_testcase {
         $source = $this->getDataGenerator()->create_course();
         $target = $this->getDataGenerator()->create_course();
         for ($index = 0; $index < 58; $index++) {
-            $DB->insert_record('local_coursebridge_operation', (object)[
+            $DB->insert_record('local_multipicker_operation', (object)[
                 'planid' => $planid, 'opkey' => hash('sha256', (string)$index), 'sourcehash' => sha1((string)$index),
                 'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
                 'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),

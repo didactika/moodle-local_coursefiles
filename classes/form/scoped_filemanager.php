@@ -17,14 +17,14 @@
 /**
  * Native form control with a trusted batch contract.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge\form;
+namespace local_multipicker\form;
 
-use local_coursebridge\local\selection\draft_scope;
+use local_multipicker\local\selection\draft_scope;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -40,8 +40,8 @@ class scoped_filemanager extends \MoodleQuickForm_filemanager {
     public static function register(): void {
         global $CFG;
         \MoodleQuickForm::registerElementType(
-            'coursebridgefilemanager',
-            $CFG->dirroot . '/local/coursebridge/classes/form/scoped_filemanager.php',
+            'multipickerfilemanager',
+            $CFG->dirroot . '/local/multipicker/classes/form/scoped_filemanager.php',
             self::class
         );
     }
@@ -64,14 +64,16 @@ class scoped_filemanager extends \MoodleQuickForm_filemanager {
      * @return array Server-defined native contract.
      */
     public static function read_contract(\MoodleQuickForm_filemanager $element, \context $context): array {
-        global $CFG;
+        global $CFG, $PAGE;
         if ($element->_flagFrozen || !$element->getName() || !($element->_options['return_types'] & FILE_INTERNAL)) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
+            throw new \moodle_exception('formscopeunavailable', 'local_multipicker');
         }
         [, $course] = get_context_info_array($context->id);
         $maxbytes = max(0, (int)$element->getMaxbytes());
         $types = (new \core_form\filetypes_util())->normalize_file_types($element->_options['accepted_types']);
-        return ['field' => $element->getName(), 'draftid' => (int)$element->getValue(), 'limits' => [
+        $module = $context->contextlevel === CONTEXT_COURSE && $element instanceof native_filemanager
+            ? ($PAGE->url->get_param('add') ?? '') : '';
+        return ['field' => $element->getName(), 'draftid' => (int)$element->getValue(), 'module' => $module, 'limits' => [
             'maxfiles' => (int)$element->getMaxfiles(),
             'maxbytes' => get_user_max_upload_file_size($context, $CFG->maxbytes, $course->maxbytes, $maxbytes),
             'areamaxbytes' => (int)$element->getAreamaxbytes(), 'subdirs' => (bool)$element->getSubdirs(),

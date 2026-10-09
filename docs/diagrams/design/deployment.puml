@@ -6,8 +6,8 @@ node "Browser" {
   artifact "Native Moodle pages / picker" as UI
 }
 node "Moodle application" {
-  artifact "local/coursebridge" as Local
-  artifact "repository/coursebridge" as Repository
+  artifact "local/multipicker" as Local
+  artifact "repository/multipicker" as Repository
   artifact "Moodle core / cron" as Core
 }
 database "Moodle database" as DB

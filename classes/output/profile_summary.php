@@ -17,11 +17,11 @@
 /**
  * Readable relationship and placement rules.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\output;
+namespace local_multipicker\output;
 
 /**
  * Exports rule descriptions without HTML or configuration changes.
@@ -38,22 +38,28 @@ final class profile_summary {
         $rows = [];
         foreach (['source_module', 'target_module'] as $name) {
             $selector = $migration[$name] ?? [];
-            $rows[] = ['label' => get_string($name, 'local_coursebridge'),
+            $rows[] = ['label' => get_string($name, 'local_multipicker'),
                 'value' => implode(' / ', array_filter([
                     $selector['type'] ?? 'folder', $selector['field'] ?? 'name',
                     $selector['equals'] ?? $selector['template'] ?? $selector['pattern']
-                        ?? get_string('nomatchcondition', 'local_coursebridge'),
+                        ?? get_string('nomatchcondition', 'local_multipicker'),
                 ]))];
         }
         $strategy = $migration['section_match']['strategy'] ?? 'ordinal';
-        $rows[] = ['label' => get_string('sectionmatch', 'local_coursebridge'),
-            'value' => get_string('sectionstrategy_' . $strategy, 'local_coursebridge')];
-        $rows[] = ['label' => get_string('duplicaterule', 'local_coursebridge'),
+        $rows[] = ['label' => get_string('sectionmatch', 'local_multipicker'),
+            'value' => get_string('sectionstrategy_' . $strategy, 'local_multipicker')];
+        $rows[] = ['label' => get_string('duplicaterule', 'local_multipicker'),
             'value' => get_string(($migration['same_content_different_path'] ?? 'skip-and-report') === 'keep'
-                ? 'duplicatekeep' : 'duplicateskip', 'local_coursebridge')];
-        $rows[] = ['label' => get_string('conflictrule', 'local_coursebridge'),
-            'value' => get_string('conflictblock', 'local_coursebridge')];
-        return ['rows' => $rows, 'name' => $config['name'] ?? '', 'parsers' => $config['relationship']['parsers'] ?? [],
+                ? 'duplicatekeep' : 'duplicateskip', 'local_multipicker')];
+        $rows[] = ['label' => get_string('conflictrule', 'local_multipicker'),
+            'value' => get_string('conflictblock', 'local_multipicker')];
+        $rules = new \local_multipicker\local\profile\profile_config($config);
+        $filters = [];
+        foreach ($rules->filter_definitions() as $definition) {
+            $filters[] = ['label' => display::name($definition['label']), 'capture' => $definition['capture']];
+        }
+        return ['rows' => $rows, 'filters' => $filters, 'name' => display::name($config['name'] ?? ''),
+            'parsers' => $config['relationship']['parsers'] ?? [],
             'familykey' => $config['relationship']['family_key'] ?? '',
             'editioncapture' => $config['relationship']['edition']['capture'] ?? 'edition'];
     }

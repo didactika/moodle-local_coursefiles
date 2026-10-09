@@ -17,13 +17,13 @@
 /**
  * Immutable rule revisions.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\profile;
+namespace local_multipicker\local\profile;
 
-use local_coursebridge\local\logging\log;
+use local_multipicker\local\logging\log;
 
 /**
  * Owns validated configuration persistence.
@@ -38,37 +38,37 @@ final class profiles {
      */
     public static function save(string $json, int $profileid = 0): int {
         global $DB, $USER;
-        require_capability('local/coursebridge:manageprofiles', \context_system::instance());
+        require_capability('local/multipicker:manageprofiles', \context_system::instance());
         try {
             $config = json_decode($json, true, 64, JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
-            throw new \moodle_exception('invalidprofile', 'local_coursebridge');
+            throw new \moodle_exception('invalidprofile', 'local_multipicker');
         }
         new profile_config($config);
-        $lock = \core\lock\lock_config::get_lock_factory('local_coursebridge')->get_lock('profile:' . $profileid, 10);
+        $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('profile:' . $profileid, 10);
         if (!$lock) {
-            throw new \moodle_exception('lockfailed', 'local_coursebridge');
+            throw new \moodle_exception('lockfailed', 'local_multipicker');
         }
         try {
             $transaction = $DB->start_delegated_transaction();
             if (!$profileid) {
-                $profileid = $DB->insert_record('local_coursebridge', (object)[
-                    'uuid' => \core\uuid::generate(), 'name' => $config['name'] ?? 'CourseBridge',
+                $profileid = $DB->insert_record('local_multipicker', (object)[
+                    'uuid' => \core\uuid::generate(), 'name' => $config['name'] ?? 'MultiPicker',
                     'activeid' => 0, 'enabled' => 1,
                 ]);
             }
-            $profile = $DB->get_record('local_coursebridge', ['id' => $profileid], '*', MUST_EXIST);
+            $profile = $DB->get_record('local_multipicker', ['id' => $profileid], '*', MUST_EXIST);
             $number = 1 + (int)$DB->get_field_sql(
-                'SELECT MAX(revision) FROM {local_coursebridge_revision} WHERE profileid = ?',
+                'SELECT MAX(revision) FROM {local_multipicker_revision} WHERE profileid = ?',
                 [$profileid]
             );
             $canonical = json_encode($config, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-            $profile->activeid = $DB->insert_record('local_coursebridge_revision', (object)[
+            $profile->activeid = $DB->insert_record('local_multipicker_revision', (object)[
                 'profileid' => $profileid, 'revision' => $number, 'configjson' => $canonical,
                 'digest' => hash('sha256', $canonical), 'userid' => $USER->id, 'timecreated' => time(),
             ]);
             $profile->name = $config['name'] ?? $profile->name;
-            $DB->update_record('local_coursebridge', $profile);
+            $DB->update_record('local_multipicker', $profile);
             $transaction->allow_commit();
             log::record('profile_activated', $profile->uuid, ['revision' => $number]);
             return $profileid;
@@ -85,8 +85,8 @@ final class profiles {
      */
     public static function load(int $profileid): array {
         global $DB;
-        $profile = $DB->get_record('local_coursebridge', ['id' => $profileid, 'enabled' => 1], '*', MUST_EXIST);
-        $revision = $DB->get_record('local_coursebridge_revision', ['id' => $profile->activeid], '*', MUST_EXIST);
+        $profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'enabled' => 1], '*', MUST_EXIST);
+        $revision = $DB->get_record('local_multipicker_revision', ['id' => $profile->activeid], '*', MUST_EXIST);
         return [$profile, $revision, new profile_config(json_decode($revision->configjson, true))];
     }
 }

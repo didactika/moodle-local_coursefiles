@@ -1,26 +1,26 @@
 {{!
-    @template local_coursebridge/local/catalog/publication
+    @template local_multipicker/local/catalog/publication
     Publication controls using named course modules rather than numeric IDs.
     Context: actionurl, sesskey, courseid, profileid, publicationmodules, haspublicationmodules.
     Example context (json): {"publicationmodules":[{"value":12,"label":"Class materials"}],"haspublicationmodules":true}
 }}
 <section class="card mb-4" aria-labelledby="cb-publication-title">
     <div class="card-body">
-        <h3 id="cb-publication-title" class="h5">{{#str}}publicationtitle, local_coursebridge{{/str}}</h3>
-        <p class="text-muted">{{#str}}publicationhelp, local_coursebridge{{/str}}</p>
+        <h3 id="cb-publication-title" class="h5">{{#str}}publicationtitle, local_multipicker{{/str}}</h3>
+        <p class="text-muted">{{#str}}publicationhelp, local_multipicker{{/str}}</p>
         {{#haspublicationmodules}}
         <form method="post" action="{{actionurl}}">
             <input type="hidden" name="sesskey" value="{{sesskey}}">
             <input type="hidden" name="courseid" value="{{courseid}}">
             <input type="hidden" name="profileid" value="{{profileid}}">
-            <label for="cb-publication-module">{{#str}}publicationmodule, local_coursebridge{{/str}}</label>
+            <label for="cb-publication-module">{{#str}}publicationmodule, local_multipicker{{/str}}</label>
             <select class="form-control mb-3" name="cmid" id="cb-publication-module">{{#publicationmodules}}
-                <option value="{{value}}">{{label}}</option>
+                <option value="{{value}}">{{{label}}}</option>
             {{/publicationmodules}}</select>
-            <button class="btn btn-primary mb-2" name="action" value="publish" type="submit">{{#str}}publish, local_coursebridge{{/str}}</button>
-            <button class="btn btn-outline-secondary mb-2" name="action" value="revoke" type="submit">{{#str}}revoke, local_coursebridge{{/str}}</button>
+            <button class="btn btn-primary mb-2" name="action" value="publish" type="submit">{{#str}}publish, local_multipicker{{/str}}</button>
+            <button class="btn btn-outline-secondary mb-2" name="action" value="revoke" type="submit">{{#str}}revoke, local_multipicker{{/str}}</button>
         </form>
         {{/haspublicationmodules}}
-        {{^haspublicationmodules}}<p>{{#str}}nopublicationmodules, local_coursebridge{{/str}}</p>{{/haspublicationmodules}}
+        {{^haspublicationmodules}}<p>{{#str}}nopublicationmodules, local_multipicker{{/str}}</p>{{/haspublicationmodules}}
     </div>
 </section>

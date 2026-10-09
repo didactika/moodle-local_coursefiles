@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="CourseBridge Moodle standard">
+<ruleset name="MultiPicker Moodle standard">
   <description>Moodle plugin coding conventions.</description>
   <rule ref="moodle"/>
   <arg name="extensions" value="php"/>

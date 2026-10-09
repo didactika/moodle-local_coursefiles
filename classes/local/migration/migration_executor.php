@@ -17,16 +17,16 @@
 /**
  * Revalidated idempotent migration execution.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\migration;
+namespace local_multipicker\local\migration;
 
-use local_coursebridge\local\catalog\material_source;
-use local_coursebridge\local\profile\profiles;
-use local_coursebridge\local\policy\author_policy;
-use local_coursebridge\local\logging\log;
+use local_multipicker\local\catalog\material_source;
+use local_multipicker\local\profile\profiles;
+use local_multipicker\local\policy\author_policy;
+use local_multipicker\local\logging\log;
 
 /**
  * Executes immutable plans without silently repairing stale destinations.
@@ -41,22 +41,22 @@ final class migration_executor {
      */
     public static function queue(int $planid, string $digest): int {
         global $CFG, $DB, $USER;
-        require_capability('local/coursebridge:executemigration', \context_system::instance());
-        $plan = $DB->get_record('local_coursebridge_plan', ['id' => $planid], '*', MUST_EXIST);
+        require_capability('local/multipicker:executemigration', \context_system::instance());
+        $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
         if (
             $plan->state !== 'reviewable' || !hash_equals($plan->digest, $digest)
                 || !hash_equals($plan->digest, hash('sha256', $plan->configjson))
         ) {
-            throw new \moodle_exception('planstale', 'local_coursebridge');
+            throw new \moodle_exception('planstale', 'local_multipicker');
         }
         if (empty($CFG->maintenance_enabled)) {
-            throw new \moodle_exception('maintenance_required', 'local_coursebridge');
+            throw new \moodle_exception('maintenance_required', 'local_multipicker');
         }
-        $runid = $DB->insert_record('local_coursebridge_run', (object)[
+        $runid = $DB->insert_record('local_multipicker_run', (object)[
             'planid' => $planid, 'userid' => $USER->id, 'state' => 'queued', 'cancelled' => 0,
             'timecreated' => time(), 'timemodified' => time(),
         ]);
-        $task = new \local_coursebridge\task\execute_migration();
+        $task = new \local_multipicker\task\execute_migration();
         $task->set_userid($USER->id);
         $task->set_custom_data(['runid' => $runid]);
         \core\task\manager::queue_adhoc_task($task);
@@ -72,31 +72,31 @@ final class migration_executor {
      */
     public static function execute(int $runid): bool {
         global $CFG, $DB, $USER;
-        $run = $DB->get_record('local_coursebridge_run', ['id' => $runid], '*', MUST_EXIST);
-        $plan = $DB->get_record('local_coursebridge_plan', ['id' => $run->planid], '*', MUST_EXIST);
+        $run = $DB->get_record('local_multipicker_run', ['id' => $runid], '*', MUST_EXIST);
+        $plan = $DB->get_record('local_multipicker_plan', ['id' => $run->planid], '*', MUST_EXIST);
         if ((int)$USER->id !== (int)$run->userid) {
-            throw new \moodle_exception('planstale', 'local_coursebridge');
+            throw new \moodle_exception('planstale', 'local_multipicker');
         }
-        require_capability('local/coursebridge:executemigration', \context_system::instance());
+        require_capability('local/multipicker:executemigration', \context_system::instance());
         if (empty($CFG->maintenance_enabled)) {
-            throw new \moodle_exception('maintenance_required', 'local_coursebridge');
+            throw new \moodle_exception('maintenance_required', 'local_multipicker');
         }
         if ($run->cancelled) {
-            $DB->set_field('local_coursebridge_run', 'state', 'cancelled', ['id' => $runid]);
+            $DB->set_field('local_multipicker_run', 'state', 'cancelled', ['id' => $runid]);
             return false;
         }
         if (!hash_equals($plan->digest, hash('sha256', $plan->configjson))) {
-            throw new \moodle_exception('planstale', 'local_coursebridge');
+            throw new \moodle_exception('planstale', 'local_multipicker');
         }
-        $DB->set_field('local_coursebridge_run', 'state', 'running', ['id' => $runid]);
+        $DB->set_field('local_multipicker_run', 'state', 'running', ['id' => $runid]);
         [$profile, $revision, $rules] = profiles::load($plan->profileid);
         if ((int)$revision->id !== (int)$plan->revisionid) {
-            $DB->set_field('local_coursebridge_run', 'state', 'blocked', ['id' => $runid]);
+            $DB->set_field('local_multipicker_run', 'state', 'blocked', ['id' => $runid]);
             log::record('migration_blocked', $plan->uuid, ['runid' => $runid, 'reason' => 'planstale']);
             return false;
         }
         $operations = $DB->get_records(
-            'local_coursebridge_operation',
+            'local_multipicker_operation',
             ['planid' => $plan->id, 'state' => 'pending'],
             'id',
             '*',
@@ -104,16 +104,16 @@ final class migration_executor {
             25
         );
         foreach ($operations as $operation) {
-            if ($DB->get_field('local_coursebridge_run', 'cancelled', ['id' => $runid])) {
+            if ($DB->get_field('local_multipicker_run', 'cancelled', ['id' => $runid])) {
                 break;
             }
-            $lock = \core\lock\lock_config::get_lock_factory('local_coursebridge')
+            $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')
                 ->get_lock('destination:' . $operation->targetcmid, 10);
             if (!$lock) {
-                throw new \moodle_exception('lockfailed', 'local_coursebridge');
+                throw new \moodle_exception('lockfailed', 'local_multipicker');
             }
             try {
-                $operation = $DB->get_record('local_coursebridge_operation', ['id' => $operation->id], '*', MUST_EXIST);
+                $operation = $DB->get_record('local_multipicker_operation', ['id' => $operation->id], '*', MUST_EXIST);
                 if ($operation->state !== 'pending') {
                     continue;
                 }
@@ -131,7 +131,7 @@ final class migration_executor {
                         || $rules->resolve(get_course($sourcecm->course)) !== $snapshot['sourceidentity']
                         || $rules->resolve(get_course($target['courseid'])) !== $snapshot['targetidentity']
                 ) {
-                    throw new \moodle_exception('planstale', 'local_coursebridge');
+                    throw new \moodle_exception('planstale', 'local_multipicker');
                 }
                 $context = \context_module::instance($operation->targetcmid);
                 $existing = get_file_storage()->get_file(
@@ -147,18 +147,18 @@ final class migration_executor {
                 if ($operation->decision === 'skip_content') {
                     $duplicate = get_file_storage()->get_file_by_hash($snapshot['duplicate']['pathnamehash']);
                     if (!$duplicate || copy_decision::snapshot($duplicate) !== $snapshot['duplicate']) {
-                        throw new \moodle_exception('planstale', 'local_coursebridge');
+                        throw new \moodle_exception('planstale', 'local_multipicker');
                     }
                     $decision = 'skip_content';
                 }
                 if ($actual !== $snapshot['existing'] && $decision !== 'skip_identical') {
-                    throw new \moodle_exception('planstale', 'local_coursebridge');
+                    throw new \moodle_exception('planstale', 'local_multipicker');
                 }
                 if ($decision === 'copy') {
                     author_policy::require_native_copy($source, $sourcecm->course, $target['courseid']);
                     $attributionid = author_policy::capture($source);
                     $saved = folder_destination::copy($source, $operation->targetcmid);
-                    $DB->insert_record('local_coursebridge_origin', (object)[
+                    $DB->insert_record('local_multipicker_origin', (object)[
                         'pathnamehash' => $saved->get_pathnamehash(), 'attributionid' => $attributionid,
                         'contenthash' => $saved->get_contenthash(), 'userid' => $USER->id, 'timecreated' => time(),
                     ]);
@@ -166,7 +166,7 @@ final class migration_executor {
                 } else if ($decision === 'skip_identical' || $decision === 'skip_content') {
                     $outcome = ['runid' => $runid, 'outcome' => 'already_present'];
                 } else {
-                    throw new \moodle_exception('planstale', 'local_coursebridge');
+                    throw new \moodle_exception('planstale', 'local_multipicker');
                 }
                 $operation->state = 'done';
                 $operation->result = json_encode($outcome);
@@ -175,16 +175,16 @@ final class migration_executor {
                 $operation->result = json_encode(['runid' => $runid, 'error' => $exception->errorcode]);
             } finally {
                 $operation->timemodified = time();
-                $DB->update_record('local_coursebridge_operation', $operation);
+                $DB->update_record('local_multipicker_operation', $operation);
                 $lock->release();
             }
         }
-        $more = $DB->record_exists('local_coursebridge_operation', ['planid' => $plan->id, 'state' => 'pending']);
-        $cancelled = $DB->get_field('local_coursebridge_run', 'cancelled', ['id' => $runid]);
+        $more = $DB->record_exists('local_multipicker_operation', ['planid' => $plan->id, 'state' => 'pending']);
+        $cancelled = $DB->get_field('local_multipicker_run', 'cancelled', ['id' => $runid]);
         $state = $cancelled ? 'cancelled' : ($more ? 'running' : (
-            $DB->record_exists('local_coursebridge_operation', ['planid' => $plan->id, 'state' => 'blocked'])
+            $DB->record_exists('local_multipicker_operation', ['planid' => $plan->id, 'state' => 'blocked'])
                 ? 'partial' : 'completed'));
-        $DB->update_record('local_coursebridge_run', (object)[
+        $DB->update_record('local_multipicker_run', (object)[
             'id' => $runid, 'state' => $state, 'timemodified' => time(),
         ]);
         log::record('migration_batch', $plan->uuid, ['runid' => $runid, 'state' => $state]);
@@ -198,7 +198,7 @@ final class migration_executor {
      */
     public static function cancel(int $runid): void {
         global $DB;
-        require_capability('local/coursebridge:executemigration', \context_system::instance());
-        $DB->set_field('local_coursebridge_run', 'cancelled', 1, ['id' => $runid]);
+        require_capability('local/multipicker:executemigration', \context_system::instance());
+        $DB->set_field('local_multipicker_run', 'cancelled', 1, ['id' => $runid]);
     }
 }

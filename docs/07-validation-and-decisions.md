@@ -1,38 +1,40 @@
 # Validation record
 
-Checks use isolated Moodle PHPUnit and Behat databases. Verified on 2026-10-09, plugin version `2026100901`.
+Verified on 2026-10-09, package version **2026100902**. PHPUnit and Behat use independent databases/dataroots. The main localhost installations retain their existing courses and native files; their CourseBridge metadata was adopted by MultiPicker without resetting those sites.
 
-| Exact core | PHP / database | Local PHPUnit | Repository PHPUnit |
-|---|---|---|---|
-| Moodle 4.5.13, build 20260810 | PHP 8.3.33 / PostgreSQL 17.10 | 73 tests / 352 assertions passed | 11 tests / 40 assertions passed |
-| Moodle 5.3, build 20261005 | PHP 8.3.33 / PostgreSQL 17.10 | 73 tests / 352 assertions passed | 11 tests / 40 assertions passed |
+| Exact core | Maintenance branch | PHP / database | Combined plugin PHPUnit | Native Firefox / Boost |
+|---|---|---|---|---|
+| Moodle 4.5.13, build 20260810, core 8cbae18a2898cfd8266ec91ac206e12004f0ff5f | feat/multipicker-45 | PHP 8.3.33 / PostgreSQL 17.10 | 102 tests / 460 assertions passed | Local: 13 scenarios / 177 steps; repository: 3 / 37, passed |
+| Moodle 5.3, build 20261005, core 426222 | feat/multipicker-5 | PHP 8.3.33 / PostgreSQL 17.10 | 102 tests / 461 assertions passed | Local: 13 scenarios / 177 steps; repository: 3 / 37, passed |
 
-The matching maintenance lines are `feat/coursebridge-admin-layout-45` and `feat/coursebridge-admin-layout-5`. Shared PHP contracts and native behavior are aligned. Moodle 4.5 builds AMD with the exact core Grunt ESLint/Rollup tasks. Moodle 5.3 runs its own AMD build, including its declaration generation task; the executable AMD bundle has the same SHA-256 on both cores. React is unnecessary for this native picker integration. Other core versions, PHP/database combinations and themes are outside this evidence.
+Moodle 5.3's PHPUnit 11 reports one existing PHPDoc coverage-metadata deprecation. The successful runs have no plugin test errors or PHP notices. Under heavy concurrent local indexing, Boost loader readiness occasionally exceeds Behat's ten-second hook timeout; complete suites pass on rerun without changing core or weakening functional assertions. Other PHP/database combinations, releases, themes and browsers are outside this matrix.
 
-## Service and native-control coverage
+## Native selection and source authority
 
-The suites cover configurable course identities and optional editions, content grouping, current visibility/publication, role permissions, malformed selectors, author policy changes, conflict decisions, draft ownership, session keys, expiry, bounded session state, replay, changed source/profile/draft/destination, count/type/size/directory limits and transactional rollback.
+Firefox enters through the actual native Add files action or Tiny Link browser and the repository sidebar. Tests cover existing Folder content editing, existing File settings, an existing URL activity editor, content-only teachers without activity-settings permission, batch Save/Cancel, main-file preservation, off-page removal, Back from separate review, functional layouts and Assignment handouts. Tiny's two links are checked before saving and after reopening the activity settings.
 
-Native-control checks exercise real Folder/File forms, the separate Folder content editor, a teacher prohibited from changing activity Settings, and a new activity's native draft. Folder modes include enclosing-folder and content-only mapping, parent/child overlap, stale-approval invalidation and actual mapped draft copies. Resource supporting copies preserve the destination main file through native saving. The repository checks native batch transfer and the all-skipped-content response as well as individual access/copy contracts and original attribution after later editable metadata changes.
+Automatic filters replace a Moodle Fragment rather than the embedded document. The filename-search test checks retained focus. A server regression rejects unrelated fragment contexts, preserves off-page items and refuses approval from a submitted fragment action. Native control tests also cover actual empty drafts, new activities, count/type/byte/directory limits, expired scopes, session keys, replay, changed drafts/sources/profiles and transactional rollback.
 
-## Browser acceptance
+Public-area tests cover Assignment additional files/instructions, exact-core timed visibility, Forum introduction files, Page content and visible Book chapters. Student submission components and hidden chapters are rejected. Guided source checkboxes preserve specific advanced introduction rules while opting into Assignment handouts. An unadapted text editor creates no batch scope.
 
-Firefox/Boost scenarios exercise the actual native repository AJAX and embedded HTML chooser. The local package has five scenarios / 62 steps: two source folders plus a File, native Folder Save, Cancel, content-only teacher permissions, and File supporting materials/main-file workflow. The repository has three scenarios / 39 steps: unique content results with hidden-material exclusion, combined filename/edition/shortname/module/type filters and native saving, and retained selection after filtering. Test fixtures explicitly publish sources to a destination-only teacher and choose editable-with-provenance; the package's strict default remains unchanged.
+Catalog tests cover arbitrary named captures, optional values, fresh identity against stale indexes, contextual Moodle Multilang names, publication and revoked access. A sixty-file fixture produces distinct 50/10 pages and restores an off-page checkbox on return. Original author/licence declarations remain in immutable history.
 
-The embedded browser and native entry are inspected at desktop and 390 px widths. Explicit labels, checkbox cards, disclosure controls and a list review keep the plugin presentation within its available width. These checks do not certify every native dialog, theme, browser or screen reader.
+## Layout and theme evidence
 
-## Installation and upgrade
+Browser and review screenshots were inspected at 1366 px and Firefox's effective 500 px minimum width. Embedded panels have no horizontal overflow at those sizes. Mobile repository navigation uses a scrollable horizontal strip; review uses a collapsible folder tree. Core layout controls are hidden only while the embedded chooser is active; the plugin's Cards/List controls change its actual result layout.
 
-Both required cores install the XMLDB schema in isolated test sites and complete the CourseBridge `2026100901` upgrade on the localhost development sites. The parent UUID column keeps no empty CHAR default. Log upgrades preserve action history; capability changes preserve explicit grants/prohibitions. This interface update adds no business tables. Existing unrelated Moodle 4.5 plugins can produce CLI default-setting notices; they are outside these packages.
+Scoped CSS uses theme variables and component icons/templates remain overridable. These checks do not certify every theme, viewport, keyboard workflow or screen reader.
 
-Moodle coding standards and the versioned UML sources/previews are checked with the current source. Diagrams describe implemented routes and contracts. Markdown links and generated previews are checked locally.
+## Installation, upgrade and builds
+
+Both exact cores install the thirteen-table XMLDB schema. Development-site rename checks preserve twelve legacy table row counts, profile/log IDs, the chosen editable-with-provenance policy, explicit CAP_PROHIBIT overrides and repository type IDs. Legacy tables remain rollback records. The parent UUID column has no invalid empty CHAR default. The capture-value table is reconstructible.
+
+Both own-core Grunt pipelines pass ESLint/Rollup for browser and editor_import AMD modules; Moodle 5.3 also generates declarations. The separate Moodle 5 artifact declares Moodle 5.3 as its actual minimum. React is unnecessary for this integration: core owns the picker/editor, and PHP/Mustache/Fragment APIs supply the chooser. Shared server contracts remain aligned.
+
+Moodle coding standards, PHP syntax, XMLDB XSD, Markdown links and sibling UML previews pass. Localhost demo profiles explicitly enable the new providers and each demo source Assignment has two indexed public teaching files; other profiles keep their previous allowlists.
 
 ## Practical boundaries
 
-The strict author policy refuses copying through native editors with unprotected later metadata changes. Editable-with-provenance preserves the original declaration in history and permits later native editing. Administrative bulk migration requires maintenance mode and an exclusive editing window; a CourseBridge lock does not coordinate unrelated native editors. Backup restore does not remap plugin lineage. Visual batches are bound to supported Folder/File filemanagers, not arbitrary upload, editor or backup/import controls. Each batch resolves at most 200 source occurrences and preserves existing files additively.
+Interactive batches resolve at most 200 source occurrences, including selected Folder subtrees. Empty directories are not transferred. Tiny Link supports multiple links; image/media subpickers retain their native single-file type contract. Other editors and unregistered controls keep ordinary native behavior. Only explicitly declared public providers are indexed; JSON cannot publish arbitrary private areas.
 
-## Administration layout checks
-
-Three additional PHPUnit cases exercise delegated tab permissions, unsaved configuration parsing without a revision write, original-revision summaries and whole-plan counts across filtered 50-file pages. The Moodle 4.5 combined plugin suite passes 84 tests / 392 assertions. On Moodle 5.3 the same suites and the focused output (7 tests / 38 assertions) and administration (3 tests / 19 assertions) files validate the updated grouped template contract. PHPUnit 11 reports PHPDoc coverage metadata deprecations in test declarations.
-
-The native administration browser feature has four scenarios / 51 steps: site settings saving, unsaved profile preview/Cancel, edition configuration and grouped migration review/filter/back navigation, and delegated profile access without site configuration. Desktop and mobile captures use the exact Boost theme with native drawers closed for mobile inspection. Occasional before-step timeouts in the core theme loader were rerun separately; they are outside the plugin route code. The picker AMD bundle is unchanged by this server-rendered layout update.
+Strict author policy refuses unsupported later native metadata protection. Editable-with-provenance preserves the original declaration but permits later native author edits. Bulk administration uses a separate reviewed existing-folder plan and maintenance/exclusive-editing requirements. Backup restore does not remap plugin lineage.

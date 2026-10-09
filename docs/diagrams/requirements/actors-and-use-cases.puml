@@ -1,12 +1,12 @@
 @startuml
 !include ../_style.puml
-title CourseBridge — Actor responsibilities
+title MultiPicker — Actor responsibilities
 left to right direction
 actor Teacher
 actor "Course publisher" as Publisher
 actor "Policy manager" as Manager
 actor Administrator
-rectangle CourseBridge {
+rectangle MultiPicker {
   usecase "Search and attach materials\nUC01 · UC02" as Reuse
   usecase "Publish or revoke\nUC04" as Publish
   usecase "Site/course author policy\nUC09" as Policy

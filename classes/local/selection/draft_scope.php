@@ -17,14 +17,14 @@
 /**
  * Session binding for reviewed native draft batches.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge\local\selection;
+namespace local_multipicker\local\selection;
 
-use local_coursebridge\form\scoped_filemanager;
+use local_multipicker\form\scoped_filemanager;
 
 /**
  * Session-local authorization binding for an explicitly integrated owning form.
@@ -45,7 +45,7 @@ final class draft_scope {
      */
     public static function find(\context $context, int $draftid, string $sesskey): string {
         global $SESSION;
-        foreach ($SESSION->local_coursebridge_drafts ?? [] as $token => $scope) {
+        foreach ($SESSION->local_multipicker_drafts ?? [] as $token => $scope) {
             if ($scope['contextid'] === $context->id && $scope['draftid'] === $draftid) {
                 try {
                     self::resolve($token, $sesskey);
@@ -83,9 +83,41 @@ final class draft_scope {
             isset($scope['review']) && ($scope['review']['profileid'] !== $view['profileid']
                 || $scope['review']['items'] !== selection_options::parse($view['selected']))
         ) {
-            unset($SESSION->local_coursebridge_drafts[$token]['review']);
+            unset($SESSION->local_multipicker_drafts[$token]['review']);
         }
-        $SESSION->local_coursebridge_drafts[$token]['view'] = $view;
+        $SESSION->local_multipicker_drafts[$token]['view'] = $view;
+    }
+
+    /**
+     * Narrow an editor subpicker to its requested types while retaining the native form ceilings.
+     *
+     * @param string $token Actual form scope.
+     * @param array $types Core subpicker extensions; these may only restrict an editor's wildcard contract.
+     * @param string $environment Actual native picker environment.
+     * @param string $sesskey Session key.
+     */
+    public static function select_picker(string $token, array $types, string $environment, string $sesskey): void {
+        global $SESSION;
+        $scope = self::resolve($token, $sesskey);
+        if (($scope['environment'] ?? '') !== 'editor') {
+            return;
+        }
+        $types = (new \core_form\filetypes_util())->normalize_file_types($types) ?: ['*'];
+        $links = $environment === 'editor' && in_array('*', $types, true);
+        $limit = $environment === 'editor' && !$links ? 1 : material_selection::MAX_FILES;
+        if (
+            $scope['limits']['accepted_types'] !== $types || ($scope['limits']['selectionlimit'] ?? 0) !== $limit
+                || ($scope['editorlinks'] ?? false) !== $links
+        ) {
+            unset(
+                $SESSION->local_multipicker_drafts[$token]['review'],
+                $SESSION->local_multipicker_drafts[$token]['view'],
+                $SESSION->local_multipicker_drafts[$token]['imported']
+            );
+        }
+        $SESSION->local_multipicker_drafts[$token]['limits']['accepted_types'] = $types;
+        $SESSION->local_multipicker_drafts[$token]['limits']['selectionlimit'] = $limit;
+        $SESSION->local_multipicker_drafts[$token]['editorlinks'] = $links;
     }
 
     /**
@@ -100,7 +132,7 @@ final class draft_scope {
         $scope = self::resolve($token, $sesskey);
         $saved = $scope['review'] ?? null;
         if (!$saved || !hash_equals($saved['digest'], $digest)) {
-            throw new \moodle_exception('batchconflict', 'local_coursebridge');
+            throw new \moodle_exception('batchconflict', 'local_multipicker');
         }
         $review = draft_import::review(
             $scope['courseid'],
@@ -112,7 +144,7 @@ final class draft_scope {
             $scope['copymode'] ?? 'paths'
         );
         if ($review['blocked'] || !hash_equals($review['digest'], $digest)) {
-            throw new \moodle_exception('batchconflict', 'local_coursebridge');
+            throw new \moodle_exception('batchconflict', 'local_multipicker');
         }
         return [$scope, $review];
     }
@@ -128,11 +160,11 @@ final class draft_scope {
         global $SESSION;
         $scope = self::resolve($token, $sesskey);
         if (!in_array($mode, ['paths', 'folder', 'contents'], true)) {
-            throw new \moodle_exception('invalidselection', 'local_coursebridge');
+            throw new \moodle_exception('invalidselection', 'local_multipicker');
         }
         if (($scope['copymode'] ?? 'paths') !== $mode) {
-            unset($SESSION->local_coursebridge_drafts[$token]['review']);
-            $SESSION->local_coursebridge_drafts[$token]['copymode'] = $mode;
+            unset($SESSION->local_multipicker_drafts[$token]['review']);
+            $SESSION->local_multipicker_drafts[$token]['copymode'] = $mode;
         }
     }
 
@@ -170,9 +202,36 @@ final class draft_scope {
                 '.'
             )
         ) {
-            throw new \moodle_exception('invaliddraft', 'local_coursebridge');
+            throw new \moodle_exception('invaliddraft', 'local_multipicker');
         }
-        $scopes = $SESSION->local_coursebridge_drafts ?? [];
+        return self::open_contract($contract, $context, $basepath);
+    }
+
+    /**
+     * Register limits read from a live native form element by a server-side adapter.
+     *
+     * @param array $contract Actual native field contract, never request parameters.
+     * @param \context $context Actual owning context.
+     * @param string $basepath Existing destination path.
+     * @return string Random session-local binding.
+     */
+    public static function open_contract(array $contract, \context $context, string $basepath = '/'): string {
+        global $SESSION, $USER;
+        self::require_context($context, $contract['field']);
+        $basepath = material_selection::path($basepath);
+        if (
+            $contract['draftid'] <= 0 || !get_file_storage()->get_file(
+                \context_user::instance($USER->id)->id,
+                'user',
+                'draft',
+                $contract['draftid'],
+                $basepath,
+                '.'
+            )
+        ) {
+            throw new \moodle_exception('invaliddraft', 'local_multipicker');
+        }
+        $scopes = $SESSION->local_multipicker_drafts ?? [];
         foreach ($scopes as $key => $scope) {
             if (
                 $scope['expires'] <= time() || $scope['userid'] !== (int)$USER->id
@@ -186,10 +245,12 @@ final class draft_scope {
             array_shift($scopes);
         }
         $token = bin2hex(random_bytes(32));
+        $contract['module'] = $context->contextlevel === CONTEXT_MODULE
+            ? get_coursemodule_from_id(null, $context->instanceid)->modname : ($contract['module'] ?? '');
         $scopes[$token] = $contract + ['userid' => (int)$USER->id, 'contextid' => $context->id,
             'courseid' => (int)$context->get_course_context()->instanceid, 'basepath' => $basepath,
             'expires' => time() + self::LIFETIME];
-        $SESSION->local_coursebridge_drafts = $scopes;
+        $SESSION->local_multipicker_drafts = $scopes;
         return $token;
     }
 
@@ -213,7 +274,7 @@ final class draft_scope {
             $scope['contextid'] !== $context->id || $scope['field'] !== $contract['field']
                 || $scope['draftid'] !== $contract['draftid'] || $scope['limits'] !== $contract['limits']
         ) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
+            throw new \moodle_exception('formscopeunavailable', 'local_multipicker');
         }
     }
 
@@ -249,7 +310,7 @@ final class draft_scope {
         $scope = self::resolve($token, $sesskey);
         $basepath = material_selection::path($basepath);
         if (!$scope['limits']['subdirs'] && $basepath !== '/') {
-            throw new \moodle_exception('batchlimit', 'local_coursebridge');
+            throw new \moodle_exception('batchlimit', 'local_multipicker');
         }
         if (
             !get_file_storage()->get_file(
@@ -261,11 +322,11 @@ final class draft_scope {
                 '.'
             )
         ) {
-            throw new \moodle_exception('invaliddraft', 'local_coursebridge');
+            throw new \moodle_exception('invaliddraft', 'local_multipicker');
         }
         if ($scope['basepath'] !== $basepath) {
-            unset($SESSION->local_coursebridge_drafts[$token]['review']);
-            $SESSION->local_coursebridge_drafts[$token]['basepath'] = $basepath;
+            unset($SESSION->local_multipicker_drafts[$token]['review']);
+            $SESSION->local_multipicker_drafts[$token]['basepath'] = $basepath;
         }
     }
 
@@ -286,8 +347,8 @@ final class draft_scope {
             !$review || $review['profileid'] !== $profileid || $review['items'] !== $items
                 || !hash_equals($review['digest'], $digest)
         ) {
-            unset($SESSION->local_coursebridge_drafts[$token]['review']);
-            throw new \moodle_exception('batchconflict', 'local_coursebridge');
+            unset($SESSION->local_multipicker_drafts[$token]['review']);
+            throw new \moodle_exception('batchconflict', 'local_multipicker');
         }
     }
 
@@ -303,7 +364,7 @@ final class draft_scope {
     public static function review(string $token, int $profileid, array $items, string $sesskey): array {
         global $SESSION;
         $scope = self::resolve($token, $sesskey);
-        unset($SESSION->local_coursebridge_drafts[$token]['review']);
+        unset($SESSION->local_multipicker_drafts[$token]['review'], $SESSION->local_multipicker_drafts[$token]['imported']);
         $review = draft_import::review(
             $scope['courseid'],
             $profileid,
@@ -313,7 +374,7 @@ final class draft_scope {
             $scope['basepath'],
             $scope['copymode'] ?? 'paths'
         );
-        $SESSION->local_coursebridge_drafts[$token]['review'] = [
+        $SESSION->local_multipicker_drafts[$token]['review'] = [
             'profileid' => $profileid, 'items' => $items, 'digest' => $review['digest'],
         ];
         return $review;
@@ -331,11 +392,11 @@ final class draft_scope {
         global $SESSION;
         $scope = self::resolve($token, $sesskey);
         $review = $scope['review'] ?? null;
-        unset($SESSION->local_coursebridge_drafts[$token]['review']);
+        unset($SESSION->local_multipicker_drafts[$token]['review']);
         if (!$review || !hash_equals($review['digest'], $digest)) {
-            throw new \moodle_exception('batchconflict', 'local_coursebridge');
+            throw new \moodle_exception('batchconflict', 'local_multipicker');
         }
-        return draft_import::apply(
+        $result = draft_import::apply(
             $scope['courseid'],
             $review['profileid'],
             $scope['draftid'],
@@ -345,6 +406,11 @@ final class draft_scope {
             $scope['basepath'],
             $scope['copymode'] ?? 'paths'
         );
+        $SESSION->local_multipicker_drafts[$token]['imported'] = array_map(static fn($operation) => [
+            'filepath' => $operation['filepath'], 'filename' => $operation['filename'],
+            'contenthash' => $operation['snapshot']['contenthash'],
+        ], $result['operations']);
+        return $result;
     }
 
     /**
@@ -356,7 +422,7 @@ final class draft_scope {
     public static function close(string $token, string $sesskey): void {
         global $SESSION;
         self::resolve($token, $sesskey);
-        unset($SESSION->local_coursebridge_drafts[$token]);
+        unset($SESSION->local_multipicker_drafts[$token]);
     }
 
     /**
@@ -371,21 +437,21 @@ final class draft_scope {
         if (!confirm_sesskey($sesskey)) {
             throw new \moodle_exception('invalidsesskey');
         }
-        $scope = $SESSION->local_coursebridge_drafts[$token] ?? null;
+        $scope = $SESSION->local_multipicker_drafts[$token] ?? null;
         if (
             !preg_match('/^[a-f0-9]{64}$/', $token) || !$scope
                 || $scope['userid'] !== (int)$USER->id || $scope['expires'] <= time()
         ) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
+            throw new \moodle_exception('formscopeunavailable', 'local_multipicker');
         }
         $context = \context::instance_by_id($scope['contextid'], IGNORE_MISSING);
         if (!$context) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
+            throw new \moodle_exception('formscopeunavailable', 'local_multipicker');
         }
         self::require_context($context, $scope['field']);
         $course = get_course($scope['courseid']);
         if ((int)$context->get_course_context()->instanceid !== $scope['courseid']) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
+            throw new \moodle_exception('formscopeunavailable', 'local_multipicker');
         }
         $scope['limits']['maxbytes'] = get_user_max_upload_file_size(
             $context,
@@ -404,7 +470,7 @@ final class draft_scope {
      */
     private static function require_context(\context $context, string $field = ''): void {
         if (!isloggedin() || isguestuser() || !in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE], true)) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
+            throw new \moodle_exception('formscopeunavailable', 'local_multipicker');
         }
         destination_access::require((int)$context->get_course_context()->instanceid, $context, $field);
     }

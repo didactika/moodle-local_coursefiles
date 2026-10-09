@@ -5,8 +5,9 @@ actor Teacher
 participant "Native filemanager" as Manager
 participant "Moodle picker" as Picker
 participant "Scoped browser" as Browser
-Teacher -> Manager : Import materials
-Manager -> Picker : Open Add file; select CourseBridge
+Teacher -> Manager : Native Add files / editor Link browser
+Manager -> Picker : Open native picker
+Teacher -> Picker : Select MultiPicker
 Picker -> Browser : Embed documented HTML chooser
 Browser --> Teacher : Filters, folders and checkbox cards
 note over Manager, Browser

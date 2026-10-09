@@ -1,10 +1,10 @@
 @startuml
 !include ../_style.puml
-title CourseBridge — Course material reuse
+title MultiPicker — Course material reuse
 left to right direction
 actor Teacher
 actor Administrator
-rectangle "CourseBridge\nlocal + repository plugins" as Bridge
+rectangle "MultiPicker\nlocal + repository plugins" as Bridge
 rectangle "Native course editing\nforms and file picker" as Forms
 database "Moodle native files" as Files
 Teacher --> Forms

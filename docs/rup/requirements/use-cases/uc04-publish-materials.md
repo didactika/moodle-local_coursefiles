@@ -3,7 +3,7 @@
 | Attribute | Behavior |
 |---|---|
 | Primary actor | Publisher |
-| Goal | Grant or revoke historical reuse for a named eligible folder or resource. |
+| Goal | Grant or revoke historical reuse for an eligible public activity provider. |
 | Preconditions | The actor can publish and manage activities in the source course; the profile uses explicit family publication. |
 | Result | The explicit module publication flag has the requested value. |
 
@@ -15,7 +15,7 @@
 
 | Step | Responsibility | Action |
 |---|---|---|
-| 1 | Publisher | Selects a named folder or file resource in the course page. |
+| 1 | Publisher | Selects a named activity with a declared public material provider in the course page. |
 | 2 | material_source | Checks source type, visibility, section restrictions and publication authority. |
 | 3 | material_source | Stores the grant or revocation flag and action actor. |
 | 4 | log | Records the publication action. |

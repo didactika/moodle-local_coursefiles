@@ -17,12 +17,12 @@
 /**
  * Theme-overridable native presentation context.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge\output;
+namespace local_multipicker\output;
 
 /**
  * Carries plain data to a named component template.
@@ -53,7 +53,7 @@ final class view implements \renderable, \templatable {
      */
     public function __construct(string $template, array $data) {
         if (!isset(self::TEMPLATES[$template])) {
-            throw new \coding_exception('Unknown CourseBridge view');
+            throw new \coding_exception('Unknown MultiPicker view');
         }
         $this->template = self::TEMPLATES[$template];
         $this->data = $data;
@@ -65,7 +65,7 @@ final class view implements \renderable, \templatable {
      * @return string Component template.
      */
     public function template(): string {
-        return 'local_coursebridge/' . $this->template;
+        return 'local_multipicker/' . $this->template;
     }
 
     /**

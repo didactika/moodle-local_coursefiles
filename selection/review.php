@@ -1,0 +1,68 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * MultiPicker native material import integration.
+ *
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+require_once(__DIR__ . '/../../../config.php');
+require_once($CFG->dirroot . '/repository/lib.php');
+
+use local_multipicker\local\selection\draft_scope;
+use local_multipicker\local\selection\selection_options;
+use local_multipicker\output\display;
+use local_multipicker\output\review_tree;
+
+$token = required_param('scope', PARAM_ALPHANUM);
+require_login();
+$scope = draft_scope::describe($token, sesskey());
+$PAGE->set_course(get_course($scope['courseid']));
+$PAGE->set_context(context::instance_by_id($scope['contextid']));
+$PAGE->set_url('/local/multipicker/selection/review.php', ['scope' => $token]);
+$PAGE->set_pagelayout('embedded');
+$PAGE->set_title(get_string('batchreview', 'local_multipicker'));
+$PAGE->set_heading($PAGE->course->fullname);
+$state = $scope['view'] ?? [];
+$data = ['backurl' => (new moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false)];
+try {
+    $review = draft_scope::review(
+        $token,
+        (int)($state['profileid'] ?? 0),
+        selection_options::parse($state['selected'] ?? []),
+        sesskey()
+    );
+    $data += ['count' => $review['filecount'], 'size' => display_size($review['bytes']),
+        'nodes' => review_tree::data($review['operations']), 'approved' => !$review['blocked']];
+    if (!$review['blocked']) {
+        $source = get_file_storage()->get_file_by_hash($review['operations'][0]['pathnamehash']);
+        $file = ['title' => $source->get_filename(), 'author' => $source->get_author(),
+            'license' => $source->get_license(), 'thumbnail' => $OUTPUT->image_url('f/document')->out(false),
+            'source' => base64_encode(json_encode(['batch' => $token, 'digest' => $review['digest']])),
+            'editorid' => $scope['editorid'] ?? '', 'scope' => $token];
+        $file['sourcekey'] = sha1($file['source'] . repository::get_secret_key() . sesskey());
+        $PAGE->requires->js_call_amd('local_multipicker/browser', 'complete', [$file]);
+    }
+} catch (moodle_exception $exception) {
+    $data['error'] = display::reason($exception->errorcode);
+}
+$PAGE->requires->js_call_amd('local_multipicker/browser', 'presentation');
+echo $OUTPUT->header();
+echo $OUTPUT->render_from_template('local_multipicker/local/selection/review', $data);
+echo $OUTPUT->footer();
