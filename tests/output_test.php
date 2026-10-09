@@ -119,7 +119,7 @@ final class output_test extends \advanced_testcase {
     public function test_migration_report_uses_readable_decisions(): void {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('migration_report', [
-            'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025', 'targetedition' => '2026',
+            'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025', 'targetedition' => '2026', 'reviewstep' => true,
             'hasoperations' => true, 'groups' => [[
                 'sourcecourse' => 'BIO101-2025', 'targetcourse' => 'BIO101-2026',
                 'targetsection' => 'Week 1', 'targetfolder' => 'Class materials', 'operations' => [[

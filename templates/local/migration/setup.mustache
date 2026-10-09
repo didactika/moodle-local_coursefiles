@@ -3,13 +3,14 @@
     Profile choice, exact rule summary and bounded recent-preview list.
     Example context (json): {"profiles":[],"hasprofiles":false,"recent":[],"hasrecent":false}
 }}
-<section data-region="multipicker-migration-setup">
+<section class="multipicker-admin" data-region="multipicker-migration-setup">
     <h2>{{#str}}migrations, local_multipicker{{/str}}</h2>
     <p class="text-muted">{{#str}}migrationintro, local_multipicker{{/str}}</p>
-    <ol class="list-inline mb-4" aria-label="{{#str}}migrationsteps, local_multipicker{{/str}}">
-        <li class="list-inline-item"><strong>1. {{#str}}migrationstep_configure, local_multipicker{{/str}}</strong></li>
-        <li class="list-inline-item">2. {{#str}}migrationstep_review, local_multipicker{{/str}}</li>
-        <li class="list-inline-item">3. {{#str}}migrationstep_execute, local_multipicker{{/str}}</li>
+    <ol class="multipicker-steps mb-4" aria-label="{{#str}}migrationsteps, local_multipicker{{/str}}">
+        <li {{#chooseprofile}}aria-current="step"{{/chooseprofile}}><span class="multipicker-step-number">1</span>{{#str}}migrationstep_profile, local_multipicker{{/str}}</li>
+        <li {{#choosescope}}aria-current="step"{{/choosescope}}><span class="multipicker-step-number">2</span>{{#str}}migrationstep_scope, local_multipicker{{/str}}</li>
+        <li><span class="multipicker-step-number">3</span>{{#str}}migrationstep_review, local_multipicker{{/str}}</li>
+        <li><span class="multipicker-step-number">4</span>{{#str}}migrationstep_execute, local_multipicker{{/str}}</li>
     </ol>
     {{#hasrecent}}<details class="mb-4">
         <summary>{{#str}}recentpreviews, local_multipicker{{/str}}</summary>
@@ -18,19 +19,24 @@
         </li>{{/recent}}</ul>
     </details>{{/hasrecent}}
     {{#hasprofiles}}
+    {{#chooseprofile}}<div class="multipicker-panel"><p class="text-muted">{{#str}}migrationprofilehelp, local_multipicker{{/str}}</p>
     <form method="get" action="{{actionurl}}" class="mb-4">
+        <input type="hidden" name="step" value="scope">
         <label for="cb-migration-profile">{{#str}}profile, local_multipicker{{/str}}</label>
         <div class="row"><div class="col-md-8 mb-2">
             <select class="form-control" name="profileid" id="cb-migration-profile">{{#profiles}}
                 <option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>
             {{/profiles}}</select>
         </div><div class="col-md-4 mb-2">
-            <button class="btn btn-outline-secondary" type="submit">{{#str}}useprofile, local_multipicker{{/str}}</button>
+            <button class="btn btn-outline-secondary" type="submit">{{#str}}continuescope, local_multipicker{{/str}}</button>
         </div></div>
-    </form>
+    </form></div>{{/chooseprofile}}
+    {{#choosescope}}<a href="{{profileurl}}" class="btn btn-sm btn-outline-secondary mb-3">{{#pix}}back, local_multipicker{{/pix}}{{#str}}migrationstep_profile, local_multipicker{{/str}}</a>
+    <p class="text-muted">{{#str}}migrationscopehelp, local_multipicker{{/str}}</p>
     <details class="mb-3"><summary>{{#str}}reviewedrules, local_multipicker{{/str}}</summary>
         <div class="mt-2">{{#summary}}{{> local_multipicker/local/profile/summary}}{{/summary}}</div></details>
     {{^haseditions}}<p class="alert alert-info">{{#str}}editionindexhelp, local_multipicker{{/str}}</p>{{/haseditions}}
+    {{/choosescope}}
     {{/hasprofiles}}
     {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_multipicker{{/str}}</div>{{/hasprofiles}}
     {{#canmanageprofiles}}<p><a href="{{profilesurl}}">{{#str}}manageprofiles, local_multipicker{{/str}}</a></p>{{/canmanageprofiles}}

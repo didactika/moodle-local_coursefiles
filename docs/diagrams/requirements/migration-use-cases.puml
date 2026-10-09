@@ -5,15 +5,21 @@ left to right direction
 actor Administrator
 rectangle "MultiPicker administration" {
   usecase "UC03 Activate profile" as Profile
+  usecase "UC11 Export profiles" as Export
+  usecase "UC12 Import profiles" as Import
   usecase "UC05 Preview migration" as Preview
   usecase "UC06 Execute reviewed digest" as Execute
   usecase "UC07 Cancel / resume pending work" as Resume
 }
 Administrator --> Profile
+Administrator --> Export
+Administrator --> Import
 Administrator --> Preview
 Administrator --> Execute
 Administrator --> Resume
-Profile -[hidden]down-> Preview
+Profile -[hidden]down-> Export
+Export -[hidden]down-> Import
+Import -[hidden]down-> Preview
 Preview -[hidden]down-> Execute
 Execute -[hidden]down-> Resume
 @enduml

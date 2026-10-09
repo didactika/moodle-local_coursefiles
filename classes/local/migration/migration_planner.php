@@ -33,23 +33,26 @@ use local_multipicker\local\logging\log;
  */
 final class migration_planner {
     /**
-     * Preview copies between two configured edition labels.
+     * Preview copies between two values of a configured course dimension.
      *
      * @param int $profileid Profile.
      * @param string $sourceedition Source label.
      * @param string $targetedition Target label.
      * @param bool $layoutconfirmed Reviewed section layout.
+     * @param string $scopekey Configured capture filter or edition.
      * @return \stdClass Stored plan.
      */
     public static function preview(
         int $profileid,
         string $sourceedition,
         string $targetedition,
-        bool $layoutconfirmed = false
+        bool $layoutconfirmed = false,
+        string $scopekey = 'edition'
     ): \stdClass {
         global $DB, $USER;
         require_capability('local/multipicker:planmigration', \context_system::instance());
         [$profile, $revision, $rules] = profiles::load($profileid);
+        $scopecapture = course_scope::capture($rules, $scopekey);
         $config = $rules->get_config()['migration'] ?? [];
         if (
             $sourceedition === '' || $targetedition === '' || $sourceedition === $targetedition
@@ -64,10 +67,13 @@ final class migration_planner {
             if (!$course || !($identity = $rules->resolve($course))) {
                 continue;
             }
-            $key = $identity['familyhash'] . ':' . hash('sha256', json_encode($identity['dimensions']));
-            if ($identity['edition'] === $sourceedition) {
+            $dimensions = $identity['dimensions'];
+            unset($dimensions[$scopecapture]);
+            $key = $identity['familyhash'] . ':' . hash('sha256', json_encode($dimensions));
+            $value = $scopekey === 'edition' ? $identity['edition'] : ($identity['filters'][$scopekey] ?? null);
+            if ($value === $sourceedition) {
                 $pairs[$key]['source'][] = $course->id;
-            } else if ($identity['edition'] === $targetedition) {
+            } else if ($value === $targetedition) {
                 $pairs[$key]['target'][] = $course->id;
             }
         }
@@ -160,6 +166,8 @@ final class migration_planner {
                             }
                         }
                         $snapshot = ['source' => $source, 'sourcecourse' => $sourcecourse,
+                            'sourceshortname' => get_course($sourcecourse)->shortname,
+                            'targetshortname' => get_course($targetcourse)->shortname,
                             'target' => placement::snapshot($target->id), 'existing' => $existingdata,
                             'duplicate' => $duplicate,
                             'sourceidentity' => $rules->resolve(get_course($sourcecourse)),
@@ -174,8 +182,8 @@ final class migration_planner {
                 }
             }
         }
-        $document = ['sourceedition' => $sourceedition, 'targetedition' => $targetedition,
-            'layoutconfirmed' => $layoutconfirmed, 'issues' => $issues, 'operations' => $operations];
+        $document = ['sourceedition' => $sourceedition, 'targetedition' => $targetedition, 'scopekey' => $scopekey,
+            'layoutconfirmed' => $layoutconfirmed, 'issues' => $issues, 'operationcount' => count($operations)];
         $json = json_encode($document, JSON_UNESCAPED_SLASHES);
         $blocked = $issues || array_filter($operations, static fn($operation) =>
             strpos($operation['decision'], 'blocked_') === 0);
@@ -192,6 +200,11 @@ final class migration_planner {
                 'decision' => $operation['decision'], 'state' => 'pending', 'result' => '{}', 'timemodified' => time(),
             ]);
         }
+        $document['operationsdigest'] = plan_selection::manifest_digest($planid);
+        $json = json_encode($document, JSON_UNESCAPED_SLASHES);
+        $DB->update_record('local_multipicker_plan', (object)[
+            'id' => $planid, 'configjson' => $json, 'digest' => hash('sha256', $json),
+        ]);
         $transaction->allow_commit();
         $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
         log::record('migration_previewed', $plan->uuid, ['operations' => count($operations), 'blocked' => (bool)$blocked]);

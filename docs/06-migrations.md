@@ -6,11 +6,11 @@ Migrations copy additively into existing folders. They preserve sources, nested 
 
 ## Preview
 
-Choose a profile and distinct source/target edition strings. Pair live courses by configured family and optional dimensions. Require exactly one source and target for each selected pair. Resolve source module predicates by `name` or `idnumber`, then resolve destination sections by reviewed ordinal, unique nonempty name or explicit native-section mapping. **Moodle sections have no native idnumber.**
+Choose a profile, an edition or configured capture filter, and distinct source/destination values. The selected capture is removed from the remaining pairing dimensions. Pair live courses by configured family and optional dimensions. Require exactly one source and target for each selected pair. Resolve source module predicates by `name` or `idnumber`, then resolve destination sections by reviewed ordinal, unique nonempty name or explicit native-section mapping. **Moodle sections have no native idnumber.**
 
 ![Placement process](diagrams/behavior/processes/course-and-placement-matching.svg)
 
-Select exactly one existing folder in that destination section using its configured predicate/template. Report missing and ambiguous destinations. A course without the selected edition does not become an annual source automatically. Show exact relative paths, authors/licenses and decisions. The [institutional preset](../examples/institutional-profile.json) copies `materiales_de_clase.module` from 2025 to 2026 with explicitly reviewed ordinal layout.
+Select exactly one existing folder in that destination section using its configured predicate/template. Report missing and ambiguous destinations. Courses must match the selected capture values; no annual edition is invented. Show exact relative paths, authors/licenses and decisions. The [institutional preset](../examples/institutional-profile.json) copies `materiales_de_clase.module` from 2025 to 2026 with explicitly reviewed ordinal layout.
 
 ![UC05 preview sequence](diagrams/design/sequences/uc05-preview-migration.svg)
 
@@ -27,11 +27,11 @@ Select exactly one existing folder in that destination section using its configu
 | Strict author lock without proven editor integration | Block copying |
 | Changed source, identity, placement or protection after review | Block stale operation |
 
-The stored plan includes its immutable JSON digest and rule revision; operations include source/target identity, placement, byte and attribution snapshots. Any blockers prevent queueing that initial plan. Pending blocked operations require a new reviewed preview rather than silent recalculation.
+The stored plan includes a compact specification, operation fingerprint, review digest and exact rule revision; operations include source/target identity, placement, byte and attribution snapshots. Included file blockers and unresolved placement/course issues prevent queueing. Before a run, persistent checkboxes can exclude individual files across paginated/search results. Excluding a blocked operation does not bypass unresolved placement/course issues. Selection changes invalidate older approvals. Pending blocked operations require a new reviewed preview rather than silent recalculation.
 
 ## Execution and concurrency
 
-Queue the exact reviewed digest under the acting administrator's user ID. Use bounded tasks (25 operations per slice), destination module locks, live access checks and current policy. Site maintenance mode and an exclusive administrative editing window are required for folder writes; this is an operational precondition, not a claim that maintenance mode prevents every administrator from editing.
+Queue the exact reviewed digest under the acting administrator's user ID. The entire included set is queued regardless of the visible page/filter. Selection freezes once a run exists. Excluded files are neither copied nor included in progress counts. Use bounded tasks (25 operations per slice), destination module locks, live access checks and current policy. Site maintenance mode and an exclusive administrative editing window are required for folder writes; this is an operational precondition, not a claim that maintenance mode prevents every administrator from editing.
 
 ![UC06 execution sequence](diagrams/design/sequences/uc06-execute-migration.svg)
 

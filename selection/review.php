@@ -40,7 +40,20 @@ $PAGE->set_pagelayout('embedded');
 $PAGE->set_title(get_string('batchreview', 'local_multipicker'));
 $PAGE->set_heading($PAGE->course->fullname);
 $state = $scope['view'] ?? [];
+if (data_submitted()) {
+    require_sesskey();
+    $removed = required_param('removeitem', PARAM_RAW);
+    $state['selected'] = array_values(array_diff($state['selected'] ?? [], [$removed]));
+    draft_scope::remember_view($token, $state, sesskey());
+    redirect($PAGE->url);
+}
 $data = ['backurl' => (new moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false)];
+$data += ['action' => $PAGE->url->out(false), 'sesskey' => sesskey(), 'scope' => $token,
+    'basket' => \local_multipicker\local\selection\selection_basket::data(
+        $scope['courseid'],
+        (int)($state['profileid'] ?? 0),
+        $state['selected'] ?? []
+    ), 'hasbasket' => !empty($state['selected'])];
 try {
     $review = draft_scope::review(
         $token,

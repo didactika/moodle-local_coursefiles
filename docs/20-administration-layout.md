@@ -1,42 +1,38 @@
 # Administration and review screens
 
-MultiPicker opens from **Site administration → Plugins → Local plugins → MultiPicker**. Only the first authorized page appears in the administration menu; Settings is the entry for a site administrator, while a delegated manager enters through their own authorized page. Settings, Profiles, Migrations and Log share permission-aware page tabs. They are regular Moodle pages and remain usable without custom JavaScript. Each page independently checks its system capability; hiding a tab is not its authorization boundary.
+MultiPicker opens through **Site administration → Plugins → Local plugins → MultiPicker**. Settings, Profiles, Migrations and Log share permission-aware tabs. A delegated profile manager has an authorized entry without site configuration access. The Log is also registered under **Site administration → Reports → MultiPicker material reuse**. Every route checks its own capability.
 
 ![Administration pages](diagrams/design/administration-pages.svg)
 
-## Settings
+## Settings and profiles
 
-`admin/settings.php` edits the existing site author policy, course override policy and missing-author policy through a native Moodle form. Existing values and strict defaults are preserved. Only users with `moodle/site:config` can enter or save it. Changes appear in the native configuration log and the MultiPicker Log tab.
+The native settings form controls authorship, course overrides and missing authors. Strict defaults are preserved. Profile cards show status and revision; creating/editing opens a separate native form. Guided mode edits the course field/expression, family/display templates, optional edition capture, matching dimensions, category scope, public sources, publication policy, source/destination folder predicates, section matching and duplicate handling. Capture filters use repeatable capture/label/optional controls.
 
-## Profiles
+Guided mode starts from the **server-loaded revision**, preserves advanced settings without a form control and does not require a JSON document. Advanced mode retains the complete JSON schema, including multiple parsers and explicit section maps. A saved section map is preserved by guided edits; mapping entries are edited in advanced mode. Preview validates unsaved rules without activating a revision. Saving activates a new validated revision. Cancel discards unsaved form data.
 
-Moodle 4.5 does not build the Local plugins category for delegated users without site configuration access. MultiPicker registers their authorized entry in the administration root instead; it does not grant site configuration capability.
+Select several cards or Select all to **Export selected**, or use **Export all profiles**. Exports contain active configurations only, without native course files, logs, database IDs or provenance. Import accepts an exported JSON bundle or a single JSON profile through Moodle's native upload control. All documents are validated before any write. Each imported profile has a new identity; existing profiles are never overwritten. Check category IDs, explicit mappings and publication rules for the destination site. Import accepts at most 500 documents and 1 MB. This workflow does not parse YAML.
 
-`admin/profiles.php` lists named profile cards, status and active revision. Creating or editing opens `admin/profile.php`; the large rule editor is absent from the list. **Preview rules** validates the submitted JSON and describes relationship, section, source/destination and duplicate rules without writing or activating a revision. **Save profile** activates a validated revision and returns to the list. Cancel discards the form values. A delegated `manageprofiles` role can use these pages without site configuration access.
+The complete conversations and design sequences are documented in [UC11: export](rup/requirements/use-cases/uc11-export-profiles.md) and [UC12: import](rup/requirements/use-cases/uc12-import-profiles.md).
 
-The editor retains the full generic JSON schema. Its summary describes configuration meaning; it is not a simulation of course matching or file copies. Only the migration preview evaluates indexed course pairs and actual source/destination files.
+## Four-step migration wizard
 
-## Migrations
-
-`admin/migration.php` contains profile selection, the active rule summary, edition fields with indexed suggestions and the necessary section-layout confirmation. Recent stored previews are available in a disclosure panel. Changing the selected profile loads its own active revision before a preview can be created.
-
-**Create preview** stores immutable decisions and opens `admin/migration_review.php`. The review describes the exact original profile revision even if the active profile subsequently changes. Whole-plan counts distinguish copies, existing content and blocked operations. Decision links filter a bounded page of 50 files, grouped by source course and destination folder. Previous/Next links retain the filter. The summary counts and overall progress always describe the complete plan.
+1. **Choose profile:** select the course grouping and folder rules.
+2. **Source and destination:** choose edition or a named capture filter (such as cohort or semester), enter distinct source/destination values and confirm ordinal section layout if applicable. Matching still requires one source and one destination within each family and remaining configured dimensions.
+3. **Review:** prepare every matching operation, then display only 50 per page. Search course names, folders or filenames and filter by decision. Include/exclude checkboxes affect the rendered page only; Save selection preserves other pages. Include every file and Exclude every file apply to the entire plan regardless of the current search. A configuration change creates a new preview.
+4. **Execute:** open a separate wizard screen with whole-selection counts, confirmation, maintenance requirement, progress and cancellation. Files remain unchanged until authorized execution is queued.
 
 ![Migration review flow](diagrams/behavior/processes/administration-migration.svg)
 
-Execution sits after the reviewed files. A separate confirmation, execution capability, reviewable plan, correct digest and site maintenance mode are required. Maintenance mode is never enabled automatically. Source/destination revalidation and exclusive editing requirements remain enforced by the migration service. Queued/running plans show progress, refresh and authorized cancellation. Changing configuration creates a new preview; it does not rewrite a stored plan.
+Operation snapshots/decisions remain immutable. Selection changes update the review digest and are recorded in the log; stale approvals are refused. Selection locks after any run has been created. Excluding a blocked file can remove that file's block, but unresolved course/placement issues still block the plan. Execution queues **all included operations across every page**, never only the visible search results. Excluded files are not processed or counted in execution progress. Empty selections cannot queue a run. Native source/destination permissions, author policy, duplicate checks, maintenance and live revalidation remain enforced.
 
-Legacy `admin/migration.php?planid=...` links redirect to the review page. Legacy profile edit links likewise redirect to the separate editor.
+New plans store a compact specification and streamed operation fingerprint rather than duplicating every snapshot in JSON. Stored operations carry their inclusion state. Queueing shares the plan lock with selection changes and validates the reviewed fingerprints. A second active run is refused.
 
-## Course pages and themes
+Course and placement issues have their own pages of 50 entries, independent of the file pages. Their complete set remains in the stored plan and blocks execution even when the current issue page does not display a particular problem.
 
-Course material browsing and course author policy share a single course navigation entry and their own permission-filtered tabs; site administration tabs are not displayed there. The catalog keeps filename and edition visible, with further filters, publication and maintenance controls in disclosures. The native file picker retains its embedded batch workflow.
+## Logs and presentation
 
-Templates are organized under `local/navigation`, `local/profile`, `local/migration`, `local/catalog` and `local/log`. Native forms and shared Bootstrap classes retain the active Moodle theme's controls, spacing and focus behavior. There is no added framework, stylesheet or client-side tab controller. See [presentation and theme overrides](11-presentation-and-theming.md).
+The report uses a compact action timeline with action/user/date labels and an expandable reference. Action/reference/date filters retain the descending-ID cursor on older pages. Date bounds use the reader's timezone, including the whole selected end date. Raw structured details remain undisplayed.
 
-References: [Moodle 4.5 Navigation API](https://moodledev.io/docs/4.5/apis/core/navigation), [administration external pages](https://phpdoc.moodledev.io/4.5/d9/dd6/classadmin__externalpage.html), [Moodle 5.3 Forms API](https://moodledev.io/docs/5.3/apis/subsystems/form).
+Shared component CSS uses theme variables, compact cards, pill labels and coloured disclosure chevrons. Native form controls, labels, fieldsets, validation and accessibility behavior remain owned by Moodle. JavaScript enhances Select all and saves changed migration page checkboxes before searching, paging, filtering or continuing to execution. Without JavaScript, use Save selection before navigation. Manual checkboxes and whole-plan actions remain usable without it. Templates remain overrideable under `local/navigation`, `local/profile`, `local/migration`, `local/catalog` and `local/log`.
 
-
-## Guided profile controls
-
-The profile form starts with a name, one course parser field/pattern and the grouping template. Search filters are repeatable capture/label/optional rows in a collapsed native section. Advanced JSON is collapsed and remains available for multiple parsers or placement rules. Rule previews show grouping/filter information first and put folder migration details in a disclosure. These controls preserve Moodle's form labels, validation, layout and theme overrides.
+References: [Moodle Forms API](https://moodledev.io/docs/5.3/apis/subsystems/form), [native form uploads](https://moodledev.io/docs/5.0/apis/subsystems/form/usage/files).

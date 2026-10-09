@@ -157,12 +157,6 @@ final class browser_controller {
                 $state['filters']['captures'] ?? [],
                 $listing['suggestions']
             );
-            $listing['basket'] = \local_multipicker\local\selection\selection_basket::data(
-                $scope['courseid'],
-                (int)$state['profileid'],
-                $state['selected']
-            );
-            $listing['hasbasket'] = (bool)$listing['basket'];
             $listing['previouspage'] = (bool)$state['history'];
         } catch (\moodle_exception $exception) {
             $message = $OUTPUT->notification(display::reason($exception->errorcode), 'error');
@@ -173,7 +167,8 @@ final class browser_controller {
         'contextid' => $scope['contextid'],
         'layout' => $state['layout'],
         'listlayout' => $state['layout'] === 'list',
-        'action' => (new \moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false), 'sesskey' => sesskey(), 'scope' => $token,
+        'action' => (new \moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false),
+        'sesskey' => sesskey(), 'scope' => $token,
         'multipleprofiles' => count($profiles) > 1, 'profileid' => $state['profileid'],
         'profiles' => display::options($profiles, (string)$state['profileid']),
         'capturefilters' => array_slice($capturecontrols, 0, 2),

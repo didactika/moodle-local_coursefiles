@@ -1,15 +1,20 @@
 @startuml
 !include ../../_style.puml
-title UC05 — Preview an edition migration
+title UC05 — Preview a configured migration
 actor Administrator
 participant "Migration form" as UI
 participant migration_planner as Planner
+participant plan_selection as Selection
 participant "placement / copy_decision / author_policy" as Rules
 database "Plan / operations" as DB
-Administrator -> UI : Profile / edition labels / layout review
+Administrator -> UI : Profile / capture values / layout review
 UI -> Planner : preview(...)
 Planner -> Rules : Unique pair / target placement / file decision
 Rules --> Planner : Copy / skip / blocker and snapshots
 Planner -> DB : Store immutable intent and digest
 Planner --> UI : Reviewed report
+Administrator -> UI : Include / exclude selected operations
+UI -> Selection : save(planid, digest, visible, included)
+Selection -> DB : Update inclusions / approval digest / log
+note over UI, DB : Inclusions update approval before the first run.
 @enduml

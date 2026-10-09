@@ -72,5 +72,17 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
         }
         upgrade_plugin_savepoint(true, 2026100902, 'local', 'multipicker');
     }
+    if ($oldversion < 2026100903) {
+        $table = new xmldb_table('local_multipicker_operation');
+        $field = new xmldb_field('included', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'decision');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $index = new xmldb_index('planid-included-state', XMLDB_INDEX_NOTUNIQUE, ['planid', 'included', 'state']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2026100903, 'local', 'multipicker');
+    }
     return true;
 }

@@ -34,7 +34,7 @@ final class log {
      */
     public static function actions(): array {
         return ['profile_activated', 'site_policy_changed', 'course_policy_changed', 'publication_granted', 'publication_revoked',
-            'migration_previewed', 'migration_queued', 'migration_blocked', 'migration_batch'];
+            'migration_previewed', 'migration_selection_changed', 'migration_queued', 'migration_blocked', 'migration_batch'];
     }
 
     /**
@@ -44,9 +44,18 @@ final class log {
      * @param string $entityuuid Exact reference, or all references.
      * @param int $before Read records preceding this ID.
      * @param int $limit Page size, bounded to 100.
+     * @param int $from Inclusive timestamp lower bound.
+     * @param int $until Exclusive timestamp upper bound.
      * @return array Records and the next cursor.
      */
-    public static function page(string $action = '', string $entityuuid = '', int $before = 0, int $limit = 50): array {
+    public static function page(
+        string $action = '',
+        string $entityuuid = '',
+        int $before = 0,
+        int $limit = 50,
+        int $from = 0,
+        int $until = 0
+    ): array {
         global $DB;
         require_capability('local/multipicker:viewlog', \context_system::instance());
         $limit = max(1, min(100, $limit));
@@ -61,6 +70,14 @@ final class log {
         if ($before > 0) {
             $where[] = 'id < :before';
             $params['before'] = $before;
+        }
+        if ($from > 0) {
+            $where[] = 'timecreated >= :fromdate';
+            $params['fromdate'] = $from;
+        }
+        if ($until > 0) {
+            $where[] = 'timecreated < :untildate';
+            $params['untildate'] = $until;
         }
         $records = array_values($DB->get_records_select(
             'local_multipicker_log',

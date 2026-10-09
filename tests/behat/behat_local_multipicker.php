@@ -240,10 +240,10 @@ class behat_local_multipicker extends behat_base {
         $script = 'const doc=document.querySelector(".fp-object-container").contentDocument;'
             . 'const card=[...doc.querySelectorAll(".card-body")].find(card=>'
             . 'card.querySelector("label").textContent.trim()===' . json_encode($title)
-            . '&&card.querySelector(".small").textContent.startsWith(' . json_encode($course) . '));'
+            . '&&card.querySelector(".multipicker-origin").textContent.startsWith(' . json_encode($course) . '));'
             . 'if(!card){throw new Error("Source card unavailable");}'
-            . 'const input=card.querySelector("input[type=checkbox]");input.checked=true;'
-            . 'input.dispatchEvent(new Event("change",{bubbles:true}));';
+            . 'card.querySelector(".multipicker-origin").click();'
+            . 'if(!card.querySelector("input[type=checkbox]").checked){throw new Error("Whole-card selection failed");}';
         $this->getSession()->getDriver()->executeScript($script);
     }
 
@@ -406,6 +406,7 @@ class behat_local_multipicker extends behat_base {
      * @param string $course Source shortname.
      */
     public function remove_material(string $course): void {
+        $this->press_action("Review selection");
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
@@ -419,6 +420,8 @@ class behat_local_multipicker extends behat_base {
             'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-browser")!==window.multipickerPreviousForm'
             . '&&document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
         );
+        $this->wait_for_browser();
+        $this->back_to_selection();
     }
 
     /**

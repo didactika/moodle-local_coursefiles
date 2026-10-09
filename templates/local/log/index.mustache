@@ -3,37 +3,36 @@
     Filtered site action log. Record values are escaped; details are not displayed.
     Example context (json): {"formurl":"/local/multipicker/admin/log.php","records":[],"hasrecords":false}
 }}
-<section class="multipicker-log mb-4">
+<section class="multipicker-admin multipicker-log mb-4">
     <h2>{{#str}}log, local_multipicker{{/str}}</h2>
     <p class="text-muted">{{#str}}logintro, local_multipicker{{/str}}</p>
-    <form method="get" action="{{formurl}}" class="mb-4">
+    <form method="get" action="{{formurl}}" class="multipicker-panel mb-4">
         <div class="row">
-            <div class="col-md-5 mb-3">
-                <label for="multipicker-log-action">{{#str}}logaction, local_multipicker{{/str}}</label>
-                <select id="multipicker-log-action" name="action" class="form-control">
+            <div class="col-md-3 mb-2">
+                <label for="multipicker-log-action" class="small">{{#str}}logaction, local_multipicker{{/str}}</label>
+                <select id="multipicker-log-action" name="action" class="form-control form-control-sm">
                     <option value="">{{#str}}logallactions, local_multipicker{{/str}}</option>
                     {{#options}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/options}}
                 </select>
             </div>
-            <div class="col-md-7 mb-3">
-                <label for="multipicker-log-reference">{{#str}}logreference, local_multipicker{{/str}}</label>
-                <input id="multipicker-log-reference" name="entityuuid" value="{{entityuuid}}" maxlength="36" class="form-control">
+            <div class="col-md-3 mb-2">
+                <label for="multipicker-log-reference" class="small">{{#str}}logreference, local_multipicker{{/str}}</label>
+                <input id="multipicker-log-reference" name="entityuuid" value="{{entityuuid}}" maxlength="36" class="form-control form-control-sm">
             </div>
+            <div class="col-md-3 mb-2"><label for="multipicker-log-from" class="small">{{#str}}logfrom, local_multipicker{{/str}}</label><input id="multipicker-log-from" type="date" name="from" value="{{from}}" class="form-control form-control-sm"></div>
+            <div class="col-md-3 mb-2"><label for="multipicker-log-until" class="small">{{#str}}loguntil, local_multipicker{{/str}}</label><input id="multipicker-log-until" type="date" name="until" value="{{until}}" class="form-control form-control-sm"></div>
         </div>
         <button class="btn btn-primary" type="submit">{{#str}}filter{{/str}}</button>
         <a class="btn btn-outline-secondary" href="{{clearurl}}">{{#str}}clear, core{{/str}}</a>
     </form>
-    {{#hasrecords}}<div class="table-responsive"><table class="table table-striped">
-        <thead><tr>
-            <th scope="col">{{#str}}date, core{{/str}}</th>
-            <th scope="col">{{#str}}logaction, local_multipicker{{/str}}</th>
-            <th scope="col">{{#str}}user, core{{/str}}</th>
-            <th scope="col">{{#str}}logreference, local_multipicker{{/str}}</th>
-        </tr></thead>
-        <tbody>{{#records}}<tr>
-            <td>{{date}}</td><td>{{action}}</td><td>{{user}}</td><td class="text-break">{{reference}}</td>
-        </tr>{{/records}}</tbody>
-    </table></div>{{/hasrecords}}
+    {{#hasrecords}}<div class="multipicker-panel" role="list">
+        {{#records}}<article class="multipicker-log-row" role="listitem">
+            <div class="small text-muted">{{#pix}}i/calendar, core{{/pix}}{{date}}</div>
+            <div><span class="multipicker-chip">{{action}}</span><div class="small mt-1">{{#pix}}i/user, core{{/pix}}{{user}}</div>
+                <details class="mt-2"><summary class="small">{{#str}}logreference, local_multipicker{{/str}}</summary><div class="small text-muted text-break mt-2">{{reference}}</div></details>
+            </div>
+        </article>{{/records}}
+    </div>{{/hasrecords}}
     {{^hasrecords}}<p>{{#str}}logempty, local_multipicker{{/str}}</p>{{/hasrecords}}
     {{#nexturl}}<a class="btn btn-outline-secondary" href="{{nexturl}}">{{#str}}logolder, local_multipicker{{/str}}</a>{{/nexturl}}
 </section>

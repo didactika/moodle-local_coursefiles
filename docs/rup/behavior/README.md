@@ -22,7 +22,7 @@ Individual and approved multi-user deletion share the same actor scope. See the 
 
 ![Plan states](../../diagrams/behavior/states/migration-plan.svg)
 
-A preview stores `reviewable` or `blocked`. Reviewing/executing does not mutate its immutable document. A changed revision blocks the attempt; changed source/destination snapshots block affected operations.
+A preview stores `reviewable` or `blocked`. Source/destination snapshots and file decisions remain immutable. Before the first run, administrators may change operation inclusions; each change updates the selection digest and invalidates previous approval. Queueing freezes the inclusions. A changed profile revision blocks the attempt; changed source/destination snapshots block affected operations.
 
 ![Run states](../../diagrams/behavior/states/migration-run.svg)
 

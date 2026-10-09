@@ -34,6 +34,10 @@ The native File consumer retains its [main-file choice](../../18-resource-select
 
 ![Migration classes](../../diagrams/design/migration-classes.svg)
 
+![Migration scope and review classes](../../diagrams/design/migration-review-classes.svg)
+
+![Guided profile and transport classes](../../diagrams/design/profile-administration-classes.svg)
+
 ![Author policy classes](../../diagrams/design/authorship-classes.svg)
 
 ![Theme presentation boundary](../../diagrams/design/presentation.svg)

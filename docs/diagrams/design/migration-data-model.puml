@@ -14,7 +14,7 @@ entity "local_multipicker_operation" as operation {
   * id
   planid / opkey
   sourcehash / targetcmid
-  snapshot / decision
+  snapshot / decision / included
   state / result / timemodified
 }
 

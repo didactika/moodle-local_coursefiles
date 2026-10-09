@@ -1,0 +1,17 @@
+@startuml
+!include ../../_style.puml
+title UC11 - Portable active profile export
+actor "Profile manager" as Actor
+participant "Profiles controller" as UI
+participant profile_bundle as Bundle
+database "Profiles / active revisions" as DB
+Actor -> UI : Export selected IDs / all
+UI -> UI : Native session key check
+UI -> Bundle : export(ids, all)
+Bundle -> Bundle : Capability / selection check
+Bundle -> DB : Stream active configurations
+DB --> Bundle : Rule documents
+Bundle --> UI : Versioned JSON bundle
+UI --> Actor : Native download response
+note over Bundle, DB : No profile or material writes
+@enduml

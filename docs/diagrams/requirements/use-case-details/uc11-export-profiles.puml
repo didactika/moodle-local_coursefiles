@@ -1,0 +1,17 @@
+@startuml
+!include ../../_style.puml
+title UC11 - Export selected or all profiles
+top to bottom direction
+state "1. Select profiles\nProfile manager" as Select
+state "2. Choose selected / all export\nProfile manager" as Export
+state "3. Check permission, session and IDs\nController / profile_bundle" as Check
+state "4. Download active configurations\nVersioned JSON bundle" as Download
+state "Refused\nNo records changed" as Refused
+[*] --> Select
+Select --> Export
+Export --> Check
+Check --> Download : authorized selection
+Check -right-> Refused : invalid selection / access
+Download --> [*]
+Refused --> [*]
+@enduml

@@ -1,12 +1,12 @@
 @startuml
 !include ../../_style.puml
-title UC05 — Preview an edition migration: conversation
+title UC05 — Preview a configured migration: conversation
 top to bottom direction
-state "1. Choose edition selectors\nAdministrator" as S1
+state "1. Choose profile / capture dimension\nSource and destination values\nAdministrator" as S1
 state "2. Resolve course / folder pairs\nmigration_planner / placement" as S2
 state "3. Compare content / attribution\ncopy_decision / author_policy" as S3
 state "4. Store intent and digest\nmigration_planner" as S4
-state "5. Review readable decisions\nAdministrator" as S5
+state "5. Review paged decisions / issues\nSearch and include / exclude\nAdministrator" as S5
 state "Refused / blocked outcome" as Refused
 [*] --> S1
 S1 --> S2
