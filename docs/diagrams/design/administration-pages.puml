@@ -1,0 +1,24 @@
+@startuml
+!include ../_style.puml
+title Design - administration pages
+top to bottom direction
+rectangle "Permission-aware page tabs" as Tabs
+rectangle "Settings\nNative site policy form" as Settings
+rectangle "Profiles\nNamed profile cards" as Profiles
+rectangle "Migrations\nProfile, rules and editions" as Migrations
+rectangle "Log\nAction and reference filters" as Log
+rectangle "Profile editor\nUnsaved rule preview / save" as Editor
+rectangle "Stored migration review\nCounts / grouped files / decision filters" as Review
+rectangle "Execution\nConfirmation / maintenance / progress" as Execution
+Tabs --> Settings
+Tabs --> Profiles
+Tabs --> Migrations
+Tabs --> Log
+Profiles --> Editor
+Migrations --> Review
+Review --> Execution
+note bottom of Tabs
+Every route checks its own capability.
+Course pages use separate course tabs.
+end note
+@enduml

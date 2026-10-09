@@ -1,5 +1,9 @@
 # Processes and stored states
 
+![Administration migration steps](../../diagrams/behavior/processes/administration-migration.svg)
+
+The [administration workflow](../../20-administration-layout.md) separates screen steps from the persisted plan/run states below.
+
 ![Preserved log schema upgrade](../../diagrams/behavior/processes/log-upgrade.svg)
 
 Process diagrams describe decisions. State diagrams describe persisted records; they do not add conceptual review states that the schema does not store.

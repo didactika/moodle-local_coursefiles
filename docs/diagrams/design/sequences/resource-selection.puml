@@ -1,32 +1,22 @@
 @startuml
 !include ../../_style.puml
-skinparam maxMessageSize 240
-title File settings - preserve the destination main file
+title File activity - supporting materials
 actor Teacher
 participant "Native File form" as Form
-participant "module_form / draft_scope" as Scope
-participant "draft_import" as Batch
-database "Native files" as Files
-
-Teacher -> Form : Select files and folders; review
-Form -> Scope : No-submit POST and live control
-Scope -> Batch : Review authorized selection and draft limits
-Batch -> Files : Read source and destination snapshots
-Batch --> Scope : Decisions and approval digest
-Scope --> Form : Render review
-
-Teacher -> Form : Add reviewed materials
-Form -> Scope : Validate current selection and approval
-Scope -> Batch : Apply approved batch
-Batch -> Files : Copy draft files with sortorder = 0
-note right of Files : Existing main-file marker remains intact.
-Scope --> Form : Rerender native filemanager
-
+participant "Picker / scoped batch" as Batch
+database "Native draft / activity" as Files
+Teacher -> Form : Open Settings or create File
+Teacher -> Form : Import materials
+Form -> Batch : Actual filemanager context and limits
+Teacher -> Batch : Select files/folders; review; import
+Batch -> Files : Supporting copies use sortorder = 0
+Batch --> Form : Refresh original draft
+note over Form, Files : Existing main-file choice remains unchanged
 alt Save
-  Teacher -> Form : Optionally Set main file; save normally
-  Form -> Files : Native resource validation and update
+ Teacher -> Form : Native Save
+ Form -> Files : Core File save
 else Cancel
-  Teacher -> Form : Cancel
-  note over Form, Files : Saved resource remains unchanged.
+ Teacher -> Form : Native Cancel
+ note over Form, Files : Permanent resource remains unchanged
 end
 @enduml

@@ -1,6 +1,6 @@
 # Presentation and theme overrides
 
-The interface uses the active Moodle theme's page layout, typography, colours, buttons, forms, cards and tables. There is no embedded colour palette, custom JavaScript application or mandatory frontend framework.
+The interface uses the active Moodle theme's page layout, typography, colours, buttons, forms, cards and tables. There is no embedded colour palette, mandatory frontend framework.
 
 ![Output boundary](diagrams/design/presentation.svg)
 
@@ -16,6 +16,9 @@ Labels are associated with controls. Tables use column headers and responsive co
 
 | Template | Responsibility |
 |---|---|
+| `local_coursebridge/local/navigation/tabs` | Permission-aware site/course page links |
+| `local_coursebridge/local/migration/setup` | Selected profile, current rules and recent previews |
+| `local_coursebridge/local/profile/summary` | Exact relationship and migration rule descriptions |
 | `local_coursebridge/local/catalog/index` | Course page and secondary controls |
 | `local_coursebridge/local/catalog/filters` | Named GET filters |
 | `local_coursebridge/local/catalog/material_card` | One content group and exact origins |
@@ -24,9 +27,12 @@ Labels are associated with controls. Tables use column headers and responsive co
 | `local_coursebridge/local/policy/course` | Effective policy and allowed course selection |
 | `local_coursebridge/local/profile/list` | Named profiles, enabled state and active revision |
 | `local_coursebridge/local/log/index` | Labelled action/reference filters and paginated action records |
+| `local_coursebridge/local/selection/browser` | Embedded compact filters, navigable cards and checkbox selection |
 | `local_coursebridge/local/selection/review` | Mixed-selection paths, declarations, decisions and resulting draft totals |
 
 Page controllers pass plain data to `output/view`. `output/renderer::render_view()` selects the component template. Services own authorization and copying; a theme changes presentation without replacing those decisions.
+
+The [administration layout](20-administration-layout.md) separates lists, editing, migration scope and stored review pages. Reviews use grouped file lists and bounded decision pages. No custom JavaScript is needed for the page tabs or disclosure controls.
 
 Override a template at:
 
@@ -39,3 +45,5 @@ Use the same basename for another listed template. The theme may also override t
 The companion repository documents its own `repository_coursebridge/local/picker/search_form` override. Native picker lists, dialogs, file selection and save controls remain core presentation.
 
 References: [Moodle theme plugin API](https://moodledev.io/docs/4.5/apis/plugintypes/theme), [Output API](https://moodledev.io/docs/5.3/apis/subsystems/output), [templates](https://moodledev.io/docs/4.5/guides/templates).
+
+The embedded browser uses native buttons, cards and a list review, with no data table for selection. Filename/profile/edition controls remain visible; additional filters and copy options use a native HTML disclosure. Explicit labels, checkbox selection and readable source declarations avoid tag-only interaction. Small screens stack fields/cards. `.coursebridge-browser`, `[data-coursebridge-count]` and `[data-coursebridge-confirm]` preserve the JavaScript contract during theme overrides. The small AMD adapter coordinates native picker entry/completion; authorization stays on the server.

@@ -30,271 +30,218 @@ use local_coursebridge\local\profile\profiles;
 use local_coursebridge\local\selection\selection_options;
 
 /**
- * Exercises actual Folder and File settings forms and their native plugin callbacks.
+ * Exercises native controls, browser selections and restricted folder editing.
  */
 final class module_form_test extends \advanced_testcase {
     /**
-     * Real activity navigation offers the route only to authorized teachers and once per tree.
+     * Native settings render one real manager without extra settings sections.
      */
-    public function test_activity_navigation_checks_authority(): void {
-        global $PAGE;
+    public function test_native_control_binds_actual_draft(): void {
         [$course, $cm] = $this->fixture();
-        $PAGE->set_cm($cm, $course);
-        $navigation = new \settings_navigation($PAGE);
-        $parent = $navigation->add('Activity', null, \navigation_node::TYPE_SETTING, null, 'modulesettings');
+        $form = $this->request($course, $cm);
+        $html = $form->render();
+        $this->assertStringNotContainsString('cbheader', $html);
+        $this->assertStringNotContainsString('cbitems', $html);
+        $control = \local_coursebridge\fixture\native_form::control($form, 'files');
+        $this->assertInstanceOf(\local_coursebridge\form\native_filemanager::class, $control);
         $context = \context_module::instance($cm->id);
-        \local_coursebridge\local\selection\activity_navigation::extend($navigation, $context);
-        $node = $parent->get('coursebridge_reuse');
-        $this->assertNotNull($node);
-        $this->assertSame((string)$cm->id, (string)$node->action->get_param('update'));
-        $this->assertSame('1', (string)$node->action->get_param('coursebridge'));
-        $this->assertStringEndsWith('#id_cbheader', $node->action->out(false));
-        \local_coursebridge\local\selection\activity_navigation::extend($navigation, $context);
-        $this->assertCount(1, $parent->children);
-        $this->setUser($this->getDataGenerator()->create_user());
-        $other = new \settings_navigation($PAGE);
-        $otherparent = $other->add('Activity', null, \navigation_node::TYPE_SETTING, null, 'modulesettings');
-        \local_coursebridge\local\selection\activity_navigation::extend($other, $context);
-        $this->assertFalse($otherparent->get('coursebridge_reuse'));
+        $token = \local_coursebridge\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
+        $this->assertNotEmpty($token);
+        $scope = \local_coursebridge\local\selection\draft_scope::describe($token, sesskey());
+        $this->assertSame((int)$this->hidden($html)['files'], $scope['draftid']);
+        $this->assertSame('files', $scope['field']);
     }
 
     /**
-     * Opening batch selection beside the native control retains the current form and draft.
+     * An unsaved activity receives its own empty draft before opening the browser.
      */
-    public function test_shortcut_preserves_pending_form_data(): void {
-        global $DB, $USER;
-        [$course, $cm] = $this->fixture();
-        $data = $this->hidden($this->request($course, $cm)->render());
-        $form = $this->request($course, $cm, array_replace($data, [
-            'name' => 'Pending shortcut title', 'cbopen' => 'Select several files or folders',
-        ]));
-        $html = $form->render();
-        $this->assertStringContainsString('#id_cbheader', $html);
-        $this->assertStringContainsString('value="Pending shortcut title"', $html);
-        $this->assertSame($data['files'], $this->hidden($html)['files']);
-        $this->assertSame($data['cbscope'], $this->hidden($html)['cbscope']);
-        $this->assertStringContainsString('Source materials/', $html);
-        $this->assertSame('Target materials', $DB->get_field('folder', 'name', ['id' => $cm->instance]));
-        $this->assertCount(1, get_file_storage()->get_area_files(
+    public function test_new_activity_control_uses_native_draft(): void {
+        global $PAGE, $USER;
+        [$course] = $this->fixture();
+        $PAGE = new \moodle_page();
+        $PAGE->set_course($course);
+        $context = \context_course::instance($course->id);
+        $PAGE->set_context($context);
+        $PAGE->set_url('/course/modedit.php', ['add' => 'folder', 'course' => $course->id]);
+        $control = new \local_coursebridge\form\native_filemanager(
+            'files',
+            'Files',
+            null,
+            ['subdirs' => true, 'maxfiles' => -1, 'accepted_types' => '*']
+        );
+        $control->updateAttributes(['id' => 'id_files']);
+        $html = $control->toHtml();
+        $this->assertStringContainsString('name="files"', $html);
+        $this->assertNotEmpty(\local_coursebridge\local\selection\draft_scope::find(
+            $context,
+            (int)$control->getValue(),
+            sesskey()
+        ));
+        $this->assertNotFalse(get_file_storage()->get_file(
             \context_user::instance($USER->id)->id,
             'user',
             'draft',
-            (int)$data['files'],
-            'id',
-            false
+            (int)$control->getValue(),
+            '/',
+            '.'
         ));
-        $this->assertSame(0, $DB->count_records('local_coursebridge_attribution'));
     }
 
-    // PHPUnit 9 requires this isolation tag; PHPUnit 11 uses the equivalent attributes below.
-    // phpcs:disable moodle.Commenting.ValidTags.Invalid
     /**
-     * Native File settings retain their main file when importing another activity's main file.
-     *
-     * Isolate Moodle's request-wide no-submit cache from other simulated requests.
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+     * Folder-only teachers can reuse files without permission to change activity settings.
      */
-    // phpcs:enable moodle.Commenting.ValidTags.Invalid
-    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
-    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
-    public function test_resource_form_preserves_destination_main_file(): void {
-        global $USER, $DB;
-        [$course, $cm, $profileid, $sourcefolder, $resource] = $this->fixture('resource');
+    public function test_restricted_folder_content_editor_can_import(): void {
+        global $CFG, $PAGE, $USER;
+        [$course, $cm, $profileid, $source] = $this->fixture();
+        $context = \context_module::instance($cm->id);
+        $roles = get_archetype_roles('editingteacher');
+        $role = (int)reset($roles)->id;
+        assign_capability('moodle/course:manageactivities', CAP_PROHIBIT, $role, $context->id);
+        accesslib_clear_all_caches_for_unit_testing();
+        $this->assertFalse(has_capability('moodle/course:manageactivities', $context));
+        $this->assertTrue(has_capability('mod/folder:managefiles', $context));
+        require_once($CFG->dirroot . '/mod/folder/edit_form.php');
+        $PAGE->set_url('/mod/folder/edit.php', ['id' => $cm->id]);
+        $options = ['subdirs' => true, 'maxbytes' => 0, 'maxfiles' => -1, 'accepted_types' => '*', 'context' => $context];
+        $data = file_prepare_standard_filemanager(
+            (object)['id' => $cm->id],
+            'files',
+            $options,
+            $context,
+            'mod_folder',
+            'content',
+            0
+        );
+        $form = new \mod_folder_edit_form(null, ['data' => $data, 'options' => $options]);
+        $form->render();
+        $control = \local_coursebridge\fixture\native_form::control($form, 'files_filemanager');
+        $token = \local_coursebridge\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
+        $this->assertNotEmpty($token);
+        $review = \local_coursebridge\local\selection\draft_scope::review(
+            $token,
+            $profileid,
+            [['cmid' => $source->cmid, 'filepath' => '/']],
+            sesskey()
+        );
+        $this->assertFalse($review['blocked']);
+        \local_coursebridge\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
+        $this->assertNotFalse(get_file_storage()->get_file(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            (int)$control->getValue(),
+            '/',
+            'first.txt'
+        ));
+    }
+
+    /**
+     * Browser navigation retains mixed choices and excludes destination activity content.
+     */
+    public function test_browser_shows_folders_then_files_and_retains_selection(): void {
+        [$course, $cm, $profileid, $source, $resource] = $this->fixture();
+        $form = $this->request($course, $cm);
+        $form->render();
+        $control = \local_coursebridge\fixture\native_form::control($form, 'files');
+        $token = \local_coursebridge\local\selection\draft_scope::find(
+            \context_module::instance($cm->id),
+            (int)$control->getValue(),
+            sesskey()
+        );
+        $scope = \local_coursebridge\local\selection\draft_scope::describe($token, sesskey());
+        $state = ['profileid' => $profileid, 'selected' => ['file:' . $resource->get_pathnamehash()],
+            'filters' => ['q' => '', 'edition' => '', 'shortname' => '', 'module' => '', 'mimetype' => ''],
+            'after' => '', 'folder' => ''];
+        $page = \local_coursebridge\local\selection\browser_listing::page($scope, $state);
+        $this->assertContains('Source materials', array_column($page['cards'], 'title'));
+        $this->assertNotContains('existing.txt', array_column($page['cards'], 'title'));
+        $state['folder'] = 'folder:' . $source->cmid . ':' . base64_encode('/');
+        $page = \local_coursebridge\local\selection\browser_listing::page($scope, $state);
+        $this->assertContains('first.txt', array_column($page['cards'], 'title'));
+        $this->assertContains('notes', array_column($page['cards'], 'title'));
+        $this->assertSame([['value' => 'file:' . $resource->get_pathnamehash()]], $page['retained']);
+    }
+
+    /**
+     * Folder mapping is applied to the draft and changing it consumes the old approval.
+     */
+    public function test_folder_mode_copies_and_invalidates_old_review(): void {
+        global $USER;
+        [$course, $cm, $profileid, $source] = $this->fixture();
+        $form = $this->request($course, $cm);
+        $form->render();
+        $control = \local_coursebridge\fixture\native_form::control($form, 'files');
+        $token = \local_coursebridge\local\selection\draft_scope::find(
+            \context_module::instance($cm->id),
+            (int)$control->getValue(),
+            sesskey()
+        );
+        $items = [['cmid' => $source->cmid, 'filepath' => '/']];
+        \local_coursebridge\local\selection\draft_scope::select_mode($token, 'folder', sesskey());
+        $review = \local_coursebridge\local\selection\draft_scope::review($token, $profileid, $items, sesskey());
+        \local_coursebridge\local\selection\draft_scope::select_mode($token, 'contents', sesskey());
+        try {
+            \local_coursebridge\local\selection\draft_scope::approved($token, $review['digest'], sesskey());
+            $this->fail('Changing folder structure must invalidate approval.');
+        } catch (\moodle_exception $exception) {
+            $this->assertSame('batchconflict', $exception->errorcode);
+        }
+        \local_coursebridge\local\selection\draft_scope::select_mode($token, 'folder', sesskey());
+        $review = \local_coursebridge\local\selection\draft_scope::review($token, $profileid, $items, sesskey());
+        \local_coursebridge\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
+        $copied = get_file_storage()->get_file(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            (int)$control->getValue(),
+            '/Source materials/notes/',
+            'second.txt'
+        );
+        $this->assertNotFalse($copied);
+        $this->assertSame('Author second.txt', $copied->get_author());
+    }
+
+    /**
+     * A copied resource main-file marker cannot replace the destination main file.
+     */
+    public function test_resource_import_preserves_main_file(): void {
+        global $USER;
+        [$course, $cm, $profileid, $source, $resource] = $this->fixture('resource');
         $resource->set_sortorder(1);
-        $html = $this->request($course, $cm)->render();
-        $this->assertStringContainsString('Set main file', $html);
-        $data = $this->hidden($html);
-        $selected = ['folder:' . $sourcefolder->cmid . ':' . base64_encode('/'), 'file:' . $resource->get_pathnamehash()];
-        $reviewdata = $this->hidden($this->request($course, $cm, array_replace($data, [
-            'cbitems' => $selected, 'cbreview' => 'Review selection', 'cbprofile' => $profileid,
-        ]))->render());
-        $this->assertNotEmpty($reviewdata['cbdigest']);
-        $applyform = $this->request($course, $cm, array_replace($reviewdata, [
-            'name' => 'Pending resource title', 'cbitems' => $selected, 'cbapply' => 'Add reviewed materials',
-            'cbprofile' => $profileid,
-        ]));
-        $this->assertStringContainsString('Materials added to the draft', $applyform->render());
-        $fs = get_file_storage();
-        $files = $fs->get_area_files(\context_user::instance($USER->id)->id, 'user', 'draft', (int)$data['files'], 'id', false);
+        $form = $this->request($course, $cm);
+        $form->render();
+        $control = \local_coursebridge\fixture\native_form::control($form, 'files');
+        $context = \context_module::instance($cm->id);
+        $token = \local_coursebridge\local\selection\draft_scope::find($context, (int)$control->getValue(), sesskey());
+        $review = \local_coursebridge\local\selection\draft_scope::review(
+            $token,
+            $profileid,
+            [['cmid' => $source->cmid, 'filepath' => '/'], ['pathnamehash' => $resource->get_pathnamehash()]],
+            sesskey()
+        );
+        \local_coursebridge\local\selection\draft_scope::apply($token, $review['digest'], sesskey());
+        file_save_draft_area_files((int)$control->getValue(), $context->id, 'mod_resource', 'content', 0, ['subdirs' => true]);
+        $files = get_file_storage()->get_area_files($context->id, 'mod_resource', 'content', 0, 'id', false);
         $this->assertCount(4, $files);
         foreach ($files as $file) {
             $this->assertSame($file->get_filename() === 'existing.txt' ? 1 : 0, (int)$file->get_sortorder());
         }
         $this->assertSame(1, (int)$resource->get_sortorder());
-        $this->assertCount(1, $fs->get_area_files(
-            \context_module::instance($cm->id)->id,
-            'mod_resource',
-            'content',
-            0,
-            'id',
-            false
-        ));
-        $this->assertSame('Target materials', $DB->get_field('resource', 'name', ['id' => $cm->instance]));
-        $saveform = $this->request($course, $cm, array_replace($this->hidden($applyform->render()), [
-            'name' => 'Saved resource title', 'submitbutton' => 'Save and display',
-            'availabilityconditionsjson' => '', 'introeditor' => ['text' => '', 'format' => FORMAT_HTML, 'itemid' => 0],
-        ]));
-        $savedata = $saveform->get_data();
-        $this->assertNotNull($savedata);
-        update_moduleinfo($cm, $savedata, $course, $saveform);
-        $savedfiles = $fs->get_area_files(\context_module::instance($cm->id)->id, 'mod_resource', 'content', 0, 'id', false);
-        $this->assertCount(4, $savedfiles);
-        foreach ($savedfiles as $file) {
-            $this->assertSame($file->get_filename() === 'existing.txt' ? 1 : 0, (int)$file->get_sortorder());
-        }
-        $this->assertSame('Saved resource title', $DB->get_field('resource', 'name', ['id' => $cm->instance]));
     }
 
     /**
-     * Real native fields use their actual contract and mixed choices fill only the current draft.
+     * Copy modes retain or strip the selected root and overlapping selectors copy once.
      */
-    public function test_review_and_apply_in_actual_folder_form(): void {
-        global $USER, $DB;
-        [$course, $cm, $profileid, $sourcefolder, $resource] = $this->fixture();
-        $form = $this->request($course, $cm);
-        $html = $form->render();
-        $this->assertStringContainsString('Reuse related materials', $html);
-        $this->assertStringContainsString('Folder: SOURCE2025: Source materials/', $html);
-        $this->assertStringContainsString('File: SOURCE2025: Extra resource/extra.txt', $html);
-        $data = $this->hidden($html);
-        $draftid = (int)$data['files'];
-        $selected = ['folder:' . $sourcefolder->cmid . ':' . base64_encode('/'), 'file:' . $resource->get_pathnamehash()];
-        $reviewform = $this->request($course, $cm, array_replace($data, [
-            'name' => 'Pending folder title', 'cbitems' => $selected, 'cbreview' => 'Review selection', 'cbprofile' => $profileid,
-        ]));
-        $reviewhtml = $reviewform->render();
-        $this->assertStringContainsString('first.txt', $reviewhtml);
-        $this->assertStringContainsString('second.txt', $reviewhtml);
-        $this->assertStringContainsString('extra.txt', $reviewhtml);
-        $this->assertSame(0, $DB->count_records('local_coursebridge_attribution'));
-        $reviewdata = $this->hidden($reviewhtml);
-        $this->assertNotEmpty($reviewdata['cbdigest']);
-        $applyform = $this->request($course, $cm, array_replace($reviewdata, [
-            'name' => 'Pending folder title', 'cbitems' => $selected, 'cbapply' => 'Add reviewed materials',
-            'cbprofile' => $profileid,
-        ]));
-        $applyhtml = $applyform->render();
-        $this->assertStringContainsString('Materials added to the draft', $applyhtml);
-        $this->assertStringContainsString('value="Pending folder title"', $applyhtml);
-        $fs = get_file_storage();
-        $this->assertCount(4, $fs->get_area_files(
-            \context_user::instance($USER->id)->id,
-            'user',
-            'draft',
-            $draftid,
-            'id',
-            false
-        ));
-        $this->assertCount(1, $fs->get_area_files(
-            \context_module::instance($cm->id)->id,
-            'mod_folder',
-            'content',
-            0,
-            'id',
-            false
-        ));
-        $this->assertSame('Target materials', $DB->get_field('folder', 'name', ['id' => $cm->instance]));
-        $this->assertSame(3, $DB->count_records('local_coursebridge_attribution'));
-        $this->assertSame('', $this->hidden($applyhtml)['cbdigest']);
-    }
-
-    /**
-     * Changing visible selection after review cannot apply the earlier hidden approval.
-     */
-    public function test_changed_selection_cannot_apply_old_review(): void {
-        global $DB;
-        [$course, $cm, $profileid, $sourcefolder, $resource] = $this->fixture();
-        $data = $this->hidden($this->request($course, $cm)->render());
-        $selected = ['folder:' . $sourcefolder->cmid . ':' . base64_encode('/')];
-        $reviewdata = $this->hidden($this->request($course, $cm, array_replace($data, [
-            'cbitems' => $selected, 'cbreview' => 'Review selection', 'cbprofile' => $profileid,
-        ]))->render());
-        $html = $this->request($course, $cm, array_replace($reviewdata, [
-            'cbitems' => ['file:' . $resource->get_pathnamehash()], 'cbapply' => 'Add reviewed materials',
-            'cbprofile' => $profileid,
-        ]))->render();
-        $this->assertStringContainsString('changed after review', $html);
-        $this->assertSame(0, $DB->count_records('local_coursebridge_attribution'));
-    }
-
-    /**
-     * Group repeated file content while retaining explicit folder edition choices and off-page selection.
-     */
-    public function test_choice_grouping_and_retained_selection(): void {
-        global $USER;
-        [$course, $cm, $profileid, $sourcefolder, $resource] = $this->fixture();
-        $teacher = $USER;
-        $this->setAdminUser();
-        $duplicate = $this->getDataGenerator()->create_module('folder', [
-            'course' => $sourcefolder->course, 'name' => 'Other source',
-        ]);
-        get_file_storage()->create_file_from_string([
-            'contextid' => \context_module::instance($duplicate->cmid)->id, 'component' => 'mod_folder',
-            'filearea' => 'content', 'itemid' => 0, 'filepath' => '/', 'filename' => 'first.txt',
-            'author' => 'Author first.txt', 'license' => 'cc',
-        ], 'first.txt');
-        material_source::publish($profileid, $duplicate->cmid, false);
-        indexer::refresh($sourcefolder->course);
-        $this->setUser($teacher);
-        $selected = ['file:' . $resource->get_pathnamehash()];
-        $page = selection_options::page($course->id, $profileid, $cm->id, ['q' => 'first'], '', $selected);
-        $filechoices = array_filter(array_keys($page['choices']), static fn($value) => str_starts_with($value, 'file:'));
-        $this->assertCount(2, $filechoices);
-        $this->assertSame('Selected item 1 (outside current results)', $page['choices'][$selected[0]]);
-        $this->assertArrayHasKey('folder:' . $sourcefolder->cmid . ':' . base64_encode('/'), $page['choices']);
-        $this->assertArrayHasKey('folder:' . $duplicate->cmid . ':' . base64_encode('/'), $page['choices']);
-        $all = selection_options::page($course->id, $profileid, $cm->id, [], '', []);
-        $keys = array_keys($all['choices']);
-        $this->assertLessThan(
-            array_search('folder:' . $sourcefolder->cmid . ':' . base64_encode('/notes/'), $keys),
-            array_search('folder:' . $sourcefolder->cmid . ':' . base64_encode('/'), $keys)
-        );
-        foreach (
-            [['file:bad'], [['nested']], ['folder:999999999999999999999:' . base64_encode('/')],
-            ['folder:1:' . base64_encode('/../')]] as $invalid
-        ) {
-            try {
-                selection_options::parse($invalid);
-                $this->fail('Malformed selection values must be rejected.');
-            } catch (\moodle_exception $exception) {
-                $this->assertSame('invalidselection', $exception->errorcode);
-            }
-        }
-    }
-
-    /**
-     * An empty review explains the problem and leaves the native selector usable.
-     */
-    public function test_empty_review_retains_available_choices(): void {
-        [$course, $cm, $profileid] = $this->fixture();
-        $data = $this->hidden($this->request($course, $cm)->render());
-        $html = $this->request($course, $cm, array_replace($data, [
-            'cbitems' => [], 'cbreview' => 'Review selection', 'cbprofile' => $profileid,
-        ]))->render();
-        $this->assertStringContainsString('Select available files or non-empty folders', $html);
-        $this->assertStringContainsString('Folder: SOURCE2025: Source materials/', $html);
-        $this->assertStringContainsString('File: SOURCE2025: Extra resource/extra.txt', $html);
-        $this->assertSame('', $this->hidden($html)['cbdigest']);
-    }
-
-    /**
-     * Source names cannot introduce markup into native autocomplete options.
-     */
-    public function test_source_labels_are_escaped_in_native_options(): void {
-        global $DB, $USER;
-        [$course, $cm, , $sourcefolder] = $this->fixture();
-        $teacher = $USER;
-        $this->setAdminUser();
-        $name = 'Source <img src=x onerror=alert(1)>';
-        $DB->set_field('folder', 'name', $name, ['id' => $sourcefolder->id]);
-        rebuild_course_cache($sourcefolder->course, true);
-        indexer::refresh($sourcefolder->course);
-        $this->setUser($teacher);
-        $html = $this->request($course, $cm)->render();
-        $this->assertStringContainsString(s($name), $html);
-        $this->assertStringNotContainsString($name, $html);
+    public function test_folder_modes_and_overlap(): void {
+        [$course, , $profileid, $source] = $this->fixture();
+        $items = [['cmid' => $source->cmid, 'filepath' => '/notes/'],
+            ['cmid' => $source->cmid, 'filepath' => '/']];
+        $files = \local_coursebridge\local\selection\material_selection::resolve($course->id, $profileid, $items);
+        $this->assertCount(2, $files);
+        $mapped = \local_coursebridge\local\selection\material_selection::map_paths($files, $items, 'folder');
+        $this->assertContains('/Source materials/notes/', $mapped);
+        $mapped = \local_coursebridge\local\selection\material_selection::map_paths($files, [$items[0]], 'contents');
+        $this->assertSame(['/', '/'], array_values($mapped));
     }
 
     /**
@@ -307,6 +254,7 @@ final class module_form_test extends \advanced_testcase {
         global $CFG, $PAGE;
         $this->resetAfterTest();
         $this->setAdminUser();
+        require_once(__DIR__ . '/fixtures/native_form.php');
         require_once($CFG->dirroot . '/course/modlib.php');
         require_once($CFG->dirroot . '/mod/folder/mod_form.php');
         require_once($CFG->dirroot . '/mod/resource/mod_form.php');
@@ -348,7 +296,8 @@ final class module_form_test extends \advanced_testcase {
         $this->getDataGenerator()->enrol_user($teacher->id, $target->id, 'editingteacher');
         $this->setUser($teacher);
         $PAGE->set_course($target);
-        $PAGE->set_context(\context_module::instance($cm->id));
+        $PAGE->set_cm($cm, $target);
+        \local_coursebridge\form\native_filemanager::register_native(new \core\hook\after_config());
         $PAGE->set_url('/course/modedit.php', ['update' => $cm->id]);
         return [$target, $cm, $profileid, $folder, $resource];
     }

@@ -9,7 +9,7 @@ This plugin is installed at `local/coursebridge`. It owns relationship profiles,
 ## Install and use
 
 1. Install this repository into the Moodle application directory `local/coursebridge` and run Moodle's plugin installation.
-2. Open Site administration → Plugins → Local plugins → CourseBridge → Relationship profiles.
+2. Open Site administration → Plugins → Local plugins → CourseBridge → Settings, then use the Profiles tab.
 3. Activate a [profile](examples/institutional-profile.json), then refresh course materials from the course page or cron.
 4. Install and enable repository_coursebridge to select materials in native course editing forms.
 5. Review the site author policy before copying. The strict default blocks copies through native editors that permit later author changes.
@@ -28,9 +28,10 @@ This plugin is installed at `local/coursebridge`. It owns relationship profiles,
 | Approved actor export and deletion | [Privacy](docs/14-privacy.md) |
 | Internal file/folder batches into native drafts | [Draft batch service](docs/15-draft-batches.md) |
 | Session-bound native control integration API | [Owning-form scope](docs/16-native-form-scope.md) |
-| Several files and folders in activity settings | [Folder selection](docs/17-folder-selection.md) |
+| Visual mixed selection inside the native picker | [Folder selection](docs/17-folder-selection.md) |
 | File activities and their main file | [File selection](docs/18-resource-selection.md) |
-| Enter mixed selection from activity navigation | [Activity entry](docs/19-activity-navigation.md) |
+| Enter import from the native filemanager | [Activity entry](docs/19-activity-navigation.md) |
+| Administration tabs and bulk preview screens | [Administration layout](docs/20-administration-layout.md) |
 | Tested core versions | [Compatibility](docs/10-compatibility-and-branches.md) |
 | Actors, analysis, design and behavior | [UML catalogue](docs/rup/README.md) |
 | Automated check results | [Validation](docs/07-validation-and-decisions.md) |

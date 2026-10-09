@@ -56,5 +56,6 @@ $data = [
     'catalogurl' => (new moodle_url('/local/coursebridge/course/index.php', ['courseid' => $courseid]))->out(false),
 ];
 echo $OUTPUT->header();
+echo $PAGE->get_renderer('local_coursebridge')->render(\local_coursebridge\output\navigation::course('policy', $courseid));
 echo $PAGE->get_renderer('local_coursebridge')->render(new view('policy', $data));
 echo $OUTPUT->footer();

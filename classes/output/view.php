@@ -30,6 +30,9 @@ namespace local_coursebridge\output;
 final class view implements \renderable, \templatable {
     /** @var array Named views and their organized component templates. */
     private const TEMPLATES = [
+        'navigation' => 'local/navigation/tabs',
+        'migration_setup' => 'local/migration/setup',
+        'profile_summary' => 'local/profile/summary',
         'catalog' => 'local/catalog/index',
         'migration_report' => 'local/migration/report',
         'policy' => 'local/policy/course',

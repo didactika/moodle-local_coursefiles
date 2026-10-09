@@ -7,15 +7,13 @@
 <section class="coursebridge-profiles mb-4">
     <h2>{{#str}}profiles, local_coursebridge{{/str}}</h2>
     <p class="text-muted">{{#str}}profilesintro, local_coursebridge{{/str}}</p>
-    {{#hasprofiles}}<div class="table-responsive"><table class="table table-striped">
-        <thead><tr>
-            <th scope="col">{{#str}}name, core{{/str}}</th>
-            <th scope="col">{{#str}}state, local_coursebridge{{/str}}</th>
-            <th scope="col">{{#str}}revision, local_coursebridge{{/str}}</th>
-        </tr></thead>
-        <tbody>{{#profiles}}<tr>
-            <td><a href="{{url}}">{{name}}</a></td><td>{{status}}</td><td>{{revision}}</td>
-        </tr>{{/profiles}}</tbody>
-    </table></div>{{/hasprofiles}}
-    <a class="btn btn-outline-secondary" href="{{newprofileurl}}">{{#str}}newprofile, local_coursebridge{{/str}}</a>
+    <a class="btn btn-primary mb-4" href="{{newprofileurl}}">{{#str}}newprofile, local_coursebridge{{/str}}</a>
+    <div class="row">{{#profiles}}
+        <div class="col-lg-6 mb-3"><div class="card h-100"><div class="card-body">
+            <h3 class="h5"><a href="{{url}}">{{name}}</a></h3>
+            <p>{{status}} · {{#str}}revision, local_coursebridge{{/str}} {{revision}}</p>
+            <a class="btn btn-outline-secondary" href="{{url}}">{{#str}}edit, core{{/str}}</a>
+        </div></div></div>
+    {{/profiles}}</div>
+    {{^hasprofiles}}<p>{{#str}}noprofile, local_coursebridge{{/str}}</p>{{/hasprofiles}}
 </section>

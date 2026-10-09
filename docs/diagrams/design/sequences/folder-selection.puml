@@ -1,41 +1,30 @@
 @startuml
 !include ../../_style.puml
-skinparam maxMessageSize 240
-title Folder settings — mixed selection
+skinparam maxMessageSize 160
+title Native picker - mixed selection
 actor Teacher
-participant "Native module form" as Form
-participant "module_form" as Integration
-participant "draft_scope" as Scope
-participant "draft_import" as Batch
-database "Native draft / activity" as Files
-
-Teacher -> Form : Open Settings
-Form -> Integration : Module form callbacks
-Integration -> Scope : Bind live filemanager and actual limits
-Integration --> Form : Native filters and multiple choices
-Teacher -> Form : Select several files or folders beside filemanager
-Form -> Integration : No-submit POST; retain pending form fields
-Integration --> Form : Expand reuse section; jump to section
-Teacher -> Form : Select files / folders; request review
-Form -> Integration : No-submit POST
-Integration -> Scope : Review token / profile / selectors
-Scope -> Batch : Expand and review authoritative draft contract
-Batch -> Files : Read source and destination snapshots
-Batch --> Scope : Decisions and digest
-Scope --> Form : Remembered approval; rendered review
-
-Teacher -> Form : Add reviewed materials
-Form -> Integration : No-submit POST
-Integration -> Scope : Check live control and visible selection
-Scope -> Batch : Recheck and apply stored approval
-Batch -> Files : Transactional draft copies and provenance
-Scope --> Form : Rerender native filemanager; retain pending fields
-
+participant "Owning native form" as Form
+participant "Embedded browser" as Browser
+participant "Repository / draft_scope" as Scope
+database "Native files / attribution" as Files
+Teacher -> Form : Open Folder Edit or activity Settings
+Form -> Scope : Bind actual native field and limits
+Teacher -> Form : Import materials
+Form -> Browser : Native picker embeds scoped browser
+Teacher -> Browser : Filter, browse and select cards
+Teacher -> Browser : Choose destination / folder mode; review
+Browser -> Scope : Validate current authority and selection
+Scope -> Files : Read authorized sources and draft snapshots
+Scope --> Browser : Decisions and review digest
+Teacher -> Browser : Import reviewed materials
+Browser -> Scope : Native chooser callback and protected download
+Scope -> Files : Recheck; copy batch transactionally
+Scope --> Form : Native draft response / filemanager refresh
 alt Save
-  Teacher -> Form : Save and display
-  Form -> Files : Native folder update
+ Teacher -> Form : Native Save
+ Form -> Files : Core permanent module save
 else Cancel
-  Teacher -> Form : Cancel
-  note over Form, Files : Saved activity remains unchanged
+ Teacher -> Form : Native Cancel
+ note over Form, Files : Saved activity content remains unchanged
 end
 @enduml

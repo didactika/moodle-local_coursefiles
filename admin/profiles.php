@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Profile configuration and preview administration.
+ * Profile list separate from editing.
  *
  * @package local_coursebridge
  * @copyright 2026 CourseBridge contributors
@@ -25,34 +25,31 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-$profileid = optional_param('profileid', 0, PARAM_INT);
+use local_coursebridge\output\navigation;
+use local_coursebridge\output\view;
+
 admin_externalpage_setup('local_coursebridge_profiles');
-$form = new \local_coursebridge\form\profile_form(null, ['profileid' => $profileid]);
-if ($data = $form->get_data()) {
-    $profileid = \local_coursebridge\local\profile\profiles::save($data->configjson, $data->profileid);
-    redirect(
-        new moodle_url('/local/coursebridge/admin/profiles.php', ['profileid' => $profileid]),
-        get_string('revisionactivated', 'local_coursebridge')
-    );
-}
+$profileid = optional_param('profileid', 0, PARAM_INT);
 if ($profileid) {
-    [$profile, $revision] = \local_coursebridge\local\profile\profiles::load($profileid);
-    $form->set_data(['profileid' => $profileid, 'configjson' => $revision->configjson]);
-} else {
-    $form->set_data(['configjson' => file_get_contents(__DIR__ . '/../examples/institutional-profile.json')]);
+    redirect(new moodle_url('/local/coursebridge/admin/profile.php', ['profileid' => $profileid]));
 }
-echo $OUTPUT->header();
-$data = ['profiles' => [], 'newprofileurl' => (new moodle_url('/local/coursebridge/admin/profiles.php'))->out(false)];
-foreach ($DB->get_records('local_coursebridge', [], 'name') as $profile) {
+$data = ['profiles' => [], 'newprofileurl' => (new moodle_url('/local/coursebridge/admin/profile.php'))->out(false)];
+foreach (
+    $DB->get_records_sql(
+        'SELECT p.*, r.revision FROM {local_coursebridge} p
+       LEFT JOIN {local_coursebridge_revision} r ON r.id = p.activeid ORDER BY p.name'
+    ) as $profile
+) {
     $data['profiles'][] = [
         'name' => $profile->name,
-        'url' => (new moodle_url('/local/coursebridge/admin/profiles.php', ['profileid' => $profile->id]))->out(false),
+        'url' => (new moodle_url('/local/coursebridge/admin/profile.php', ['profileid' => $profile->id]))->out(false),
         'status' => \local_coursebridge\output\display::outcome($profile->enabled ? 'enabled' : 'disabled'),
-        'revision' => $DB->get_field('local_coursebridge_revision', 'revision', ['id' => $profile->activeid]),
+        'revision' => $profile->revision,
     ];
 }
 $data['hasprofiles'] = (bool)$data['profiles'];
-echo $PAGE->get_renderer('local_coursebridge')->render(new \local_coursebridge\output\view('profile_list', $data));
-echo $OUTPUT->heading(get_string('profileeditor', 'local_coursebridge'), 3);
-$form->display();
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('pluginname', 'local_coursebridge'));
+echo $PAGE->get_renderer('local_coursebridge')->render(navigation::site('profiles'));
+echo $PAGE->get_renderer('local_coursebridge')->render(new view('profile_list', $data));
 echo $OUTPUT->footer();

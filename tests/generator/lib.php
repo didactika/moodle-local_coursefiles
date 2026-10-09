@@ -31,6 +31,33 @@ use local_coursebridge\local\catalog\material_source;
  */
 final class local_coursebridge_generator extends component_generator_base {
     /**
+     * Create exact source/destination placement for the administration workflow.
+     *
+     * @param array $record Fixture name.
+     * @return array Fixture identifiers.
+     */
+    public function create_migration_fixture(array $record): array {
+        global $DB, $USER;
+        $fixture = $this->create_folder_fixture($record);
+        $previoususer = $USER;
+        $this->set_user(get_admin());
+        try {
+            [$profile, $revision, $rules] = profiles::load($fixture['profileid']);
+            $config = $rules->get_config();
+            $config['migration']['source_module']['equals'] = 'Published materials';
+            $config['migration']['target_module']['equals'] = 'Target materials';
+            profiles::save(json_encode($config), $profile->id);
+            foreach (['CB2024', 'CB2025', 'CB2026'] as $shortname) {
+                $course = $DB->get_record('course', ['shortname' => $shortname], '*', MUST_EXIST);
+                indexer::refresh($course->id);
+            }
+        } finally {
+            $this->set_user($previoususer);
+        }
+        return $fixture;
+    }
+
+    /**
      * Create published editions and a teacher enrolled only in the destination.
      *
      * @param array $record Fixture name.
@@ -79,6 +106,12 @@ final class local_coursebridge_generator extends component_generator_base {
             $resource = $this->datagenerator->create_module('resource', [
                 'course' => $courses[2025]->id, 'name' => 'Published resource',
             ]);
+            get_file_storage()->delete_area_files(
+                context_module::instance($resource->cmid)->id,
+                'mod_resource',
+                'content',
+                0
+            );
             $this->create_file($resource->cmid, 'mod_resource', 'resource.txt', 'Resource content');
             $sourcefile = get_file_storage()->get_file(
                 context_module::instance($resource->cmid)->id,
@@ -118,6 +151,10 @@ final class local_coursebridge_generator extends component_generator_base {
             }
             $teacher = $this->datagenerator->create_user(['username' => 'cbteacher', 'password' => 'cbteacher']);
             $this->datagenerator->enrol_user($teacher->id, $courses[2026]->id, 'editingteacher');
+            if (is_file($CFG->dirroot . '/repository/coursebridge/lib.php')) {
+                require_once($CFG->dirroot . '/repository/coursebridge/lib.php');
+                (new \repository_type('coursebridge'))->create(false);
+            }
             return ['targetcmid' => $targetcmid, 'targetcourse' => $courses[2026]->id, 'profileid' => $profileid,
                 'teacherid' => $teacher->id, 'wwwroot' => $CFG->wwwroot];
         } finally {

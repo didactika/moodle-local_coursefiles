@@ -31,7 +31,7 @@ Batch --> Scope : Applied decisions / conflict / failure
 Scope --> Form : Batch result
 note over Form, Batch
 Owning form controls native refresh and final save.
-Folder Settings is one native consumer of this API.
+Folder content and Folder/File Settings use this API.
 end note
 
 Form -> Scope : close(token, sesskey)

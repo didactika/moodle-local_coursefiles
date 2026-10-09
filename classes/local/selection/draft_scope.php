@@ -36,6 +36,107 @@ final class draft_scope {
     public const MAX_SCOPES = 32;
 
     /**
+     * Locate a binding created from an actual owning form, never from request-provided limits.
+     *
+     * @param \context $context Repository's current context.
+     * @param int $draftid Current draft.
+     * @param string $sesskey Session key.
+     * @return string Matching token, or empty when no native form has registered this draft.
+     */
+    public static function find(\context $context, int $draftid, string $sesskey): string {
+        global $SESSION;
+        foreach ($SESSION->local_coursebridge_drafts ?? [] as $token => $scope) {
+            if ($scope['contextid'] === $context->id && $scope['draftid'] === $draftid) {
+                try {
+                    self::resolve($token, $sesskey);
+                    return $token;
+                } catch (\moodle_exception $exception) {
+                    continue;
+                }
+            }
+        }
+        return '';
+    }
+
+    /**
+     * Return the actor's current validated binding to server-side consumers.
+     *
+     * @param string $token Form scope.
+     * @param string $sesskey Session key.
+     * @return array Current form authority.
+     */
+    public static function describe(string $token, string $sesskey): array {
+        return self::resolve($token, $sesskey);
+    }
+
+    /**
+     * Store bounded browser state while invalidating changed visible selections.
+     *
+     * @param string $token Form scope.
+     * @param array $view Validated browser state.
+     * @param string $sesskey Session key.
+     */
+    public static function remember_view(string $token, array $view, string $sesskey): void {
+        global $SESSION;
+        $scope = self::resolve($token, $sesskey);
+        if (
+            isset($scope['review']) && ($scope['review']['profileid'] !== $view['profileid']
+                || $scope['review']['items'] !== selection_options::parse($view['selected']))
+        ) {
+            unset($SESSION->local_coursebridge_drafts[$token]['review']);
+        }
+        $SESSION->local_coursebridge_drafts[$token]['view'] = $view;
+    }
+
+    /**
+     * Revalidate an approved selection before handing it to the native repository transfer.
+     *
+     * @param string $token Form scope.
+     * @param string $digest Approval.
+     * @param string $sesskey Session key.
+     * @return array Scope and current review.
+     */
+    public static function approved(string $token, string $digest, string $sesskey): array {
+        $scope = self::resolve($token, $sesskey);
+        $saved = $scope['review'] ?? null;
+        if (!$saved || !hash_equals($saved['digest'], $digest)) {
+            throw new \moodle_exception('batchconflict', 'local_coursebridge');
+        }
+        $review = draft_import::review(
+            $scope['courseid'],
+            $saved['profileid'],
+            $scope['draftid'],
+            $saved['items'],
+            $scope['limits'],
+            $scope['basepath'],
+            $scope['copymode'] ?? 'paths'
+        );
+        if ($review['blocked'] || !hash_equals($review['digest'], $digest)) {
+            throw new \moodle_exception('batchconflict', 'local_coursebridge');
+        }
+        return [$scope, $review];
+    }
+
+    /**
+     * Change folder placement only after invalidating any old approval.
+     *
+     * @param string $token Form scope.
+     * @param string $mode Folder mapping mode.
+     * @param string $sesskey Session key.
+     */
+    public static function select_mode(string $token, string $mode, string $sesskey): void {
+        global $SESSION;
+        $scope = self::resolve($token, $sesskey);
+        if (!in_array($mode, ['paths', 'folder', 'contents'], true)) {
+            throw new \moodle_exception('invalidselection', 'local_coursebridge');
+        }
+        if (($scope['copymode'] ?? 'paths') !== $mode) {
+            unset($SESSION->local_coursebridge_drafts[$token]['review']);
+            $SESSION->local_coursebridge_drafts[$token]['copymode'] = $mode;
+        }
+    }
+
+    /**
      * Register a real native form element, never browser-provided options.
      *
      * @param \MoodleQuickForm_filemanager $element Actual owning control.
@@ -45,7 +146,7 @@ final class draft_scope {
      */
     public static function open(\MoodleQuickForm_filemanager $element, \context $context, string $basepath = '/'): string {
         global $SESSION, $USER;
-        self::require_context($context);
+        self::require_context($context, $element->getName());
         $basepath = material_selection::path($basepath);
         $contract = scoped_filemanager::read_contract($element, $context);
         if ($contract['draftid'] <= 0) {
@@ -117,6 +218,58 @@ final class draft_scope {
     }
 
     /**
+     * List existing directories in this actor's bound draft, respecting the native subdirectory option.
+     *
+     * @param string $token Form scope.
+     * @param string $sesskey Current session key.
+     * @return array Directory paths indexed by path.
+     */
+    public static function destinations(string $token, string $sesskey): array {
+        global $DB, $USER;
+        $scope = self::resolve($token, $sesskey);
+        $conditions = ['contextid' => \context_user::instance($USER->id)->id, 'component' => 'user',
+            'filearea' => 'draft', 'itemid' => $scope['draftid'], 'filename' => '.'];
+        if (!$scope['limits']['subdirs']) {
+            $conditions['filepath'] = '/';
+        }
+        $directories = $DB->get_records('files', $conditions, 'filepath', 'id, filepath');
+        $paths = array_column($directories, 'filepath');
+        return array_combine($paths, $paths);
+    }
+
+    /**
+     * Bind an existing destination and discard approval whenever that destination changes.
+     *
+     * @param string $token Form scope.
+     * @param string $basepath Submitted destination directory.
+     * @param string $sesskey Current session key.
+     */
+    public static function select_destination(string $token, string $basepath, string $sesskey): void {
+        global $SESSION, $USER;
+        $scope = self::resolve($token, $sesskey);
+        $basepath = material_selection::path($basepath);
+        if (!$scope['limits']['subdirs'] && $basepath !== '/') {
+            throw new \moodle_exception('batchlimit', 'local_coursebridge');
+        }
+        if (
+            !get_file_storage()->get_file(
+                \context_user::instance($USER->id)->id,
+                'user',
+                'draft',
+                $scope['draftid'],
+                $basepath,
+                '.'
+            )
+        ) {
+            throw new \moodle_exception('invaliddraft', 'local_coursebridge');
+        }
+        if ($scope['basepath'] !== $basepath) {
+            unset($SESSION->local_coursebridge_drafts[$token]['review']);
+            $SESSION->local_coursebridge_drafts[$token]['basepath'] = $basepath;
+        }
+    }
+
+    /**
      * Require the current form fields to describe exactly the approved profile and selection.
      *
      * @param string $token Form scope.
@@ -157,7 +310,8 @@ final class draft_scope {
             $scope['draftid'],
             $items,
             $scope['limits'],
-            $scope['basepath']
+            $scope['basepath'],
+            $scope['copymode'] ?? 'paths'
         );
         $SESSION->local_coursebridge_drafts[$token]['review'] = [
             'profileid' => $profileid, 'items' => $items, 'digest' => $review['digest'],
@@ -188,7 +342,8 @@ final class draft_scope {
             $review['items'],
             $scope['limits'],
             $digest,
-            $scope['basepath']
+            $scope['basepath'],
+            $scope['copymode'] ?? 'paths'
         );
     }
 
@@ -227,7 +382,7 @@ final class draft_scope {
         if (!$context) {
             throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
         }
-        self::require_context($context);
+        self::require_context($context, $scope['field']);
         $course = get_course($scope['courseid']);
         if ((int)$context->get_course_context()->instanceid !== $scope['courseid']) {
             throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
@@ -245,12 +400,12 @@ final class draft_scope {
      * Restrict scope creation/use to authorized course editors in course or module contexts.
      *
      * @param \context $context Owning form context.
+     * @param string $field Actual field name.
      */
-    private static function require_context(\context $context): void {
+    private static function require_context(\context $context, string $field = ''): void {
         if (!isloggedin() || isguestuser() || !in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE], true)) {
             throw new \moodle_exception('formscopeunavailable', 'local_coursebridge');
         }
-        require_capability('local/coursebridge:reuse', $context->get_course_context());
-        require_capability('moodle/course:manageactivities', $context);
+        destination_access::require((int)$context->get_course_context()->instanceid, $context, $field);
     }
 }

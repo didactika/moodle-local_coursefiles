@@ -48,8 +48,7 @@ final class material_source {
         ?array &$scope = null
     ): array {
         global $DB, $USER;
-        require_capability('local/coursebridge:reuse', \context_course::instance($targetcourse));
-        require_capability('moodle/course:manageactivities', \context_course::instance($targetcourse));
+        \local_coursebridge\local\selection\destination_access::require($targetcourse);
         if (!preg_match('/^[a-f0-9]{40}$/', $pathnamehash)) {
             throw new \moodle_exception('materialunavailable', 'local_coursebridge');
         }

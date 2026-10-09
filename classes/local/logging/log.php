@@ -33,7 +33,7 @@ final class log {
      * @return array Action names.
      */
     public static function actions(): array {
-        return ['profile_activated', 'course_policy_changed', 'publication_granted', 'publication_revoked',
+        return ['profile_activated', 'site_policy_changed', 'course_policy_changed', 'publication_granted', 'publication_revoked',
             'migration_previewed', 'migration_queued', 'migration_blocked', 'migration_batch'];
     }
 

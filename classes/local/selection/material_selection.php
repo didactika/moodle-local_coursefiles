@@ -93,6 +93,52 @@ final class material_selection {
     }
 
     /**
+     * Map each occurrence once, giving the widest selected parent folder precedence over overlapping selectors.
+     *
+     * @param array $files Already authorized occurrences.
+     * @param array $items Normalized mixed selectors.
+     * @param string $mode paths, folder or contents.
+     * @return array Relative destination paths indexed by pathname hash.
+     */
+    public static function map_paths(array $files, array $items, string $mode): array {
+        if (!in_array($mode, ['paths', 'folder', 'contents'], true)) {
+            throw new \moodle_exception('invalidselection', 'local_coursebridge');
+        }
+        $folders = array_values(array_filter($items, static fn($item) => isset($item['cmid'])));
+        usort($folders, static fn($left, $right) => strlen($left['filepath']) <=> strlen($right['filepath']));
+        $paths = [];
+        $modules = [];
+        foreach ($files as $hash => $file) {
+            $paths[$hash] = $mode === 'paths' ? $file->get_filepath() : '/';
+            if ($mode === 'paths') {
+                continue;
+            }
+            $context = \context::instance_by_id($file->get_contextid());
+            foreach ($folders as $folder) {
+                if ($context->instanceid != $folder['cmid'] || !str_starts_with($file->get_filepath(), $folder['filepath'])) {
+                    continue;
+                }
+                $relative = '/' . substr($file->get_filepath(), strlen($folder['filepath']));
+                if ($mode === 'folder') {
+                    if ($folder['filepath'] === '/') {
+                        $modules[$folder['cmid']] ??= get_coursemodule_from_id('folder', $folder['cmid'], 0, false, MUST_EXIST);
+                        $name = clean_param($modules[$folder['cmid']]->name, PARAM_FILE);
+                    } else {
+                        $name = basename(rtrim($folder['filepath'], '/'));
+                    }
+                    if ($name === '' || $name === '.' || $name === '..') {
+                        throw new \moodle_exception('invalidselection', 'local_coursebridge');
+                    }
+                    $relative = '/' . $name . $relative;
+                }
+                $paths[$hash] = self::path($relative);
+                break;
+            }
+        }
+        return $paths;
+    }
+
+    /**
      * Require an exact relative directory path without traversal or wildcard normalization.
      *
      * @param string $path Native path.
