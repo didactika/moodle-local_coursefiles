@@ -118,5 +118,22 @@ final class admin_layout_test extends \advanced_testcase {
         $this->assertCount(2, $skips['groups'][0]['operations']);
         $this->assertSame(58, $skips['plantotal']);
         $this->assertSame(1, (int)$skips['summary']['revision']);
+        $search = migration_report::data($planid, '', 0, 'file57.txt');
+        $this->assertCount(1, $search['groups'][0]['operations']);
+        $this->assertSame('file57.txt', $search['groups'][0]['operations'][0]['filename']);
+        $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026',
+            'issues' => array_fill(0, 61, ['reason' => 'ambiguous_course_pair'])]);
+        $DB->update_record('local_multipicker_plan', (object)[
+            'id' => $planid, 'configjson' => $document, 'digest' => hash('sha256', $document),
+        ]);
+        $firstissues = migration_report::data($planid);
+        $this->assertCount(50, $firstissues['issues']);
+        $this->assertArrayHasKey('issuenexturl', $firstissues);
+        $lastissues = migration_report::data($planid, '', 0, '', false, 999);
+        $this->assertCount(11, $lastissues['issues']);
+        $this->assertSame(1, $lastissues['issuepage']);
+        $this->assertArrayHasKey('issuepreviousurl', $lastissues);
+        $this->assertArrayNotHasKey('issuenexturl', $lastissues);
+        $this->assertCount(50, $lastissues['groups'][0]['operations']);
     }
 }

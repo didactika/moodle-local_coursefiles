@@ -46,6 +46,7 @@ For example, `classes/local/catalog/indexer.php` defines `local_multipicker\\loc
 | Site settings | `/local/multipicker/admin/settings.php` |
 | Relationship profiles | `/local/multipicker/admin/profiles.php` |
 | Profile editor and unsaved preview | `/local/multipicker/admin/profile.php` |
+| Portable profile import | `/local/multipicker/admin/profile_import.php` |
 | Migration administration | `/local/multipicker/admin/migration.php` |
 | Stored migration review and execution | `/local/multipicker/admin/migration_review.php?planid=...` |
 | Action log | `/local/multipicker/admin/log.php` |
@@ -68,3 +69,5 @@ References: [Moodle templates and subdirectories](https://moodledev.io/docs/4.5/
 
 
 `selection/index.php` owns browsing, `selection/review.php` owns review, and `selection/status.php` returns an actor-bound completed-editor receipt. `lib.php` exposes the authenticated native Fragment callback. AMD browser/editor_import modules contain presentation and public native chooser/editor coordination; their core-generated assets live in `amd/build`.
+
+Guided profile rules and JSON transport belong to `local/profile/guided_config.php` and `profile_bundle.php`. Migration capture scopes and persisted selection belong to `local/migration/course_scope.php` and `plan_selection.php`. `admin/profile_import.php` uses `form/profile_import_form.php`. The small `administration` AMD module synchronizes page checkboxes; PHP remains the authority for all changes.

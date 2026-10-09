@@ -3,15 +3,16 @@
     Paged, grouped review of the immutable preview and its execution state.
     Example context (json): {"planstate":"Ready for review","metrics":[],"groups":[],"runs":[],"filters":[]}
 }}
-<section class="multipicker-migration" data-region="multipicker-migration">
+<section class="multipicker-admin multipicker-migration" data-region="multipicker-migration">
     <h2>{{#str}}report, local_multipicker{{/str}}</h2>
-    <ol class="list-inline mb-4" aria-label="{{#str}}migrationsteps, local_multipicker{{/str}}">
-        <li class="list-inline-item"><a href="{{newplanurl}}">1. {{#str}}migrationstep_configure, local_multipicker{{/str}}</a></li>
-        <li class="list-inline-item"><strong>2. {{#str}}migrationstep_review, local_multipicker{{/str}}</strong></li>
-        <li class="list-inline-item">3. {{#str}}migrationstep_execute, local_multipicker{{/str}}</li>
+    <ol class="multipicker-steps mb-4" aria-label="{{#str}}migrationsteps, local_multipicker{{/str}}">
+        <li><span class="multipicker-step-number">1</span>{{#str}}migrationstep_profile, local_multipicker{{/str}}</li>
+        <li><span class="multipicker-step-number">2</span><a href="{{newplanurl}}">{{#str}}migrationstep_scope, local_multipicker{{/str}}</a></li>
+        <li {{#reviewstep}}aria-current="step"{{/reviewstep}}><span class="multipicker-step-number">3</span><a href="{{reviewurl}}">{{#str}}migrationstep_review, local_multipicker{{/str}}</a></li>
+        <li {{#executionstep}}aria-current="step"{{/executionstep}}><span class="multipicker-step-number">4</span>{{#str}}migrationstep_execute, local_multipicker{{/str}}</li>
     </ol>
     <p class="h5">{{sourceedition}} → {{targetedition}}</p>
-    <p>{{planstate}}</p>
+    <p><span class="multipicker-chip">{{planstate}}</span> <span class="small text-muted">{{includedlabel}}</span></p>
     <div class="row mb-3">{{#metrics}}
         <div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body">
             <div class="h3">{{count}}</div><div>{{label}}</div>
@@ -26,31 +27,58 @@
     {{#hasissues}}<div class="alert alert-warning">
         <h3 class="h5">{{#str}}reviewissues, local_multipicker{{/str}}</h3>
         <ul class="mb-0">{{#issues}}<li>{{description}}{{#context}}<div class="small text-break">{{context}}</div>{{/context}}</li>{{/issues}}</ul>
+        <p class="small mt-2">{{issuepageinfo}}</p>
+        <nav aria-label="{{#str}}reviewissues, local_multipicker{{/str}}">
+            {{#issuepreviousurl}}<a class="btn btn-sm btn-outline-secondary" href="{{issuepreviousurl}}">{{#str}}previous, core{{/str}}</a>{{/issuepreviousurl}}
+            {{#issuenexturl}}<a class="btn btn-sm btn-outline-secondary" href="{{issuenexturl}}">{{#str}}next, core{{/str}}</a>{{/issuenexturl}}
+        </nav>
     </div>{{/hasissues}}
+    {{#reviewstep}}
+    <form method="get" action="{{actionurl}}" class="multipicker-panel">
+        <input type="hidden" name="planid" value="{{planid}}">
+        <input type="hidden" name="issuepage" value="{{issuepage}}">
+        <label for="multipicker-migration-q" class="small">{{#str}}migrationsearch, local_multipicker{{/str}}</label>
+        <div class="input-group input-group-sm"><input type="search" name="q" id="multipicker-migration-q" value="{{search}}" class="form-control"><button class="btn btn-outline-secondary" type="submit">{{#pix}}a/search, core{{/pix}}{{#str}}search, core{{/str}}</button></div>
+    </form>
     <nav class="mb-3" aria-label="{{#str}}decision, local_multipicker{{/str}}">
         <ul class="nav nav-pills flex-wrap">{{#filters}}<li class="nav-item">
             <a href="{{url}}" class="nav-link {{#active}}active{{/active}}" {{#active}}aria-current="page"{{/active}}>{{label}} ({{count}})</a>
         </li>{{/filters}}</ul>
     </nav>
     <p class="small text-muted">{{pageinfo}}</p>
+    <form method="post" action="{{actionurl}}" data-multipicker-migration-selection>
+        <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="digest" value="{{digest}}">
+        <input type="hidden" name="q" value="{{search}}"><input type="hidden" name="page" value="{{page}}"><input type="hidden" name="decision" value="{{decision}}">
+        <input type="hidden" name="issuepage" value="{{issuepage}}">
+        {{#selectioneditable}}<div class="multipicker-panel d-flex flex-wrap align-items-center">
+            <label class="mb-0 multipicker-gap-end-lg"><input type="checkbox" data-multipicker-selectall> {{#str}}selectpage, local_multipicker{{/str}}</label>
+            <button name="action" value="all" class="btn btn-sm btn-outline-primary multipicker-gap-end">{{#str}}includeall, local_multipicker{{/str}}</button>
+            <button name="action" value="none" class="btn btn-sm btn-link">{{#str}}excludeall, local_multipicker{{/str}}</button>
+        </div>{{/selectioneditable}}
     {{#groups}}<div class="card mb-4"><div class="card-body">
-        <h3 class="h5 text-break">{{sourcecourse}} → {{targetcourse}}</h3>
-        <p class="text-muted text-break">{{targetsection}} / {{targetfolder}}</p>
+        <h3 class="h5 text-break">{{#sourcecoursehtml}}{{{sourcecoursehtml}}}{{/sourcecoursehtml}}{{^sourcecoursehtml}}{{sourcecourse}}{{/sourcecoursehtml}} → {{#targetcoursehtml}}{{{targetcoursehtml}}}{{/targetcoursehtml}}{{^targetcoursehtml}}{{targetcourse}}{{/targetcoursehtml}}</h3>
+        <p class="text-muted text-break">{{#targetsectionhtml}}{{{targetsectionhtml}}}{{/targetsectionhtml}}{{^targetsectionhtml}}{{targetsection}}{{/targetsectionhtml}} / {{#targetfolderhtml}}{{{targetfolderhtml}}}{{/targetfolderhtml}}{{^targetfolderhtml}}{{targetfolder}}{{/targetfolderhtml}}</p>
         <ul class="list-group list-group-flush">{{#operations}}<li class="list-group-item px-0">
             <div class="row"><div class="col-md-7">
-                <strong class="text-break">{{filename}}</strong><div class="small text-muted text-break">{{filepath}}</div>
+                {{#selectioneditable}}<input type="hidden" name="visible[]" value="{{id}}"><input type="checkbox" name="included[]" value="{{id}}" {{#included}}checked{{/included}} aria-label="{{filename}}">{{/selectioneditable}}
+                <strong class="text-break">{{filename}}</strong>{{^included}} <span class="multipicker-chip">{{#str}}excluded, local_multipicker{{/str}}</span>{{/included}}<div class="small text-muted text-break">{{filepath}}</div>
                 <div class="small text-break">{{author}} · {{license}}</div>
             </div><div class="col-md-5 mt-2 mt-md-0">
-                <strong>{{decisionlabel}}</strong><div class="small">{{statelabel}}</div>
+                <span class="multipicker-chip">{{decisionlabel}}</span><div class="small">{{statelabel}}</div>
                 {{#resultlabel}}<div class="small">{{resultlabel}}</div>{{/resultlabel}}
             </div></div>
         </li>{{/operations}}</ul>
     </div></div>{{/groups}}
+    {{#selectioneditable}}<button name="action" value="selection" class="btn btn-primary mb-3">{{#str}}saveselection, local_multipicker{{/str}}</button>{{/selectioneditable}}
+    </form>
     {{^hasoperations}}<p class="alert alert-info">{{#str}}nofilteredoperations, local_multipicker{{/str}}</p>{{/hasoperations}}
     <nav class="mb-4" aria-label="{{#str}}pagination, local_multipicker{{/str}}">
         {{#previousurl}}<a class="btn btn-outline-secondary" href="{{previousurl}}">{{#str}}previous, core{{/str}}</a>{{/previousurl}}
         {{#nexturl}}<a class="btn btn-outline-secondary" href="{{nexturl}}">{{#str}}next, core{{/str}}</a>{{/nexturl}}
     </nav>
+    {{#canexecute}}<a href="{{executionurl}}" class="btn btn-primary mb-4">{{#str}}continueexecution, local_multipicker{{/str}}{{#pix}}forward, local_multipicker{{/pix}}</a>{{/canexecute}}
+    {{/reviewstep}}
+    {{#executionstep}}<a href="{{reviewurl}}" class="btn btn-sm btn-outline-secondary mb-3">{{#pix}}back, local_multipicker{{/pix}}{{#str}}backtoreview, local_multipicker{{/str}}</a>
     {{#hasruns}}<section class="mb-4" aria-label="{{#str}}planprogress, local_multipicker{{/str}}">
         <h3 class="h5">{{#str}}planprogress, local_multipicker{{/str}}</h3>
         <p>{{planprogress}}</p>
@@ -66,7 +94,7 @@
         </form>{{/cancancel}}
     </div></div>{{/runs}}
     {{#canexecute}}<div class="card mb-4"><div class="card-body">
-        <h3 class="h5">3. {{#str}}migrationstep_execute, local_multipicker{{/str}}</h3>
+        <h3 class="h5">4. {{#str}}migrationstep_execute, local_multipicker{{/str}}</h3>
         <p>{{#str}}reviewbeforeexecute, local_multipicker{{/str}}</p>
         {{^maintenance}}<p class="alert alert-info">{{#str}}maintenancepreviewhelp, local_multipicker{{/str}}</p>{{/maintenance}}
         <form method="post" action="{{actionurl}}">
@@ -77,5 +105,6 @@
             <button class="btn btn-primary" name="action" value="execute" type="submit" {{^maintenance}}disabled{{/maintenance}}>{{#str}}execute, local_multipicker{{/str}}</button>
         </form>
     </div></div>{{/canexecute}}
-    <a class="btn btn-outline-secondary mb-4" href="{{newplanurl}}">{{#str}}changescope, local_multipicker{{/str}}</a>
+    {{/executionstep}}
+    <a class="btn btn-sm btn-outline-secondary mb-4" href="{{newplanurl}}">{{#str}}changescope, local_multipicker{{/str}}</a>
 </section>

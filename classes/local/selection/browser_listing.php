@@ -67,10 +67,15 @@ final class browser_listing {
                 if ($folder && !str_starts_with($origin['filepath'], $path)) {
                     continue;
                 }
-                $filecard = ($origin['module'] !== 'folder' || $origin['filearea'] !== 'content') || $folder || $filters['q'] !== '';
+                $filecard = ($origin['module'] !== 'folder' || $origin['filearea'] !== 'content')
+                    || $folder || $filters['q'] !== '';
                 if ($filecard && (!$folder || $origin['filepath'] === $path)) {
                     $value = 'file:' . $origin['pathnamehash'];
                     if (!isset($seen[$asset['contenthash']])) {
+                        $sourcefile = get_file_storage()->get_file_by_hash($origin['pathnamehash']);
+                        if (!$sourcefile) {
+                            continue;
+                        }
                         $cards[$value] = ['value' => $value, 'title' => s($origin['filename']), 'isfolder' => false,
                             'origin' => \local_multipicker\output\display::name(
                                 $origin['shortname'],
@@ -81,12 +86,15 @@ final class browser_listing {
                                     \context_module::instance($origin['cmid'])
                                 ),
                             'details' => $origin['author'] . ' / ' . $origin['license'] . ' / ' . display_size($asset['filesize']),
-                            'icon' => get_file_storage()->get_file_by_hash($origin['pathnamehash'])->get_mimetype(),
+                            'icon' => file_file_icon($sourcefile),
                             'open' => ''];
                         $seen[$asset['contenthash']] = true;
                     }
                 }
-                if ($origin['module'] === 'folder' && $origin['filearea'] === 'content' && $filters['q'] === '' && empty($filters['mimetype'])) {
+                if (
+                    $origin['module'] === 'folder' && $origin['filearea'] === 'content'
+                        && $filters['q'] === '' && empty($filters['mimetype'])
+                ) {
                     if (!$folder) {
                         $targetpath = '/';
                         $title = \local_multipicker\output\display::name(
@@ -107,7 +115,7 @@ final class browser_listing {
                         'origin' => \local_multipicker\output\display::name(
                             $origin['shortname'],
                             \context_course::instance($origin['courseid'])
-                        ), 'details' => $targetpath,
+                        ), 'details' => '',
                         'open' => $value];
                 }
             }

@@ -3,7 +3,7 @@
 title UC03 — Activate a relationship profile: conversation
 top to bottom direction
 state "1. Open profile\nAdministrator" as S1
-state "2. Submit JSON rules\nAdministrator" as S2
+state "2. Edit guided fields / advanced JSON\nPreview without saving\nAdministrator" as S2
 state "3. Validate supported rules\nprofile_config" as S3
 state "4. Activate immutable revision\nprofiles" as S4
 state "5. Refresh catalog\nAdministrator" as S5

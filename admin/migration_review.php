@@ -41,6 +41,24 @@ if (data_submitted()) {
         }
         \local_multipicker\local\migration\migration_executor::queue($planid, required_param('digest', PARAM_ALPHANUM));
         $message = get_string('migrationqueued', 'local_multipicker');
+    } else if (in_array($action, ['selection', 'all', 'none'], true)) {
+        \local_multipicker\local\migration\plan_selection::save(
+            $planid,
+            required_param('digest', PARAM_ALPHANUM),
+            optional_param_array('visible', [], PARAM_INT),
+            optional_param_array('included', [], PARAM_INT),
+            $action === 'selection' ? 'page' : $action
+        );
+        $message = get_string('selectionupdated', 'local_multipicker');
+        $url->params(['q' => optional_param('q', '', PARAM_TEXT), 'page' => optional_param('page', 0, PARAM_INT),
+            'decision' => optional_param('decision', '', PARAM_ALPHA),
+            'issuepage' => optional_param('issuepage', 0, PARAM_INT)]);
+        if (optional_param('navigate', false, PARAM_BOOL)) {
+            $url->params(['q' => optional_param('nextq', '', PARAM_TEXT), 'page' => optional_param('nextpage', 0, PARAM_INT),
+                'decision' => optional_param('nextdecision', '', PARAM_ALPHA),
+                'issuepage' => optional_param('nextissuepage', 0, PARAM_INT),
+                'step' => optional_param('nextstep', '', PARAM_ALPHA) === 'execute' ? 'execute' : '']);
+        }
     } else if ($action === 'cancel') {
         $runid = required_param('runid', PARAM_INT);
         $DB->get_record('local_multipicker_run', ['id' => $runid, 'planid' => $planid], '*', MUST_EXIST);
@@ -51,7 +69,15 @@ if (data_submitted()) {
     }
     redirect($url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
 }
-$data = migration_report::data($planid, optional_param('decision', '', PARAM_ALPHA), optional_param('page', 0, PARAM_INT));
+$data = migration_report::data(
+    $planid,
+    optional_param('decision', '', PARAM_ALPHA),
+    optional_param('page', 0, PARAM_INT),
+    optional_param('q', '', PARAM_TEXT),
+    optional_param('step', '', PARAM_ALPHA) === 'execute',
+    optional_param('issuepage', 0, PARAM_INT)
+);
+$PAGE->requires->js_call_amd('local_multipicker/administration', 'init');
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
 $renderer = $PAGE->get_renderer('local_multipicker');

@@ -1,0 +1,30 @@
+@startuml
+!include ../_style.puml
+title Design - migration scope and persistent review
+top to bottom direction
+class course_scope {
+  + choices(profile)
+  + capture(profile, key)
+}
+class migration_planner {
+  + preview(..., scopekey)
+}
+class migration_report {
+  + data(..., page, issuepage)
+}
+class plan_selection {
+  + save(planid, digest, visible, included, action)
+  + digest(planid)
+  + manifest_digest(planid)
+}
+class migration_executor {
+  + queue(planid, digest)
+}
+migration_planner --> course_scope
+migration_planner --> plan_selection : operation fingerprint
+migration_executor --> plan_selection : approval validation
+migration_report -[hidden]right-> migration_executor
+course_scope -[hidden]down-> plan_selection
+note bottom of migration_report : Independent bounded file and issue pages.
+note bottom of plan_selection : Selection and queueing share one plan lock.
+@enduml

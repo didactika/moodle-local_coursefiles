@@ -38,3 +38,5 @@ Supported Tiny activity editors use the same picker. Tiny's native Link browser 
 ![Native Tiny multiple-link sequence](diagrams/design/sequences/editor-selection.svg)
 
 See [public source areas](22-public-material-sources.md), [author policy](09-authorship-policy.md), [scope binding](16-native-form-scope.md), [File main-file behavior](18-resource-selection.md) and [validation](07-validation-and-decisions.md).
+
+The compact browser selects by clicking a card body or its checkbox/label. Folder navigation buttons do not toggle selection. Folder views show only a Back action; the selection list is displayed on the separate review screen. Compact automatic filter inputs, native MIME icons, small folder arrows and Cards/List layouts share the theme palette.

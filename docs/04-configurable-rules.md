@@ -1,6 +1,6 @@
 # Configurable course and placement rules
 
-Rules are JSON data, not PHP, SQL or executable callbacks. Start with a documented preset and test representative courses before activating it. Each activation creates an immutable revision; existing migration plans never change meaning silently.
+Configure profiles through the guided native form, preview the rules and activate a validated revision. Advanced JSON remains available for rules without a guided control. Saved configurations are data, not PHP, SQL or executable callbacks. Each activation creates an immutable revision; existing migration plans never change meaning silently.
 
 ![Profile configuration sequence](diagrams/design/sequences/uc03-configure-profile.svg)
 
@@ -12,7 +12,9 @@ All parsers are evaluated; conflicting identities block resolution unless the ad
 
 ## Guided profile editor and capture filters
 
-The profile editor opens with Name, Editor, Course identity field, Pattern with named captures and Course group key. Search filters are a collapsed repeatable section: each row has a capture name, its display label and an optional-value choice. Add a filter creates another row. Advanced rules stay collapsed; advanced mode preserves profiles with multiple parsers. Saving still creates an immutable, validated revision. Preview rules reads submitted values without writing a revision.
+The profile editor opens with Name, Editor, Course identity field, Pattern with named captures and Course group key. Guided fields also expose display templates, optional edition capture, pairing dimensions and category scope. Public-source/publication and folder/section/duplicate rules use collapsed native sections. Search filters are a collapsed repeatable section: each row has a capture name, its display label and an optional-value choice. Add a filter creates another row. Guided editing starts from the server-loaded revision and preserves rules without a form control. Advanced mode retains the complete document and supports multiple parsers and explicit section-map entries. Saving creates an immutable, validated revision. Preview rules reads submitted values without writing a revision.
+
+The Profiles page supports selected/all JSON export and atomic new-profile import through a native upload form. See [administration](20-administration-layout.md) for the portable bundle, limits and site-specific values to review.
 
 Filter keys are stable technical identifiers; labels are independent display names. For example:
 

@@ -6,7 +6,8 @@ participant "Native profile form" as UI
 participant profiles as Profiles
 participant profile_config as Rules
 database "Profile / revision" as DB
-Administrator -> UI : Submit JSON
+Administrator -> UI : Submit guided fields / advanced JSON
+UI -> UI : Resolve authoritative configuration
 UI -> Profiles : save(json, profileid)
 Profiles -> Rules : Validate constructor
 alt supported document

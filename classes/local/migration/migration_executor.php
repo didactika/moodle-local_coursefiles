@@ -42,26 +42,59 @@ final class migration_executor {
     public static function queue(int $planid, string $digest): int {
         global $CFG, $DB, $USER;
         require_capability('local/multipicker:executemigration', \context_system::instance());
-        $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
-        if (
-            $plan->state !== 'reviewable' || !hash_equals($plan->digest, $digest)
-                || !hash_equals($plan->digest, hash('sha256', $plan->configjson))
-        ) {
-            throw new \moodle_exception('planstale', 'local_multipicker');
+        $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('plan:' . $planid, 10);
+        if (!$lock) {
+            throw new \moodle_exception('lockfailed', 'local_multipicker');
         }
-        if (empty($CFG->maintenance_enabled)) {
-            throw new \moodle_exception('maintenance_required', 'local_multipicker');
+        try {
+            $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
+            if (
+                $plan->state !== 'reviewable' || !hash_equals($plan->digest, $digest)
+                    || !hash_equals($plan->digest, hash('sha256', $plan->configjson))
+            ) {
+                throw new \moodle_exception('planstale', 'local_multipicker');
+            }
+            if (empty($CFG->maintenance_enabled)) {
+                throw new \moodle_exception('maintenance_required', 'local_multipicker');
+            }
+            $document = json_decode($plan->configjson, true);
+            if (
+                isset($document['operationsdigest'])
+                    && !hash_equals($document['operationsdigest'], plan_selection::manifest_digest($planid))
+            ) {
+                throw new \moodle_exception('planstale', 'local_multipicker');
+            }
+            if (
+                isset($document['selectiondigest'])
+                    && !hash_equals($document['selectiondigest'], plan_selection::digest($planid))
+            ) {
+                throw new \moodle_exception('planstale', 'local_multipicker');
+            }
+            if (
+                !$DB->record_exists('local_multipicker_operation', ['planid' => $planid, 'included' => 1, 'state' => 'pending'])
+                    || $DB->record_exists_select(
+                        'local_multipicker_run',
+                        'planid = ? AND (state = ? OR state = ?)',
+                        [$planid, 'queued', 'running']
+                    )
+            ) {
+                throw new \moodle_exception('planstale', 'local_multipicker');
+            }
+            $transaction = $DB->start_delegated_transaction();
+            $runid = $DB->insert_record('local_multipicker_run', (object)[
+                'planid' => $planid, 'userid' => $USER->id, 'state' => 'queued', 'cancelled' => 0,
+                'timecreated' => time(), 'timemodified' => time(),
+            ]);
+            $task = new \local_multipicker\task\execute_migration();
+            $task->set_userid($USER->id);
+            $task->set_custom_data(['runid' => $runid]);
+            \core\task\manager::queue_adhoc_task($task);
+            log::record('migration_queued', $plan->uuid, ['runid' => $runid]);
+            $transaction->allow_commit();
+            return $runid;
+        } finally {
+            $lock->release();
         }
-        $runid = $DB->insert_record('local_multipicker_run', (object)[
-            'planid' => $planid, 'userid' => $USER->id, 'state' => 'queued', 'cancelled' => 0,
-            'timecreated' => time(), 'timemodified' => time(),
-        ]);
-        $task = new \local_multipicker\task\execute_migration();
-        $task->set_userid($USER->id);
-        $task->set_custom_data(['runid' => $runid]);
-        \core\task\manager::queue_adhoc_task($task);
-        log::record('migration_queued', $plan->uuid, ['runid' => $runid]);
-        return $runid;
     }
 
     /**
@@ -97,7 +130,7 @@ final class migration_executor {
         }
         $operations = $DB->get_records(
             'local_multipicker_operation',
-            ['planid' => $plan->id, 'state' => 'pending'],
+            ['planid' => $plan->id, 'state' => 'pending', 'included' => 1],
             'id',
             '*',
             0,
@@ -179,10 +212,10 @@ final class migration_executor {
                 $lock->release();
             }
         }
-        $more = $DB->record_exists('local_multipicker_operation', ['planid' => $plan->id, 'state' => 'pending']);
+        $more = $DB->record_exists('local_multipicker_operation', ['planid' => $plan->id, 'state' => 'pending', 'included' => 1]);
         $cancelled = $DB->get_field('local_multipicker_run', 'cancelled', ['id' => $runid]);
         $state = $cancelled ? 'cancelled' : ($more ? 'running' : (
-            $DB->record_exists('local_multipicker_operation', ['planid' => $plan->id, 'state' => 'blocked'])
+            $DB->record_exists('local_multipicker_operation', ['planid' => $plan->id, 'state' => 'blocked', 'included' => 1])
                 ? 'partial' : 'completed'));
         $DB->update_record('local_multipicker_run', (object)[
             'id' => $runid, 'state' => $state, 'timemodified' => time(),

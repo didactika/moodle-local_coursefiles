@@ -16,7 +16,7 @@
 | Step | Responsibility | Action |
 |---|---|---|
 | 1 | Administrator | Opens a named profile or creates a new profile. |
-| 2 | Administrator | Submits JSON rules through the native form. |
+| 2 | Administrator | Edits guided fields, or advanced JSON, and optionally previews unsaved rules. |
 | 3 | profile_config | Validates supported fields, named captures and bounded patterns. |
 | 4 | profiles | Stores and activates a revision under a lock and transaction. |
 | 5 | Administrator | Refreshes materials or waits for scheduled reconciliation. |

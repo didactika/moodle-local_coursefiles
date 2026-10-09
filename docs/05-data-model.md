@@ -27,8 +27,8 @@ The installable schema is [db/install.xml](../db/install.xml). XMLDB foreign-key
 | `local_multipicker_coursepolicy` | Course override; unique course; policy/revision and actor |
 | `local_multipicker_attribution` | Original author/license declaration, content/source snapshot and parent lineage UUID |
 | `local_multipicker_origin` | Verified destination locator to an attribution record; unique pathnamehash |
-| `local_multipicker_plan` | Immutable preview JSON, digest, profile/revision, actor and state |
-| `local_multipicker_operation` | Unique plan/operation key; native source locator, destination module, snapshots, decision/state and structured result |
+| `local_multipicker_plan` | Compact preview specification, operation/selection fingerprints, review digest, profile/revision, actor and state |
+| `local_multipicker_operation` | Unique plan/operation key; native source locator, destination module, immutable snapshots/decision, persistent included flag, execution state and structured result |
 | `local_multipicker_run` | Accountable bounded attempt, cancellation flag and outcome |
 | `local_multipicker_log` | Scoped actions and outcomes; actor identity removable through Privacy API |
 
@@ -59,3 +59,5 @@ Unique pathnamehash prevents multiple entries for a native occurrence. Membershi
 ## Reconstruction and privacy
 
 Course refresh replaces only that course's cache inside a transaction; event delivery gaps are repaired by periodic reconciliation. Current source eligibility wins over a stale row. Durable attribution/plans do not reference the cache by foreign key. Privacy API exports actor-linked governance records and removes actor links; it does not delete other users' native course files.
+
+Version 2026100903 adds the operation `included` flag (default 1) and plan/included/state index. Existing plans retain every operation selected on upgrade; historical decisions and results are preserved.
