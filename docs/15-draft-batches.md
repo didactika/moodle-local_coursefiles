@@ -2,6 +2,8 @@
 
 The internal PHP services in `classes/local/selection/` resolve mixed file/folder selections and copy a reviewed batch into an existing, current-user native draft. They do not expose a web endpoint or add multiple selection to the repository dialog. The current native picker still selects one file at a time.
 
+Explicitly integrated native controls use [the owning-form scope API](16-native-form-scope.md) to bind their real options and reviewed selectors to the current session. Direct PHP callers still own their authoritative form contract.
+
 ## Selection and destination
 
 `material_selection::resolve()` accepts explicit native file occurrences (`pathnamehash`) and folder-module directories (`cmid`, `filepath`). A folder selects its files recursively. Parent/child/file overlaps are deduplicated by pathname hash. Empty folders, invalid paths and selections exceeding 200 files are rejected. SQL wildcard characters in directory names are literal. Only eligible native folder/resource teaching files are accepted, with current family, source visibility, access or explicit publication checks for each file.

@@ -186,3 +186,4 @@ $string['invalidselection'] = 'Select available files or non-empty folders, up t
 $string['invaliddraft'] = 'The destination draft directory is unavailable for your account.';
 $string['batchlimit'] = 'The selection exceeds the destination control limits or contains an unsupported file type or directory.';
 $string['batchconflict'] = 'The selection conflicts with existing files or changed after review. Review it again before copying.';
+$string['formscopeunavailable'] = 'This form connection is unavailable or has expired. Reopen the material selection from the form.';

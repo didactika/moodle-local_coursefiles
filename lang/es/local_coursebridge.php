@@ -186,3 +186,4 @@ $string['invalidselection'] = 'Selecciona archivos disponibles o carpetas con co
 $string['invaliddraft'] = 'La carpeta de destino del borrador no está disponible para tu cuenta.';
 $string['batchlimit'] = 'La selección supera los límites del control de destino o contiene un tipo de archivo o carpeta no permitido.';
 $string['batchconflict'] = 'La selección entra en conflicto con archivos existentes o ha cambiado tras la revisión. Revísala de nuevo antes de copiar.';
+$string['formscopeunavailable'] = 'La conexión con el formulario no está disponible o ha caducado. Abre de nuevo la selección desde el formulario.';

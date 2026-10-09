@@ -8,6 +8,10 @@ The internal [draft batch service](../../15-draft-batches.md) has a separate seq
 
 ![Reviewed draft batch](../../diagrams/design/sequences/draft-batch.svg)
 
+Explicit owning forms bind their native controls through the [session scope API](../../16-native-form-scope.md):
+
+![Native owning-form scope](../../diagrams/design/sequences/form-scope.svg)
+
 ![Components](../../diagrams/design/components.svg)
 
 ![Catalog classes](../../diagrams/design/classes.svg)

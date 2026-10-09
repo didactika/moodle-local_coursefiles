@@ -32,6 +32,8 @@ Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migrat
 
 `material_selection` expands bounded file/folder selections; `draft_import` reviews and applies them to an existing native form draft. This is an internal server contract, separate from the repository's single-file dialog. See the [batch service and its sequence](15-draft-batches.md).
 
+`form/scoped_filemanager` inherits the native control and reads its server-defined limits. `draft_scope` binds an explicitly integrated control and its approval to the current session. See the [owning-form API](16-native-form-scope.md); existing module controls are not automatically replaced.
+
 ## Content and access
 
 Moodle File Storage owns binaries, drafts and native course usages. Identical bytes share native content storage; independent usages retain their native records. CourseBridge adds no binary pool or stored asset table.
