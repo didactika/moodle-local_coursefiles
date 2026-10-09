@@ -1,12 +1,12 @@
 @startuml
 !include ../_style.puml
-title CourseBridge — Native plugin boundaries
+title MultiPicker — Native plugin boundaries
 top to bottom direction
 component "Native course file picker" as Picker
 component "Course / admin pages" as Pages
-component repository_coursebridge as Repository
-component local_coursebridge as Local
-database "CourseBridge metadata" as Metadata
+component repository_multipicker as Repository
+component local_multipicker as Local
+database "MultiPicker metadata" as Metadata
 component "Moodle File /\nmodule APIs" as Files
 component "Moodle Task /\nLock APIs" as Tasks
 Picker --> Repository

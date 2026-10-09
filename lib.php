@@ -17,8 +17,8 @@
 /**
  * Course navigation integration.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,18 +29,58 @@
  * @param stdClass $course Course.
  * @param context_course $context Course context.
  */
-function local_coursebridge_extend_navigation_course($navigation, $course, $context): void {
-    if (has_capability('local/coursebridge:browse', $context)) {
+function local_multipicker_extend_navigation_course($navigation, $course, $context): void {
+    if (has_capability('local/multipicker:browse', $context)) {
         $navigation->add(
-            get_string('dashboard', 'local_coursebridge'),
-            new moodle_url('/local/coursebridge/course/index.php', ['courseid' => $course->id]),
+            get_string('dashboard', 'local_multipicker'),
+            new moodle_url('/local/multipicker/course/index.php', ['courseid' => $course->id]),
             navigation_node::TYPE_CUSTOM
         );
-    } else if (has_capability('local/coursebridge:managecoursepolicy', $context)) {
+    } else if (has_capability('local/multipicker:managecoursepolicy', $context)) {
         $navigation->add(
-            get_string('coursepolicy', 'local_coursebridge'),
-            new moodle_url('/local/coursebridge/course/policy.php', ['courseid' => $course->id]),
+            get_string('coursepolicy', 'local_multipicker'),
+            new moodle_url('/local/multipicker/course/policy.php', ['courseid' => $course->id]),
             navigation_node::TYPE_CUSTOM
         );
     }
+}
+
+/**
+ * Refresh the chooser through Moodle's Fragment API using the real native control authority.
+ *
+ * @param array $args Context supplied by core and bounded serialized form state.
+ * @return string Themeable browser fragment.
+ */
+function local_multipicker_output_fragment_browser(array $args): string {
+    global $PAGE, $OUTPUT;
+    $token = clean_param($args['scope'] ?? '', PARAM_ALPHANUM);
+    $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+    if (
+        $args['context']->id !== $scope['contextid'] || !is_string($args['state'] ?? null)
+            || strlen($args['state']) > 524288
+    ) {
+        throw new moodle_exception('formscopeunavailable', 'local_multipicker');
+    }
+    try {
+        $raw = json_decode($args['state'], true, 8, JSON_THROW_ON_ERROR);
+    } catch (JsonException $exception) {
+        throw new moodle_exception('invalidselection', 'local_multipicker');
+    }
+    if (!is_array($raw)) {
+        throw new moodle_exception('invalidselection', 'local_multipicker');
+    }
+    // Fragments update filters only. Review and transfer use their separate native flows.
+    foreach (['review', 'clear', 'selectpage', 'openfolder', 'previouspage', 'next', 'removeitem'] as $action) {
+        unset($raw[$action]);
+    }
+    $raw['search'] = true;
+    $input = \local_multipicker\local\selection\browser_controller::input($raw);
+    $result = \local_multipicker\local\selection\browser_controller::data($token, $input);
+    $PAGE->requires->js_call_amd('local_multipicker/browser', 'selection');
+    return html_writer::div(
+        $result['message']
+        . $OUTPUT->render_from_template('local_multipicker/local/selection/browser', $result['data']),
+        '',
+        ['data-multipicker-panel' => '']
+    );
 }

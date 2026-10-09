@@ -3,7 +3,7 @@
 title Native picker integration
 actor Teacher
 participant "Core file picker" as Picker
-participant repository_coursebridge as Repository
+participant repository_multipicker as Repository
 participant "Local catalog / source / policy" as Local
 participant "Moodle draft / module save" as Core
 Teacher -> Picker : Open related materials

@@ -1,29 +1,18 @@
 {{!
-    @template local_coursebridge/local/selection/review
-
-    Native folder batch review.
-
-    Context variables:
-    * count - Resulting draft file count.
-    * size - Resulting native draft size.
-    * rows - Reviewed paths, declarations and readable decisions.
-
-    Example context (json):
-    {
-        "count": 2,
-        "size": "1 KB",
-        "rows": [{"filename": "lesson.txt", "filepath": "/", "author": "Teacher", "license": "cc", "decision": "Copy"}]
-    }
+    @template local_multipicker/local/selection/review
+    Separate embedded review page. Native saving remains on the owning form.
+    Example context (json): {"backurl":"#","count":2,"size":"1 KB","nodes":[],"approved":false}
 }}
-<div class="coursebridge-selection-review mt-3">
-    <h3 class="h5">{{#str}}batchreview, local_coursebridge{{/str}}</h3>
-    <p>{{#str}}batchresult, local_coursebridge{{/str}} {{count}} ({{size}})</p>
-    <ul class="list-group">
-        {{#rows}}
-        <li class="list-group-item text-break">
-            <div><strong>{{filepath}}{{filename}}</strong> <span class="badge bg-secondary text-white">{{decision}}</span></div>
-            <div class="small">{{#str}}author, repository{{/str}}: {{author}} / {{#str}}license, repository{{/str}}: {{license}}</div>
-        </li>
-        {{/rows}}
-    </ul>
-</div>
+<main class="multipicker-browser multipicker-selection-review p-3">
+    <div class="multipicker-heading">
+        <a href="{{backurl}}" class="btn btn-outline-secondary multipicker-back">{{#pix}}back, local_multipicker{{/pix}} {{#str}}backtoselection, local_multipicker{{/str}}</a>
+        <h2 class="h4 mb-0">{{#str}}batchreview, local_multipicker{{/str}}</h2>
+    </div>
+    {{#error}}<div class="alert alert-danger" role="alert">{{error}}</div>{{/error}}
+    {{^error}}<p class="text-muted mt-3">{{#str}}batchresult, local_multipicker{{/str}} {{count}} ({{size}})</p>
+    <ul class="multipicker-tree multipicker-tree-root">{{#nodes}}{{> local_multipicker/local/selection/review_node}}{{/nodes}}</ul>
+    <div class="multipicker-footer">
+        {{#approved}}<button type="button" data-multipicker-confirm disabled class="btn btn-primary">{{#str}}importselection, local_multipicker{{/str}}</button>{{/approved}}
+        <span data-multipicker-status role="status" class="small text-muted"></span>
+    </div>{{/error}}
+</main>

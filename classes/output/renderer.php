@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Theme-overridable CourseBridge renderer.
+ * Theme-overridable MultiPicker renderer.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge\output;
+namespace local_multipicker\output;
 
 /**
  * Delegates presentation to component templates and the active Moodle theme.

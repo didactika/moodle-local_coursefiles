@@ -17,15 +17,15 @@
 /**
  * Native output escaping and form semantics tests.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge;
+namespace local_multipicker;
 
-use local_coursebridge\output\display;
-use local_coursebridge\output\view;
+use local_multipicker\output\display;
+use local_multipicker\output\view;
 
 /**
  * Exercises actual templates through Moodle's renderer.
@@ -37,7 +37,7 @@ final class output_test extends \advanced_testcase {
     public function test_log_escapes_records_and_labels_filters(): void {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('log', [
-            'hasrecords' => true, 'formurl' => '/local/coursebridge/admin/log.php',
+            'hasrecords' => true, 'formurl' => '/local/multipicker/admin/log.php',
             'entityuuid' => '" autofocus onfocus="alert(1)',
             'records' => [['date' => 'Today', 'action' => '<script>action</script>',
                 'user' => '<script>user</script>', 'reference' => '<script>reference</script>']],
@@ -64,8 +64,8 @@ final class output_test extends \advanced_testcase {
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $PAGE->set_context(\context_course::instance($course->id));
-        $PAGE->set_url('/local/coursebridge/course/index.php', ['courseid' => $course->id]);
-        return $PAGE->get_renderer('local_coursebridge');
+        $PAGE->set_url('/local/multipicker/course/index.php', ['courseid' => $course->id]);
+        return $PAGE->get_renderer('local_multipicker');
     }
 
     /**
@@ -75,7 +75,7 @@ final class output_test extends \advanced_testcase {
         $renderer = $this->renderer();
         $data = [
             'hasprofiles' => true, 'hasassets' => true, 'courseid' => 2,
-            'actionurl' => '/local/coursebridge/course/index.php', 'reseturl' => '/local/coursebridge/course/index.php',
+            'actionurl' => '/local/multipicker/course/index.php', 'reseturl' => '/local/multipicker/course/index.php',
             'profiles' => display::options([1 => '<script>profile</script>'], '1'),
             'filters' => ['q' => '" autofocus onfocus="alert(1)'],
             'modules' => display::options(['' => 'All activities'], ''),
@@ -107,9 +107,9 @@ final class output_test extends \advanced_testcase {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('policy', [
             'locked' => true, 'canoverride' => false,
-            'effectivelabel' => get_string('preserve_locked', 'local_coursebridge'),
+            'effectivelabel' => get_string('preserve_locked', 'local_multipicker'),
         ]));
-        $this->assertStringContainsString(get_string('lockedpolicyhelp', 'local_coursebridge'), $html);
+        $this->assertStringContainsString(get_string('lockedpolicyhelp', 'local_multipicker'), $html);
         $this->assertStringNotContainsString('<select', $html);
     }
 
@@ -129,7 +129,7 @@ final class output_test extends \advanced_testcase {
             ]],
         ]));
         $this->assertStringContainsString('BIO101-2026', $html);
-        $this->assertStringContainsString(get_string('outcome_skip_content', 'local_coursebridge'), $html);
+        $this->assertStringContainsString(get_string('outcome_skip_content', 'local_multipicker'), $html);
         $this->assertStringNotContainsString('<pre', $html);
         $this->assertStringNotContainsString('skip_content', $html);
     }

@@ -16,9 +16,9 @@
 | Step | Responsibility | Action |
 |---|---|---|
 | 1 | Teacher | Chooses an exact permitted source in the native repository. |
-| 2 | repository_coursebridge | Decodes the source token and resolves the target context. |
+| 2 | repository_multipicker | Decodes the source token and resolves the target context. |
 | 3 | material_source / author_policy | Revalidates live source access and author-copy policy. |
-| 4 | repository_coursebridge | Copies into the native draft with the source author, licence and attribution UUID. |
+| 4 | repository_multipicker | Copies into the native draft with the source author, licence and attribution UUID. |
 | 5 | Teacher / Moodle | Saves the course editing form through its native module contract. |
 
 ## Alternative outcomes
@@ -31,6 +31,6 @@
 
 ![UC02 sequence](../../../diagrams/design/sequences/uc02-attach-material.svg)
 
-[Sequence source](../../../diagrams/design/sequences/uc02-attach-material.puml). Current collaborators: repository_coursebridge, material_source, author_policy, core repository draft copier.
+[Sequence source](../../../diagrams/design/sequences/uc02-attach-material.puml). Current collaborators: repository_multipicker, material_source, author_policy, core repository draft copier.
 
 [All supported use cases](README.md) · [Stored behavior](../../behavior/README.md).

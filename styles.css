@@ -1,0 +1,63 @@
+/* Scope all presentation rules to the embedded chooser or its active native host. */
+.multipicker-browser {
+    --multipicker-primary: var(--bs-primary, var(--primary, #0f6cbf));
+    --multipicker-border: var(--bs-border-color, #dee2e6);
+    --multipicker-surface: var(--bs-body-bg, #fff);
+    --multipicker-radius: var(--bs-border-radius, .5rem);
+    color: var(--bs-body-color, inherit);
+    max-width: 100%;
+}
+.multipicker-heading, .multipicker-toolbar, .multipicker-footer, .multipicker-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+.multipicker-heading { margin-bottom: 1rem; }
+.multipicker-filterbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .75rem; }
+.multipicker-search { grid-column: 1 / -1; }
+.multipicker-options { padding: .75rem; border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); }
+.multipicker-options summary { font-weight: 500; cursor: pointer; }
+.multipicker-toolbar { margin: 1rem 0; }
+.multipicker-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: .75rem; }
+.multipicker-card { border-radius: var(--multipicker-radius); transition: border-color .15s ease, box-shadow .15s ease; }
+.multipicker-card .card-body { display: flex; gap: .75rem; align-items: flex-start; padding: 1rem; }
+.multipicker-card input[type=checkbox] { margin-top: .3rem; accent-color: var(--multipicker-primary); width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
+.multipicker-card-content { min-width: 0; flex-grow: 1; }
+.multipicker-card-title { display: block; margin-bottom: .4rem; cursor: pointer; overflow-wrap: anywhere; font-weight: 600; }
+.multipicker-card:hover, .multipicker-card:focus-within, .multipicker-selected { border-color: var(--multipicker-primary); box-shadow: 0 0 0 1px var(--multipicker-primary); }
+.multipicker-card:hover { background-color: color-mix(in srgb, var(--multipicker-primary) 5%, var(--multipicker-surface)); }
+.multipicker-selected { background-color: color-mix(in srgb, var(--multipicker-primary) 8%, var(--multipicker-surface)); }
+.multipicker-open { flex-shrink: 0; border-radius: 50%; padding: .25rem; }
+.multipicker-open .icon, .multipicker-back .icon, .multipicker-toolbar .btn-group .icon { margin: 0; }
+.multipicker-browser[data-layout=list] .multipicker-cards { grid-template-columns: 1fr; }
+.multipicker-browser[data-layout=list] .multipicker-card .card-body { padding: .75rem 1rem; align-items: center; }
+.multipicker-footer { position: sticky; bottom: 0; margin-top: 1rem; padding: 1rem 0 .25rem; background: var(--multipicker-surface); border-top: 1px solid var(--multipicker-border); z-index: 1; }
+.multipicker-tree { list-style: none; margin: 0; padding-left: 1rem; border-left: 1px solid var(--multipicker-border); }
+.multipicker-tree-root { padding: .75rem; border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); }
+.multipicker-tree-node { padding: .35rem 0; }
+.multipicker-tree-node summary { cursor: pointer; padding: .25rem; font-weight: 600; overflow-wrap: anywhere; }
+.multipicker-tree-file { padding: .5rem; border-radius: .25rem; }
+.multipicker-tree-file:hover { background-color: color-mix(in srgb, var(--multipicker-primary) 5%, var(--multipicker-surface)); }
+.multipicker-tree-file .badge { margin: .25rem 0; white-space: normal; }
+.multipicker-native-host .fp-navbar { display: none; }
+.multipicker-native-host .fp-content { height: min(72vh, 48rem) !important; max-height: none !important; }
+.multipicker-native-host .fp-object-container { width: 100%; height: 100%; border: 0; }
+@media (max-width: 575.98px) {
+    .multipicker-native-host .fp-repo-area {
+        width: 100%;
+        max-width: 100%;
+        flex-direction: row !important;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: .5rem;
+    }
+    .multipicker-native-host .fp-repo { flex-shrink: 0; }
+    .multipicker-native-host .fp-repo a { white-space: nowrap; }
+    .multipicker-native-host .fp-repo-area + div { width: 100%; max-width: 100%; min-width: 0; }
+    .multipicker-native-host .fp-repo-items { width: 100%; }
+    .multipicker-browser { padding: .75rem !important; }
+    .multipicker-footer .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .multipicker-card { transition: none; } }

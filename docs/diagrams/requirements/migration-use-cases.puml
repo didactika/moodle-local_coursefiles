@@ -3,7 +3,7 @@
 title Reviewed administration
 left to right direction
 actor Administrator
-rectangle "CourseBridge administration" {
+rectangle "MultiPicker administration" {
   usecase "UC03 Activate profile" as Profile
   usecase "UC05 Preview migration" as Preview
   usecase "UC06 Execute reviewed digest" as Execute

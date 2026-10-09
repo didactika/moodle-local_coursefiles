@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XMLDB PATH="local/coursebridge/db" VERSION="20261008" COMMENT="CourseBridge metadata schema">
+<XMLDB PATH="local/multipicker/db" VERSION="20261008" COMMENT="MultiPicker metadata schema">
   <TABLES>
-    <TABLE NAME="local_coursebridge" COMMENT="Relationship profiles">
+    <TABLE NAME="local_multipicker" COMMENT="Relationship profiles">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
@@ -16,7 +16,7 @@
         <INDEX NAME="uuid" UNIQUE="true" FIELDS="uuid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_revision" COMMENT="Immutable profile revisions">
+    <TABLE NAME="local_multipicker_revision" COMMENT="Immutable profile revisions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -28,13 +28,13 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_coursebridge" REFFIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_multipicker" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="profileid-revision" UNIQUE="true" FIELDS="profileid, revision" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_course" COMMENT="Rebuildable course family memberships">
+    <TABLE NAME="local_multipicker_course" COMMENT="Rebuildable course family memberships">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -48,8 +48,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_coursebridge" REFFIELDS="id" />
-        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_coursebridge_revision" REFFIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_multipicker" REFFIELDS="id" />
+        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_multipicker_revision" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="profileid-courseid" UNIQUE="true" FIELDS="profileid, courseid" />
@@ -57,7 +57,7 @@
         <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_file" COMMENT="Rebuildable supported material occurrences">
+    <TABLE NAME="local_multipicker_file" COMMENT="Rebuildable supported material occurrences">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -78,7 +78,7 @@
         <INDEX NAME="cmid" UNIQUE="false" FIELDS="cmid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_coursepolicy" COMMENT="Tighten-only course authorship policies">
+    <TABLE NAME="local_multipicker_coursepolicy" COMMENT="Tighten-only course authorship policies">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -94,7 +94,7 @@
         <INDEX NAME="courseid" UNIQUE="true" FIELDS="courseid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_publication" COMMENT="Explicit module publication grants">
+    <TABLE NAME="local_multipicker_publication" COMMENT="Explicit module publication grants">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -105,13 +105,13 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_coursebridge" REFFIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_multipicker" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="profileid-cmid" UNIQUE="true" FIELDS="profileid, cmid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_attribution" COMMENT="Durable original attribution declarations">
+    <TABLE NAME="local_multipicker_attribution" COMMENT="Durable original attribution declarations">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
@@ -132,7 +132,7 @@
         <INDEX NAME="sourcehash" UNIQUE="false" FIELDS="sourcehash" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_origin" COMMENT="Verified destination lineage bindings">
+    <TABLE NAME="local_multipicker_origin" COMMENT="Verified destination lineage bindings">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="pathnamehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
@@ -143,13 +143,13 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="attributionid" TYPE="foreign" FIELDS="attributionid" REFTABLE="local_coursebridge_attribution" REFFIELDS="id" />
+        <KEY NAME="attributionid" TYPE="foreign" FIELDS="attributionid" REFTABLE="local_multipicker_attribution" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="pathnamehash" UNIQUE="true" FIELDS="pathnamehash" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_plan" COMMENT="Reviewed immutable migration specifications">
+    <TABLE NAME="local_multipicker_plan" COMMENT="Reviewed immutable migration specifications">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
@@ -163,14 +163,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_coursebridge" REFFIELDS="id" />
-        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_coursebridge_revision" REFFIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_multipicker" REFFIELDS="id" />
+        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_multipicker_revision" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="uuid" UNIQUE="true" FIELDS="uuid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_operation" COMMENT="Deterministic file copy decisions and snapshots">
+    <TABLE NAME="local_multipicker_operation" COMMENT="Deterministic file copy decisions and snapshots">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -185,14 +185,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_coursebridge_plan" REFFIELDS="id" />
+        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_multipicker_plan" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="planid-opkey" UNIQUE="true" FIELDS="planid, opkey" />
         <INDEX NAME="planid-state" UNIQUE="false" FIELDS="planid, state" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_run" COMMENT="Accountable migration execution attempts">
+    <TABLE NAME="local_multipicker_run" COMMENT="Accountable migration execution attempts">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -204,13 +204,13 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_coursebridge_plan" REFFIELDS="id" />
+        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_multipicker_plan" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="planid" UNIQUE="false" FIELDS="planid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_coursebridge_log" COMMENT="CourseBridge action log">
+    <TABLE NAME="local_multipicker_log" COMMENT="MultiPicker action log">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -227,6 +227,22 @@
         <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated" />
         <INDEX NAME="actionid" UNIQUE="false" FIELDS="action,id" />
         <INDEX NAME="entityid" UNIQUE="false" FIELDS="entityuuid,id" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_multipicker_value" COMMENT="Indexed configurable capture filter values">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="revisionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="value" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id" /></KEYS>
+      <INDEXES>
+        <INDEX NAME="profileid-courseid-name" UNIQUE="true" FIELDS="profileid, courseid, name" />
+        <INDEX NAME="revisionid-name-value" UNIQUE="false" FIELDS="revisionid, name, value" />
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" />
       </INDEXES>
     </TABLE>
   </TABLES>

@@ -1,6 +1,6 @@
 # Database and content identity
 
-All application tables belong to **local_coursebridge**. The profile table is named `local_coursebridge`; every child table starts with `local_coursebridge_`. Moodle adds its configured database prefix at runtime. Use DML placeholders such as `{local_coursebridge_plan}`, never hard-code `mdl_`.
+All application tables belong to **local_multipicker**. The profile table is named `local_multipicker`; every child table starts with `local_multipicker_`. Moodle adds its configured database prefix at runtime. Use DML placeholders such as `{local_multipicker_plan}`, never hard-code `mdl_`.
 
 The installable schema is [db/install.xml](../db/install.xml). XMLDB foreign-key metadata describes plugin-owned relationships; no business record is owned by a disposable index row. The repository plugin has no installation tables.
 
@@ -18,18 +18,19 @@ The installable schema is [db/install.xml](../db/install.xml). XMLDB foreign-key
 
 | Table | Purpose and identity |
 |---|---|
-| `local_coursebridge` | Relationship profile; unique UUID and active revision pointer |
-| `local_coursebridge_revision` | Immutable JSON rules; unique profile/revision; SHA-256 document digest |
-| `local_coursebridge_course` | Rebuildable membership; unique profile/course; active revision, family key/hash, nullable edition and pair dimensions |
-| `local_coursebridge_file` | Rebuildable source occurrence; unique native pathnamehash; course/module, contenthash, size, filename and MIME |
-| `local_coursebridge_publication` | Explicit module grant; unique profile/module; actor and current revocation flag |
-| `local_coursebridge_coursepolicy` | Course override; unique course; policy/revision and actor |
-| `local_coursebridge_attribution` | Original author/license declaration, content/source snapshot and parent lineage UUID |
-| `local_coursebridge_origin` | Verified destination locator to an attribution record; unique pathnamehash |
-| `local_coursebridge_plan` | Immutable preview JSON, digest, profile/revision, actor and state |
-| `local_coursebridge_operation` | Unique plan/operation key; native source locator, destination module, snapshots, decision/state and structured result |
-| `local_coursebridge_run` | Accountable bounded attempt, cancellation flag and outcome |
-| `local_coursebridge_log` | Scoped actions and outcomes; actor identity removable through Privacy API |
+| `local_multipicker` | Relationship profile; unique UUID and active revision pointer |
+| `local_multipicker_revision` | Immutable JSON rules; unique profile/revision; SHA-256 document digest |
+| `local_multipicker_course` | Rebuildable membership; unique profile/course; active revision, family key/hash, nullable edition and pair dimensions |
+| `local_multipicker_value` | Rebuildable capture values; unique profile/course/key; revision/key/value index for exact filtering |
+| `local_multipicker_file` | Rebuildable source occurrence; unique native pathnamehash; course/module, contenthash, size, filename and MIME |
+| `local_multipicker_publication` | Explicit module grant; unique profile/module; actor and current revocation flag |
+| `local_multipicker_coursepolicy` | Course override; unique course; policy/revision and actor |
+| `local_multipicker_attribution` | Original author/license declaration, content/source snapshot and parent lineage UUID |
+| `local_multipicker_origin` | Verified destination locator to an attribution record; unique pathnamehash |
+| `local_multipicker_plan` | Immutable preview JSON, digest, profile/revision, actor and state |
+| `local_multipicker_operation` | Unique plan/operation key; native source locator, destination module, snapshots, decision/state and structured result |
+| `local_multipicker_run` | Accountable bounded attempt, cancellation flag and outcome |
+| `local_multipicker_log` | Scoped actions and outcomes; actor identity removable through Privacy API |
 
 No `local_cb_*` aliases remain. These names fit the XMLDB limits for the required Moodle versions. Binary content, draft areas and native course usages remain in Moodle's own file subsystem.
 

@@ -17,13 +17,13 @@
 /**
  * Maintenance-window native folder lifecycle adapter.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\migration;
+namespace local_multipicker\local\migration;
 
-use local_coursebridge\local\policy\author_policy;
+use local_multipicker\local\policy\author_policy;
 
 /**
  * Applies additive file copies using the folder module's own save contract.
@@ -39,14 +39,14 @@ final class folder_destination {
     public static function copy(\stored_file $source, int $cmid): \stored_file {
         global $CFG, $DB, $USER;
         if (empty($CFG->maintenance_enabled)) {
-            throw new \moodle_exception('maintenance_required', 'local_coursebridge');
+            throw new \moodle_exception('maintenance_required', 'local_multipicker');
         }
         require_once($CFG->dirroot . '/mod/folder/lib.php');
         $cm = get_coursemodule_from_id('folder', $cmid, 0, false, MUST_EXIST);
         require_capability('moodle/course:manageactivities', \context_module::instance($cmid));
         $sourcecontext = \context::instance_by_id($source->get_contextid())->get_course_context(false);
         if (!$sourcecontext) {
-            throw new \moodle_exception('materialunavailable', 'local_coursebridge');
+            throw new \moodle_exception('materialunavailable', 'local_multipicker');
         }
         author_policy::require_native_copy($source, (int)$sourcecontext->instanceid, (int)$cm->course);
         $context = \context_module::instance($cmid);
@@ -101,7 +101,7 @@ final class folder_destination {
                 copy_decision::snapshot($saved)
             ) !== 'skip_identical'
         ) {
-            throw new \moodle_exception('verificationfailed', 'local_coursebridge');
+            throw new \moodle_exception('verificationfailed', 'local_multipicker');
         }
         return $saved;
     }

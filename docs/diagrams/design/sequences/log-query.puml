@@ -5,7 +5,7 @@ title Design — Read the action log
 actor "Site reader" as Reader
 boundary "log.php\nNative page" as Page
 control "local/log" as Log
-database "CourseBridge log\nXMLDB table" as DB
+database "MultiPicker log\nXMLDB table" as DB
 Reader -> Page : select action / reference / older page
 Page -> Log : page(filters, before, limit=50)
 Log -> Log : require system viewlog capability

@@ -17,15 +17,15 @@
 /**
  * Bounded file and recursive folder selection.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge\local\selection;
+namespace local_multipicker\local\selection;
 
-use local_coursebridge\local\catalog\material_source;
-use local_coursebridge\local\profile\profiles;
+use local_multipicker\local\catalog\material_source;
+use local_multipicker\local\profile\profiles;
 
 /**
  * Expands bounded native occurrences without relying on catalog cache freshness.
@@ -45,14 +45,14 @@ final class material_selection {
     public static function resolve(int $courseid, int $profileid, array $items): array {
         global $DB;
         if (!$items || count($items) > self::MAX_FILES) {
-            throw new \moodle_exception('invalidselection', 'local_coursebridge');
+            throw new \moodle_exception('invalidselection', 'local_multipicker');
         }
         $files = [];
         $profiledata = profiles::load($profileid);
         $scope = [];
         foreach ($items as $item) {
             if (!is_array($item)) {
-                throw new \moodle_exception('invalidselection', 'local_coursebridge');
+                throw new \moodle_exception('invalidselection', 'local_multipicker');
             }
             if (isset($item['pathnamehash'])) {
                 [$file] = material_source::resolve((string)$item['pathnamehash'], $courseid, $profileid, $profiledata, $scope);
@@ -76,17 +76,17 @@ final class material_selection {
                     self::MAX_FILES + 1
                 );
                 if (!$candidates || count($candidates) > self::MAX_FILES) {
-                    throw new \moodle_exception('invalidselection', 'local_coursebridge');
+                    throw new \moodle_exception('invalidselection', 'local_multipicker');
                 }
                 foreach ($candidates as $candidate) {
                     [$file] = material_source::resolve($candidate->pathnamehash, $courseid, $profileid, $profiledata, $scope);
                     $files[$file->get_pathnamehash()] = $file;
                 }
             } else {
-                throw new \moodle_exception('invalidselection', 'local_coursebridge');
+                throw new \moodle_exception('invalidselection', 'local_multipicker');
             }
             if (count($files) > self::MAX_FILES) {
-                throw new \moodle_exception('invalidselection', 'local_coursebridge');
+                throw new \moodle_exception('invalidselection', 'local_multipicker');
             }
         }
         return $files;
@@ -102,7 +102,7 @@ final class material_selection {
      */
     public static function map_paths(array $files, array $items, string $mode): array {
         if (!in_array($mode, ['paths', 'folder', 'contents'], true)) {
-            throw new \moodle_exception('invalidselection', 'local_coursebridge');
+            throw new \moodle_exception('invalidselection', 'local_multipicker');
         }
         $folders = array_values(array_filter($items, static fn($item) => isset($item['cmid'])));
         usort($folders, static fn($left, $right) => strlen($left['filepath']) <=> strlen($right['filepath']));
@@ -127,7 +127,7 @@ final class material_selection {
                         $name = basename(rtrim($folder['filepath'], '/'));
                     }
                     if ($name === '' || $name === '.' || $name === '..') {
-                        throw new \moodle_exception('invalidselection', 'local_coursebridge');
+                        throw new \moodle_exception('invalidselection', 'local_multipicker');
                     }
                     $relative = '/' . $name . $relative;
                 }
@@ -150,7 +150,7 @@ final class material_selection {
                 || clean_param($path, PARAM_PATH) !== $path
                 || preg_match('~(?:^|/)\.\.?(/|$)|//~', $path)
         ) {
-            throw new \moodle_exception('invalidselection', 'local_coursebridge');
+            throw new \moodle_exception('invalidselection', 'local_multipicker');
         }
         return $path;
     }

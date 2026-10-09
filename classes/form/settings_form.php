@@ -17,11 +17,11 @@
 /**
  * Site policy form.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\form;
+namespace local_multipicker\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -51,10 +51,10 @@ final class settings_form extends \moodleform {
         foreach (self::choices() as $name => $values) {
             $options = [];
             foreach ($values as $value) {
-                $options[$value] = get_string($value, 'local_coursebridge');
+                $options[$value] = get_string($value, 'local_multipicker');
             }
-            $form->addElement('select', $name, get_string($name, 'local_coursebridge'), $options);
-            $form->addElement('static', $name . '_help', '', get_string($name . '_desc', 'local_coursebridge'));
+            $form->addElement('select', $name, get_string($name, 'local_multipicker'), $options);
+            $form->addElement('static', $name . '_help', '', get_string($name . '_desc', 'local_multipicker'));
             $form->setDefault($name, $values[0]);
         }
         $this->add_action_buttons(false);
@@ -71,7 +71,7 @@ final class settings_form extends \moodleform {
         $errors = parent::validation($data, $files);
         foreach (self::choices() as $name => $values) {
             if (!in_array($data[$name] ?? '', $values, true)) {
-                $errors[$name] = get_string('invalidpolicy', 'local_coursebridge');
+                $errors[$name] = get_string('invalidpolicy', 'local_multipicker');
             }
         }
         return $errors;

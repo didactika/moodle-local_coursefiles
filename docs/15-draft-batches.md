@@ -8,7 +8,7 @@ The [Folder Settings consumer](17-folder-selection.md) and [File Settings consum
 
 ## Selection and destination
 
-`material_selection::resolve()` accepts explicit native file occurrences (`pathnamehash`) and folder-module directories (`cmid`, `filepath`). A folder selects its files recursively. Parent/child/file overlaps are deduplicated by pathname hash. Empty folders, invalid paths and selections exceeding 200 files are rejected. SQL wildcard characters in directory names are literal. Only eligible native folder/resource teaching files are accepted, with current family, source visibility, access or explicit publication checks for each file.
+`material_selection::resolve()` accepts explicit native file occurrences (`pathnamehash`) and folder-module directories (`cmid`, `filepath`). A folder selects its files recursively. Parent/child/file overlaps are deduplicated by pathname hash. Empty folders, invalid paths and selections exceeding 200 files are rejected. SQL wildcard characters in directory names are literal. Only eligible declared public activity materials are accepted, with current family, source visibility, access or explicit publication checks for each file.
 
 `draft_import::review()` requires target reuse and the owning workflow's native editing capability. The draft destination directory must already exist in the current account's draft area. Source paths are merged below that directory: source `/notes/lesson.txt` copied at destination `/materials/` becomes `/materials/notes/lesson.txt`. The explicit folder mode preserves original paths, includes the selected folder/activity name, or strips the selected root. The widest overlapping selected parent wins; empty directories are not copied.
 
@@ -20,9 +20,9 @@ Review writes neither files nor attribution records. Each operation reports its 
 
 ![Reviewed draft batch sequence](diagrams/design/sequences/draft-batch.svg)
 
-The returned SHA-256 digest includes the actor, course, profile revision, draft, destination directory, control options, existing draft snapshots and reviewed operations. `apply()` requires that approved digest, locks this actor/draft for CourseBridge, recomputes the review and refuses changed or blocked decisions. The digest detects stale approval; it is not an authentication token. A web caller remains responsible for authentication, session protection and binding the owning form to the course, draft and authoritative limits.
+The returned SHA-256 digest includes the actor, course, profile revision, draft, destination directory, control options, existing draft snapshots and reviewed operations. `apply()` requires that approved digest, locks this actor/draft for MultiPicker, recomputes the review and refuses changed or blocked decisions. The digest detects stale approval; it is not an authentication token. A web caller remains responsible for authentication, session protection and binding the owning form to the course, draft and authoritative limits.
 
-During application, each copied source is resolved and its policy and snapshot checked again. Native File API copies preserve each author/licence and carry the serialized provenance marker expected by Moodle draft saving. Files and attribution additions share a delegated database transaction. A core error rolls back the new records while retaining existing draft files. This lock coordinates CourseBridge batches; native uploads and unrelated core editors do not share it.
+During application, each copied source is resolved and its policy and snapshot checked again. Native File API copies preserve each author/licence and carry the serialized provenance marker expected by Moodle draft saving. Files and attribution additions share a delegated database transaction. A core error rolls back the new records while retaining existing draft files. This lock coordinates MultiPicker batches; native uploads and unrelated core editors do not share it.
 
 The normal owning form performs permanent saving. Tests exercise native folder saving and preservation of original declarations and markers. The service does not save an activity independently or refresh a browser filemanager.
 

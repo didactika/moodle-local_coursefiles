@@ -17,14 +17,14 @@
 /**
  * Configurable unique course section and folder placement.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\migration;
+namespace local_multipicker\local\migration;
 
-use local_coursebridge\local\profile\profile_config;
-use local_coursebridge\local\policy\author_policy;
+use local_multipicker\local\profile\profile_config;
+use local_multipicker\local\policy\author_policy;
 
 /**
  * Selects exact destinations without guessing across course-local IDs.
@@ -44,7 +44,7 @@ final class placement {
         }
         $field = $predicate['field'] ?? 'name';
         if (!in_array($field, ['name', 'idnumber'], true)) {
-            throw new \moodle_exception('invalidprofile', 'local_coursebridge');
+            throw new \moodle_exception('invalidprofile', 'local_multipicker');
         }
         $value = (string)$cm->{$field};
         if (isset($predicate['equals'])) {
@@ -61,11 +61,11 @@ final class placement {
                 . substr($predicate['pattern'], 1);
             $result = @preg_match($pattern, $value, $matches, PREG_UNMATCHED_AS_NULL);
             if ($result === false) {
-                throw new \moodle_exception('regexfailed', 'local_coursebridge');
+                throw new \moodle_exception('regexfailed', 'local_multipicker');
             }
             return $result ? array_filter($matches, static fn($key) => is_string($key), ARRAY_FILTER_USE_KEY) : null;
         }
-        throw new \moodle_exception('invalidprofile', 'local_coursebridge');
+        throw new \moodle_exception('invalidprofile', 'local_multipicker');
     }
 
     /**
@@ -93,10 +93,10 @@ final class placement {
         } else if ($strategy === 'ordinal') {
             $matches = $DB->get_records('course_sections', ['course' => $targetcourse, 'section' => $section->section]);
         } else {
-            throw new \moodle_exception('placementambiguous', 'local_coursebridge');
+            throw new \moodle_exception('placementambiguous', 'local_multipicker');
         }
         if (count($matches) !== 1) {
-            throw new \moodle_exception('placementambiguous', 'local_coursebridge');
+            throw new \moodle_exception('placementambiguous', 'local_multipicker');
         }
         return (int)reset($matches)->id;
     }

@@ -17,11 +17,11 @@
 /**
  * Permission-aware page navigation.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\output;
+namespace local_multipicker\output;
 
 /**
  * Defines the administration entry points and course tabs.
@@ -35,9 +35,9 @@ final class navigation {
     public static function pages(): array {
         return [
             'settings' => ['label' => 'settings', 'capability' => 'moodle/site:config'],
-            'profiles' => ['label' => 'profiles', 'capability' => 'local/coursebridge:manageprofiles'],
-            'migration' => ['label' => 'migrations', 'capability' => 'local/coursebridge:planmigration'],
-            'log' => ['label' => 'log', 'capability' => 'local/coursebridge:viewlog'],
+            'profiles' => ['label' => 'profiles', 'capability' => 'local/multipicker:manageprofiles'],
+            'migration' => ['label' => 'migrations', 'capability' => 'local/multipicker:planmigration'],
+            'log' => ['label' => 'log', 'capability' => 'local/multipicker:viewlog'],
         ];
     }
 
@@ -51,8 +51,8 @@ final class navigation {
         $tabs = [];
         foreach (self::pages() as $name => $page) {
             if (has_capability($page['capability'], \context_system::instance())) {
-                $tabs[] = ['label' => get_string($page['label'], 'local_coursebridge'),
-                    'url' => (new \moodle_url('/local/coursebridge/admin/' . $name . '.php'))->out(false),
+                $tabs[] = ['label' => get_string($page['label'], 'local_multipicker'),
+                    'url' => (new \moodle_url('/local/multipicker/admin/' . $name . '.php'))->out(false),
                     'active' => $name === $active];
             }
         }
@@ -69,10 +69,10 @@ final class navigation {
     public static function course(string $active, int $courseid): view {
         $tabs = [];
         foreach (['index' => ['dashboard', 'browse'], 'policy' => ['coursepolicy', 'managecoursepolicy']] as $name => $page) {
-            if (has_capability('local/coursebridge:' . $page[1], \context_course::instance($courseid))) {
-                $tabs[] = ['label' => get_string($page[0], 'local_coursebridge'),
+            if (has_capability('local/multipicker:' . $page[1], \context_course::instance($courseid))) {
+                $tabs[] = ['label' => get_string($page[0], 'local_multipicker'),
                     'url' => (new \moodle_url(
-                        '/local/coursebridge/course/' . $name . '.php',
+                        '/local/multipicker/course/' . $name . '.php',
                         ['courseid' => $courseid]
                     ))->out(false), 'active' => $name === $active];
             }

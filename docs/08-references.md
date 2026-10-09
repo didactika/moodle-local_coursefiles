@@ -1,6 +1,6 @@
 # Official technical references
 
-These references describe the core contracts used by the package. CourseBridge grouping, publication rules and reviewed intent are plugin behavior.
+These references describe the core contracts used by the package. MultiPicker grouping, publication rules and reviewed intent are plugin behavior.
 
 - [Repository plugins, Moodle 4.5](https://moodledev.io/docs/4.5/apis/plugintypes/repository): native picker integration and repository methods.
 - [Repository plugins, Moodle 5.3](https://moodledev.io/docs/5.3/apis/plugintypes/repository): native listing/search/draft integration.

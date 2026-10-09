@@ -17,13 +17,13 @@
 /**
  * Site/course author protection and provenance.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\policy;
+namespace local_multipicker\local\policy;
 
-use local_coursebridge\local\logging\log;
+use local_multipicker\local\logging\log;
 
 /**
  * Resolves effective protection independently of content identity.
@@ -37,11 +37,11 @@ final class author_policy {
      */
     public static function locked(int $courseid): bool {
         global $DB;
-        if (get_config('local_coursebridge', 'author_policy') !== 'editable_with_provenance') {
+        if (get_config('local_multipicker', 'author_policy') !== 'editable_with_provenance') {
             return true;
         }
-        return get_config('local_coursebridge', 'author_course_override') === 'tighten_only'
-            && $DB->get_field('local_coursebridge_coursepolicy', 'policy', ['courseid' => $courseid]) === 'preserve_locked';
+        return get_config('local_multipicker', 'author_course_override') === 'tighten_only'
+            && $DB->get_field('local_multipicker_coursepolicy', 'policy', ['courseid' => $courseid]) === 'preserve_locked';
     }
 
     /**
@@ -53,17 +53,17 @@ final class author_policy {
      */
     public static function require_native_copy(\stored_file $file, int $sourcecourse, int $targetcourse): void {
         global $DB;
-        $origin = $DB->get_record('local_coursebridge_origin', ['pathnamehash' => $file->get_pathnamehash()]);
+        $origin = $DB->get_record('local_multipicker_origin', ['pathnamehash' => $file->get_pathnamehash()]);
         $originlocked = $origin && $DB->get_field(
-            'local_coursebridge_attribution',
+            'local_multipicker_attribution',
             'locked',
             ['id' => $origin->attributionid]
         );
         if (self::locked($sourcecourse) || self::locked($targetcourse) || $originlocked) {
-            throw new \moodle_exception('lockedunsupported', 'local_coursebridge');
+            throw new \moodle_exception('lockedunsupported', 'local_multipicker');
         }
-        if (!$file->get_author() && get_config('local_coursebridge', 'author_missing_policy') === 'block_reuse') {
-            throw new \moodle_exception('missingauthor', 'local_coursebridge');
+        if (!$file->get_author() && get_config('local_multipicker', 'author_missing_policy') === 'block_reuse') {
+            throw new \moodle_exception('missingauthor', 'local_multipicker');
         }
     }
 
@@ -75,21 +75,21 @@ final class author_policy {
      */
     public static function save(int $courseid, string $policy): void {
         global $DB, $USER;
-        require_capability('local/coursebridge:managecoursepolicy', \context_course::instance($courseid));
+        require_capability('local/multipicker:managecoursepolicy', \context_course::instance($courseid));
         if (
-            get_config('local_coursebridge', 'author_course_override') !== 'tighten_only'
+            get_config('local_multipicker', 'author_course_override') !== 'tighten_only'
                 || !in_array($policy, ['inherit', 'preserve_locked'], true)
         ) {
-            throw new \moodle_exception('invalidpolicy', 'local_coursebridge');
+            throw new \moodle_exception('invalidpolicy', 'local_multipicker');
         }
-        $record = $DB->get_record('local_coursebridge_coursepolicy', ['courseid' => $courseid]);
+        $record = $DB->get_record('local_multipicker_coursepolicy', ['courseid' => $courseid]);
         $data = (object)['courseid' => $courseid, 'policy' => $policy,
             'revision' => ($record->revision ?? 0) + 1, 'userid' => $USER->id, 'timemodified' => time()];
         if ($record) {
             $data->id = $record->id;
-            $DB->update_record('local_coursebridge_coursepolicy', $data);
+            $DB->update_record('local_multipicker_coursepolicy', $data);
         } else {
-            $DB->insert_record('local_coursebridge_coursepolicy', $data);
+            $DB->insert_record('local_multipicker_coursepolicy', $data);
         }
         log::record('course_policy_changed', '', ['courseid' => $courseid, 'policy' => $policy]);
     }
@@ -102,13 +102,13 @@ final class author_policy {
      */
     public static function capture(\stored_file $file): int {
         global $DB, $USER;
-        $parent = $DB->get_record('local_coursebridge_origin', ['pathnamehash' => $file->get_pathnamehash()]);
+        $parent = $DB->get_record('local_multipicker_origin', ['pathnamehash' => $file->get_pathnamehash()]);
         $parentuuid = $parent ? $DB->get_field(
-            'local_coursebridge_attribution',
+            'local_multipicker_attribution',
             'uuid',
             ['id' => $parent->attributionid]
         ) : '';
-        return $DB->insert_record('local_coursebridge_attribution', (object)[
+        return $DB->insert_record('local_multipicker_attribution', (object)[
             'uuid' => \core\uuid::generate(), 'parentuuid' => $parentuuid ?: '',
             'sourcehash' => $file->get_pathnamehash(), 'contenthash' => $file->get_contenthash(),
             'author' => $file->get_author(), 'license' => $file->get_license(), 'locked' => 0,

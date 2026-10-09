@@ -15,45 +15,45 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * CourseBridge site settings entry point.
+ * MultiPicker site settings entry point.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use local_coursebridge\form\settings_form;
-use local_coursebridge\output\navigation;
+use local_multipicker\form\settings_form;
+use local_multipicker\output\navigation;
 
-admin_externalpage_setup('local_coursebridge_settings');
+admin_externalpage_setup('local_multipicker_settings');
 $form = new settings_form();
 if ($data = $form->get_data()) {
     $changes = [];
     foreach (settings_form::choices() as $name => $values) {
-        $previous = get_config('local_coursebridge', $name);
+        $previous = get_config('local_multipicker', $name);
         if ($previous !== $data->$name) {
-            set_config($name, $data->$name, 'local_coursebridge');
-            add_to_config_log($name, $previous, $data->$name, 'local_coursebridge');
+            set_config($name, $data->$name, 'local_multipicker');
+            add_to_config_log($name, $previous, $data->$name, 'local_multipicker');
             $changes[$name] = ['previous' => $previous, 'current' => $data->$name];
         }
     }
     if ($changes) {
-        \local_coursebridge\local\logging\log::record('site_policy_changed', \core\uuid::generate(), $changes);
+        \local_multipicker\local\logging\log::record('site_policy_changed', \core\uuid::generate(), $changes);
     }
     redirect($PAGE->url, get_string('changessaved', 'core'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 $defaults = [];
 foreach (settings_form::choices() as $name => $values) {
-    $defaults[$name] = get_config('local_coursebridge', $name) ?: $values[0];
+    $defaults[$name] = get_config('local_multipicker', $name) ?: $values[0];
 }
 $form->set_data($defaults);
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_coursebridge'));
-echo $PAGE->get_renderer('local_coursebridge')->render(navigation::site('settings'));
-echo $OUTPUT->heading(get_string('settings', 'local_coursebridge'), 3);
-echo html_writer::tag('p', get_string('settingsintro', 'local_coursebridge'), ['class' => 'text-muted']);
+echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
+echo $PAGE->get_renderer('local_multipicker')->render(navigation::site('settings'));
+echo $OUTPUT->heading(get_string('settings', 'local_multipicker'), 3);
+echo html_writer::tag('p', get_string('settingsintro', 'local_multipicker'), ['class' => 'text-muted']);
 $form->display();
 echo $OUTPUT->footer();

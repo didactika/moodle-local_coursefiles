@@ -1,0 +1,21 @@
+@startuml
+!include ../../_style.puml
+skinparam maxMessageSize 110
+title Native Tiny Link - reviewed multiple files
+actor Teacher
+participant "Native Tiny editor" as Editor
+participant "Picker / local scope" as Picker
+participant "Editor link adapter" as Adapter
+database "Actor-owned draft" as Draft
+Teacher -> Editor : Open Link browser in activity form
+Editor -> Picker : Actual draft, field and native accepted types
+Teacher -> Picker : Select several files; review; import
+Picker -> Draft : Revalidate and copy approved batch
+Picker -> Adapter : Watch bounded actor-bound completion receipt
+Picker --> Editor : Native first-file callback
+Editor -> Editor : Insert first link using native selection
+Adapter -> Draft : Read completed approved file URLs
+Adapter -> Editor : Insert remaining links through public instance
+note over Editor, Adapter : One undoable insertion; names escaped as DOM text
+Teacher -> Editor : Save or cancel native activity form
+@enduml

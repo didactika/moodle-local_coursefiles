@@ -1,0 +1,81 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Native picker entry and documented embedded-chooser completion.
+ *
+ * @module local_multipicker/browser
+ * @copyright 2026 MultiPicker contributors
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+import Config from 'core/config';
+import {getInstanceForElementId} from 'editor_tiny/editor';
+import Notification from 'core/notification';
+import {getString} from 'core/str';
+
+/**
+ * Insert remaining approved links after Tiny's native callback inserts the first one.
+ *
+ * @param {string} scope Session-local owning control.
+ * @param {string} editorid Real server-rendered editor field ID.
+ */
+export const watch = async(scope, editorid) => {
+    const until = Date.now() + 20000;
+    try {
+        while (Date.now() < until) {
+            const response = await fetch(`${Config.wwwroot}/local/multipicker/selection/status.php?`
+                + new URLSearchParams({scope, sesskey: Config.sesskey}), {credentials: 'same-origin'});
+            if (!response.ok) {
+                return;
+            }
+            const result = await response.json();
+            if (result.ready) {
+                if (!result.links || result.files.length < 2) {
+                    return;
+                }
+                const editor = getInstanceForElementId(editorid);
+                if (!editor) {
+                    Notification.alert('', await getString('editorimportfailed', 'local_multipicker'));
+                    return;
+                }
+                // Await the core callback, so it retains its selected text, focus and first-link behavior.
+                const linked = new Set([...editor.getBody().querySelectorAll('a[href]')].map(link => link.href));
+                if (result.files.some(file => linked.has(file.url))) {
+                    const list = document.createElement('ul');
+                    result.files.filter(file => !linked.has(file.url)).forEach(file => {
+                        const item = document.createElement('li');
+                        const anchor = document.createElement('a');
+                        anchor.href = file.url;
+                        anchor.textContent = file.name;
+                        item.append(anchor);
+                        list.append(item);
+                    });
+                    if (list.children.length) {
+                        editor.undoManager.transact(() => {
+                            editor.selection.collapse(false);
+                            editor.insertContent(list.outerHTML);
+                            editor.save();
+                        });
+                    }
+                    return;
+                }
+            }
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+    } catch (error) {
+        Notification.exception(error);
+    }
+};

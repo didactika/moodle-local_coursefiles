@@ -31,7 +31,7 @@ Batch --> Scope : Applied decisions / conflict / failure
 Scope --> Form : Batch result
 note over Form, Batch
 Owning form controls native refresh and final save.
-Folder content and Folder/File Settings use this API.
+Folder content and registered activity controls use this API.
 end note
 
 Form -> Scope : close(token, sesskey)

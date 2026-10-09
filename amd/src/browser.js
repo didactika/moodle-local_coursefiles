@@ -16,67 +16,85 @@
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_coursebridge/browser
- * @copyright 2026 CourseBridge contributors
+ * @module local_multipicker/browser
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+import {getString} from 'core/str';
+import Fragment from 'core/fragment';
+import Templates from 'core/templates';
+import Notification from 'core/notification';
+
+let hostObject;
+let hostObserver;
+
 /**
- * Add one native-styled entry beside the owning filemanager.
- *
- * @param {string} id Actual native field ID.
- * @param {number} repositoryid Installed repository instance.
- * @param {string} label Localized action label.
+ * Apply native host styling only while this embedded chooser owns its panel.
  */
-export const attach = (id, repositoryid, label) => {
-    const input = document.getElementById(id);
-    const row = input?.closest('[id^="fitem_"]') || input?.parentElement;
-    const manager = row?.querySelector('.filemanager');
-    if (!manager || row.querySelector('[data-coursebridge-open]')) {
+export const presentation = () => {
+    const browser = document.querySelector('.multipicker-browser');
+    if (browser) {
+        browser.dataset.multipickerReady = 'true';
+    }
+    if (window.parent === window) {
         return;
     }
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'btn btn-secondary mb-2';
-    button.dataset.coursebridgeOpen = '';
-    button.textContent = label;
-    manager.before(button);
-    button.addEventListener('click', () => {
-        const add = manager.querySelector('.fp-btn-add a');
-        if (!add || add.closest('.fp-btn-add').classList.contains('hidden')) {
-            return;
+    const object = [...window.parent.document.querySelectorAll('.fp-object-container')]
+        .find(element => element.contentDocument?.defaultView === window);
+    const picker = object?.closest('.file-picker');
+    if (!picker || hostObject === object) {
+        return;
+    }
+    picker.classList.add('multipicker-native-host');
+    const repositories = picker.querySelector('.fp-repo-area');
+    const active = repositories?.querySelector('.fp-repo.active');
+    const revealRepository = () => {
+        if (active && window.parent.innerWidth < 576) {
+            repositories.scrollLeft = active.offsetLeft - repositories.offsetLeft;
         }
-        add.click();
-        const observer = new MutationObserver(() => {
-            const repository = document.querySelector(`[id^="fp-repo-"][id$="-${repositoryid}"]`);
-            if (repository && repository.getClientRects().length) {
-                observer.disconnect();
-                (repository.querySelector('a') || repository).click();
-            }
-        });
-        observer.observe(document.body, {childList: true, subtree: true, attributes: true});
-        setTimeout(() => observer.disconnect(), 5000);
+    };
+    revealRepository();
+    window.parent.addEventListener('resize', revealRepository);
+    // Keep styling across browser/review navigation, but release it when another repository takes over.
+    hostObserver?.disconnect();
+    hostObject = object;
+    hostObserver = new MutationObserver(() => {
+        if (!object.isConnected) {
+            picker.classList.remove('multipicker-native-host');
+            hostObserver.disconnect();
+            hostObject = null;
+            window.parent.removeEventListener('resize', revealRepository);
+        }
     });
+    hostObserver.observe(picker, {childList: true, subtree: true});
+    window.addEventListener('pagehide', () => {
+        picker.classList.remove('multipicker-native-host');
+        hostObserver.disconnect();
+        window.parent.removeEventListener('resize', revealRepository);
+    }, {once: true});
 };
 
 /**
- * Submit an approved batch through Moodle's external chooser contract and native download action.
+ * Submit an approved batch through Moodle's external chooser and native download contract.
  *
- * @param {Object} file Server-issued approved source descriptor.
+ * @param {Object} file Server-issued approval descriptor.
  */
 export const complete = file => {
-    const button = document.querySelector('[data-coursebridge-confirm]');
-    if (button && window.parent !== window && window.parent.M?.core_filepicker?.select_file) {
+    const button = document.querySelector('[data-multipicker-confirm]');
+    const supported = window.parent !== window && window.parent.M?.core_filepicker?.select_file;
+    if (button && supported) {
         button.disabled = false;
     }
-    button?.closest('form')?.addEventListener('input', () => {
-        button.disabled = true;
-    });
     button?.addEventListener('click', () => {
-        if (window.parent === window || !window.parent.M?.core_filepicker?.select_file) {
+        if (!supported) {
             return;
         }
         button.disabled = true;
+        // The editor bridge runs in the owning document, which survives picker closure.
+        if (file.editorid) {
+            window.parent.require(['local_multipicker/editor_import'], bridge => bridge.watch(file.scope, file.editorid));
+        }
         window.parent.M.core_filepicker.select_file(file);
         const confirmation = window.parent.document.querySelector('.file-picker.fp-select .fp-select-confirm');
         if (confirmation) {
@@ -87,16 +105,157 @@ export const complete = file => {
     });
 };
 
-/** Update the visible count without granting authority to browser state. */
+/**
+ * Keep selection visible, apply filters automatically and provide functional card/list layouts.
+ */
 export const selection = () => {
-    const form = document.querySelector('.coursebridge-browser');
+    presentation();
+    const form = document.querySelector('form.multipicker-browser');
+    if (!form) {
+        return;
+    }
+    let timer;
+    let submitting = false;
+    let loading = false;
+    let changes = 0;
+    form.querySelector('[data-multipicker-search]').hidden = true;
+    const review = form.querySelector('[data-multipicker-review]');
     const update = () => {
-        const count = form?.querySelector('[data-coursebridge-count]');
-        if (count) {
-            count.textContent = new Set([...form.querySelectorAll('input[name="items[]"]')]
-                .filter(input => input.type === 'hidden' || input.checked).map(input => input.value)).size;
+        const count = new Set([...form.querySelectorAll('input[name="items[]"]')]
+            .filter(input => input.type === 'hidden' || input.checked).map(input => input.value)).size;
+        form.querySelector('[data-multipicker-count]').textContent = count;
+        review.disabled = !count || loading;
+        form.querySelectorAll('.multipicker-card').forEach(card => {
+            card.classList.toggle('multipicker-selected', card.querySelector('input[type=checkbox]').checked);
+        });
+    };
+    const apply = async() => {
+        clearTimeout(timer);
+        if (submitting || loading || !form.isConnected) {
+            return;
+        }
+        loading = true;
+        const version = changes;
+        let retry = false;
+        const raw = {items: [], captures: {}};
+        for (const [name, value] of new FormData(form)) {
+            if (name === 'items[]') {
+                raw.items.push(value);
+            } else if (name.startsWith('captures[')) {
+                raw.captures[name.slice(9, -1)] = value;
+            } else {
+                raw[name] = value;
+            }
+        }
+        form.setAttribute('aria-busy', 'true');
+        const actions = [...form.querySelectorAll('button[name]')].filter(button => button.name !== 'search');
+        actions.forEach(button => {
+            button.dataset.multipickerDisabled = String(button.disabled);
+            button.disabled = true;
+        });
+        getString('filterloading', 'local_multipicker').then(text => {
+            form.querySelector('[data-multipicker-loading]').textContent = text;
+            return text;
+        }).catch(() => {});
+        try {
+            const {html, js} = await new Promise((resolve, reject) => {
+                Fragment.loadFragment('local_multipicker', 'browser', Number(form.dataset.contextid), {
+                    scope: raw.scope, state: JSON.stringify(raw),
+                }).then((html, js) => resolve({html, js}), reject);
+            });
+            if (changes !== version) {
+                retry = true;
+                return;
+            }
+            const active = document.activeElement;
+            const focus = active?.name ? {
+                name: active.name, start: active.selectionStart, end: active.selectionEnd,
+            } : null;
+            const position = {x: window.scrollX, y: window.scrollY};
+            Templates.replaceNode(form.closest('[data-multipicker-panel]'), html, js);
+            const field = focus && document.getElementsByName(focus.name)[0];
+            if (field) {
+                field.focus({preventScroll: true});
+                if (typeof focus.start === 'number' && field.setSelectionRange) {
+                    field.setSelectionRange(focus.start, focus.end);
+                }
+            }
+            window.scrollTo(position.x, position.y);
+        } catch (error) {
+            Notification.exception(error);
+        } finally {
+            loading = false;
+            if (form.isConnected) {
+                form.removeAttribute('aria-busy');
+                actions.forEach(button => {
+                    button.disabled = button.dataset.multipickerDisabled === 'true';
+                });
+                form.querySelector('[data-multipicker-loading]').textContent = '';
+                update();
+                if (retry) {
+                    apply();
+                }
+            }
         }
     };
-    form?.addEventListener('change', update);
+    // Remember disclosures without changing server-side authority or selection.
+    for (const detail of form.querySelectorAll('details[data-multipicker-options], details[data-multipicker-basket]')) {
+        const key = `multipicker-${detail.hasAttribute('data-multipicker-basket') ? 'basket' : 'options'}`;
+        try {
+            detail.open = sessionStorage.getItem(key) === 'open';
+        } catch (error) {
+            // Storage can be disabled in embedded documents; native disclosures still work.
+        }
+        detail.addEventListener('toggle', () => {
+            try {
+                sessionStorage.setItem(key, detail.open ? 'open' : 'closed');
+            } catch (error) {
+                // Presentation state is optional.
+            }
+        });
+    }
+    form.addEventListener('input', event => {
+        changes++;
+        if (event.target.matches('input[data-multipicker-filter]')) {
+            clearTimeout(timer);
+            timer = setTimeout(apply, 500);
+        }
+    });
+    form.addEventListener('change', event => {
+        changes++;
+        update();
+        if (event.target.matches('select[data-multipicker-filter]')) {
+            clearTimeout(timer);
+            apply();
+        }
+    });
+    form.addEventListener('submit', event => {
+        clearTimeout(timer);
+        if (event.submitter?.name === 'search') {
+            event.preventDefault();
+            apply();
+            return;
+        }
+        if (submitting || loading) {
+            event.preventDefault();
+            return;
+        }
+        submitting = true;
+        form.setAttribute('aria-busy', 'true');
+        getString('filterloading', 'local_multipicker').then(text => {
+            form.querySelector('[data-multipicker-loading]').textContent = text;
+            return text;
+        }).catch(() => {});
+    });
+    form.querySelectorAll('[data-multipicker-layout]').forEach(button => {
+        button.addEventListener('click', () => {
+            changes++;
+            form.dataset.layout = button.dataset.multipickerLayout;
+            form.elements.layout.value = button.dataset.multipickerLayout;
+            form.querySelectorAll('[data-multipicker-layout]').forEach(other => {
+                other.setAttribute('aria-pressed', String(other === button));
+            });
+        });
+    });
     update();
 };

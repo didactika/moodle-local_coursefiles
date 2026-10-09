@@ -1,28 +1,28 @@
 {{!
-    @template local_coursebridge/local/catalog/material_card
+    @template local_multipicker/local/catalog/material_card
     One authorized content group with its exact source declarations.
     Context: filename, size, origincount, occurrences.
     Example context (json): {"filename":"slides.pdf","size":"120 KB","origincount":2,"occurrences":[]}
 }}
-<article class="card mb-3 coursebridge-material" data-region="coursebridge-material">
+<article class="card mb-3 multipicker-material" data-region="multipicker-material">
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between mb-2">
             <h3 class="h5 mb-2 text-break">{{#pix}}i/files, core{{/pix}} {{filename}}</h3>
-            <span class="small text-muted">{{size}} · {{#str}}origincount, local_coursebridge, {{origincount}}{{/str}}</span>
+            <span class="small text-muted">{{size}} · {{#str}}origincount, local_multipicker, {{origincount}}{{/str}}</span>
         </div>
         <div class="table-responsive">
             <table class="table table-striped mb-0">
-                <caption class="sr-only visually-hidden">{{#str}}originscaption, local_coursebridge, {{filename}}{{/str}}</caption>
+                <caption class="sr-only visually-hidden">{{#str}}originscaption, local_multipicker, {{filename}}{{/str}}</caption>
                 <thead><tr>
                     <th scope="col">{{#str}}shortnamecourse, core{{/str}}</th>
-                    <th scope="col">{{#str}}editionfilter, local_coursebridge{{/str}}</th>
-                    <th scope="col">{{#str}}source, local_coursebridge{{/str}}</th>
+                    <th scope="col">{{#str}}editionfilter, local_multipicker{{/str}}</th>
+                    <th scope="col">{{#str}}source, local_multipicker{{/str}}</th>
                     <th scope="col">{{#str}}author, core_repository{{/str}}</th>
                 </tr></thead>
                 <tbody>{{#occurrences}}<tr>
-                    <td>{{#courseurl}}<a href="{{courseurl}}">{{shortname}}</a>{{/courseurl}}{{^courseurl}}{{shortname}}{{/courseurl}}</td>
+                    <td>{{#courseurl}}<a href="{{courseurl}}">{{{shortname}}}</a>{{/courseurl}}{{^courseurl}}{{{shortname}}}{{/courseurl}}</td>
                     <td>{{editionlabel}}</td>
-                    <td>{{modulename}}<div class="small text-muted">{{filepath}}</div></td>
+                    <td>{{{modulename}}}<div class="small text-muted">{{filepath}}</div></td>
                     <td>{{authorlabel}}<div class="small text-muted">{{license}}</div></td>
                 </tr>{{/occurrences}}</tbody>
             </table>

@@ -17,13 +17,13 @@
 /**
  * Incremental reconstructible material catalog.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\catalog;
+namespace local_multipicker\local\catalog;
 
-use local_coursebridge\local\profile\profiles;
+use local_multipicker\local\profile\profiles;
 
 /**
  * Refreshes one course at a time under a shared metadata lock.
@@ -36,17 +36,18 @@ final class indexer {
      */
     public static function refresh(int $courseid): void {
         global $DB;
-        $lock = \core\lock\lock_config::get_lock_factory('local_coursebridge')->get_lock('index:' . $courseid, 10);
+        $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('index:' . $courseid, 10);
         if (!$lock) {
-            throw new \moodle_exception('lockfailed', 'local_coursebridge');
+            throw new \moodle_exception('lockfailed', 'local_multipicker');
         }
         try {
             $course = $DB->get_record('course', ['id' => $courseid]);
             $transaction = $DB->start_delegated_transaction();
-            $DB->delete_records('local_coursebridge_course', ['courseid' => $courseid]);
-            $DB->delete_records('local_coursebridge_file', ['courseid' => $courseid]);
+            $DB->delete_records('local_multipicker_value', ['courseid' => $courseid]);
+            $DB->delete_records('local_multipicker_course', ['courseid' => $courseid]);
+            $DB->delete_records('local_multipicker_file', ['courseid' => $courseid]);
             if ($course && $courseid != SITEID) {
-                foreach ($DB->get_records('local_coursebridge', ['enabled' => 1]) as $profile) {
+                foreach ($DB->get_records('local_multipicker', ['enabled' => 1]) as $profile) {
                     [$profile, $revision, $rules] = profiles::load($profile->id);
                     try {
                         $identity = $rules->resolve($course);
@@ -56,31 +57,32 @@ final class indexer {
                     if (!$identity) {
                         continue;
                     }
-                    $DB->insert_record('local_coursebridge_course', (object)[
+                    $DB->insert_record('local_multipicker_course', (object)[
                         'profileid' => $profile->id, 'revisionid' => $revision->id, 'courseid' => $courseid,
                         'familykey' => $identity['familykey'], 'familyhash' => $identity['familyhash'],
                         'edition' => $identity['edition'], 'dimensions' => json_encode($identity['dimensions']),
                         'timemodified' => time(),
                     ]);
+                    foreach ($identity['filters'] as $name => $value) {
+                        if ($value !== '') {
+                            $DB->insert_record('local_multipicker_value', (object)[
+                                'profileid' => $profile->id, 'revisionid' => $revision->id,
+                                'courseid' => $courseid, 'name' => $name, 'value' => $value,
+                            ]);
+                        }
+                    }
                 }
                 foreach (get_fast_modinfo($courseid)->get_cms() as $cm) {
                     if (
-                        !in_array($cm->modname, ['folder', 'resource'], true)
+                        !source_registry::provider($cm->modname)
                             || !$course->visible || !$cm->visible || !empty($cm->availability)
                     ) {
                         continue;
                     }
-                    $files = get_file_storage()->get_area_files(
-                        $cm->context->id,
-                        'mod_' . $cm->modname,
-                        'content',
-                        0,
-                        'id',
-                        false
-                    );
+                    $files = source_registry::provider($cm->modname)->files($cm);
                     foreach ($files as $file) {
                         if (!$file->is_external_file()) {
-                            $DB->insert_record('local_coursebridge_file', (object)[
+                            $DB->insert_record('local_multipicker_file', (object)[
                                 'courseid' => $courseid, 'cmid' => $cm->id, 'pathnamehash' => $file->get_pathnamehash(),
                                 'contenthash' => $file->get_contenthash(), 'filesize' => $file->get_filesize(),
                                 'filename' => $file->get_filename(), 'mimetype' => $file->get_mimetype(),

@@ -6,7 +6,7 @@ participant "Native File form" as Form
 participant "Picker / scoped batch" as Batch
 database "Native draft / activity" as Files
 Teacher -> Form : Open Settings or create File
-Teacher -> Form : Import materials
+Teacher -> Form : Add files; select MultiPicker
 Form -> Batch : Actual filemanager context and limits
 Teacher -> Batch : Select files/folders; review; import
 Batch -> Files : Supporting copies use sortorder = 0

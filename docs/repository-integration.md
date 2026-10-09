@@ -1,6 +1,6 @@
-# Service contract consumed by repository_coursebridge
+# Service contract consumed by repository_multipicker
 
-The companion repository is a presentation and native draft adapter. It depends on local_coursebridge, owns no catalog or business tables, and installs at `repository/coursebridge`. Its own repository documents its UI and distribution.
+The companion repository is a presentation and native draft adapter. It depends on local_multipicker, owns no catalog or business tables, and installs at `repository/multipicker`. Its own repository documents its UI and distribution.
 
 ![Native picker contract](diagrams/design/sequences/picker-integration.svg)
 

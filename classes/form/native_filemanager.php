@@ -15,16 +15,16 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Native filemanager integration for folder and resource forms.
+ * Native filemanager and editor integration for activity forms.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge\form;
+namespace local_multipicker\form;
 
-use local_coursebridge\local\selection\draft_scope;
+use local_multipicker\local\selection\draft_scope;
 
 /**
  * Preserve the native control and bind only supported material editing routes.
@@ -39,8 +39,13 @@ class native_filemanager extends scoped_filemanager {
         global $CFG;
         require_once($CFG->libdir . '/formslib.php');
         \MoodleQuickForm::registerElementType(
+            'editor',
+            $CFG->dirroot . '/local/multipicker/classes/form/native_editor.php',
+            native_editor::class
+        );
+        \MoodleQuickForm::registerElementType(
             'filemanager',
-            $CFG->dirroot . '/local/coursebridge/classes/form/native_filemanager.php',
+            $CFG->dirroot . '/local/multipicker/classes/form/native_filemanager.php',
             self::class
         );
     }
@@ -53,55 +58,36 @@ class native_filemanager extends scoped_filemanager {
      */
     public function toHtml() {
         global $PAGE, $DB, $CFG, $USER;
-        $fresh = empty($this->getValue());
         $html = parent::toHtml();
         $basepath = (new \moodle_url($CFG->wwwroot))->get_path();
         $path = substr($PAGE->url->get_path(), strlen(rtrim($basepath, '/')));
         $content = $path === '/mod/folder/edit.php' && $this->getName() === 'files_filemanager';
-        $settings = $path === '/course/modedit.php' && $this->getName() === 'files';
+        $settings = $path === '/course/modedit.php';
         if ((!$content && !$settings) || $this->isFrozen() || !isloggedin() || isguestuser()) {
             return $html;
         }
-        $module = $PAGE->cm->modname ?? $PAGE->url->get_param('add');
-        if (
-            !in_array($module, ['folder', 'resource'], true)
-                || !$DB->record_exists('local_coursebridge', ['enabled' => 1])
-        ) {
+        if (!$DB->record_exists('local_multipicker', ['enabled' => 1])) {
             return $html;
         }
         try {
-            if ($fresh) {
-                \local_coursebridge\local\selection\destination_access::require(
-                    (int)$PAGE->context->get_course_context()->instanceid,
-                    $PAGE->context,
-                    $this->getName()
-                );
-                get_file_storage()->create_directory(
-                    \context_user::instance($USER->id)->id,
-                    'user',
-                    'draft',
-                    (int)$this->getValue(),
-                    '/'
-                );
-            }
+            \local_multipicker\local\selection\destination_access::require(
+                (int)$PAGE->context->get_course_context()->instanceid,
+                $PAGE->context,
+                $this->getName()
+            );
+            // Core may allocate an empty draft without creating its root directory.
+            get_file_storage()->create_directory(
+                \context_user::instance($USER->id)->id,
+                'user',
+                'draft',
+                (int)$this->getValue(),
+                '/'
+            );
             $token = draft_scope::find($PAGE->context, (int)$this->getValue(), sesskey());
             if (!$token) {
                 $token = draft_scope::open($this, $PAGE->context);
             }
             draft_scope::assert_control($token, $this, $PAGE->context, sesskey());
-            $repositoryid = $DB->get_field_sql(
-                'SELECT MIN(i.id) FROM {repository_instances} i
-                JOIN {repository} r ON r.id = i.typeid WHERE r.type = :type AND r.visible = 1',
-                ['type' => 'coursebridge']
-            );
-            if (
-                $repositoryid && has_capability('repository/coursebridge:view', $PAGE->context)
-                    && has_capability('local/coursebridge:browse', $PAGE->context->get_course_context())
-            ) {
-                $PAGE->requires->js_call_amd('local_coursebridge/browser', 'attach', [
-                    $this->getAttribute('id'), (int)$repositoryid, get_string('importmaterials', 'local_coursebridge'),
-                ]);
-            }
         } catch (\moodle_exception $exception) {
             return $html;
         }

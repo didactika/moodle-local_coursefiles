@@ -10,6 +10,23 @@ A parser selects `idnumber`, `shortname` or `fullname` and an anchored delimited
 
 All parsers are evaluated; conflicting identities block resolution unless the administrator explicitly selects first-match order. Pattern length, input length and PCRE match/depth work are bounded. Invalid or over-budget expressions fail rather than matching loosely. The supported parser fields are idnumber, shortname and fullname; other parser sources are not accepted.
 
+## Guided profile editor and capture filters
+
+The profile editor opens with Name, Editor, Course identity field, Pattern with named captures and Course group key. Search filters are a collapsed repeatable section: each row has a capture name, its display label and an optional-value choice. Add a filter creates another row. Advanced rules stay collapsed; advanced mode preserves profiles with multiple parsers. Saving still creates an immutable, validated revision. Preview rules reads submitted values without writing a revision.
+
+Filter keys are stable technical identifiers; labels are independent display names. For example:
+
+```json
+"filters": {
+  "edition": {"capture": "year", "label": "Academic year", "optional": true},
+  "semester": {"capture": "term", "label": "Semester", "optional": false}
+}
+```
+
+The regex must declare those named captures. The picker generates controls from these definitions, offers up to 100 suggestions drawn only from the currently authorized result page, accepts exact string values and checks current course identities again after querying the index. A profile permits at most twelve filters; empty optional captures do not create indexed values. These search filters do not change family grouping or migration pair dimensions. Old profiles without a filters object expose their existing edition capture automatically.
+
+Names and labels use Moodle `format_string` with the relevant display context, including configured string filters such as Multilang. Names are single-line values, rather than rich descriptions; `format_text` is reserved for rich content. Raw filenames, capture keys, regex patterns and input attributes remain escaped.
+
 ## Institutional preset
 
 Actual fields may be:
@@ -39,6 +56,10 @@ The initial executor supports existing-folder additive copy, same-path identical
 
 ## Import workflow
 
-Open Site administration → Plugins → Local plugins → CourseBridge → Relationship profiles. Paste JSON, validate and activate. Refresh affected courses through the course screen, the scheduled reconciler or `cli/reindex.php`; then inspect actual grouped materials before previewing a bulk migration. Source-access-only is the default. To publish historical materials explicitly, select `publication.mode = explicit-family-publication` and grant specific eligible modules.
+Open Site administration → Plugins → Local plugins → MultiPicker, then the Profiles tab. Create or edit a profile using simple fields and repeatable filters. Advanced JSON remains available for supported custom rules. Refresh affected courses through the course screen, the scheduled reconciler or `cli/reindex.php`; then inspect actual grouped materials before previewing a bulk migration. Source-access-only is the default. To publish historical materials explicitly, select `publication.mode = explicit-family-publication` and grant specific eligible modules.
 
 The package's examples are executable inputs for the current supported subset. `examples/authorship-policy.json` is a configuration explanation, not a relationship-profile import.
+
+## Public source choices
+
+The guided profile editor has a collapsed Public material sources section. Checkboxes activate declared teaching areas, including Assignment handouts and instructions, Page/Book content and public activity introductions. Existing source rules remain opt-in; specific introduction areas configured in advanced JSON survive guided editing. See [source contracts](22-public-material-sources.md).

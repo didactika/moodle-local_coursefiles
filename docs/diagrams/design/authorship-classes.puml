@@ -8,9 +8,9 @@ class author_policy {
   + require_native_copy(file, sourcecourse, targetcourse)
   + capture(file)
 }
-class "local_coursebridge_coursepolicy" as Policy <<record>>
-class "local_coursebridge_attribution" as Attribution <<record>>
-class "local_coursebridge_origin" as Origin <<record>>
+class "local_multipicker_coursepolicy" as Policy <<record>>
+class "local_multipicker_attribution" as Attribution <<record>>
+class "local_multipicker_origin" as Origin <<record>>
 author_policy --> Policy
 author_policy --> Attribution
 Attribution "1" -- "0..*" Origin

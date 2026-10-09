@@ -6,11 +6,19 @@ class native_filemanager {
  + register_native(hook)
  + toHtml()
 }
+class native_editor {
+ + toHtml()
+}
+class browser_controller {
+ + input(raw)
+ + data(token, input)
+}
 class browser_listing {
  + page(scope, state)
 }
 class draft_scope {
  + open(element, context)
+ + open_contract(contract, context)
  + review(token, profile, items, sesskey)
  + approved(token, digest, sesskey)
  + apply(token, digest, sesskey)
@@ -24,8 +32,11 @@ class material_selection {
  + map_paths(files, items, mode)
 }
 native_filemanager --> draft_scope
-browser_listing --> draft_scope
+native_editor --> draft_scope
+browser_controller --> draft_scope
+browser_controller --> browser_listing
 draft_scope --> draft_import
 draft_import --> material_selection
-native_filemanager -[hidden]down-> browser_listing
+native_filemanager -[hidden]down-> native_editor
+native_editor -[hidden]down-> browser_controller
 @enduml

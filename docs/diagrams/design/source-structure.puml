@@ -2,10 +2,10 @@
 !include ../_style.puml
 top to bottom direction
 title Design — Source folders and responsibilities
-package "local_coursebridge" {
+package "local_multipicker" {
   component "Moodle root entries\nlib.php / settings.php / version.php\nLegacy URL forwarding scripts" as Entry
   package "Controllers" as Controllers {
-    component "admin/\nprofiles / migration / log / selection" as Admin
+    component "admin/\nprofiles / migration / log" as Admin
     component "course/\ncatalog / policy" as Course
     Admin -[hidden]down-> Course
   }

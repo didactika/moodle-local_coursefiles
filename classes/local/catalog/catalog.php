@@ -17,13 +17,13 @@
 /**
  * Authorized asset grouping with keyset pagination.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursebridge\local\catalog;
+namespace local_multipicker\local\catalog;
 
-use local_coursebridge\local\profile\profiles;
+use local_multipicker\local\profile\profiles;
 
 /**
  * Groups current permitted occurrences rather than global unfiltered results.
@@ -47,11 +47,11 @@ final class catalog {
         int $limit = 20
     ): array {
         global $DB;
-        require_capability('local/coursebridge:browse', \context_course::instance($targetcourse));
-        require_capability('local/coursebridge:reuse', \context_course::instance($targetcourse));
-        \local_coursebridge\local\selection\destination_access::require($targetcourse);
+        require_capability('local/multipicker:browse', \context_course::instance($targetcourse));
+        require_capability('local/multipicker:reuse', \context_course::instance($targetcourse));
+        \local_multipicker\local\selection\destination_access::require($targetcourse);
         if ($after !== '' && !preg_match('/^[a-f0-9]{40}$/', $after)) {
-            throw new \moodle_exception('invalidcursor', 'local_coursebridge');
+            throw new \moodle_exception('invalidcursor', 'local_multipicker');
         }
         [$profile, $revision, $rules] = profiles::load($profileid);
         $identity = $rules->resolve(get_course($targetcourse));
@@ -61,12 +61,16 @@ final class catalog {
         $limit = max(1, min(50, $limit));
         $params = ['revisionid' => $revision->id, 'familyhash' => $identity['familyhash'], 'after' => $after];
         $where = 'c.revisionid = :revisionid AND c.familyhash = :familyhash AND f.contenthash > :after';
+        if (!empty($filters['excludedcontext'])) {
+            $where .= ' AND n.contextid <> :excludedcontext';
+            $params['excludedcontext'] = (int)$filters['excludedcontext'];
+        }
         if (!empty($filters['cmid'])) {
             $where .= ' AND f.cmid = :cmid';
             $params['cmid'] = (int)$filters['cmid'];
         }
         if (!empty($filters['sourcepath'])) {
-            $sourcepath = \local_coursebridge\local\selection\material_selection::path($filters['sourcepath']);
+            $sourcepath = \local_multipicker\local\selection\material_selection::path($filters['sourcepath']);
             $where .= ' AND ' . $DB->sql_like('n.filepath', ':sourcepath', true);
             $params['sourcepath'] = $DB->sql_like_escape($sourcepath) . '%';
         }
@@ -81,9 +85,36 @@ final class catalog {
                 }
             }
         }
-        $sql = 'SELECT f.*, c.edition FROM {local_coursebridge_file} f
-                  JOIN {local_coursebridge_course} c ON c.courseid = f.courseid
+        if (!empty($filters['module'])) {
+            $where .= ' AND mo.name = :module';
+            $params['module'] = $filters['module'];
+        }
+        if (!empty($filters['shortname'])) {
+            $where .= ' AND sc.shortname = :shortname';
+            $params['shortname'] = $filters['shortname'];
+        }
+        $capturefilters = $filters['captures'] ?? [];
+        if (!is_array($capturefilters) || array_diff(array_keys($capturefilters), array_keys($rules->filter_definitions()))) {
+            throw new \invalid_parameter_exception('Unknown capture filter');
+        }
+        foreach ($capturefilters as $name => $value) {
+            if (!is_string($value) || strlen($value) > 255) {
+                throw new \invalid_parameter_exception('Invalid capture filter value');
+            }
+            if ($value !== '') {
+                $i = count($params);
+                $where .= ' AND EXISTS (SELECT 1 FROM {local_multipicker_value} v WHERE v.courseid = c.courseid'
+                    . ' AND v.revisionid = c.revisionid AND v.name = :capturekey' . $i . ' AND v.value = :capturevalue' . $i . ')';
+                $params['capturekey' . $i] = $name;
+                $params['capturevalue' . $i] = $value;
+            }
+        }
+        $sql = 'SELECT f.*, c.edition FROM {local_multipicker_file} f
+                  JOIN {local_multipicker_course} c ON c.courseid = f.courseid
                   JOIN {files} n ON n.pathnamehash = f.pathnamehash
+                  JOIN {course_modules} mc ON mc.id = f.cmid AND mc.course = f.courseid
+                  JOIN {modules} mo ON mo.id = mc.module
+                  JOIN {course} sc ON sc.id = f.courseid
                  WHERE ' . $where . ' ORDER BY f.contenthash, f.id';
         $records = $DB->get_recordset_sql($sql, $params);
         $assets = [];
@@ -128,14 +159,20 @@ final class catalog {
                 ) {
                     continue;
                 }
+                foreach ($capturefilters as $name => $value) {
+                    if ($value !== '' && ($sourceidentity['filters'][$name] ?? '') !== $value) {
+                        continue 2;
+                    }
+                }
                 $key = $file->get_contenthash() . ':' . $file->get_filesize();
                 if (!isset($assets[$key])) {
                     $assets[$key] = ['contenthash' => $key, 'filesize' => $file->get_filesize(), 'occurrences' => []];
                 }
                 $assets[$key]['occurrences'][] = [
                     'pathnamehash' => $file->get_pathnamehash(), 'filename' => $file->get_filename(),
-                    'filepath' => $file->get_filepath(), 'author' => $file->get_author(), 'license' => $file->get_license(),
+                    'filepath' => $file->get_filepath(), 'filearea' => $file->get_filearea(), 'author' => $file->get_author(), 'license' => $file->get_license(),
                     'courseid' => $cm->course, 'shortname' => $course->shortname, 'edition' => $sourceidentity['edition'],
+                    'captures' => $sourceidentity['filters'],
                     'cmid' => $cm->id, 'module' => $cm->modname, 'modulename' => $cm->name, 'sectionid' => $cm->section,
                 ];
             }

@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * CourseBridge native material import integration.
+ * MultiPicker native material import integration.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursebridge\local\selection;
+namespace local_multipicker\local\selection;
 
 /**
  * Resolves the actual destination editing permission.
@@ -42,7 +42,7 @@ final class destination_access {
         if (!$coursecontext || (int)$coursecontext->instanceid !== $courseid) {
             $context = \context_course::instance($courseid);
         }
-        require_capability('local/coursebridge:reuse', $context);
+        require_capability('local/multipicker:reuse', $context);
         if ($context->contextlevel === CONTEXT_MODULE) {
             $cm = get_coursemodule_from_id(null, $context->instanceid, $courseid, false, MUST_EXIST);
             if (

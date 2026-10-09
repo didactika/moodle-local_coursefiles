@@ -2,15 +2,15 @@
 
 An explicitly integrated form can register `form/scoped_filemanager` as a custom QuickForm element. It inherits Moodle's native filemanager presentation, validation and saving behavior. Its server-side contract is read from the live element; browser requests cannot supply destination limits.
 
-The native QuickForm subclass binds the supported Folder and File controls while preserving their inherited rendering and save contract. Other controls delegate unchanged. The [Folder Settings integration](17-folder-selection.md) and [File Settings integration](18-resource-selection.md) bind standard native filemanagers through this API; the repository embeds the session-bound visual browser inside the native dialog.
+Inherited native QuickForm filemanager/editor elements bind authorized activity fields on the supported controllers, preserving rendering and saving. Other controls delegate unchanged. The real field is required; request-supplied draft IDs or limits cannot enable batches. The [Folder Settings integration](17-folder-selection.md) and [File Settings integration](18-resource-selection.md) bind standard native filemanagers through this API; the repository embeds the session-bound visual browser inside the native dialog.
 
 ## Register and bind a native control
 
 After loading Moodle's Forms API, the owning form registers the element and adds it using native options:
 
 ```php
-\local_coursebridge\form\scoped_filemanager::register();
-$mform->addElement('coursebridgefilemanager', 'files', get_string('files'), null, [
+\local_multipicker\form\scoped_filemanager::register();
+$mform->addElement('multipickerfilemanager', 'files', get_string('files'), null, [
     'subdirs' => true,
     'maxfiles' => 20,
     'maxbytes' => 10485760,

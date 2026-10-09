@@ -19,7 +19,7 @@
   },
   "publication": {
     "mode": "source-access-only",
-    "allowed_sources": ["mod_folder/content", "mod_resource/content"],
+    "allowed_sources": ["mod_folder/content", "mod_resource/content", "mod_page/content", "mod_book/chapter", "mod_assign/introattachment", "mod_assign/activityattachment", "mod_*/intro"],
     "allow_hidden": false,
     "allow_restricted": false
   },

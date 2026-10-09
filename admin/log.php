@@ -17,24 +17,24 @@
 /**
  * Site action log.
  *
- * @package local_coursebridge
- * @copyright 2026 CourseBridge contributors
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-admin_externalpage_setup('local_coursebridge_log');
+admin_externalpage_setup('local_multipicker_log');
 $action = optional_param('action', '', PARAM_ALPHANUMEXT);
 $entityuuid = optional_param('entityuuid', '', PARAM_RAW_TRIMMED);
 $before = optional_param('before', 0, PARAM_INT);
-$url = new moodle_url('/local/coursebridge/admin/log.php', ['action' => $action, 'entityuuid' => $entityuuid]);
+$url = new moodle_url('/local/multipicker/admin/log.php', ['action' => $action, 'entityuuid' => $entityuuid]);
 $PAGE->set_url($url);
-$page = \local_coursebridge\local\logging\log::page($action, $entityuuid, $before);
+$page = \local_multipicker\local\logging\log::page($action, $entityuuid, $before);
 $options = [];
-foreach (\local_coursebridge\local\logging\log::actions() as $name) {
-    $options[] = ['value' => $name, 'label' => get_string('logaction_' . $name, 'local_coursebridge'),
+foreach (\local_multipicker\local\logging\log::actions() as $name) {
+    $options[] = ['value' => $name, 'label' => get_string('logaction_' . $name, 'local_multipicker'),
         'selected' => $action === $name];
 }
 $userids = array_unique(array_filter(array_column($page['records'], 'userid')));
@@ -44,22 +44,22 @@ foreach ($page['records'] as $record) {
     $user = $users[$record->userid] ?? null;
     $records[] = [
         'date' => userdate($record->timecreated),
-        'action' => in_array($record->action, \local_coursebridge\local\logging\log::actions(), true)
-            ? get_string('logaction_' . $record->action, 'local_coursebridge') : $record->action,
+        'action' => in_array($record->action, \local_multipicker\local\logging\log::actions(), true)
+            ? get_string('logaction_' . $record->action, 'local_multipicker') : $record->action,
         'user' => $user && !$user->deleted ? fullname($user)
-            : get_string('logunknownuser', 'local_coursebridge'),
+            : get_string('logunknownuser', 'local_multipicker'),
         'reference' => $record->entityuuid,
     ];
 }
 $nexturl = $page['nextbefore'] ? new moodle_url($url, ['before' => $page['nextbefore']]) : null;
-$renderer = $PAGE->get_renderer('local_coursebridge');
+$renderer = $PAGE->get_renderer('local_multipicker');
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_coursebridge'));
-echo $PAGE->get_renderer('local_coursebridge')->render(\local_coursebridge\output\navigation::site('log'));
-echo $renderer->render(new \local_coursebridge\output\view('log', [
-    'formurl' => (new moodle_url('/local/coursebridge/admin/log.php'))->out(false),
+echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
+echo $PAGE->get_renderer('local_multipicker')->render(\local_multipicker\output\navigation::site('log'));
+echo $renderer->render(new \local_multipicker\output\view('log', [
+    'formurl' => (new moodle_url('/local/multipicker/admin/log.php'))->out(false),
     'options' => $options, 'entityuuid' => $entityuuid, 'records' => $records,
     'hasrecords' => (bool)$records, 'nexturl' => $nexturl ? $nexturl->out(false) : '',
-    'clearurl' => (new moodle_url('/local/coursebridge/admin/log.php'))->out(false),
+    'clearurl' => (new moodle_url('/local/multipicker/admin/log.php'))->out(false),
 ]));
 echo $OUTPUT->footer();
