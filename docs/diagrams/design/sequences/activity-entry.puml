@@ -1,0 +1,26 @@
+@startuml
+!include ../../_style.puml
+skinparam maxMessageSize 240
+title Activity navigation - open mixed selection
+actor Teacher
+participant "Native activity page" as Activity
+participant "activity_navigation" as Navigation
+participant "Native Settings form" as Form
+participant "module_form" as Selection
+
+Teacher -> Activity : Open Folder / File activity
+Activity -> Navigation : Extend settings navigation
+Navigation -> Navigation : Check module, capabilities and enabled profiles
+Navigation --> Activity : Reuse related materials entry
+note over Activity, Navigation
+On the separate Folder Edit page,
+save or cancel pending changes before leaving.
+end note
+Teacher -> Activity : Choose Reuse related materials
+Activity -> Form : Native modedit route; coursebridge=1 and section fragment
+Form -> Selection : Native module-form callbacks
+Selection -> Selection : Check writable control and current authority
+Selection --> Form : Expanded reuse section and current draft scope
+Teacher -> Form : Select, review and add materials
+note over Activity, Form : Native Save / Cancel owns permanent activity changes.
+@enduml

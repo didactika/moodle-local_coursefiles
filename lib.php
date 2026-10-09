@@ -65,3 +65,13 @@ function local_coursebridge_coursemodule_standard_elements($formwrapper, $mform)
 function local_coursebridge_coursemodule_definition_after_data($formwrapper, $mform): void {
     \local_coursebridge\local\selection\module_form::after_data($formwrapper, $mform);
 }
+
+/**
+ * Add the native activity settings route to related-material selection.
+ *
+ * @param settings_navigation $navigation Native settings tree.
+ * @param context $context Current context.
+ */
+function local_coursebridge_extend_settings_navigation($navigation, $context): void {
+    \local_coursebridge\local\selection\activity_navigation::extend($navigation, $context);
+}

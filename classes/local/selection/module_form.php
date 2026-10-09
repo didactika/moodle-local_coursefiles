@@ -111,6 +111,9 @@ final class module_form {
             return;
         }
         $values = $mform->exportValues();
+        if (!$wrapper->is_submitted() && optional_param('coursebridge', false, PARAM_BOOL)) {
+            $mform->setExpanded('cbheader', true);
+        }
         $profileid = (int)($values['cbprofile'] ?? 0);
         $action = '';
         foreach (['cbopen', 'cbsearch', 'cbnext', 'cbreview', 'cbapply'] as $button) {

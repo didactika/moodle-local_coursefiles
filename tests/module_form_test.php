@@ -34,6 +34,31 @@ use local_coursebridge\local\selection\selection_options;
  */
 final class module_form_test extends \advanced_testcase {
     /**
+     * Real activity navigation offers the route only to authorized teachers and once per tree.
+     */
+    public function test_activity_navigation_checks_authority(): void {
+        global $PAGE;
+        [$course, $cm] = $this->fixture();
+        $PAGE->set_cm($cm, $course);
+        $navigation = new \settings_navigation($PAGE);
+        $parent = $navigation->add('Activity', null, \navigation_node::TYPE_SETTING, null, 'modulesettings');
+        $context = \context_module::instance($cm->id);
+        \local_coursebridge\local\selection\activity_navigation::extend($navigation, $context);
+        $node = $parent->get('coursebridge_reuse');
+        $this->assertNotNull($node);
+        $this->assertSame((string)$cm->id, (string)$node->action->get_param('update'));
+        $this->assertSame('1', (string)$node->action->get_param('coursebridge'));
+        $this->assertStringEndsWith('#id_cbheader', $node->action->out(false));
+        \local_coursebridge\local\selection\activity_navigation::extend($navigation, $context);
+        $this->assertCount(1, $parent->children);
+        $this->setUser($this->getDataGenerator()->create_user());
+        $other = new \settings_navigation($PAGE);
+        $otherparent = $other->add('Activity', null, \navigation_node::TYPE_SETTING, null, 'modulesettings');
+        \local_coursebridge\local\selection\activity_navigation::extend($other, $context);
+        $this->assertFalse($otherparent->get('coursebridge_reuse'));
+    }
+
+    /**
      * Opening batch selection beside the native control retains the current form and draft.
      */
     public function test_shortcut_preserves_pending_form_data(): void {

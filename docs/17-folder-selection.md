@@ -36,6 +36,8 @@ Search, paging, review and addition use registered no-submit buttons. The native
 
 ## Supported entry points
 
+The activity's **Reuse related materials** navigation entry opens Settings with this section expanded. It is also available when viewing the separate Folder Edit page: save or cancel changes there before opening Settings. See [activity navigation](19-activity-navigation.md).
+
 This integration is in the Folder and File activity settings form (`/course/modedit.php`). The separate Folder **Edit** content page (`/mod/folder/edit.php`) has a different form without these module-extension callbacks. The repository modal and single-file controls continue to select one file. Other module forms are not automatically integrated.
 
 After replacing an existing plugin installation, purge Moodle caches so its callback-discovery cache loads the new module-form callbacks. No schema migration is required for this screen.

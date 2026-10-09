@@ -25,6 +25,7 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 | design/migration-classes.puml | [Source](../diagrams/design/migration-classes.puml) | [SVG](../diagrams/design/migration-classes.svg) |
 | design/migration-data-model.puml | [Source](../diagrams/design/migration-data-model.puml) | [SVG](../diagrams/design/migration-data-model.svg) |
 | design/presentation.puml | [Source](../diagrams/design/presentation.puml) | [SVG](../diagrams/design/presentation.svg) |
+| design/sequences/activity-entry.puml | [Source](../diagrams/design/sequences/activity-entry.puml) | [SVG](../diagrams/design/sequences/activity-entry.svg) |
 | design/sequences/draft-batch.puml | [Source](../diagrams/design/sequences/draft-batch.puml) | [SVG](../diagrams/design/sequences/draft-batch.svg) |
 | design/sequences/folder-selection.puml | [Source](../diagrams/design/sequences/folder-selection.puml) | [SVG](../diagrams/design/sequences/folder-selection.svg) |
 | design/sequences/form-scope.puml | [Source](../diagrams/design/sequences/form-scope.puml) | [SVG](../diagrams/design/sequences/form-scope.svg) |

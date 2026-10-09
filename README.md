@@ -30,6 +30,7 @@ This plugin is installed at `local/coursebridge`. It owns relationship profiles,
 | Session-bound native control integration API | [Owning-form scope](docs/16-native-form-scope.md) |
 | Several files and folders in activity settings | [Folder selection](docs/17-folder-selection.md) |
 | File activities and their main file | [File selection](docs/18-resource-selection.md) |
+| Enter mixed selection from activity navigation | [Activity entry](docs/19-activity-navigation.md) |
 | Tested core versions | [Compatibility](docs/10-compatibility-and-branches.md) |
 | Actors, analysis, design and behavior | [UML catalogue](docs/rup/README.md) |
 | Automated check results | [Validation](docs/07-validation-and-decisions.md) |

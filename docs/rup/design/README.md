@@ -1,5 +1,9 @@
 # Design views
 
+The [activity navigation entry](../../19-activity-navigation.md) opens the supported native Settings workflow:
+
+![Activity entry](../../diagrams/design/sequences/activity-entry.svg)
+
 ![Source folders](../../diagrams/design/source-structure.svg)
 
 ![Action log query](../../diagrams/design/sequences/log-query.svg)
