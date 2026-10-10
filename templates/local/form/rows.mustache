@@ -2,11 +2,11 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_multipicker/local/form/rows
+    @template local_coursefiles/local/form/rows
     Native editable table enhanced by the row editor.
     Example context (json): {"columns":[{"label":"Capture"}],"add":"Add row"}
 }}
-<div class="multipicker-row-editor">
-    <table class="table table-sm"><thead><tr>{{#columns}}<th scope="col">{{label}} {{{help}}}</th>{{/columns}}<th scope="col"><span class="multipicker-visually-hidden">{{#str}}actions, core{{/str}}</span></th></tr></thead><tbody></tbody></table>
+<div class="coursefiles-row-editor">
+    <table class="table table-sm"><thead><tr>{{#columns}}<th scope="col">{{label}} {{{help}}}</th>{{/columns}}<th scope="col"><span class="coursefiles-visually-hidden">{{#str}}actions, core{{/str}}</span></th></tr></thead><tbody></tbody></table>
 </div>
-<button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-multipicker-addrow>{{#pix}}t/add, core{{/pix}}{{add}}</button>
+<button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-coursefiles-addrow>{{#pix}}t/add, core{{/pix}}{{add}}</button>

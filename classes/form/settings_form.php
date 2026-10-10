@@ -17,12 +17,12 @@
 /**
  * Site policy form.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\form;
+namespace local_coursefiles\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -52,23 +52,23 @@ final class settings_form extends \moodleform {
         foreach (self::choices() as $name => $values) {
             $options = [];
             foreach ($values as $value) {
-                $options[$value] = get_string($value, 'local_multipicker');
+                $options[$value] = get_string($value, 'local_coursefiles');
             }
-            $form->addElement('select', $name, get_string($name, 'local_multipicker'), $options);
-            $form->addHelpButton($name, $name, 'local_multipicker');
+            $form->addElement('select', $name, get_string($name, 'local_coursefiles'), $options);
+            $form->addHelpButton($name, $name, 'local_coursefiles');
             $form->setDefault($name, $values[0]);
         }
-        $form->addElement('header', 'retention', get_string('retention', 'local_multipicker'));
+        $form->addElement('header', 'retention', get_string('retention', 'local_coursefiles'));
         foreach (
             [
             'logretentiondays' => 90, 'migrationretentiondays' => 365, 'versionretentiondays' => 0, 'versionretentionmax' => 0,
             ] as $name => $days
         ) {
-            $form->addElement('text', $name, get_string($name, 'local_multipicker'), ['size' => 6]);
+            $form->addElement('text', $name, get_string($name, 'local_coursefiles'), ['size' => 6]);
             $form->setType($name, PARAM_INT);
             $form->addRule($name, null, 'numeric', null, 'client');
             $form->setDefault($name, $days);
-            $form->addHelpButton($name, $name, 'local_multipicker');
+            $form->addHelpButton($name, $name, 'local_coursefiles');
         }
         $this->add_action_buttons(false);
     }
@@ -84,12 +84,12 @@ final class settings_form extends \moodleform {
         $errors = parent::validation($data, $files);
         foreach (self::choices() as $name => $values) {
             if (!in_array($data[$name] ?? '', $values, true)) {
-                $errors[$name] = get_string('invalidpolicy', 'local_multipicker');
+                $errors[$name] = get_string('invalidpolicy', 'local_coursefiles');
             }
         }
         foreach (['logretentiondays', 'migrationretentiondays', 'versionretentiondays', 'versionretentionmax'] as $name) {
             if (!isset($data[$name]) || $data[$name] < 0 || $data[$name] > 36500) {
-                $errors[$name] = get_string('invalidretention', 'local_multipicker');
+                $errors[$name] = get_string('invalidretention', 'local_coursefiles');
             }
         }
         return $errors;

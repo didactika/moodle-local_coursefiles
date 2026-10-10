@@ -17,14 +17,14 @@
 /**
  * Additive native folder file lifecycle adapter.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\migration;
+namespace local_coursefiles\local\migration;
 
-use local_multipicker\local\policy\author_policy;
+use local_coursefiles\local\policy\author_policy;
 
 /**
  * Applies additive file copies without replacing an unrelated file or rebuilding the file area.
@@ -46,7 +46,7 @@ final class folder_destination {
         require_capability('moodle/course:manageactivities', \context_module::instance($cmid));
         $sourcecontext = \context::instance_by_id($source->get_contextid())->get_course_context(false);
         if (!$sourcecontext) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_coursefiles');
         }
         author_policy::require_native_copy($source, (int)$sourcecontext->instanceid, (int)$cm->course);
         $context = \context_module::instance($cmid);
@@ -61,11 +61,11 @@ final class folder_destination {
             $source->get_filename()
         );
         if (($existing ? copy_decision::snapshot($existing) : null) !== $expected) {
-            throw new \moodle_exception('planstale', 'local_multipicker');
+            throw new \moodle_exception('planstale', 'local_coursefiles');
         }
         if ($existing) {
             if (!$overwrite) {
-                throw new \moodle_exception('planstale', 'local_multipicker');
+                throw new \moodle_exception('planstale', 'local_coursefiles');
             }
             author_policy::capture($existing);
             $existing->delete();
@@ -96,7 +96,7 @@ final class folder_destination {
                 copy_decision::snapshot($saved)
             ) !== 'skip_identical'
         ) {
-            throw new \moodle_exception('verificationfailed', 'local_multipicker');
+            throw new \moodle_exception('verificationfailed', 'local_coursefiles');
         }
         return $saved;
     }

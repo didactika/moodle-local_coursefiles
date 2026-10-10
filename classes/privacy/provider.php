@@ -17,12 +17,12 @@
 /**
  * Personal action data export and actor anonymization.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\privacy;
+namespace local_coursefiles\privacy;
 
 /**
  * Describes action provenance and handles approved personal-data requests.
@@ -34,7 +34,7 @@ final class provider implements
     /**
      * @var array Tables containing action actors, separate from declared authors.
      */
-    private const TABLES = ['revision', 'coursepolicy', 'publication', 'attribution', 'origin', 'plan', 'run', 'log'];
+    private const TABLES = ['revision', 'policy', 'publish', 'author', 'origin', 'plan', 'run', 'log'];
 
     /**
      * Describe stored metadata.
@@ -47,7 +47,7 @@ final class provider implements
     ): \core_privacy\local\metadata\collection {
         foreach (self::TABLES as $suffix) {
             $collection->add_database_table(
-                'local_multipicker_' . $suffix,
+                'local_coursefiles_' . $suffix,
                 ['userid' => 'privacy_userid'],
                 'privacy_metadata'
             );
@@ -65,7 +65,7 @@ final class provider implements
         global $DB;
         $contexts = new \core_privacy\local\request\contextlist();
         foreach (self::TABLES as $suffix) {
-            if ($DB->record_exists('local_multipicker_' . $suffix, ['userid' => $userid])) {
+            if ($DB->record_exists('local_coursefiles_' . $suffix, ['userid' => $userid])) {
                 $contexts->add_system_context();
                 break;
             }
@@ -84,10 +84,10 @@ final class provider implements
             return;
         }
         foreach (self::TABLES as $suffix) {
-            $rows = $DB->get_records('local_multipicker_' . $suffix, ['userid' => $contexts->get_user()->id]);
+            $rows = $DB->get_records('local_coursefiles_' . $suffix, ['userid' => $contexts->get_user()->id]);
             \core_privacy\local\request\writer::with_context(\context_system::instance())
                 ->export_data(
-                    [get_string('pluginname', 'local_multipicker'), $suffix],
+                    [get_string('pluginname', 'local_coursefiles'), $suffix],
                     (object)['records' => array_values($rows)]
                 );
         }
@@ -129,12 +129,12 @@ final class provider implements
         }
         foreach (self::TABLES as $suffix) {
             if ($suffix === 'log') {
-                $DB->delete_records('local_multipicker_log');
+                $DB->delete_records('local_coursefiles_log');
             } else {
-                $DB->set_field('local_multipicker_' . $suffix, 'userid', 0);
+                $DB->set_field('local_coursefiles_' . $suffix, 'userid', 0);
             }
         }
-        $DB->set_field('local_multipicker_run', 'cancelled', 1);
+        $DB->set_field('local_coursefiles_run', 'cancelled', 1);
     }
 
     /**
@@ -147,7 +147,7 @@ final class provider implements
             return;
         }
         foreach (self::TABLES as $suffix) {
-            $users->add_from_sql('userid', 'SELECT userid FROM {local_multipicker_' . $suffix . '} WHERE userid > 0', []);
+            $users->add_from_sql('userid', 'SELECT userid FROM {local_coursefiles_' . $suffix . '} WHERE userid > 0', []);
         }
     }
 
@@ -158,12 +158,12 @@ final class provider implements
      */
     private static function erase(int $userid): void {
         global $DB;
-        $DB->set_field('local_multipicker_run', 'cancelled', 1, ['userid' => $userid]);
+        $DB->set_field('local_coursefiles_run', 'cancelled', 1, ['userid' => $userid]);
         foreach (self::TABLES as $suffix) {
             if ($suffix === 'log') {
-                $DB->delete_records('local_multipicker_log', ['userid' => $userid]);
+                $DB->delete_records('local_coursefiles_log', ['userid' => $userid]);
             } else {
-                $DB->set_field('local_multipicker_' . $suffix, 'userid', 0, ['userid' => $userid]);
+                $DB->set_field('local_coursefiles_' . $suffix, 'userid', 0, ['userid' => $userid]);
             }
         }
     }

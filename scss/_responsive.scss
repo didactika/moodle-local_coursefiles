@@ -5,7 +5,7 @@
 /* Editable native rows adapt to their actual form-column width, including side drawers. */
 
 @container (max-width: 48rem) {
-    .multipicker-row-editor {
+    .coursefiles-row-editor {
         tbody tr {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -16,12 +16,12 @@
             padding: 0;
         }
     }
-    .multipicker-row-label {
+    .coursefiles-row-label {
         flex-grow: 1;
         margin-bottom: .2rem;
     }
-    .multipicker-row-editor {
-        .table .multipicker-row-remove {
+    .coursefiles-row-editor {
+        .table .coursefiles-row-remove {
             display: block;
             grid-column: 1 / -1;
             text-align: end;
@@ -30,7 +30,7 @@
 }
 
 @container (max-width: 24rem) {
-    .multipicker-row-editor {
+    .coursefiles-row-editor {
         tbody tr {
             grid-template-columns: minmax(0, 1fr);
         }
@@ -38,13 +38,13 @@
 }
 
 @media (max-width: 575.98px) {
-    .multipicker-issue {
+    .coursefiles-issue {
         grid-template-columns: minmax(0, 1fr);
     }
-    .multipicker-metrics .card-body {
+    .coursefiles-metrics .card-body {
         padding-inline: .5rem;
     }
-    .multipicker-native-host {
+    .coursefiles-native-host {
         .fp-repo-area {
             width: 100%;
             max-width: 100%;
@@ -68,13 +68,13 @@
             width: 100%;
         }
     }
-    .multipicker-browser {
+    .coursefiles-browser {
         padding: .75rem !important;
     }
-    .multipicker-filterbar {
+    .coursefiles-filterbar {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .multipicker-steps {
+    .coursefiles-steps {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         li {
             padding: .5rem;
@@ -83,16 +83,16 @@
 }
 
 @media (max-width: 359.98px) {
-    .multipicker-filterbar {
+    .coursefiles-filterbar {
         grid-template-columns: minmax(0, 1fr);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .multipicker-card {
+    .coursefiles-card {
         transition: none;
     }
-    .multipicker-skeleton {
+    .coursefiles-skeleton {
         span {
             animation: none;
         }

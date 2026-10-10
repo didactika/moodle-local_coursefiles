@@ -2,27 +2,27 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_multipicker/local/profile/summary
+    @template local_coursefiles/local/profile/summary
     Escaped descriptions of the exact reviewed profile revision.
     Example context (json): {"name":"Annual courses","rows":[],"parsers":[],"familykey":"family","editioncapture":"edition"}
 }}
-<div class="multipicker-admin card mb-4" data-region="multipicker-profile-summary">
+<div class="coursefiles-admin card mb-4" data-region="coursefiles-profile-summary">
     <div class="card-body">
-        <h3 class="h5">{{#str}}relationshiprules, local_multipicker{{/str}}</h3>
-        <p>{{{name}}}{{#revision}} · {{#str}}revision, local_multipicker{{/str}} {{revision}}{{/revision}}</p>
-        {{#editurl}}<p><a href="{{editurl}}">{{#str}}editprofilerules, local_multipicker{{/str}}</a></p>{{/editurl}}
+        <h3 class="h5">{{#str}}relationshiprules, local_coursefiles{{/str}}</h3>
+        <p>{{{name}}}{{#revision}} · {{#str}}revision, local_coursefiles{{/str}} {{revision}}{{/revision}}</p>
+        {{#editurl}}<p><a href="{{editurl}}">{{#str}}editprofilerules, local_coursefiles{{/str}}</a></p>{{/editurl}}
         <dl class="row mb-0">{{#filters}}
             <dt class="col-md-4">{{{label}}}</dt><dd class="col-md-8 text-break"><code>{{capture}}</code></dd>
         {{/filters}}</dl>
         {{#placement}}<details class="mt-3">
-            <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}rulesinuse, local_multipicker{{/str}}</summary>
+            <summary><span class="coursefiles-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}rulesinuse, local_coursefiles{{/str}}</summary>
         <dl class="row mb-0 mt-3">{{#rows}}
             <dt class="col-md-4">{{label}}</dt><dd class="col-md-8 text-break">{{value}}</dd>
         {{/rows}}</dl>
         </details>{{/placement}}
         <details class="mt-3">
-            <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}relationshiprules, local_multipicker{{/str}}</summary>
-            <p class="mt-3">{{#str}}familykey, local_multipicker{{/str}}: <code>{{familykey}}</code></p>
+            <summary><span class="coursefiles-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}relationshiprules, local_coursefiles{{/str}}</summary>
+            <p class="mt-3">{{#str}}familykey, local_coursefiles{{/str}}: <code>{{familykey}}</code></p>
             {{#parsers}}<p>{{field}}<br><code class="text-break">{{pattern}}</code></p>{{/parsers}}
         </details>
     </div>

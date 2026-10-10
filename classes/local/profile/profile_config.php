@@ -17,12 +17,12 @@
 /**
  * Bounded declarative course relationship rules.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\profile;
+namespace local_coursefiles\local\profile;
 
 /**
  * Resolves generic families and optional edition labels.
@@ -44,18 +44,18 @@ final class profile_config {
                 || empty($config['relationship']['parsers']) || !is_array($config['relationship']['parsers'])
                 || empty($config['relationship']['family_key'])
         ) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         foreach (['scope', 'publication', 'migration', 'relationship'] as $name) {
             if (isset($config[$name]) && !is_array($config[$name])) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
         }
         if (
             count($config['relationship']['parsers']) > 32
                 || !is_string($config['relationship']['family_key'])
         ) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         if (
             array_diff(
@@ -63,37 +63,37 @@ final class profile_config {
                 ['schema_version', 'status', 'name', 'scope', 'relationship', 'publication', 'migration']
             )
         ) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         foreach ($config['relationship']['parsers'] as $parser) {
             if (
                 !is_array($parser) || !in_array($parser['field'] ?? '', ['idnumber', 'shortname', 'fullname'], true)
                     || !is_string($parser['pattern'] ?? null) || strlen($parser['pattern']) > 2048
             ) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
             foreach (['required_captures', 'normalizers'] as $key) {
                 if (isset($parser[$key]) && !is_array($parser[$key])) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
             }
             $this->matchpattern($parser['pattern'], '');
             foreach (($parser['normalizers'] ?? []) as $normalizers) {
                 if (!is_array($normalizers) || array_diff($normalizers, ['trim', 'lowercase', 'uppercase'])) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
             }
         }
         foreach (['edition', 'pair_dimensions', 'filters'] as $key) {
             if (isset($config['relationship'][$key]) && !is_array($config['relationship'][$key])) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
         }
         if (isset($config['publication']['allowed_sources']) && !is_array($config['publication']['allowed_sources'])) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         if (!in_array($config['relationship']['ambiguity_policy'] ?? 'block', ['block', 'first-match'], true)) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         foreach (
             ['relationship' => ['ambiguity_policy', 'parsers', 'family_key', 'display_label',
@@ -102,7 +102,7 @@ final class profile_config {
                 'publication' => ['mode', 'allowed_sources', 'allow_hidden', 'allow_restricted']] as $name => $keys
         ) {
             if (array_diff(array_keys($config[$name] ?? []), $keys)) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
         }
         if (
@@ -114,10 +114,10 @@ final class profile_config {
                 || !empty($config['publication']['allow_hidden']) || !empty($config['publication']['allow_restricted'])
                 || array_diff(
                     $config['publication']['allowed_sources'] ?? ['mod_folder/content', 'mod_resource/content'],
-                    \local_multipicker\local\catalog\source_registry::keys()
+                    \local_coursefiles\local\catalog\source_registry::keys()
                 )
         ) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         $migration = $config['migration'] ?? [];
         foreach (
@@ -127,16 +127,16 @@ final class profile_config {
                 'on_item_failure' => ['continue-unaffected']] as $name => $allowed
         ) {
             if (isset($migration[$name]) && !in_array($migration[$name], $allowed, true)) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
         }
         foreach (['preserve_relative_paths', 'preserve_source', 'preserve_target_visibility'] as $name) {
             if (isset($migration[$name]) && $migration[$name] !== true) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
         }
         if (!in_array($migration['section_match']['strategy'] ?? 'ordinal', ['ordinal', 'name', 'mapping'], true)) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         $this->config = $config;
         foreach ($this->filter_definitions() as $name => $definition) {
@@ -149,11 +149,11 @@ final class profile_config {
                     || (isset($definition['optional']) && !is_bool($definition['optional']))
                     || array_diff(array_keys($definition), ['capture', 'label', 'optional'])
             ) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
         }
         if (count($this->filter_definitions()) > 9) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
     }
 
@@ -176,7 +176,7 @@ final class profile_config {
             }
             foreach (($parser['required_captures'] ?? []) as $name) {
                 if (!isset($captures[$name]) || $captures[$name] === '') {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
             }
             foreach (($parser['normalizers'] ?? []) as $name => $normalizers) {
@@ -194,13 +194,13 @@ final class profile_config {
             $relationship = $this->config['relationship'];
             $family = self::template($relationship['family_key'], $captures);
             if ($family === '' || strlen($family) > 4096) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
             $edition = $captures[$relationship['edition']['capture'] ?? 'edition'] ?? null;
             if ($edition === '' || $edition === null) {
                 $edition = null;
                 if (isset($relationship['edition']) && empty($relationship['edition']['optional'])) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
             }
             $dimensions = [];
@@ -211,7 +211,7 @@ final class profile_config {
             foreach ($this->filter_definitions() as $name => $definition) {
                 $value = $captures[$definition['capture']] ?? '';
                 if (($value === '' && empty($definition['optional'])) || strlen($value) > 255) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
                 $filters[$name] = $value;
             }
@@ -225,7 +225,7 @@ final class profile_config {
             }
         }
         if (count($resolved) > 1) {
-            throw new \moodle_exception('ambiguousprofile', 'local_multipicker');
+            throw new \moodle_exception('ambiguousprofile', 'local_coursefiles');
         }
         return $resolved ? reset($resolved) : null;
     }
@@ -239,12 +239,12 @@ final class profile_config {
      */
     private function matchpattern(string $pattern, string $value): ?array {
         if (strlen($value) > 8192 || !in_array(substr($pattern, 0, 1), ['~', '#', '/'], true)) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         $bounded = $pattern[0] . '(*LIMIT_MATCH=100000)(*LIMIT_DEPTH=1000)' . substr($pattern, 1);
         $result = @preg_match($bounded, $value, $matches, PREG_UNMATCHED_AS_NULL);
         if ($result === false) {
-            throw new \moodle_exception('regexfailed', 'local_multipicker');
+            throw new \moodle_exception('regexfailed', 'local_coursefiles');
         }
         return $result ? array_filter($matches, static fn($key) => is_string($key), ARRAY_FILTER_USE_KEY) : null;
     }
@@ -259,7 +259,7 @@ final class profile_config {
     public static function template(string $template, array $captures): string {
         return preg_replace_callback('/\$\{([a-zA-Z][a-zA-Z0-9_]*)\}/', static function ($match) use ($captures) {
             if (!isset($captures[$match[1]])) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
             return (string)$captures[$match[1]];
         }, $template);
@@ -274,13 +274,13 @@ final class profile_config {
         $relationship = $this->config['relationship'];
         if (isset($relationship['filters'])) {
             if (!is_array($relationship['filters'])) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
             }
             return $relationship['filters'];
         }
         return isset($relationship['edition']) ? ['edition' => [
             'capture' => $relationship['edition']['capture'] ?? 'edition',
-            'label' => get_string('editionfilter', 'local_multipicker'),
+            'label' => get_string('editionfilter', 'local_coursefiles'),
             'optional' => !empty($relationship['edition']['optional']),
         ]] : [];
     }

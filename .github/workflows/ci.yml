@@ -39,10 +39,18 @@ jobs:
           # https://moodledev.io/general/releases/4.5
           # https://moodledev.io/general/releases/5.3
           MOODLE_PHP_TABLE='{
-            "405": ["8.1", "8.2", "8.3"],
+            "400": ["8.0"],
+            "401": ["8.0"],
+            "402": ["8.0"],
+            "403": ["8.0"],
+            "404": ["8.1"],
+            "405": ["8.1", "8.3"],
+            "500": ["8.2"],
+            "501": ["8.2"],
+            "502": ["8.3"],
             "503": ["8.3", "8.4"]
           }'
-          # Each distribution declares one exact Moodle release as its supported range.
+          # Expand supported lower/upper bounds across existing release codes, including the 4.x/5.x gap.
           supported_raw=$(grep -oP '\$plugin->supported\s*=\s*\[\K[^\]]+' version.php || true)
           if [ -z "$supported_raw" ]; then
             echo "::error::Could not find \$plugin->supported = [...] in version.php."
@@ -60,9 +68,12 @@ jobs:
           # GitHub Actions' own matrix schema, not jq's, and unaffected by
           # this rename.
           entries='[]'
-          supported_raw=$(echo "$supported_raw" | tr ',' '\n' | tr -d '[:space:]' | sort -u | paste -sd,)
+          supported_raw=$(echo "$supported_raw" | tr -d '[:space:]' | tr ',' '\n' | sort -u | paste -sd,)
 
-          IFS=',' read -ra versions <<< "$supported_raw"
+          lower=$(echo "$supported_raw" | cut -d, -f1)
+          upper=$(echo "$supported_raw" | awk -F, '{print $NF}')
+          expanded=$(echo "$MOODLE_PHP_TABLE" | jq -r --argjson lower "$lower" --argjson upper "$upper" 'keys[] | select((tonumber >= $lower) and (tonumber <= $upper))')
+          mapfile -t versions <<< "$expanded"
           for raw in "${versions[@]}"; do
             v=$(echo "$raw" | tr -d '[:space:]')
             [ -z "$v" ] && continue
@@ -150,18 +161,18 @@ jobs:
 
       - name: Register the native repository test integration
         env:
-          COMPANION_PR_HEAD: ${{ github.head_ref }}
+          COMPANION_PR_HEAD: ${{ github.head_ref || github.ref_name }}
         run: |
           case "${{ matrix.moodle-branch }}" in
-            MOODLE_405_STABLE) dependency=MOODLE_405_STABLE ;;
+            MOODLE_40[0-5]_STABLE|MOODLE_50[0-2]_STABLE) dependency=MOODLE_400_STABLE ;;
             MOODLE_503_STABLE) dependency=main ;;
             *) echo "Unsupported distribution"; exit 1 ;;
           esac
           candidate="$COMPANION_PR_HEAD"
-          if [ -n "$candidate" ] && git ls-remote --exit-code --heads https://github.com/didactika/moodle-repository_multipicker.git "refs/heads/$candidate" >/dev/null 2>&1; then
+          if [ -n "$candidate" ] && git ls-remote --exit-code --heads https://github.com/didactika/moodle-repository_coursefiles.git "refs/heads/$candidate" >/dev/null 2>&1; then
             dependency="$candidate"
           fi
-          moodle-plugin-ci add-plugin --branch="$dependency" didactika/moodle-repository_multipicker
+          moodle-plugin-ci add-plugin --branch="$dependency" didactika/moodle-repository_coursefiles
 
       - name: Install moodle-plugin-ci
         run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
@@ -209,7 +220,7 @@ jobs:
         working-directory: moodle
         run: |
           npx grunt jsconfig
-          npx tsc --project public/local/multipicker/tsconfig.json
+          npx tsc --project public/local/coursefiles/tsconfig.json
           npx grunt esm
 
       - name: Check generated component styles

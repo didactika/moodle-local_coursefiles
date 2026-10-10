@@ -17,14 +17,14 @@
 /**
  * Capture scope and layout selection before preview.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\migration;
+namespace local_coursefiles\local\migration;
 
-use local_multipicker\form\row_data;
+use local_coursefiles\form\row_data;
 
 /**
  * Validates migration-owned folder correspondences and conflict choices.
@@ -52,17 +52,17 @@ final class migration_rules {
                     || !in_array($field, ['name', 'idnumber'], true)
                     || !in_array($method, ['equals', 'pattern', 'template'], true)
                 ) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
                 if (
                     $method === 'pattern' && (!in_array($value[0], ['~', '#', '/'], true)
                     || @preg_match($value, '') === false)
                 ) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
                 $type = $side === 'source' ? ($row['sourcetype'] ?? 'folder') : 'folder';
-                if (!is_string($type) || !\local_multipicker\local\catalog\source_registry::provider($type)) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                if (!is_string($type) || !\local_coursefiles\local\catalog\source_registry::provider($type)) {
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
                 $rule[$side . '_module'] = ['type' => $type, 'field' => $field, $method => trim($value)];
             }
@@ -74,7 +74,7 @@ final class migration_rules {
             || !in_array($config['same_path_different_content'], ['block', 'overwrite'], true)
             || !in_array($config['same_content_different_path'], ['skip-and-report', 'keep'], true)
         ) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
         }
         if ($config['section_match']['strategy'] === 'mapping') {
             $config['section_match']['map'] = [];
@@ -85,7 +85,7 @@ final class migration_rules {
                     !ctype_digit((string)$source) || !ctype_digit((string)$target) || (int)$source <= 0 || (int)$target <= 0
                     || isset($config['section_match']['map'][(string)$source])
                 ) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
                 $config['section_match']['map'][(string)$source] = (int)$target;
             }

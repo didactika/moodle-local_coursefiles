@@ -4,13 +4,13 @@
 /**
  * DOM contract for this feature.
  *
- * @module local_multipicker/local/migration/selectors
+ * @module local_coursefiles/local/migration/selectors
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Common from 'local_multipicker/local/selectors';
+import Common from 'local_coursefiles/local/selectors';
 
 export default {
     continue: Common.continue,

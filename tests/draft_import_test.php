@@ -17,26 +17,28 @@
 /**
  * Native reviewed batch tests.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_coursefiles;
 
-use local_multipicker\local\selection\draft_import;
-use local_multipicker\local\selection\material_selection;
-use local_multipicker\local\profile\profiles;
+use local_coursefiles\local\selection\draft_import;
+use local_coursefiles\local\selection\material_selection;
+use local_coursefiles\local\profile\profiles;
 
 /**
  * Exercises real core drafts and current source permissions.
- * @covers \local_multipicker\local\selection\draft_import
- * @covers \local_multipicker\local\selection\material_selection
- * @covers \local_multipicker\local\profile\profiles
+ * @covers \local_coursefiles\local\selection\draft_import
+ * @covers \local_coursefiles\local\selection\material_selection
+ * @covers \local_coursefiles\local\profile\profiles
  */
 final class draft_import_test extends \advanced_testcase {
-    /** @var array Authoritative fixture form options. */
+    /**
+     * @var array Authoritative fixture form options.
+     */
     private const LIMITS = ['maxfiles' => 20, 'maxbytes' => 1024, 'areamaxbytes' => 10240,
         'subdirs' => true, 'accepted_types' => ['*']];
 
@@ -52,7 +54,7 @@ final class draft_import_test extends \advanced_testcase {
         $this->assertCount(2, $review['operations']);
         $this->assertSame(3, $review['filecount']);
         $this->assertFalse($review['blocked']);
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_coursefiles_author'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
         $context = \context_module::instance($destination->cmid);
         file_save_draft_area_files($draftid, $context->id, 'mod_folder', 'content', 0, ['subdirs' => true]);
@@ -70,15 +72,15 @@ final class draft_import_test extends \advanced_testcase {
             $this->assertSame($original->get_content(), $saved->get_content());
             $this->assertSame($original->get_author(), $saved->get_author());
             $this->assertSame($original->get_license(), $saved->get_license());
-            $uuid = json_decode($saved->get_source(), true)['multipicker'];
-            $record = $DB->get_record('local_multipicker_attribution', ['uuid' => $uuid], '*', MUST_EXIST);
+            $uuid = json_decode($saved->get_source(), true)['coursefiles'];
+            $record = $DB->get_record('local_coursefiles_author', ['uuid' => $uuid], '*', MUST_EXIST);
             $this->assertSame($original->get_author(), $record->author);
         }
-        $this->assertSame(2, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(2, $DB->count_records('local_coursefiles_author'));
         $again = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
         $this->assertSame(['skip_identical', 'skip_identical'], array_column($again['operations'], 'decision'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $again['digest']);
-        $this->assertSame(2, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(2, $DB->count_records('local_coursefiles_author'));
         $this->assertCount(3, $fs->get_area_files(
             \context_user::instance($USER->id)->id,
             'user',
@@ -115,7 +117,7 @@ final class draft_import_test extends \advanced_testcase {
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchlimit', $exception->errorcode);
         }
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_coursefiles_author'));
         $this->assertCount(1, get_file_storage()->get_area_files(
             \context_user::instance($USER->id)->id,
             'user',
@@ -147,7 +149,7 @@ final class draft_import_test extends \advanced_testcase {
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchconflict', $exception->errorcode);
         }
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_coursefiles_author'));
         $this->assertFalse($fs->get_file($context->id, 'user', 'draft', $draftid, '/', 'first.txt'));
     }
 
@@ -164,7 +166,7 @@ final class draft_import_test extends \advanced_testcase {
             'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid,
             'filepath' => '/', 'filename' => 'later.txt'], 'later');
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('batchconflict', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('batchconflict', 'local_coursefiles'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
     }
 
@@ -179,7 +181,7 @@ final class draft_import_test extends \advanced_testcase {
         [, $revision] = profiles::load($profileid);
         profiles::save($revision->configjson, $profileid);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('batchconflict', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('batchconflict', 'local_coursefiles'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
     }
 
@@ -191,9 +193,9 @@ final class draft_import_test extends \advanced_testcase {
         $this->preventResetByRollback();
         $items = [['cmid' => $folder->cmid, 'filepath' => '/']];
         $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
-        set_config('author_policy', 'preserve_locked', 'local_multipicker');
+        set_config('author_policy', 'preserve_locked', 'local_coursefiles');
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('lockedunsupported', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('lockedunsupported', 'local_coursefiles'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
     }
 
@@ -207,6 +209,9 @@ final class draft_import_test extends \advanced_testcase {
         $items = [['cmid' => $folder->cmid, 'filepath' => '/']];
         $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
         $created = 0;
+        if (!class_exists(\core_files\hook\after_file_created::class)) {
+            $this->markTestSkipped('Core file-creation fault injection hooks are unavailable on this Moodle version.');
+        }
         $manager = \core\di::get(\core\hook\manager::class);
         $manager->phpunit_redirect_hook(\core_files\hook\after_file_created::class, function ($hook) use (&$created): void {
             if (!$hook->storedfile->is_directory() && ++$created === 2) {
@@ -222,7 +227,7 @@ final class draft_import_test extends \advanced_testcase {
             $manager->phpunit_stop_redirections();
         }
         $this->assertSame(2, $created);
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_coursefiles_author'));
         $remaining = get_file_storage()->get_area_files(
             \context_user::instance($USER->id)->id,
             'user',
@@ -244,7 +249,7 @@ final class draft_import_test extends \advanced_testcase {
         $DB->set_field('course_modules', 'visible', 0, ['id' => $folder->cmid]);
         rebuild_course_cache($folder->course, true);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('materialunavailable', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('materialunavailable', 'local_coursefiles'));
         material_selection::resolve($target->id, $profileid, [['cmid' => $folder->cmid, 'filepath' => '/']]);
     }
 
@@ -257,7 +262,7 @@ final class draft_import_test extends \advanced_testcase {
         $this->setUser($actor);
         set_config('siteadmins', get_config('core', 'siteadmins') . ',' . $actor->id);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invaliddraft', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursefiles'));
         draft_import::review(
             $target->id,
             $profileid,
@@ -284,7 +289,7 @@ final class draft_import_test extends \advanced_testcase {
         $this->assertCount(1, $selected);
         $this->assertSame('/unit_%/', reset($selected)->get_filepath());
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invalidselection', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('invalidselection', 'local_coursefiles'));
         material_selection::resolve(
             $target->id,
             $profileid,
@@ -366,8 +371,8 @@ final class draft_import_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         require_once($CFG->libdir . '/filelib.php');
-        $profileid = profiles::save(file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json'));
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
+        $profileid = profiles::save(file_get_contents($CFG->dirroot . '/local/coursefiles/examples/institutional-profile.json'));
+        set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
         $uuid = '550e8400-e29b-41d4-a716-446655440000';
         $source = $this->getDataGenerator()->create_course(['idnumber' => $uuid . '||MATH||2025']);
         $target = $this->getDataGenerator()->create_course(['idnumber' => $uuid . '||MATH||2026']);

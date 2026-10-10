@@ -16,13 +16,13 @@
 /**
  * Rename reviewed files through Moodle's native save/cancel modal.
  *
- * @module local_multipicker/local/review/actions
+ * @module local_coursefiles/local/review/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_multipicker/local/review/selectors';
+import Selectors from 'local_coursefiles/local/review/selectors';
 import ModalSaveCancel from 'core/modal_save_cancel';
 import ModalEvents from 'core/modal_events';
 import {getString} from 'core/str';
@@ -72,8 +72,8 @@ export const createActions = (form) => {
         button.disabled = true;
         try {
             const name = button.closest(Selectors.reviewFile).querySelector(Selectors.renameField);
-            const title = await getString('renamefile', 'local_multipicker');
-            const {html, js} = await Templates.renderForPromise('local_multipicker/local/selection/rename', {
+            const title = await getString('renamefile', 'local_coursefiles');
+            const {html, js} = await Templates.renderForPromise('local_coursefiles/local/selection/rename', {
                 name: name.value, label: title,
             });
             const modal = await ModalSaveCancel.create({title, body: html, show: true, removeOnClose: true});

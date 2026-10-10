@@ -2,36 +2,36 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_multipicker/local/profile/list
+    @template local_coursefiles/local/profile/list
     Named profile list with active status and revision.
     Context: profiles, hasprofiles, newprofileurl.
     Example context (json): {"profiles":[],"hasprofiles":false}
 }}
-<section class="multipicker-admin multipicker-profiles mb-4">
-    <h2>{{#str}}profiles, local_multipicker{{/str}}</h2>
-    <p class="text-muted">{{#str}}profilesintro, local_multipicker{{/str}}</p>
-    <form method="get" action="{{actionurl}}" class="mb-3"><div class="d-flex align-items-center multipicker-actionbar flex-wrap"><div class="input-group input-group-sm multipicker-table-search"><input type="hidden" name="perpage" value="{{perpage}}"><input type="search" name="q" value="{{search}}" class="form-control" aria-label="{{#str}}search, core{{/str}}"><button class="btn btn-outline-secondary">{{#pix}}a/search, core{{/pix}}</button></div>{{{filterhelp}}}</div></form>
-    <form method="post" action="{{actionurl}}" data-multipicker-profiles data-contextid="{{contextid}}">
+<section class="coursefiles-admin coursefiles-profiles mb-4">
+    <h2>{{#str}}profiles, local_coursefiles{{/str}}</h2>
+    <p class="text-muted">{{#str}}profilesintro, local_coursefiles{{/str}}</p>
+    <form method="get" action="{{actionurl}}" class="mb-3"><div class="d-flex align-items-center coursefiles-actionbar flex-wrap"><div class="input-group input-group-sm coursefiles-table-search"><input type="hidden" name="perpage" value="{{perpage}}"><input type="search" name="q" value="{{search}}" class="form-control" aria-label="{{#str}}search, core{{/str}}"><button class="btn btn-outline-secondary">{{#pix}}a/search, core{{/pix}}</button></div>{{{filterhelp}}}</div></form>
+    <form method="post" action="{{actionurl}}" data-coursefiles-profiles data-contextid="{{contextid}}">
     <input type="hidden" name="sesskey" value="{{sesskey}}">
-    <div class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap">
-        <div class="multipicker-actionbar d-flex align-items-center flex-wrap">
-            <a class="btn btn-sm btn-primary" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_multipicker{{/str}}</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_multipicker{{/str}}</a>
-            {{#hasprofiles}}<button name="action" value="exportall" class="btn btn-sm btn-outline-secondary">{{#pix}}i/export, core{{/pix}}{{#str}}exportallprofiles, local_multipicker{{/str}}</button>{{/hasprofiles}}
+    <div class="coursefiles-actionbar mb-3 d-flex align-items-center flex-wrap">
+        <div class="coursefiles-actionbar d-flex align-items-center flex-wrap">
+            <a class="btn btn-sm btn-primary" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_coursefiles{{/str}}</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_coursefiles{{/str}}</a>
+            {{#hasprofiles}}<button name="action" value="exportall" class="btn btn-sm btn-outline-secondary">{{#pix}}i/export, core{{/pix}}{{#str}}exportallprofiles, local_coursefiles{{/str}}</button>{{/hasprofiles}}
         </div>
-    {{#hasprofiles}}<div class="d-flex align-items-center flex-wrap multipicker-actionbar">
-        <span class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}" data-multipicker-bulk-actions hidden>
-        <button name="action" value="export" class="btn btn-sm btn-outline-info" disabled title="{{#str}}exportselectedprofiles, local_multipicker{{/str}}" aria-label="{{#str}}exportselectedprofiles, local_multipicker{{/str}}">{{#pix}}i/export, core{{/pix}}{{#str}}exportaction, local_multipicker{{/str}}</button>
-        <button name="action" value="enable" class="btn btn-sm btn-outline-primary" disabled title="{{#str}}enableselected, local_multipicker{{/str}}" aria-label="{{#str}}enableselected, local_multipicker{{/str}}">{{#pix}}t/show, core{{/pix}}{{#str}}enable, core{{/str}}</button>
-        <button name="action" value="disable" class="btn btn-sm btn-outline-primary" disabled title="{{#str}}disableselected, local_multipicker{{/str}}" aria-label="{{#str}}disableselected, local_multipicker{{/str}}">{{#pix}}t/hide, core{{/pix}}{{#str}}disable, core{{/str}}</button>
-        <button name="action" value="delete" class="btn btn-sm btn-outline-danger" disabled title="{{#str}}deleteselected, local_multipicker{{/str}}" aria-label="{{#str}}deleteselected, local_multipicker{{/str}}">{{#pix}}t/delete, core{{/pix}}{{#str}}delete, core{{/str}}</button>
+    {{#hasprofiles}}<div class="d-flex align-items-center flex-wrap coursefiles-actionbar">
+        <span class="btn-group coursefiles-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}" data-coursefiles-bulk-actions hidden>
+        <button name="action" value="export" class="btn btn-sm btn-outline-info" disabled title="{{#str}}exportselectedprofiles, local_coursefiles{{/str}}" aria-label="{{#str}}exportselectedprofiles, local_coursefiles{{/str}}">{{#pix}}i/export, core{{/pix}}{{#str}}exportaction, local_coursefiles{{/str}}</button>
+        <button name="action" value="enable" class="btn btn-sm btn-outline-primary" disabled title="{{#str}}enableselected, local_coursefiles{{/str}}" aria-label="{{#str}}enableselected, local_coursefiles{{/str}}">{{#pix}}t/show, core{{/pix}}{{#str}}enable, core{{/str}}</button>
+        <button name="action" value="disable" class="btn btn-sm btn-outline-primary" disabled title="{{#str}}disableselected, local_coursefiles{{/str}}" aria-label="{{#str}}disableselected, local_coursefiles{{/str}}">{{#pix}}t/hide, core{{/pix}}{{#str}}disable, core{{/str}}</button>
+        <button name="action" value="delete" class="btn btn-sm btn-outline-danger" disabled title="{{#str}}deleteselected, local_coursefiles{{/str}}" aria-label="{{#str}}deleteselected, local_coursefiles{{/str}}">{{#pix}}t/delete, core{{/pix}}{{#str}}delete, core{{/str}}</button>
         </span>
     </div>{{/hasprofiles}}
     </div>
-    <div class="table-responsive"><table class="table table-hover"><thead><tr><th><input type="checkbox" data-multipicker-selectall aria-label="{{#str}}selectall, core{{/str}}" title="{{#str}}selectall, core{{/str}}"></th><th>{{#str}}name, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}lastmodified, core{{/str}}</th><th class="text-end">{{#str}}actions, core{{/str}}</th></tr></thead><tbody>{{#profiles}}
-        <tr data-profile-id="{{id}}" data-enabled="{{#enabled}}1{{/enabled}}{{^enabled}}0{{/enabled}}"><td><input type="checkbox" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_multipicker{{/str}}"></td><td><a href="{{url}}">{{{name}}}</a><div class="small text-muted text-break">{{grouping}}</div><div class="small">{{{filters}}}</div></td><td><span class="multipicker-chip" data-profile-status>{{status}}</span></td><td>{{date}}</td><td class="text-end text-nowrap"><div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}"><a href="{{historyurl}}" class="btn btn-sm btn-outline-info" title="{{#str}}versionhistory, local_multipicker{{/str}}" aria-label="{{#str}}versionhistory, local_multipicker{{/str}}">{{#pix}}i/log, core{{/pix}}</a><a class="btn btn-sm btn-outline-secondary" href="{{url}}" title="{{#str}}edit, core{{/str}}" aria-label="{{#str}}edit, core{{/str}}">{{#pix}}t/edit, core{{/pix}}</a><button class="btn btn-sm btn-outline-primary" name="rowaction" value="{{#enabled}}disable{{/enabled}}{{^enabled}}enable{{/enabled}}:{{id}}" aria-label="{{#enabled}}{{#str}}disable, core{{/str}}{{/enabled}}{{^enabled}}{{#str}}enable, core{{/str}}{{/enabled}}">{{#enabled}}{{#pix}}t/hide, core{{/pix}}{{/enabled}}{{^enabled}}{{#pix}}t/show, core{{/pix}}{{/enabled}}</button><button class="btn btn-sm btn-outline-danger" name="rowaction" value="delete:{{id}}" title="{{#str}}delete, core{{/str}}" aria-label="{{#str}}delete, core{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div></td></tr>
+    <div class="table-responsive"><table class="table table-hover"><thead><tr><th><input type="checkbox" data-coursefiles-selectall aria-label="{{#str}}selectall, core{{/str}}" title="{{#str}}selectall, core{{/str}}"></th><th>{{#str}}name, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}lastmodified, core{{/str}}</th><th class="text-end">{{#str}}actions, core{{/str}}</th></tr></thead><tbody>{{#profiles}}
+        <tr data-profile-id="{{id}}" data-enabled="{{#enabled}}1{{/enabled}}{{^enabled}}0{{/enabled}}"><td><input type="checkbox" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_coursefiles{{/str}}"></td><td><a href="{{url}}">{{{name}}}</a><div class="small text-muted text-break">{{grouping}}</div><div class="small">{{{filters}}}</div></td><td><span class="coursefiles-chip" data-profile-status>{{status}}</span></td><td>{{date}}</td><td class="text-end text-nowrap"><div class="btn-group coursefiles-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}"><a href="{{historyurl}}" class="btn btn-sm btn-outline-info" title="{{#str}}versionhistory, local_coursefiles{{/str}}" aria-label="{{#str}}versionhistory, local_coursefiles{{/str}}">{{#pix}}i/log, core{{/pix}}</a><a class="btn btn-sm btn-outline-secondary" href="{{url}}" title="{{#str}}edit, core{{/str}}" aria-label="{{#str}}edit, core{{/str}}">{{#pix}}t/edit, core{{/pix}}</a><button class="btn btn-sm btn-outline-primary" name="rowaction" value="{{#enabled}}disable{{/enabled}}{{^enabled}}enable{{/enabled}}:{{id}}" aria-label="{{#enabled}}{{#str}}disable, core{{/str}}{{/enabled}}{{^enabled}}{{#str}}enable, core{{/str}}{{/enabled}}">{{#enabled}}{{#pix}}t/hide, core{{/pix}}{{/enabled}}{{^enabled}}{{#pix}}t/show, core{{/pix}}{{/enabled}}</button><button class="btn btn-sm btn-outline-danger" name="rowaction" value="delete:{{id}}" title="{{#str}}delete, core{{/str}}" aria-label="{{#str}}delete, core{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div></td></tr>
     {{/profiles}}</tbody></table></div>
-    {{^hasprofiles}}<p>{{#str}}noprofile, local_multipicker{{/str}}</p>{{/hasprofiles}}
+    {{^hasprofiles}}<p>{{#str}}noprofile, local_coursefiles{{/str}}</p>{{/hasprofiles}}
     {{{pagination}}}
     </form>
 </section>

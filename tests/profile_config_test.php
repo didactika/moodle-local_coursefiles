@@ -17,32 +17,32 @@
 /**
  * Relationship and policy integration tests.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker;
+namespace local_coursefiles;
 
-use local_multipicker\local\profile\profile_config;
-use local_multipicker\local\profile\profiles;
-use local_multipicker\local\catalog\indexer;
-use local_multipicker\local\catalog\catalog;
-use local_multipicker\local\migration\copy_decision;
-use local_multipicker\local\migration\migration_planner;
-use local_multipicker\local\migration\migration_executor;
+use local_coursefiles\local\profile\profile_config;
+use local_coursefiles\local\profile\profiles;
+use local_coursefiles\local\catalog\indexer;
+use local_coursefiles\local\catalog\catalog;
+use local_coursefiles\local\migration\copy_decision;
+use local_coursefiles\local\migration\migration_planner;
+use local_coursefiles\local\migration\migration_executor;
 
 
 /**
  * Tests actual file, identity, authorization and migration contracts.
  *
- * @covers \local_multipicker\local\profile\profile_config
- * @covers \local_multipicker\local\profile\profiles
- * @covers \local_multipicker\local\catalog\indexer
- * @covers \local_multipicker\local\catalog\catalog
- * @covers \local_multipicker\local\migration\copy_decision
- * @covers \local_multipicker\local\migration\migration_planner
- * @covers \local_multipicker\local\migration\migration_executor
+ * @covers \local_coursefiles\local\profile\profile_config
+ * @covers \local_coursefiles\local\profile\profiles
+ * @covers \local_coursefiles\local\catalog\indexer
+ * @covers \local_coursefiles\local\catalog\catalog
+ * @covers \local_coursefiles\local\migration\copy_decision
+ * @covers \local_coursefiles\local\migration\migration_planner
+ * @covers \local_coursefiles\local\migration\migration_executor
  */
 final class profile_config_test extends \advanced_testcase {
     /**
@@ -51,8 +51,8 @@ final class profile_config_test extends \advanced_testcase {
     public function test_course_locks_are_checked_at_both_ends_of_folder_copy(): void {
         global $CFG;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
-        set_config('author_course_override', 'tighten_only', 'local_multipicker');
+        set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
+        set_config('author_course_override', 'tighten_only', 'local_coursefiles');
         $CFG->maintenance_enabled = false;
         $fs = get_file_storage();
         $files = $fs->get_area_files(
@@ -64,11 +64,11 @@ final class profile_config_test extends \advanced_testcase {
             false
         );
         foreach ([$target->id, $source->id] as $courseid) {
-            \local_multipicker\local\policy\author_policy::save($source->id, 'inherit');
-            \local_multipicker\local\policy\author_policy::save($target->id, 'inherit');
-            \local_multipicker\local\policy\author_policy::save($courseid, 'preserve_locked');
+            \local_coursefiles\local\policy\author_policy::save($source->id, 'inherit');
+            \local_coursefiles\local\policy\author_policy::save($target->id, 'inherit');
+            \local_coursefiles\local\policy\author_policy::save($courseid, 'preserve_locked');
             try {
-                \local_multipicker\local\migration\folder_destination::copy(reset($files), $tfolder->cmid);
+                \local_coursefiles\local\migration\folder_destination::copy(reset($files), $tfolder->cmid);
                 $this->fail('A course lock must refuse the copy.');
             } catch (\moodle_exception $exception) {
                 $this->assertSame('lockedunsupported', $exception->errorcode);
@@ -90,7 +90,7 @@ final class profile_config_test extends \advanced_testcase {
     public function test_folder_copy_preserves_existing_destination_files(): void {
         global $CFG;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
+        set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
         $CFG->maintenance_enabled = false;
         $fs = get_file_storage();
         $context = \context_module::instance($tfolder->cmid);
@@ -107,7 +107,7 @@ final class profile_config_test extends \advanced_testcase {
             'id',
             false
         );
-        $saved = \local_multipicker\local\migration\folder_destination::copy(reset($sourcefiles), $tfolder->cmid);
+        $saved = \local_coursefiles\local\migration\folder_destination::copy(reset($sourcefiles), $tfolder->cmid);
         $kept = $fs->get_file($context->id, 'mod_folder', 'content', 0, '/existing/', 'teacher-notes.txt');
         $this->assertNotFalse($kept);
         $this->assertSame((int)$existing->get_id(), (int)$kept->get_id());
@@ -136,7 +136,7 @@ final class profile_config_test extends \advanced_testcase {
         $file = reset($files);
         $draftcount = $DB->count_records('files', ['component' => 'user', 'filearea' => 'draft']);
         try {
-            \local_multipicker\local\migration\folder_destination::copy($file, $tfolder->cmid);
+            \local_coursefiles\local\migration\folder_destination::copy($file, $tfolder->cmid);
             $this->fail('The adapter must refuse a strict copy.');
         } catch (\moodle_exception $exception) {
             $this->assertSame('lockedunsupported', $exception->errorcode);
@@ -293,7 +293,7 @@ final class profile_config_test extends \advanced_testcase {
         $this->assertSame('blocked', $plan->state);
         $document = json_decode($plan->configjson, true);
         $this->assertSame('blocked_policy', $GLOBALS['DB']->get_field(
-            'local_multipicker_operation',
+            'local_coursefiles_operation',
             'decision',
             ['planid' => $plan->id]
         ));
@@ -305,7 +305,7 @@ final class profile_config_test extends \advanced_testcase {
     public function test_reviewed_copy_is_idempotent(): void {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
+        set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
         $CFG->maintenance_enabled = false;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $this->assertSame('reviewable', $plan->state);
@@ -313,8 +313,8 @@ final class profile_config_test extends \advanced_testcase {
         $this->assertFalse(migration_executor::execute($runid));
         $this->assertSame(
             'completed',
-            $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]),
-            json_encode($DB->get_records('local_multipicker_operation', ['planid' => $plan->id]))
+            $DB->get_field('local_coursefiles_run', 'state', ['id' => $runid]),
+            json_encode($DB->get_records('local_coursefiles_operation', ['planid' => $plan->id]))
         );
         $saved = get_file_storage()->get_file(
             \context_module::instance($tfolder->cmid)->id,
@@ -327,7 +327,7 @@ final class profile_config_test extends \advanced_testcase {
         $this->assertNotFalse($saved);
         $this->assertSame('Original author', $saved->get_author());
         $second = migration_planner::preview($profileid, '2025', '2026', true);
-        $this->assertSame('skip_identical', $DB->get_field('local_multipicker_operation', 'decision', ['planid' => $second->id]));
+        $this->assertSame('skip_identical', $DB->get_field('local_coursefiles_operation', 'decision', ['planid' => $second->id]));
         $this->assertCount(1, get_file_storage()->get_area_files(
             \context_module::instance($tfolder->cmid)->id,
             'mod_folder',
@@ -366,9 +366,9 @@ final class profile_config_test extends \advanced_testcase {
         ], reset($sourcefile));
         $CFG->maintenance_enabled = false;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
-        $this->assertSame('skip_content', $DB->get_field('local_multipicker_operation', 'decision', ['planid' => $plan->id]));
+        $this->assertSame('skip_content', $DB->get_field('local_coursefiles_operation', 'decision', ['planid' => $plan->id]));
         $this->assertSame('cancelled', $plan->state);
-        $this->assertFalse($DB->record_exists('local_multipicker_run', ['planid' => $plan->id]));
+        $this->assertFalse($DB->record_exists('local_coursefiles_run', ['planid' => $plan->id]));
         $this->assertCount(1, get_file_storage()->get_area_files(
             \context_module::instance($tfolder->cmid)->id,
             'mod_folder',
@@ -404,7 +404,7 @@ final class profile_config_test extends \advanced_testcase {
     public function test_migration_exclusions_are_not_executed(): void {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
+        set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
         $CFG->maintenance_enabled = false;
         $sourcefiles = get_file_storage()->get_area_files(
             \context_module::instance($sfolder->cmid)->id,
@@ -418,9 +418,9 @@ final class profile_config_test extends \advanced_testcase {
         get_file_storage()->create_file_from_storedfile(['filename' => 'second.pdf'], $sourcefile);
         indexer::refresh($source->id);
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
-        $ids = array_map('intval', $DB->get_fieldset_select('local_multipicker_operation', 'id', 'planid = ?', [$plan->id]));
-        \local_multipicker\local\migration\plan_selection::save($plan->id, $plan->digest, $ids, [$ids[0]]);
-        $changed = $DB->get_record('local_multipicker_plan', ['id' => $plan->id]);
+        $ids = array_map('intval', $DB->get_fieldset_select('local_coursefiles_operation', 'id', 'planid = ?', [$plan->id]));
+        \local_coursefiles\local\migration\plan_selection::save($plan->id, $plan->digest, $ids, [$ids[0]]);
+        $changed = $DB->get_record('local_coursefiles_plan', ['id' => $plan->id]);
         $this->assertNotSame($plan->digest, $changed->digest);
         try {
             migration_executor::queue($plan->id, $plan->digest);
@@ -438,9 +438,9 @@ final class profile_config_test extends \advanced_testcase {
             'id',
             false
         ));
-        $this->assertSame('pending', $DB->get_field('local_multipicker_operation', 'state', ['id' => $ids[1]]));
+        $this->assertSame('pending', $DB->get_field('local_coursefiles_operation', 'state', ['id' => $ids[1]]));
         $this->expectException(\moodle_exception::class);
-        \local_multipicker\local\migration\plan_selection::save($plan->id, $changed->digest, [], [], 'all');
+        \local_coursefiles\local\migration\plan_selection::save($plan->id, $changed->digest, [], [], 'all');
     }
 
     /**
@@ -449,13 +449,13 @@ final class profile_config_test extends \advanced_testcase {
     public function test_profile_revision_blocks_queued_plan(): void {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
+        set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
         $CFG->maintenance_enabled = false;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $runid = migration_executor::queue($plan->id, $plan->digest);
         profiles::save(json_encode($this->config()), $profileid);
         $this->assertFalse(migration_executor::execute($runid));
-        $this->assertSame('blocked', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
+        $this->assertSame('blocked', $DB->get_field('local_coursefiles_run', 'state', ['id' => $runid]));
         $this->assertCount(0, get_file_storage()->get_area_files(
             \context_module::instance($tfolder->cmid)->id,
             'mod_folder',
@@ -472,14 +472,14 @@ final class profile_config_test extends \advanced_testcase {
     public function test_changed_destination_is_blocked(): void {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
+        set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
         $CFG->maintenance_enabled = false;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $DB->set_field('folder', 'name', 'changed', ['id' => $tfolder->id]);
         rebuild_course_cache($target->id, true);
         $this->assertFalse(migration_executor::execute($runid));
-        $this->assertSame('blocked', $DB->get_field('local_multipicker_operation', 'state', ['planid' => $plan->id]));
+        $this->assertSame('blocked', $DB->get_field('local_coursefiles_operation', 'state', ['planid' => $plan->id]));
         $this->assertCount(0, get_file_storage()->get_area_files(
             \context_module::instance($tfolder->cmid)->id,
             'mod_folder',

@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\selection;
+namespace local_coursefiles\local\selection;
 
 /**
  * Resolves the actual destination editing permission.
@@ -43,7 +43,7 @@ final class destination_access {
         if (!$coursecontext || (int)$coursecontext->instanceid !== $courseid) {
             $context = \context_course::instance($courseid);
         }
-        require_capability('local/multipicker:reuse', $context);
+        require_capability('local/coursefiles:reuse', $context);
         if ($context->contextlevel === CONTEXT_MODULE) {
             $cm = get_coursemodule_from_id(null, $context->instanceid, $courseid, false, MUST_EXIST);
             if (

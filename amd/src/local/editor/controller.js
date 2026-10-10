@@ -16,15 +16,15 @@
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_multipicker/local/editor/controller
+ * @module local_coursefiles/local/editor/controller
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {appendLinks} from 'local_multipicker/local/editor/actions';
-import {getImportStatus} from 'local_multipicker/local/repository';
-import {getInstanceForElementId} from 'editor_tiny/editor';
+import {appendLinks} from 'local_coursefiles/local/editor/actions';
+import {getImportStatus} from 'local_coursefiles/local/repository';
+import {resolve} from 'local_coursefiles/local/editor/adapter';
 import Notification from 'core/notification';
 import {getString} from 'core/str';
 
@@ -46,9 +46,9 @@ export const watch = async(scope, editorid) => {
                 if (!result.links || result.files.length < 2) {
                     return;
                 }
-                const editor = getInstanceForElementId(editorid);
+                const editor = await resolve(editorid);
                 if (!editor) {
-                    Notification.alert('', await getString('editorimportfailed', 'local_multipicker'));
+                    Notification.alert('', await getString('editorimportfailed', 'local_coursefiles'));
                     return;
                 }
                 if (appendLinks(editor, result)) {

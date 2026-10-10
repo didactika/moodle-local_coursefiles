@@ -2,28 +2,28 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_multipicker/local/catalog/publication
+    @template local_coursefiles/local/catalog/publication
     Publication controls using named course modules rather than numeric IDs.
     Context: actionurl, sesskey, courseid, profileid, publicationmodules, haspublicationmodules.
     Example context (json): {"publicationmodules":[{"value":12,"label":"Class materials"}],"haspublicationmodules":true}
 }}
 <section class="card mb-4" aria-labelledby="cb-publication-title">
     <div class="card-body">
-        <h3 id="cb-publication-title" class="h5">{{#str}}publicationtitle, local_multipicker{{/str}}</h3>
-        <p class="text-muted">{{#str}}publicationhelp, local_multipicker{{/str}}</p>
+        <h3 id="cb-publication-title" class="h5">{{#str}}publicationtitle, local_coursefiles{{/str}}</h3>
+        <p class="text-muted">{{#str}}publicationhelp, local_coursefiles{{/str}}</p>
         {{#haspublicationmodules}}
         <form method="post" action="{{actionurl}}">
             <input type="hidden" name="sesskey" value="{{sesskey}}">
             <input type="hidden" name="courseid" value="{{courseid}}">
             <input type="hidden" name="profileid" value="{{profileid}}">
-            <label for="cb-publication-module">{{#str}}publicationmodule, local_multipicker{{/str}} </label> {{{publicationhelp}}}
+            <label for="cb-publication-module">{{#str}}publicationmodule, local_coursefiles{{/str}} </label> {{{publicationhelp}}}
             <select class="custom-select custom-select-sm mb-3" name="cmid" id="cb-publication-module">{{#publicationmodules}}
                 <option value="{{value}}">{{{label}}}</option>
             {{/publicationmodules}}</select>
-            <div class="multipicker-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top"><button class="btn btn-primary" name="action" value="publish" type="submit">{{#str}}publish, local_multipicker{{/str}}</button>
-            <button class="btn btn-outline-warning" name="action" value="revoke" type="submit">{{#str}}revoke, local_multipicker{{/str}}</button></div>
+            <div class="coursefiles-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top"><button class="btn btn-primary" name="action" value="publish" type="submit">{{#str}}publish, local_coursefiles{{/str}}</button>
+            <button class="btn btn-outline-warning" name="action" value="revoke" type="submit">{{#str}}revoke, local_coursefiles{{/str}}</button></div>
         </form>
         {{/haspublicationmodules}}
-        {{^haspublicationmodules}}<p>{{#str}}nopublicationmodules, local_multipicker{{/str}}</p>{{/haspublicationmodules}}
+        {{^haspublicationmodules}}<p>{{#str}}nopublicationmodules, local_coursefiles{{/str}}</p>{{/haspublicationmodules}}
     </div>
 </section>

@@ -17,15 +17,15 @@
 /**
  * Native filemanager and editor integration for activity forms.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\form;
+namespace local_coursefiles\form;
 
-use local_multipicker\local\selection\draft_scope;
+use local_coursefiles\local\selection\draft_scope;
 
 /**
  * Preserve the native control and bind only supported material editing routes.
@@ -34,19 +34,19 @@ class native_filemanager extends scoped_filemanager {
     /**
      * Register the native subclass through Moodle's public element factory.
      *
-     * @param \core\hook\after_config $hook Bootstrap hook.
+     * @param \core\hook\after_config|null $hook Bootstrap hook; null on legacy callback cores.
      */
-    public static function register_native(\core\hook\after_config $hook): void {
+    public static function register_native(?\core\hook\after_config $hook = null): void {
         global $CFG;
         require_once($CFG->libdir . '/formslib.php');
         \MoodleQuickForm::registerElementType(
             'editor',
-            $CFG->dirroot . '/local/multipicker/classes/form/native_editor.php',
+            $CFG->dirroot . '/local/coursefiles/classes/form/native_editor.php',
             native_editor::class
         );
         \MoodleQuickForm::registerElementType(
             'filemanager',
-            $CFG->dirroot . '/local/multipicker/classes/form/native_filemanager.php',
+            $CFG->dirroot . '/local/coursefiles/classes/form/native_filemanager.php',
             self::class
         );
     }
@@ -67,11 +67,11 @@ class native_filemanager extends scoped_filemanager {
         if ((!$content && !$settings) || $this->isFrozen() || !isloggedin() || isguestuser()) {
             return $html;
         }
-        if (!$DB->record_exists('local_multipicker', ['enabled' => 1])) {
+        if (!$DB->record_exists('local_coursefiles', ['enabled' => 1])) {
             return $html;
         }
         try {
-            \local_multipicker\local\selection\destination_access::require(
+            \local_coursefiles\local\selection\destination_access::require(
                 (int)$PAGE->context->get_course_context()->instanceid,
                 $PAGE->context,
                 $this->getName()

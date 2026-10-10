@@ -4,7 +4,7 @@
 
 /* The embedded host has a stable viewport; only results scroll. */
 
-.multipicker-native-host {
+.coursefiles-native-host {
     .fp-navbar {
         display: none;
     }
@@ -19,30 +19,30 @@
     }
 }
 
-body.multipicker-embedded, .multipicker-embedded #page,
-.multipicker-embedded #page-content, .multipicker-embedded #region-main {
-    background: var(--multipicker-host-background, #fff);
+body.coursefiles-embedded, .coursefiles-embedded #page,
+.coursefiles-embedded #page-content, .coursefiles-embedded #region-main {
+    background: var(--coursefiles-host-background, #fff);
 }
 
-.multipicker-embedded {
+.coursefiles-embedded {
     overflow: hidden;
     #page {
         padding: 0;
     }
-    .multipicker-browser {
+    .coursefiles-browser {
         height: calc(100dvh - .5rem);
         display: flex;
         flex-direction: column;
         min-height: 0;
-        background: var(--multipicker-host-background, #fff);
+        background: var(--coursefiles-host-background, #fff);
     }
 }
 
-.multipicker-browser {
+.coursefiles-browser {
     > * {
         flex-shrink: 0;
     }
-    .multipicker-results {
+    .coursefiles-results {
         flex: 1 1 auto;
         min-height: 5rem;
         overflow: auto;
@@ -50,11 +50,11 @@ body.multipicker-embedded, .multipicker-embedded #page,
     }
 }
 
-.multipicker-footer {
-    background: var(--multipicker-host-background, var(--multipicker-surface));
+.coursefiles-footer {
+    background: var(--coursefiles-host-background, var(--coursefiles-surface));
 }
 
-.multipicker-filterbar {
+.coursefiles-filterbar {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: .4rem .6rem;
@@ -63,12 +63,12 @@ body.multipicker-embedded, .multipicker-embedded #page,
     }
 }
 
-.multipicker-filterbar .form-control, .multipicker-filterbar select {
+.coursefiles-filterbar .form-control, .coursefiles-filterbar select {
     width: 100%;
     min-width: 0;
 }
 
-.multipicker-filterbar {
+.coursefiles-filterbar {
     label {
         margin-bottom: .15rem;
         font-size: .75rem;

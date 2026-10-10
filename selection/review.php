@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,19 +26,19 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
-use local_multipicker\local\selection\draft_scope;
-use local_multipicker\local\selection\selection_options;
-use local_multipicker\output\display;
-use local_multipicker\output\review_tree;
+use local_coursefiles\local\selection\draft_scope;
+use local_coursefiles\local\selection\selection_options;
+use local_coursefiles\output\display;
+use local_coursefiles\output\review_tree;
 
 $token = required_param('scope', PARAM_ALPHANUM);
 require_login();
 $scope = draft_scope::describe($token, sesskey());
 $PAGE->set_course(get_course($scope['courseid']));
 $PAGE->set_context(context::instance_by_id($scope['contextid']));
-$PAGE->set_url('/local/multipicker/selection/review.php', ['scope' => $token]);
+$PAGE->set_url('/local/coursefiles/selection/review.php', ['scope' => $token]);
 $PAGE->set_pagelayout('embedded');
-$PAGE->set_title(get_string('batchreview', 'local_multipicker'));
+$PAGE->set_title(get_string('batchreview', 'local_coursefiles'));
 $PAGE->set_heading($PAGE->course->fullname);
 $state = $scope['view'] ?? [];
 $renameerror = '';
@@ -68,7 +68,7 @@ if (data_submitted()) {
         $state = $scope['view'] ?? [];
     }
 }
-$data = ['backurl' => (new moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false)];
+$data = ['backurl' => (new moodle_url('/local/coursefiles/selection/index.php', ['scope' => $token]))->out(false)];
 $data += ['renameerror' => $renameerror];
 $data += ['action' => $PAGE->url->out(false), 'sesskey' => sesskey(), 'scope' => $token];
 try {
@@ -87,13 +87,13 @@ try {
             'source' => base64_encode(json_encode(['batch' => $token, 'digest' => $review['digest']])),
             'editorid' => $scope['editorid'] ?? '', 'scope' => $token];
         $file['sourcekey'] = sha1($file['source'] . repository::get_secret_key() . sesskey());
-        $PAGE->requires->js_call_amd('local_multipicker/browser', 'complete', [$file]);
+        $PAGE->requires->js_call_amd('local_coursefiles/browser', 'complete', [$file]);
     }
 } catch (moodle_exception $exception) {
     $data['error'] = display::reason($exception->errorcode);
 }
-$PAGE->requires->js_call_amd('local_multipicker/browser', 'presentation');
-$PAGE->requires->js_call_amd('local_multipicker/review', 'init');
+$PAGE->requires->js_call_amd('local_coursefiles/browser', 'presentation');
+$PAGE->requires->js_call_amd('local_coursefiles/review', 'init');
 echo $OUTPUT->header();
-echo $OUTPUT->render_from_template('local_multipicker/local/selection/review', $data);
+echo $OUTPUT->render_from_template('local_coursefiles/local/selection/review', $data);
 echo $OUTPUT->footer();

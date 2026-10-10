@@ -15,18 +15,18 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\form;
+namespace local_coursefiles\form;
 
-use local_multipicker\local\selection\draft_scope;
-use local_multipicker\local\selection\destination_access;
+use local_coursefiles\local\selection\draft_scope;
+use local_coursefiles\local\selection\destination_access;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -46,11 +46,14 @@ class native_editor extends \MoodleQuickForm_editor {
         global $PAGE, $DB, $USER, $CFG;
         $html = parent::toHtml();
         $context = $this->_options['context'];
+        $editor = editors_get_preferred_editor($this->_values['format']);
+        $supported = $editor instanceof \editor_tiny\editor || $editor instanceof \atto_texteditor
+            || $editor instanceof \tinymce_texteditor;
         if (
             $this->isFrozen() || !isloggedin() || isguestuser() || !$this->getMaxfiles()
                 || !($this->_options['return_types'] & FILE_INTERNAL)
-                || !(editors_get_preferred_editor($this->_values['format']) instanceof \editor_tiny\editor)
-                || !$DB->record_exists('local_multipicker', ['enabled' => 1])
+                || !$supported
+                || !$DB->record_exists('local_coursefiles', ['enabled' => 1])
         ) {
             return $html;
         }

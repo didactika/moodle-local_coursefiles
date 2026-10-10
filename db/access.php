@@ -17,7 +17,7 @@
 /**
  * Capability definitions.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,55 +25,55 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-    'local/multipicker:browse' => [
+    'local/coursefiles:browse' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
     ],
-    'local/multipicker:reuse' => [
+    'local/coursefiles:reuse' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:publish' => [
+    'local/coursefiles:publish' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:manageprofiles' => [
+    'local/coursefiles:manageprofiles' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:planmigration' => [
+    'local/coursefiles:planmigration' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:executemigration' => [
+    'local/coursefiles:executemigration' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:viewlog' => [
+    'local/coursefiles:viewlog' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_PERSONAL,
-        'clonepermissionsfrom' => 'local/multipicker:viewaudit',
+        'clonepermissionsfrom' => 'local/coursefiles:viewaudit',
     ],
-    'local/multipicker:managecoursepolicy' => [
+    'local/coursefiles:managecoursepolicy' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:correctattribution' => [
+    'local/coursefiles:correctattribution' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],

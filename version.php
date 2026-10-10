@@ -17,16 +17,16 @@
 /**
  * Plugin version metadata.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_multipicker';
-$plugin->version = 2026101004;
-$plugin->requires = 2024100700;
+$plugin->component = 'local_coursefiles';
+$plugin->version = 2026101101;
+$plugin->requires = 2022041900;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '4.5.0';
-$plugin->supported = [405, 405];
+$plugin->supported = [400, 502];

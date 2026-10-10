@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_multipicker\local\migration;
+namespace local_coursefiles\local\migration;
 
 /**
  * Explicit conflict choices create a new reviewed plan and retain the original history.
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -35,22 +35,22 @@ final class plan_resolution {
      */
     public static function apply(int $planid, string $digest, string $kind, int $id, string $choice): int {
         global $DB;
-        require_capability('local/multipicker:planmigration', \context_system::instance());
-        $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('plan:' . $planid, 10);
+        require_capability('local/coursefiles:planmigration', \context_system::instance());
+        $lock = \core\lock\lock_config::get_lock_factory('local_coursefiles')->get_lock('plan:' . $planid, 10);
         if (!$lock) {
-            throw new \moodle_exception('lockfailed', 'local_multipicker');
+            throw new \moodle_exception('lockfailed', 'local_coursefiles');
         }
         try {
-            $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
+            $plan = $DB->get_record('local_coursefiles_plan', ['id' => $planid], '*', MUST_EXIST);
             if (
                 !hash_equals($plan->digest, $digest) || !hash_equals($digest, hash('sha256', $plan->configjson))
-                || $DB->record_exists('local_multipicker_run', ['planid' => $planid])
+                || $DB->record_exists('local_coursefiles_run', ['planid' => $planid])
             ) {
-                throw new \moodle_exception('planstale', 'local_multipicker');
+                throw new \moodle_exception('planstale', 'local_coursefiles');
             }
-            [, $revision] = \local_multipicker\local\profile\profiles::load($plan->profileid);
+            [, $revision] = \local_coursefiles\local\profile\profiles::load($plan->profileid);
             if ((int)$revision->id !== (int)$plan->revisionid) {
-                throw new \moodle_exception('planstale', 'local_multipicker');
+                throw new \moodle_exception('planstale', 'local_coursefiles');
             }
             $document = json_decode($plan->configjson, true);
             if (
@@ -58,7 +58,7 @@ final class plan_resolution {
                 || (isset($document['selectiondigest'])
                     && !hash_equals($document['selectiondigest'], plan_selection::digest($planid)))
             ) {
-                throw new \moodle_exception('planstale', 'local_multipicker');
+                throw new \moodle_exception('planstale', 'local_coursefiles');
             }
             if ($kind === 'issue') {
                 $issue = $document['issues'][$id] ?? null;
@@ -97,7 +97,7 @@ final class plan_resolution {
                     $document['placements'][$issue['sourcecmid'] . ':' . $courseid] = $override;
                 }
             } else if ($kind === 'file') {
-                $operation = $DB->get_record('local_multipicker_operation', ['id' => $id, 'planid' => $planid], '*', MUST_EXIST);
+                $operation = $DB->get_record('local_coursefiles_operation', ['id' => $id, 'planid' => $planid], '*', MUST_EXIST);
                 if ($choice !== 'overwrite' || $operation->decision !== 'blocked_content') {
                     throw new \invalid_parameter_exception('Invalid file conflict resolution');
                 }
@@ -107,7 +107,7 @@ final class plan_resolution {
             }
             $excluded = array_fill_keys($document['excluded'] ?? [], true);
             $records = $DB->get_recordset(
-                'local_multipicker_operation',
+                'local_coursefiles_operation',
                 ['planid' => $planid],
                 'id',
                 'id, sourcehash, targetcourseid, included'
@@ -134,7 +134,7 @@ final class plan_resolution {
                     'filechoices' => $document['filechoices'] ?? [], 'ignoredissues' => $document['ignoredissues'] ?? [],
                 ]
             );
-            \local_multipicker\local\logging\log::record(
+            \local_coursefiles\local\logging\log::record(
                 'migration_conflict_resolved',
                 $newplan->uuid,
                 ['previousplan' => $planid, 'kind' => $kind, 'choice' => $choice]

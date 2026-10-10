@@ -15,23 +15,27 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\catalog;
+namespace local_coursefiles\local\catalog;
 
 /**
  * Adapters for core teaching resources, public activity introductions and assignment handouts.
  */
 final class native_source_provider implements source_provider {
-    /** @var string Activity type. */
+    /**
+     * @var string Activity type.
+     */
     private string $module;
-    /** @var array Declared public areas. */
+    /**
+     * @var array Declared public areas.
+     */
     private array $areas;
 
     /**

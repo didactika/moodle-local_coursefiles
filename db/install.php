@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Install MultiPicker and preserve an existing CourseBridge installation.
+ * Install CourseFiles and preserve an existing CourseBridge installation.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,6 +28,6 @@
  * Import legacy metadata only when an old installation exists.
 
  */
-function xmldb_local_multipicker_install(): void {
-    \local_multipicker\local\upgrade\legacy_import::execute();
+function xmldb_local_coursefiles_install(): void {
+    \local_coursefiles\local\upgrade\legacy_import::execute();
 }

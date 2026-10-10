@@ -17,15 +17,15 @@
 /**
  * Permission-aware public activity material resolver.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\catalog;
+namespace local_coursefiles\local\catalog;
 
-use local_multipicker\local\profile\profiles;
-use local_multipicker\local\logging\log;
+use local_coursefiles\local\profile\profiles;
+use local_coursefiles\local\logging\log;
 
 /**
  * Resolves only declared teaching file areas and current permission.
@@ -49,19 +49,19 @@ final class material_source {
         ?array &$scope = null
     ): array {
         global $DB, $USER;
-        \local_multipicker\local\selection\destination_access::require($targetcourse);
+        \local_coursefiles\local\selection\destination_access::require($targetcourse);
         if (!preg_match('/^[a-f0-9]{40}$/', $pathnamehash)) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_coursefiles');
         }
         $file = get_file_storage()->get_file_by_hash($pathnamehash);
         if (
             !$file || $file->is_directory() || $file->is_external_file()
         ) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_coursefiles');
         }
         $context = \context::instance_by_id($file->get_contextid());
         if ($context->contextlevel !== CONTEXT_MODULE) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_coursefiles');
         }
         [$profile, $revision, $rules] = $profiledata ?? profiles::load($profileid);
         if (!isset($scope[$context->instanceid])) {
@@ -75,7 +75,7 @@ final class material_source {
         $cminfo = get_fast_modinfo($course)->get_cm($cm->id);
         $provider = source_registry::provider($cm->modname);
         if (!$provider || !$provider->allows($cminfo, $file)) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_coursefiles');
         }
         $allowedareas = $rules->get_config()['publication']['allowed_sources'] ?? ['mod_folder/content', 'mod_resource/content'];
         if (
@@ -84,16 +84,16 @@ final class material_source {
                 || !$course->visible || !$cm->visible || !empty($cm->availability)
                 || !$section->visible || !empty($section->availability)
         ) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_coursefiles');
         }
         $ordinary = can_access_course($course, $USER, '', true) && $provider->readable($cminfo, $file);
         $grant = ($rules->get_config()['publication']['mode'] ?? 'source-access-only') === 'explicit-family-publication'
             && $DB->record_exists(
-                'local_multipicker_publication',
+                'local_coursefiles_publish',
                 ['profileid' => $profile->id, 'cmid' => $cm->id, 'revoked' => 0]
             );
         if (!$ordinary && !$grant) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_coursefiles');
         }
         return [$file, $cm, $sourceidentity, $course];
     }
@@ -111,7 +111,7 @@ final class material_source {
         $cm = get_coursemodule_from_id(null, $cmid, 0, false, MUST_EXIST);
         $course = get_course($cm->course);
         $section = $DB->get_record('course_sections', ['id' => $cm->section], '*', MUST_EXIST);
-        require_capability('local/multipicker:publish', \context_course::instance($cm->course));
+        require_capability('local/coursefiles:publish', \context_course::instance($cm->course));
         require_capability('moodle/course:manageactivities', \context_course::instance($cm->course));
         if (
             !source_registry::provider($cm->modname)
@@ -120,16 +120,16 @@ final class material_source {
                     || ($rules->get_config()['publication']['mode'] ?? 'source-access-only')
                         !== 'explicit-family-publication'))
         ) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_coursefiles');
         }
-        $record = $DB->get_record('local_multipicker_publication', ['profileid' => $profileid, 'cmid' => $cmid]);
+        $record = $DB->get_record('local_coursefiles_publish', ['profileid' => $profileid, 'cmid' => $cmid]);
         $data = (object)['profileid' => $profileid, 'cmid' => $cmid, 'userid' => $USER->id,
             'timecreated' => time(), 'revoked' => (int)$revoked];
         if ($record) {
             $data->id = $record->id;
-            $DB->update_record('local_multipicker_publication', $data);
+            $DB->update_record('local_coursefiles_publish', $data);
         } else {
-            $DB->insert_record('local_multipicker_publication', $data);
+            $DB->insert_record('local_coursefiles_publish', $data);
         }
         log::record($revoked ? 'publication_revoked' : 'publication_granted', '', ['profileid' => $profileid, 'cmid' => $cmid]);
     }

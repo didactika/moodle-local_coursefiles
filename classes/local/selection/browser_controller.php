@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\selection;
+namespace local_coursefiles\local\selection;
 
-use local_multipicker\output\display;
+use local_coursefiles\output\display;
 
 /**
  * Share browser state and presentation between native form requests and Moodle fragments.
@@ -41,7 +41,7 @@ final class browser_controller {
         $input = [];
         foreach (['q', 'edition', 'shortname', 'module', 'mimetype', 'layout', 'mode'] as $name) {
             if (!is_string($raw[$name] ?? '') || strlen($raw[$name] ?? '') > 1024) {
-                throw new \moodle_exception('invalidselection', 'local_multipicker');
+                throw new \moodle_exception('invalidselection', 'local_coursefiles');
             }
             $input[$name] = clean_param($raw[$name] ?? '', PARAM_TEXT);
         }
@@ -54,7 +54,7 @@ final class browser_controller {
                 || count($captures) > 9 || array_filter($items, static fn($item) => !is_string($item))
                 || array_filter($captures, static fn($value) => !is_string($value) || strlen($value) > 255)
         ) {
-            throw new \moodle_exception('invalidselection', 'local_multipicker');
+            throw new \moodle_exception('invalidselection', 'local_coursefiles');
         }
         $input['items'] = clean_param_array($items, PARAM_RAW);
         $input['captures'] = clean_param_array($captures, PARAM_TEXT);
@@ -83,7 +83,7 @@ final class browser_controller {
         global $DB, $OUTPUT;
         $scope = draft_scope::describe($token, sesskey());
         $course = get_course($scope['courseid']);
-        $profiles = $DB->get_records_menu('local_multipicker', ['enabled' => 1], 'name', 'id, name');
+        $profiles = $DB->get_records_menu('local_coursefiles', ['enabled' => 1], 'name', 'id, name');
         $state = $scope['view'] ?? ['profileid' => (int)array_key_first($profiles), 'selected' => [],
             'filters' => ['q' => '', 'edition' => '', 'shortname' => '', 'module' => $scope['module'] ?? '', 'mimetype' => ''],
             'folder' => '', 'after' => '', 'history' => []];
@@ -116,7 +116,7 @@ final class browser_controller {
                 selection_options::parse($state['selected']);
                 $profileid = $input['profileid'];
                 if (!isset($profiles[$profileid])) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
                 if ($profileid !== (int)$state['profileid']) {
                     $state['selected'] = [];
@@ -134,7 +134,7 @@ final class browser_controller {
                 if ($removed !== '') {
                     $state['selected'] = array_values(array_diff($state['selected'], [$removed]));
                 }
-                [, , $rules] = \local_multipicker\local\profile\profiles::load($profileid);
+                [, , $rules] = \local_coursefiles\local\profile\profiles::load($profileid);
                 $captures = $input['captures'];
                 $state['filters']['captures'] = array_intersect_key($captures, $rules->filter_definitions());
                 foreach (['q', 'edition', 'shortname', 'module', 'mimetype'] as $filter) {
@@ -175,7 +175,7 @@ final class browser_controller {
                         }
                     }
                     if (count($state['selected']) > material_selection::MAX_FILES) {
-                        throw new \moodle_exception('batchlimit', 'local_multipicker');
+                        throw new \moodle_exception('batchlimit', 'local_coursefiles');
                     }
                 }
                 if (!empty($input['selectall'])) {
@@ -252,7 +252,7 @@ final class browser_controller {
                 array_column(array_filter($listing['cards'], static fn($card) => $card['isfolder']), 'value')
             ))), -material_selection::MAX_FILES);
             draft_scope::remember_view($token, $state, sesskey());
-            $capturecontrols = \local_multipicker\output\capture_filters::data(
+            $capturecontrols = \local_coursefiles\output\capture_filters::data(
                 (int)$state['profileid'],
                 $state['filters']['captures'] ?? [],
                 $listing['suggestions']
@@ -260,9 +260,9 @@ final class browser_controller {
             $listing['previouspage'] = (bool)$state['history'];
             $catalogpending = false;
             if (empty($listing['cards']) && isset($profiles[$state['profileid']])) {
-                [$profile, , $rules] = \local_multipicker\local\profile\profiles::load((int)$state['profileid']);
+                [$profile, , $rules] = \local_coursefiles\local\profile\profiles::load((int)$state['profileid']);
                 $catalogpending = !$DB->record_exists(
-                    'local_multipicker_course',
+                    'local_coursefiles_course',
                     ['courseid' => $course->id, 'revisionid' => $profile->activeid]
                 ) && $rules->resolve($course) !== null;
             }
@@ -279,34 +279,34 @@ final class browser_controller {
         }
         return ['review' => false, 'message' => $message, 'data' => $listing + [
 
-        'filenamehelp' => $OUTPUT->help_icon('filenamefilter', 'local_multipicker'),
-        'modulehelp' => $OUTPUT->help_icon('modulefilter', 'local_multipicker'),
-        'filetypehelp' => $OUTPUT->help_icon('filetypefilter', 'local_multipicker'),
-        'capturehelp' => $OUTPUT->help_icon('capturefilter', 'local_multipicker'),
-        'profilehelp' => $OUTPUT->help_icon('browserprofile', 'local_multipicker'),
-        'coursehelp' => $OUTPUT->help_icon('shortnamefilter', 'local_multipicker'),
-        'destinationhelp' => $OUTPUT->help_icon('batchdestination', 'local_multipicker'),
-        'modehelp' => $OUTPUT->help_icon('copymode', 'local_multipicker'),
+        'filenamehelp' => $OUTPUT->help_icon('filenamefilter', 'local_coursefiles'),
+        'modulehelp' => $OUTPUT->help_icon('modulefilter', 'local_coursefiles'),
+        'filetypehelp' => $OUTPUT->help_icon('filetypefilter', 'local_coursefiles'),
+        'capturehelp' => $OUTPUT->help_icon('capturefilter', 'local_coursefiles'),
+        'profilehelp' => $OUTPUT->help_icon('browserprofile', 'local_coursefiles'),
+        'coursehelp' => $OUTPUT->help_icon('shortnamefilter', 'local_coursefiles'),
+        'destinationhelp' => $OUTPUT->help_icon('batchdestination', 'local_coursefiles'),
+        'modehelp' => $OUTPUT->help_icon('copymode', 'local_coursefiles'),
         'filtercount' => count(array_filter(array_merge(
             array_intersect_key($state['filters'], array_flip(['q', 'shortname', 'module', 'mimetype', 'edition'])),
             $state['filters']['captures'] ?? []
         ), static fn($value) => trim((string)$value) !== '')),
         'catalogpending' => $catalogpending, 'selectioncapacity' => selection_limits::capacity($scope),
         'contextid' => $scope['contextid'],
-        'repositoryname' => display::name($scope['repositoryname'] ?? get_string('pluginname', 'local_multipicker')),
+        'repositoryname' => display::name($scope['repositoryname'] ?? get_string('pluginname', 'local_coursefiles')),
         'layout' => $state['layout'],
         'reactlayout' => json_encode([
             'initialLayout' => $state['layout'],
             'views' => array_map(static fn($layout, $icon) => [
                 'value' => $layout,
-                'label' => get_string('layout' . $layout, 'local_multipicker'),
+                'label' => get_string('layout' . $layout, 'local_coursefiles'),
                 'icon' => $OUTPUT->pix_icon($icon, '', 'core'),
             ], ['grid', 'list', 'tree'], ['a/view_icon_active', 'a/view_list_active', 'a/view_tree_active']),
         ], JSON_THROW_ON_ERROR),
         'listlayout' => $state['layout'] === 'list',
         'treelayout' => $state['layout'] === 'tree',
         'gridlayout' => $state['layout'] === 'grid',
-        'action' => (new \moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false),
+        'action' => (new \moodle_url('/local/coursefiles/selection/index.php', ['scope' => $token]))->out(false),
         'sesskey' => sesskey(), 'scope' => $token,
         'multipleprofiles' => count($profiles) > 1, 'profileid' => $state['profileid'],
         'profiles' => display::options($profiles, (string)$state['profileid']),
@@ -314,14 +314,14 @@ final class browser_controller {
         'morecapturefilters' => array_slice($capturecontrols, 2),
         'filters' => $state['filters'], 'modules' => display::options([
         '' => get_string('all'),
-        ] + \local_multipicker\local\catalog\source_registry::module_names(), $state['filters']['module']),
+        ] + \local_coursefiles\local\catalog\source_registry::module_names(), $state['filters']['module']),
         'types' => display::options(display::filetypes(), $state['filters']['mimetype']),
         'destinations' => display::options(draft_scope::destinations($token, sesskey()), $scope['basepath']),
         'modes' => display::options([
-        'paths' => get_string('copypaths', 'local_multipicker'), 'folder' => get_string('copyfolder', 'local_multipicker'),
-        'contents' => get_string('copycontents', 'local_multipicker'),
+        'paths' => get_string('copypaths', 'local_coursefiles'), 'folder' => get_string('copyfolder', 'local_coursefiles'),
+        'contents' => get_string('copycontents', 'local_coursefiles'),
         ], $scope['copymode'] ?? 'paths'),
-        'locked' => \local_multipicker\local\policy\author_policy::locked($course->id),
+        'locked' => \local_coursefiles\local\policy\author_policy::locked($course->id),
         ]];
     }
 }

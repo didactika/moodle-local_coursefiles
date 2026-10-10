@@ -4,15 +4,15 @@
 
 /* Compact material cards retain native icons and selection controls. */
 
-.multipicker-cards {
+.coursefiles-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
     gap: .5rem;
     align-content: start;
 }
 
-.multipicker-card {
-    border-radius: var(--multipicker-radius);
+.coursefiles-card {
+    border-radius: var(--coursefiles-radius);
     cursor: pointer;
     transition: border-color .15s ease;
     .card-body {
@@ -20,7 +20,7 @@
     }
     input[type=checkbox] {
         margin-top: .3rem;
-        accent-color: var(--multipicker-primary);
+        accent-color: var(--coursefiles-primary);
         width: 1.1rem;
         height: 1.1rem;
         flex-shrink: 0;
@@ -54,7 +54,7 @@
     }
 }
 
-.multipicker-origin {
+.coursefiles-origin {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -64,7 +64,7 @@
     max-height: 2rem;
 }
 
-.multipicker-card {
+.coursefiles-card {
     &-meta {
         gap: .35rem;
         font-size: .7rem;
@@ -73,33 +73,33 @@
     }
 }
 
-.multipicker-chip {
+.coursefiles-chip {
     display: inline-block;
     border-radius: 1rem;
     padding: .15rem .5rem;
     font-size: .72rem;
     font-weight: 600;
-    color: var(--multipicker-primary);
-    background: color-mix(in srgb, var(--multipicker-primary) 10%, var(--multipicker-surface));
+    color: var(--coursefiles-primary);
+    background: color-mix(in srgb, var(--coursefiles-primary) 10%, var(--coursefiles-surface));
 }
 
-.multipicker-card:hover, .multipicker-card:focus-within, .multipicker-selected {
-    border-color: var(--multipicker-primary);
-    box-shadow: 0 0 0 1px var(--multipicker-primary);
+.coursefiles-card:hover, .coursefiles-card:focus-within, .coursefiles-selected {
+    border-color: var(--coursefiles-primary);
+    box-shadow: 0 0 0 1px var(--coursefiles-primary);
 }
 
-.multipicker-card {
+.coursefiles-card {
     &:hover {
-        background: color-mix(in srgb, var(--multipicker-primary) 5%, var(--multipicker-surface));
+        background: color-mix(in srgb, var(--coursefiles-primary) 5%, var(--coursefiles-surface));
     }
 }
 
-.multipicker-selected {
-    background: color-mix(in srgb, var(--multipicker-primary) 8%, var(--multipicker-surface));
+.coursefiles-selected {
+    background: color-mix(in srgb, var(--coursefiles-primary) 8%, var(--coursefiles-surface));
 }
 
-.multipicker-browser {
-    .multipicker-open.btn {
+.coursefiles-browser {
+    .coursefiles-open.btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -111,12 +111,12 @@
         border: 0;
         border-radius: .5rem;
         line-height: 1;
-        color: var(--multipicker-primary);
-        background: color-mix(in srgb, var(--multipicker-primary) 12%, #fff);
+        color: var(--coursefiles-primary);
+        background: color-mix(in srgb, var(--coursefiles-primary) 12%, #fff);
     }
 }
 
-.multipicker-open .icon {
+.coursefiles-open .icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -126,13 +126,13 @@
     margin: 0;
 }
 
-.multipicker-back .icon, .multipicker-toolbar .btn-group .icon {
+.coursefiles-back .icon, .coursefiles-toolbar .btn-group .icon {
     margin: 0;
 }
 
-.multipicker-browser {
+.coursefiles-browser {
     &[data-layout=list] {
-        .multipicker-cards {
+        .coursefiles-cards {
             grid-template-columns: 1fr;
         }
     }
@@ -140,30 +140,30 @@
         position: relative;
         gap: .5rem;
     }
-    &-filters .multipicker-search {
+    &-filters .coursefiles-search {
         flex: 1 1 12rem;
         max-width: 24rem;
     }
-    &-filters .multipicker-filter-popover {
+    &-filters .coursefiles-filter-popover {
         position: static;
         margin: 0;
         padding: 0;
         border: 0;
     }
-    &-filters .multipicker-filter-menu {
+    &-filters .coursefiles-filter-menu {
         width: min(38rem, 100%);
         max-height: min(55vh, 22rem);
         overflow: auto;
         top: 100%;
-        background: var(--multipicker-host-background, #fff);
+        background: var(--coursefiles-host-background, #fff);
         z-index: 10;
     }
-    .multipicker-open.btn:hover {
-        background: color-mix(in srgb, var(--multipicker-primary) 22%, #fff);
-        color: var(--multipicker-primary);
+    .coursefiles-open.btn:hover {
+        background: color-mix(in srgb, var(--coursefiles-primary) 22%, #fff);
+        color: var(--coursefiles-primary);
     }
-    .multipicker-open.btn:focus-visible {
-        outline: 2px solid var(--multipicker-primary);
+    .coursefiles-open.btn:focus-visible {
+        outline: 2px solid var(--coursefiles-primary);
         outline-offset: 2px;
     }
 }

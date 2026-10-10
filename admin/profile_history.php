@@ -16,7 +16,7 @@
 
 /**
  * Profile version history and side-by-side comparison.
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,25 +25,25 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use local_multipicker\local\profile\profile_history;
-use local_multipicker\output\display;
-use local_multipicker\output\navigation;
+use local_coursefiles\local\profile\profile_history;
+use local_coursefiles\output\display;
+use local_coursefiles\output\navigation;
 
 $profileid = required_param('profileid', PARAM_INT);
-$url = new moodle_url('/local/multipicker/admin/profile_history.php', ['profileid' => $profileid]);
-admin_externalpage_setup('local_multipicker_profiles', '', ['profileid' => $profileid], $url);
-$profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
+$url = new moodle_url('/local/coursefiles/admin/profile_history.php', ['profileid' => $profileid]);
+admin_externalpage_setup('local_coursefiles_profiles', '', ['profileid' => $profileid], $url);
+$profile = $DB->get_record('local_coursefiles', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
 if (data_submitted()) {
     require_sesskey();
     profile_history::restore($profileid, required_param('restore', PARAM_INT));
-    redirect($url, get_string('versionrestored', 'local_multipicker'), null, \core\output\notification::NOTIFY_SUCCESS);
+    redirect($url, get_string('versionrestored', 'local_coursefiles'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 $page = max(0, optional_param('page', 0, PARAM_INT));
-$perpage = \local_multipicker\output\pagination::size();
-$total = $DB->count_records('local_multipicker_revision', ['profileid' => $profileid]);
-$page = \local_multipicker\output\pagination::clamp($total, $page, $perpage);
+$perpage = \local_coursefiles\output\pagination::size();
+$total = $DB->count_records('local_coursefiles_revision', ['profileid' => $profileid]);
+$page = \local_coursefiles\output\pagination::clamp($total, $page, $perpage);
 $records = $DB->get_records(
-    'local_multipicker_revision',
+    'local_coursefiles_revision',
     ['profileid' => $profileid],
     'revision DESC',
     '*',
@@ -54,9 +54,9 @@ $left = optional_param('left', 0, PARAM_INT);
 $right = optional_param('right', 0, PARAM_INT);
 $data = ['name' => display::name($profile->name), 'profileid' => $profileid, 'action' => $url->out(false),
     'sesskey' => sesskey(), 'versions' => [], 'choices' => [], 'rows' => [],
-    'backurl' => (new moodle_url('/local/multipicker/admin/profile.php', ['profileid' => $profileid]))->out(false),
-    'historyhelp' => $OUTPUT->help_icon('versionhistory', 'local_multipicker'),
-    'pagination' => \local_multipicker\output\pagination::render(
+    'backurl' => (new moodle_url('/local/coursefiles/admin/profile.php', ['profileid' => $profileid]))->out(false),
+    'historyhelp' => $OUTPUT->help_icon('versionhistory', 'local_coursefiles'),
+    'pagination' => \local_coursefiles\output\pagination::render(
         $total,
         $page,
         $perpage,
@@ -68,18 +68,18 @@ $data = ['name' => display::name($profile->name), 'profileid' => $profileid, 'ac
         )])
     )];
 if (optional_param('changesonly', false, PARAM_BOOL)) {
-    $data['pagination'] = \local_multipicker\output\pagination::render(
+    $data['pagination'] = \local_coursefiles\output\pagination::render(
         $total,
         $page,
         $perpage,
         new moodle_url($url, ['left' => $left, 'right' => $right, 'changesonly' => 1])
     );
 }
-$PAGE->requires->js_call_amd('local_multipicker/administration', 'init');
+$PAGE->requires->js_call_amd('local_coursefiles/administration', 'init');
 $choices = $records;
 foreach (array_unique([$profile->activeid, $left, $right]) as $id) {
     if ($id) {
-        $choices[$id] = $DB->get_record('local_multipicker_revision', ['id' => $id, 'profileid' => $profileid], '*', MUST_EXIST);
+        $choices[$id] = $DB->get_record('local_coursefiles_revision', ['id' => $id, 'profileid' => $profileid], '*', MUST_EXIST);
     }
 }
 foreach ($choices as $version) {
@@ -112,7 +112,7 @@ if ($left && $right && $left !== $right) {
     }
 }
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
-echo $PAGE->get_renderer('local_multipicker')->render(navigation::site('profiles'));
-echo $OUTPUT->render_from_template('local_multipicker/local/profile/history', $data);
+echo $OUTPUT->heading(get_string('pluginname', 'local_coursefiles'));
+echo $PAGE->get_renderer('local_coursefiles')->render(navigation::site('profiles'));
+echo $OUTPUT->render_from_template('local_coursefiles/local/profile/history', $data);
 echo $OUTPUT->footer();

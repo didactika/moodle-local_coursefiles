@@ -15,27 +15,27 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_coursefiles;
 
-use local_multipicker\local\catalog\catalog;
-use local_multipicker\local\catalog\indexer;
-use local_multipicker\local\catalog\material_source;
-use local_multipicker\local\profile\profiles;
+use local_coursefiles\local\catalog\catalog;
+use local_coursefiles\local\catalog\indexer;
+use local_coursefiles\local\catalog\material_source;
+use local_coursefiles\local\profile\profiles;
 
 /**
  * Verify live public-area adapters and native control ownership on both supported cores.
- * @covers \local_multipicker\local\catalog\catalog
- * @covers \local_multipicker\local\catalog\indexer
- * @covers \local_multipicker\local\catalog\material_source
- * @covers \local_multipicker\local\profile\profiles
+ * @covers \local_coursefiles\local\catalog\catalog
+ * @covers \local_coursefiles\local\catalog\indexer
+ * @covers \local_coursefiles\local\catalog\material_source
+ * @covers \local_coursefiles\local\profile\profiles
  */
 final class public_sources_test extends \advanced_testcase {
     /**
@@ -44,21 +44,21 @@ final class public_sources_test extends \advanced_testcase {
     public function test_overlapping_folders_share_canonical_content_selection(): void {
         $fixture = $this->fixture();
         [$token] = $this->scope($fixture);
-        $controller = \local_multipicker\local\selection\browser_controller::class;
+        $controller = \local_coursefiles\local\selection\browser_controller::class;
         $result = $controller::data($token, $controller::input([
             'profileid' => $fixture['profileid'], 'module' => 'folder', 'selectall' => true,
         ]));
         $this->assertSame('', $result['message']);
         $this->assertSame(3, $result['data']['count']);
-        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
-        $records = \local_multipicker\local\selection\selected_content::records($scope['view']['selected']);
+        $scope = \local_coursefiles\local\selection\draft_scope::describe($token, sesskey());
+        $records = \local_coursefiles\local\selection\selected_content::records($scope['view']['selected']);
         $this->assertCount(3, array_unique(array_column($records, 'contenthash')));
         foreach (json_decode($result['data']['folderstates'], true) as $state) {
             $this->assertTrue($state['checked']);
             $this->assertFalse($state['partial']);
         }
         $scope['view']['selected'] = array_column($result['data']['cards'], 'value');
-        \local_multipicker\local\selection\draft_scope::remember_view($token, $scope['view'], sesskey());
+        \local_coursefiles\local\selection\draft_scope::remember_view($token, $scope['view'], sesskey());
         $this->assertSame(3, $controller::data($token)['data']['count']);
     }
 
@@ -67,11 +67,11 @@ final class public_sources_test extends \advanced_testcase {
      */
     public function test_fragment_rejects_an_unrelated_context(): void {
         global $CFG;
-        require_once($CFG->dirroot . '/local/multipicker/lib.php');
+        require_once($CFG->dirroot . '/local/coursefiles/lib.php');
         [$token, $context] = $this->scope($this->fixture());
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
-        \local_multipicker_output_fragment_browser(['scope' => $token,
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursefiles'));
+        \local_coursefiles_output_fragment_browser(['scope' => $token,
             'context' => $context->get_course_context(), 'state' => '{}']);
     }
 
@@ -80,19 +80,19 @@ final class public_sources_test extends \advanced_testcase {
      */
     public function test_fragment_keeps_selection_without_approving_transfer(): void {
         global $CFG;
-        require_once($CFG->dirroot . '/local/multipicker/lib.php');
+        require_once($CFG->dirroot . '/local/coursefiles/lib.php');
         $fixture = $this->fixture();
         [$token, $context] = $this->scope($fixture);
-        $state = \local_multipicker\local\selection\browser_controller::data($token)['data'];
+        $state = \local_coursefiles\local\selection\browser_controller::data($token)['data'];
         $selected = $state['cards'][0]['value'];
-        $html = \local_multipicker_output_fragment_browser(['scope' => $token, 'context' => $context,
+        $html = \local_coursefiles_output_fragment_browser(['scope' => $token, 'context' => $context,
             'state' => json_encode(['profileid' => $fixture['profileid'], 'items' => [$selected],
                 'q' => 'no-such-teaching-material', 'review' => true])]);
-        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+        $scope = \local_coursefiles\local\selection\draft_scope::describe($token, sesskey());
         $this->assertSame([$selected], $scope['view']['selected']);
         $this->assertArrayNotHasKey('review', $scope);
-        $this->assertStringContainsString('data-multipicker-panel', $html);
-        $this->assertStringNotContainsString('data-multipicker-confirm', $html);
+        $this->assertStringContainsString('data-coursefiles-panel', $html);
+        $this->assertStringNotContainsString('data-coursefiles-confirm', $html);
     }
 
 
@@ -110,16 +110,16 @@ final class public_sources_test extends \advanced_testcase {
             $this->file($folder, 'content', 'batch-match-' . $index . '.txt');
         }
         indexer::refresh($source->id);
-        $result = \local_multipicker\local\selection\browser_controller::data(
+        $result = \local_coursefiles\local\selection\browser_controller::data(
             $token,
-            \local_multipicker\local\selection\browser_controller::input([
+            \local_coursefiles\local\selection\browser_controller::input([
                 'profileid' => $fixture['profileid'], 'q' => 'batch-match-', 'selectall' => true,
             ])
         );
         $this->assertSame('', $result['message']);
         $this->assertSame(61, $result['data']['count']);
         $this->assertCount(50, $result['data']['cards']);
-        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+        $scope = \local_coursefiles\local\selection\draft_scope::describe($token, sesskey());
         $this->assertCount(61, $scope['view']['selected']);
     }
 
@@ -128,7 +128,7 @@ final class public_sources_test extends \advanced_testcase {
      */
     public function test_fragment_keeps_folder_and_recursive_selection(): void {
         global $CFG, $DB;
-        require_once($CFG->dirroot . '/local/multipicker/lib.php');
+        require_once($CFG->dirroot . '/local/coursefiles/lib.php');
         $fixture = $this->fixture();
         [$token, $context] = $this->scope($fixture);
         $source = $DB->get_record('course', ['shortname' => 'CB2025']);
@@ -136,20 +136,20 @@ final class public_sources_test extends \advanced_testcase {
         $folder = reset($folders);
         $value = 'folder:' . $folder->id . ':' . base64_encode('/');
         $input = ['profileid' => $fixture['profileid'], 'items' => [], 'toggleitem' => $value, 'openfolder' => $value];
-        \local_multipicker\local\selection\browser_controller::data(
+        \local_coursefiles\local\selection\browser_controller::data(
             $token,
-            \local_multipicker\local\selection\browser_controller::input($input)
+            \local_coursefiles\local\selection\browser_controller::input($input)
         );
-        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+        $scope = \local_coursefiles\local\selection\draft_scope::describe($token, sesskey());
         $this->assertCount(2, $scope['view']['selected']);
         $file = get_file_storage()->get_file($folder->context->id, 'mod_folder', 'content', 0, '/', 'lesson.txt');
-        $html = \local_multipicker_output_fragment_browser(['scope' => $token, 'context' => $context,
+        $html = \local_coursefiles_output_fragment_browser(['scope' => $token, 'context' => $context,
             'state' => json_encode(['profileid' => $fixture['profileid'], 'items' => $scope['view']['selected'],
                 'toggleitem' => 'file:' . $file->get_pathnamehash()])]);
-        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+        $scope = \local_coursefiles\local\selection\draft_scope::describe($token, sesskey());
         $this->assertSame($value, $scope['view']['folder']);
         $this->assertCount(1, $scope['view']['selected']);
-        $this->assertStringContainsString('multipicker-back', $html);
+        $this->assertStringContainsString('coursefiles-back', $html);
     }
 
     /**
@@ -158,8 +158,8 @@ final class public_sources_test extends \advanced_testcase {
     public function test_browser_uses_repository_instance_name(): void {
         $fixture = $this->fixture();
         [$token] = $this->scope($fixture);
-        \local_multipicker\local\selection\draft_scope::select_repository($token, 'Course library', sesskey());
-        $data = \local_multipicker\local\selection\browser_controller::data($token)['data'];
+        \local_coursefiles\local\selection\draft_scope::select_repository($token, 'Course library', sesskey());
+        $data = \local_coursefiles\local\selection\browser_controller::data($token)['data'];
         $this->assertSame('Course library', $data['repositoryname']);
     }
 
@@ -262,23 +262,23 @@ final class public_sources_test extends \advanced_testcase {
         require_once($CFG->dirroot . '/mod/url/mod_form.php');
         $PAGE->set_cm($cm, $course);
         $PAGE->set_url('/course/modedit.php', ['update' => $cm->id]);
-        \local_multipicker\form\native_filemanager::register_native(new \core\hook\after_config());
+        \local_coursefiles\form\native_filemanager::register_native();
         [$cm, , , $data, $section] = get_moduleinfo_data($cm, $course);
         $form = new \mod_url_mod_form($data, $section->section, $cm, $course);
         $form->set_data($data);
         $html = $form->render();
-        $this->assertStringNotContainsString('data-multipicker-open', $html);
+        $this->assertStringNotContainsString('data-coursefiles-open', $html);
         $dom = new \DOMDocument();
         @$dom->loadHTML($html);
         $field = (new \DOMXPath($dom))->query('//input[@name="introeditor[itemid]"]')->item(0);
         $this->assertNotNull($field);
-        $scope = \local_multipicker\local\selection\draft_scope::find(
+        $scope = \local_coursefiles\local\selection\draft_scope::find(
             \context_module::instance($cm->id),
             (int)$field->getAttribute('value'),
             sesskey()
         );
         $this->assertNotEmpty($scope);
-        $contract = \local_multipicker\local\selection\draft_scope::describe($scope, sesskey());
+        $contract = \local_coursefiles\local\selection\draft_scope::describe($scope, sesskey());
         $this->assertSame('url', $contract['module']);
         $this->assertSame('introeditor', $contract['field']);
         $this->assertSame('editor', $contract['environment']);
@@ -293,7 +293,7 @@ final class public_sources_test extends \advanced_testcase {
         $CFG->texteditors = 'textarea';
         $context = \context_module::instance($fixture['targetcmid']);
         $PAGE->set_context($context);
-        $editor = new \local_multipicker\form\native_editor(
+        $editor = new \local_coursefiles\form\native_editor(
             'introeditor',
             'Description',
             ['id' => 'id_introeditor'],
@@ -302,7 +302,7 @@ final class public_sources_test extends \advanced_testcase {
         $draftid = file_get_unused_draft_itemid();
         $editor->setValue(['text' => 'Existing description', 'format' => FORMAT_HTML, 'itemid' => $draftid]);
         $editor->toHtml();
-        $this->assertSame('', \local_multipicker\local\selection\draft_scope::find($context, $draftid, sesskey()));
+        $this->assertSame('', \local_coursefiles\local\selection\draft_scope::find($context, $draftid, sesskey()));
     }
 
     /**
@@ -315,7 +315,7 @@ final class public_sources_test extends \advanced_testcase {
         $cm = get_coursemodule_from_id('folder', $fixture['targetcmid']);
         $PAGE->set_cm($cm, $course);
         $PAGE->set_url('/mod/folder/edit.php', ['id' => $cm->id]);
-        $manager = new \local_multipicker\form\native_filemanager(
+        $manager = new \local_coursefiles\form\native_filemanager(
             'files_filemanager',
             'Files',
             ['id' => 'id_files'],
@@ -323,13 +323,13 @@ final class public_sources_test extends \advanced_testcase {
         );
         $manager->setValue(file_get_unused_draft_itemid());
         $manager->toHtml();
-        $token = \local_multipicker\local\selection\draft_scope::find(
+        $token = \local_coursefiles\local\selection\draft_scope::find(
             \context_module::instance($cm->id),
             (int)$manager->getValue(),
             sesskey()
         );
         $this->assertNotEmpty($token);
-        $this->assertSame('folder', \local_multipicker\local\selection\draft_scope::describe($token, sesskey())['module']);
+        $this->assertSame('folder', \local_coursefiles\local\selection\draft_scope::describe($token, sesskey())['module']);
     }
 
     /**
@@ -339,7 +339,7 @@ final class public_sources_test extends \advanced_testcase {
         global $OUTPUT;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $nodes = \local_multipicker\output\review_tree::data([
+        $nodes = \local_coursefiles\output\review_tree::data([
             ['filepath' => '/notes/', 'filename' => '<script>alert(1)</script>.txt', 'decision' => 'copy',
                 'snapshot' => ['author' => 'Original teacher', 'license' => 'cc']],
             ['filepath' => '/', 'filename' => 'a.txt', 'decision' => 'skip_content',
@@ -348,7 +348,7 @@ final class public_sources_test extends \advanced_testcase {
         $this->assertSame('notes', $nodes[0]['name']);
         $this->assertTrue($nodes[0]['folder']);
         $html = $OUTPUT->render_from_template(
-            'local_multipicker/local/selection/review',
+            'local_coursefiles/local/selection/review',
             ['nodes' => $nodes, 'backurl' => '#', 'count' => 2, 'size' => '1 KB']
         );
         $this->assertStringContainsString('&lt;script&gt;', $html);
@@ -364,7 +364,7 @@ final class public_sources_test extends \advanced_testcase {
     private function fixture(): array {
         $this->resetAfterTest();
         $this->setAdminUser();
-        return $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        return $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_folder_fixture(['name' => 'Public area acceptance']);
     }
 
@@ -379,7 +379,7 @@ final class public_sources_test extends \advanced_testcase {
         $context = \context_module::instance($fixture['targetcmid']);
         $draftid = file_get_unused_draft_itemid();
         get_file_storage()->create_directory(\context_user::instance($USER->id)->id, 'user', 'draft', $draftid, '/');
-        $token = \local_multipicker\local\selection\draft_scope::open_contract([
+        $token = \local_coursefiles\local\selection\draft_scope::open_contract([
             'field' => 'files_filemanager', 'draftid' => $draftid,
             'limits' => ['maxfiles' => -1, 'maxbytes' => 0, 'areamaxbytes' => 0,
                 'subdirs' => true, 'accepted_types' => ['*']],

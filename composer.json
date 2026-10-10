@@ -1,10 +1,10 @@
 {
-  "name": "multipicker/moodle-local_multipicker",
+  "name": "didactika/moodle-local_coursefiles",
   "description": "Configurable Moodle teaching-material reuse",
   "type": "moodle-local",
   "license": "GPL-3.0-or-later",
   "require": {
-    "php": ">=8.1"
+    "php": ">=8.0"
   },
   "require-dev": {
     "moodlehq/moodle-cs": "^3.7"

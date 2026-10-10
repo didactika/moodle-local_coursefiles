@@ -4,14 +4,14 @@
 /**
  * Bind feature events to scoped actions without owning business state.
  *
- * @module local_multipicker/local/selection/listeners
+ * @module local_coursefiles/local/selection/listeners
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {listen} from 'local_multipicker/local/listeners';
-import Selectors from 'local_multipicker/local/selection/selectors';
+import {listen} from 'local_coursefiles/local/listeners';
+import Selectors from 'local_coursefiles/local/selection/selectors';
 
 /**
  * Register events for this rendered feature.
@@ -31,7 +31,7 @@ export const registerListeners = (form, actions) => {
     listen(form, 'submit', actions.submit);
     listen(form, 'click', actions.changeLayout);
     form.querySelectorAll(Selectors.options).forEach(detail => {
-        const key = 'multipicker-options';
+        const key = 'coursefiles-options';
         try {
             detail.open = sessionStorage.getItem(key) === 'open';
         } catch (error) {

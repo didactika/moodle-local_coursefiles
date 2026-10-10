@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker database upgrades.
+ * CourseFiles database upgrades.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,20 +29,20 @@
  * @param int $oldversion Installed version.
  * @return bool Upgrade completed.
  */
-function xmldb_local_multipicker_upgrade(int $oldversion): bool {
+function xmldb_local_coursefiles_upgrade(int $oldversion): bool {
     global $DB;
     $dbman = $DB->get_manager();
     if ($oldversion < 2026100801) {
-        $oldtable = new xmldb_table('local_multipicker_audit');
-        $newtable = new xmldb_table('local_multipicker_log');
+        $oldtable = new xmldb_table('local_coursefiles_audit');
+        $newtable = new xmldb_table('local_coursefiles_log');
         if ($dbman->table_exists($oldtable)) {
             if ($dbman->table_exists($newtable)) {
-                throw new coding_exception('Both MultiPicker history tables exist; resolve the conflict before upgrading.');
+                throw new coding_exception('Both CourseFiles history tables exist; resolve the conflict before upgrading.');
             }
-            $dbman->rename_table($oldtable, 'local_multipicker_log');
+            $dbman->rename_table($oldtable, 'local_coursefiles_log');
         }
         if (!$dbman->table_exists($newtable)) {
-            throw new coding_exception('MultiPicker log table is missing.');
+            throw new coding_exception('CourseFiles log table is missing.');
         }
         foreach (
             [
@@ -54,27 +54,27 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
                 $dbman->add_index($newtable, $index);
             }
         }
-        upgrade_plugin_savepoint(true, 2026100801, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026100801, 'local', 'coursefiles');
     }
     if ($oldversion < 2026100802) {
-        $table = new xmldb_table('local_multipicker_attribution');
+        $table = new xmldb_table('local_coursefiles_author');
         $field = new xmldb_field('parentuuid', XMLDB_TYPE_CHAR, '36', null, XMLDB_NOTNULL, null, null);
         $dbman->change_field_default($table, $field);
-        upgrade_plugin_savepoint(true, 2026100802, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026100802, 'local', 'coursefiles');
     }
     if ($oldversion < 2026100902) {
         $file = new xmldb_file(__DIR__ . '/install.xml');
         if (!$file->loadXMLStructure()) {
-            throw new coding_exception('Unable to load the MultiPicker XMLDB schema.');
+            throw new coding_exception('Unable to load the CourseFiles XMLDB schema.');
         }
-        $table = $file->getStructure()->getTable('local_multipicker_value');
+        $table = $file->getStructure()->getTable('local_coursefiles_value');
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
-        upgrade_plugin_savepoint(true, 2026100902, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026100902, 'local', 'coursefiles');
     }
     if ($oldversion < 2026100903) {
-        $table = new xmldb_table('local_multipicker_operation');
+        $table = new xmldb_table('local_coursefiles_operation');
         $field = new xmldb_field('included', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'decision');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -83,30 +83,30 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
-        upgrade_plugin_savepoint(true, 2026100903, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026100903, 'local', 'coursefiles');
     }
     if ($oldversion < 2026100904) {
         $file = new xmldb_file(__DIR__ . '/install.xml');
         if (!$file->loadXMLStructure()) {
-            throw new coding_exception('Unable to load the MultiPicker XMLDB schema.');
+            throw new coding_exception('Unable to load the CourseFiles XMLDB schema.');
         }
-        $targettable = $file->getStructure()->getTable('local_multipicker_target');
+        $targettable = $file->getStructure()->getTable('local_coursefiles_target');
         if (!$dbman->table_exists($targettable)) {
             $dbman->create_table($targettable);
         }
-        $table = new xmldb_table('local_multipicker');
+        $table = new xmldb_table('local_coursefiles');
         $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'enabled');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-        $table = new xmldb_table('local_multipicker_operation');
+        $table = new xmldb_table('local_coursefiles_operation');
         foreach (['sourcecourseid', 'targetcourseid', 'sourcecmid'] as $name) {
             $field = new xmldb_field($name, XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
             if (!$dbman->field_exists($table, $field)) {
                 $dbman->add_field($table, $field);
             }
         }
-        $records = $DB->get_recordset_select('local_multipicker_operation', 'sourcecourseid = 0');
+        $records = $DB->get_recordset_select('local_coursefiles_operation', 'sourcecourseid = 0');
         foreach ($records as $operation) {
             $snapshot = json_decode($operation->snapshot, true);
             $operation->sourcecourseid = $snapshot['sourcecourse'] ?? 0;
@@ -114,14 +114,14 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
             $contextid = $DB->get_field('files', 'contextid', ['pathnamehash' => $operation->sourcehash]) ?: 0;
             $context = $contextid ? context::instance_by_id($contextid, IGNORE_MISSING) : null;
             $operation->sourcecmid = $context && $context->contextlevel === CONTEXT_MODULE ? $context->instanceid : 0;
-            $DB->update_record('local_multipicker_operation', $operation);
+            $DB->update_record('local_coursefiles_operation', $operation);
         }
         $records->close();
         foreach (
             [
-            'local_multipicker_plan' => ['timecreated-id', ['timecreated', 'id']],
-            'local_multipicker_run' => ['planid-state-time', ['planid', 'state', 'timemodified']],
-            'local_multipicker_operation' => ['planid-course-folder', ['planid', 'sourcecourseid', 'sourcecmid']],
+            'local_coursefiles_plan' => ['timecreated-id', ['timecreated', 'id']],
+            'local_coursefiles_run' => ['planid-state-time', ['planid', 'state', 'timemodified']],
+            'local_coursefiles_operation' => ['planid-course-folder', ['planid', 'sourcecourseid', 'sourcecmid']],
             ] as $name => [$indexname, $fields]
         ) {
             $table = new xmldb_table($name);
@@ -130,39 +130,55 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
                 $dbman->add_index($table, $index);
             }
         }
-        upgrade_plugin_savepoint(true, 2026100904, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026100904, 'local', 'coursefiles');
     }
     if ($oldversion < 2026100905) {
         $file = new xmldb_file(__DIR__ . '/install.xml');
         if (!$file->loadXMLStructure()) {
-            throw new coding_exception('Unable to load the MultiPicker XMLDB schema.');
+            throw new coding_exception('Unable to load the CourseFiles XMLDB schema.');
         }
-        $table = $file->getStructure()->getTable('local_multipicker_target');
+        $table = $file->getStructure()->getTable('local_coursefiles_target');
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
-        upgrade_plugin_savepoint(true, 2026100905, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026100905, 'local', 'coursefiles');
     }
     if ($oldversion < 2026101000) {
-        $table = new xmldb_table('local_multipicker_revision');
+        $table = new xmldb_table('local_coursefiles_revision');
         $index = new xmldb_index('timecreated-id', XMLDB_INDEX_NOTUNIQUE, ['timecreated', 'id']);
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
-        upgrade_plugin_savepoint(true, 2026101000, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026101000, 'local', 'coursefiles');
     }
     if ($oldversion < 2026101001) {
-        \local_multipicker\local\upgrade\legacy_import::repair_tasks();
-        upgrade_plugin_savepoint(true, 2026101001, 'local', 'multipicker');
+        \local_coursefiles\local\upgrade\legacy_import::repair_tasks();
+        upgrade_plugin_savepoint(true, 2026101001, 'local', 'coursefiles');
     }
     if ($oldversion < 2026101002) {
-        upgrade_plugin_savepoint(true, 2026101002, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026101002, 'local', 'coursefiles');
     }
     if ($oldversion < 2026101003) {
-        upgrade_plugin_savepoint(true, 2026101003, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026101003, 'local', 'coursefiles');
     }
     if ($oldversion < 2026101004) {
-        upgrade_plugin_savepoint(true, 2026101004, 'local', 'multipicker');
+        upgrade_plugin_savepoint(true, 2026101004, 'local', 'coursefiles');
+    }
+    if ($oldversion < 2026101100) {
+        upgrade_plugin_savepoint(true, 2026101100, 'local', 'coursefiles');
+    }
+    if ($oldversion < 2026101101) {
+        foreach (['_coursepolicy' => '_policy', '_publication' => '_publish', '_attribution' => '_author'] as $old => $new) {
+            $source = new xmldb_table('local_coursefiles' . $old);
+            $target = new xmldb_table('local_coursefiles' . $new);
+            if ($dbman->table_exists($source)) {
+                if ($dbman->table_exists($target)) {
+                    throw new coding_exception('Both CourseFiles table names exist: ' . $old . ' / ' . $new);
+                }
+                $dbman->rename_table($source, 'local_coursefiles' . $new);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026101101, 'local', 'coursefiles');
     }
     return true;
 }

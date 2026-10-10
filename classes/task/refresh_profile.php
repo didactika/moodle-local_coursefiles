@@ -17,21 +17,23 @@
 /**
  * Bounded course reconciliation after profile activation.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\task;
+namespace local_coursefiles\task;
 
-use local_multipicker\local\catalog\indexer;
-use local_multipicker\local\profile\profiles;
+use local_coursefiles\local\catalog\indexer;
+use local_coursefiles\local\profile\profiles;
 
 /**
  * Refreshes matching or previously indexed courses without a whole-site form request.
  */
 final class refresh_profile extends \core\task\adhoc_task {
-    /** @var int Maximum courses examined in one task slice. */
+    /**
+     * @var int Maximum courses examined in one task slice.
+     */
     private const BATCH_SIZE = 25;
 
     /**
@@ -55,7 +57,7 @@ final class refresh_profile extends \core\task\adhoc_task {
         $data = $this->get_custom_data();
         $profileid = (int)$data->profileid;
         if (
-            !$DB->record_exists('local_multipicker', ['id' => $profileid, 'activeid' => (int)$data->revisionid,
+            !$DB->record_exists('local_coursefiles', ['id' => $profileid, 'activeid' => (int)$data->revisionid,
                 'enabled' => 1, 'deleted' => 0])
         ) {
             return;
@@ -72,7 +74,7 @@ final class refresh_profile extends \core\task\adhoc_task {
         );
         $after = (int)$data->after;
         foreach ($courses as $course) {
-            $previous = $DB->record_exists('local_multipicker_course', ['courseid' => $course->id, 'profileid' => $profileid]);
+            $previous = $DB->record_exists('local_coursefiles_course', ['courseid' => $course->id, 'profileid' => $profileid]);
             try {
                 $identity = $rules->resolve($course);
             } catch (\moodle_exception $exception) {

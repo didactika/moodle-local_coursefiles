@@ -17,14 +17,14 @@
 /**
  * Authorized asset grouping with keyset pagination.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\catalog;
+namespace local_coursefiles\local\catalog;
 
-use local_multipicker\local\profile\profiles;
+use local_coursefiles\local\profile\profiles;
 
 /**
  * Groups current permitted occurrences rather than global unfiltered results.
@@ -50,11 +50,11 @@ final class catalog {
         int $draftid = 0
     ): array {
         global $DB;
-        require_capability('local/multipicker:browse', \context_course::instance($targetcourse));
-        require_capability('local/multipicker:reuse', \context_course::instance($targetcourse));
-        \local_multipicker\local\selection\destination_access::require($targetcourse);
+        require_capability('local/coursefiles:browse', \context_course::instance($targetcourse));
+        require_capability('local/coursefiles:reuse', \context_course::instance($targetcourse));
+        \local_coursefiles\local\selection\destination_access::require($targetcourse);
         if ($after !== '' && !preg_match('/^[a-f0-9]{40}$/', $after)) {
-            throw new \moodle_exception('invalidcursor', 'local_multipicker');
+            throw new \moodle_exception('invalidcursor', 'local_coursefiles');
         }
         [$profile, $revision, $rules] = profiles::load($profileid);
         $identity = $rules->resolve(get_course($targetcourse));
@@ -64,7 +64,7 @@ final class catalog {
         $limit = max(1, min(50, $limit));
         $params = ['revisionid' => $revision->id, 'familyhash' => $identity['familyhash'], 'after' => $after];
         $where = 'c.revisionid = :revisionid AND c.familyhash = :familyhash AND f.contenthash > :after';
-        [$exclusion, $destinationparams] = \local_multipicker\local\selection\destination_content::exclusion('n', $draftid);
+        [$exclusion, $destinationparams] = \local_coursefiles\local\selection\destination_content::exclusion('n', $draftid);
         $where .= $exclusion;
         $params += $destinationparams;
         if (!empty($filters['excludedcontext'])) {
@@ -76,7 +76,7 @@ final class catalog {
             $params['cmid'] = (int)$filters['cmid'];
         }
         if (!empty($filters['sourcepath'])) {
-            $sourcepath = \local_multipicker\local\selection\material_selection::path($filters['sourcepath']);
+            $sourcepath = \local_coursefiles\local\selection\material_selection::path($filters['sourcepath']);
             $where .= ' AND ' . $DB->sql_like('n.filepath', ':sourcepath', true);
             $params['sourcepath'] = $DB->sql_like_escape($sourcepath) . '%';
         }
@@ -109,14 +109,14 @@ final class catalog {
             }
             if ($value !== '') {
                 $i = count($params);
-                $where .= ' AND EXISTS (SELECT 1 FROM {local_multipicker_value} v WHERE v.courseid = c.courseid'
+                $where .= ' AND EXISTS (SELECT 1 FROM {local_coursefiles_value} v WHERE v.courseid = c.courseid'
                     . ' AND v.revisionid = c.revisionid AND v.name = :capturekey' . $i . ' AND v.value = :capturevalue' . $i . ')';
                 $params['capturekey' . $i] = $name;
                 $params['capturevalue' . $i] = $value;
             }
         }
-        $sql = 'SELECT f.*, c.edition FROM {local_multipicker_file} f
-                  JOIN {local_multipicker_course} c ON c.courseid = f.courseid
+        $sql = 'SELECT f.*, c.edition FROM {local_coursefiles_file} f
+                  JOIN {local_coursefiles_course} c ON c.courseid = f.courseid
                   JOIN {files} n ON n.pathnamehash = f.pathnamehash
                   JOIN {course_modules} mc ON mc.id = f.cmid AND mc.course = f.courseid
                   JOIN {modules} mo ON mo.id = mc.module

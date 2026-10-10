@@ -17,7 +17,7 @@
 /**
  * CLI course material reconciliation.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,18 +28,18 @@ require_once($CFG->libdir . '/clilib.php');
 
 [$options, $unrecognised] = cli_get_params(['help' => false, 'courseid' => 0], ['h' => 'help']);
 if ($options['help'] || $unrecognised) {
-    cli_writeln("MultiPicker index refresh\n"
+    cli_writeln("CourseFiles index refresh\n"
         . "--courseid=N  Refresh one course; omit to refresh all courses\n--help        Show help");
     exit($unrecognised ? 1 : 0);
 }
 \core\session\manager::set_user(get_admin());
 if ($options['courseid']) {
-    \local_multipicker\local\catalog\indexer::refresh((int)$options['courseid']);
+    \local_coursefiles\local\catalog\indexer::refresh((int)$options['courseid']);
 } else {
     $courses = $DB->get_recordset_select('course', 'id <> ?', [SITEID], 'id', 'id');
     try {
         foreach ($courses as $course) {
-            \local_multipicker\local\catalog\indexer::refresh($course->id);
+            \local_coursefiles\local\catalog\indexer::refresh($course->id);
             cli_writeln((string)$course->id);
         }
     } finally {

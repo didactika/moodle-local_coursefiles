@@ -15,21 +15,23 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\catalog;
+namespace local_coursefiles\local\catalog;
 
 /**
  * Request-local registry of declared public activity providers.
  */
 final class source_registry {
-    /** @var array|null Registered module providers. */
+    /**
+     * @var array|null Registered module providers.
+     */
     private static ?array $providers = null;
 
     /**
@@ -53,11 +55,11 @@ final class source_registry {
                 $providers[$module] = new native_source_provider($module, $areas);
             }
         }
-        foreach (get_plugins_with_function('multipicker_source_providers', 'lib.php') as $plugins) {
+        foreach (get_plugins_with_function('coursefiles_source_providers', 'lib.php') as $plugins) {
             foreach ($plugins as $callback) {
                 foreach ($callback() as $module => $provider) {
                     if (!\core_component::get_plugin_directory('mod', $module) || !$provider instanceof source_provider) {
-                        throw new \coding_exception('MultiPicker source callbacks must return installed module providers.');
+                        throw new \coding_exception('CourseFiles source callbacks must return installed module providers.');
                     }
                     $providers[$module] = $provider;
                 }

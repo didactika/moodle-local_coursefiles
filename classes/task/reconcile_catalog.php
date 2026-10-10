@@ -17,12 +17,12 @@
 /**
  * Scheduled cursor-based catalog reconciliation.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\task;
+namespace local_coursefiles\task;
 
 /**
  * Revisits at most one hundred courses per scheduled run.
@@ -34,7 +34,7 @@ final class reconcile_catalog extends \core\task\scheduled_task {
      * @return string Name.
      */
     public function get_name(): string {
-        return get_string('reconcilecatalog', 'local_multipicker');
+        return get_string('reconcilecatalog', 'local_coursefiles');
     }
 
     /**
@@ -42,26 +42,26 @@ final class reconcile_catalog extends \core\task\scheduled_task {
      */
     public function execute(): void {
         global $DB;
-        $after = (int)get_config('local_multipicker', 'reconcile_cursor');
+        $after = (int)get_config('local_coursefiles', 'reconcile_cursor');
         $courses = $DB->get_records_select('course', 'id > ? AND id <> ?', [$after, SITEID], 'id', 'id', 0, 100);
         foreach ($courses as $course) {
-            \local_multipicker\local\catalog\indexer::refresh($course->id);
-            set_config('reconcile_cursor', $course->id, 'local_multipicker');
+            \local_coursefiles\local\catalog\indexer::refresh($course->id);
+            set_config('reconcile_cursor', $course->id, 'local_coursefiles');
         }
         if (count($courses) < 100) {
-            set_config('reconcile_cursor', 0, 'local_multipicker');
+            set_config('reconcile_cursor', 0, 'local_coursefiles');
         }
         $DB->delete_records_select(
-            'local_multipicker_file',
-            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_multipicker_file}.courseid)'
+            'local_coursefiles_file',
+            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_coursefiles_file}.courseid)'
         );
         $DB->delete_records_select(
-            'local_multipicker_value',
-            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_multipicker_value}.courseid)'
+            'local_coursefiles_value',
+            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_coursefiles_value}.courseid)'
         );
         $DB->delete_records_select(
-            'local_multipicker_course',
-            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_multipicker_course}.courseid)'
+            'local_coursefiles_course',
+            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_coursefiles_course}.courseid)'
         );
     }
 }

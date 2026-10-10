@@ -17,12 +17,12 @@
 /**
  * Permission-aware page navigation.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\output;
+namespace local_coursefiles\output;
 
 /**
  * Defines the administration entry points and course tabs.
@@ -31,22 +31,22 @@ final class navigation {
     /**
      * Open the first permitted page directly from the native plugin category.
      *
-     * @param \core\hook\output\before_http_headers $hook Native output hook.
+     * @param \core\hook\output\before_http_headers|null $hook Native output hook; null on legacy cores.
      */
-    public static function open_category(\core\hook\output\before_http_headers $hook): void {
+    public static function open_category(?\core\hook\output\before_http_headers $hook = null): void {
         global $PAGE, $CFG;
         static $redirecting = false;
         if (
             CLI_SCRIPT || AJAX_SCRIPT || $redirecting
                 || $PAGE->url->get_path() !== '/' . $CFG->admin . '/category.php'
-                || $PAGE->url->get_param('category') !== 'local_multipicker'
+                || $PAGE->url->get_param('category') !== 'local_coursefiles'
         ) {
             return;
         }
         foreach (self::pages() as $name => $page) {
             if ($name !== 'log' && has_capability($page['capability'], \context_system::instance())) {
                 $redirecting = true;
-                redirect(new \moodle_url('/local/multipicker/admin/' . $name . '.php'));
+                redirect(new \moodle_url('/local/coursefiles/admin/' . $name . '.php'));
             }
         }
     }
@@ -59,9 +59,9 @@ final class navigation {
     public static function pages(): array {
         return [
             'settings' => ['label' => 'settings', 'capability' => 'moodle/site:config'],
-            'profiles' => ['label' => 'profiles', 'capability' => 'local/multipicker:manageprofiles'],
-            'migration' => ['label' => 'migrations', 'capability' => 'local/multipicker:planmigration'],
-            'log' => ['label' => 'log', 'capability' => 'local/multipicker:viewlog'],
+            'profiles' => ['label' => 'profiles', 'capability' => 'local/coursefiles:manageprofiles'],
+            'migration' => ['label' => 'migrations', 'capability' => 'local/coursefiles:planmigration'],
+            'log' => ['label' => 'log', 'capability' => 'local/coursefiles:viewlog'],
         ];
     }
 
@@ -75,8 +75,8 @@ final class navigation {
         $tabs = [];
         foreach (self::pages() as $name => $page) {
             if (has_capability($page['capability'], \context_system::instance())) {
-                $tabs[] = ['label' => get_string($page['label'], 'local_multipicker'),
-                    'url' => (new \moodle_url('/local/multipicker/admin/' . $name . '.php'))->out(false),
+                $tabs[] = ['label' => get_string($page['label'], 'local_coursefiles'),
+                    'url' => (new \moodle_url('/local/coursefiles/admin/' . $name . '.php'))->out(false),
                     'active' => $name === $active];
             }
         }
@@ -93,10 +93,10 @@ final class navigation {
     public static function course(string $active, int $courseid): view {
         $tabs = [];
         foreach (['index' => ['dashboard', 'browse'], 'policy' => ['coursepolicy', 'managecoursepolicy']] as $name => $page) {
-            if (has_capability('local/multipicker:' . $page[1], \context_course::instance($courseid))) {
-                $tabs[] = ['label' => get_string($page[0], 'local_multipicker'),
+            if (has_capability('local/coursefiles:' . $page[1], \context_course::instance($courseid))) {
+                $tabs[] = ['label' => get_string($page[0], 'local_coursefiles'),
                     'url' => (new \moodle_url(
-                        '/local/multipicker/course/' . $name . '.php',
+                        '/local/coursefiles/course/' . $name . '.php',
                         ['courseid' => $courseid]
                     ))->out(false), 'active' => $name === $active];
             }

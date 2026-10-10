@@ -15,13 +15,13 @@
 
 /**
  * Serialized automatic selections and bounded review navigation through core Fragment.
- * @module local_multipicker/local/migration/actions
+ * @module local_coursefiles/local/migration/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Selectors from 'local_multipicker/local/migration/selectors';
-import {loadFragment} from 'local_multipicker/local/repository';
+import Selectors from 'local_coursefiles/local/migration/selectors';
+import {loadFragment} from 'local_coursefiles/local/repository';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
 import {getStrings} from 'core/str';
@@ -32,7 +32,7 @@ import {getStrings} from 'core/str';
  */
 export const createActions = async(root) => {
     const [saving, saved] = await getStrings([
-        {key: 'autosaving', component: 'local_multipicker'}, {key: 'autosaved', component: 'local_multipicker'},
+        {key: 'autosaving', component: 'local_coursefiles'}, {key: 'autosaved', component: 'local_coursefiles'},
     ]);
     let queue = Promise.resolve();
     let pending = 0;
@@ -88,8 +88,8 @@ export const createActions = async(root) => {
                 }
             });
             state.groups.forEach(group => {
-                const selector = group.cmid ? '[data-multipicker-folder="' + group.cmid + '"]'
-                    : '[data-multipicker-course="' + group.courseid + '"]';
+                const selector = group.cmid ? '[data-coursefiles-folder="' + group.cmid + '"]'
+                    : '[data-coursefiles-course="' + group.courseid + '"]';
                 root.querySelectorAll(selector).forEach(control => {
                     control.dataset.included = group.included;
                     control.dataset.total = group.total;
@@ -125,15 +125,15 @@ export const createActions = async(root) => {
             const document = new DOMParser().parseFromString(result.html, 'text/html');
             const selection = document.querySelector(Selectors.selectionState);
             if (selection) {
-                patch(JSON.parse(selection.dataset.multipickerSelectionState));
+                patch(JSON.parse(selection.dataset.coursefilesSelectionState));
             } else {
                 if (state.action === 'view' && sequence !== viewSequence) {
                     return;
                 }
                 const next = document.querySelector(Selectors.migration);
-                const open = new Map([...root.querySelectorAll('details[data-multipicker-group],'
-                    + 'details[data-multipicker-folder-group]')].map(element => [
-                    element.dataset.multipickerGroup || 'folder:' + element.dataset.multipickerFolderGroup, element.open,
+                const open = new Map([...root.querySelectorAll('details[data-coursefiles-group],'
+                    + 'details[data-coursefiles-folder-group]')].map(element => [
+                    element.dataset.coursefilesGroup || 'folder:' + element.dataset.coursefilesFolderGroup, element.open,
                 ]));
                 const focus = root.contains(window.document.activeElement) ? window.document.activeElement.id : '';
                 const position = window.document.activeElement.selectionStart;
@@ -145,7 +145,7 @@ export const createActions = async(root) => {
                 canContinue = root.querySelector(Selectors.continue).getAttribute('aria-disabled') === 'false';
                 root.querySelectorAll(Selectors.migrationGroups)
                     .forEach(element => {
-                        const key = element.dataset.multipickerGroup || 'folder:' + element.dataset.multipickerFolderGroup;
+                        const key = element.dataset.coursefilesGroup || 'folder:' + element.dataset.coursefilesFolderGroup;
                         if (open.has(key)) {
                             element.open = open.get(key);
                         }
@@ -203,9 +203,9 @@ export const createActions = async(root) => {
             });
             request({...formState(), action: control.checked ? 'all' : 'none'});
         } else if (control.matches(Selectors.groupChecks)) {
-            const folder = control.hasAttribute('data-multipicker-folder');
-            const courseid = folder ? control.dataset.course : control.dataset.multipickerCourse;
-            const cmid = folder ? control.dataset.multipickerFolder : '0';
+            const folder = control.hasAttribute('data-coursefiles-folder');
+            const courseid = folder ? control.dataset.course : control.dataset.coursefilesCourse;
+            const cmid = folder ? control.dataset.coursefilesFolder : '0';
             checks().filter(check => check.dataset.sourceCourse === courseid
                 && (!folder || check.dataset.sourceFolder === cmid)).forEach(check => {
                 check.checked = control.checked;
@@ -218,7 +218,7 @@ export const createActions = async(root) => {
             request({...formState(), action: 'resolve', kind: 'issue',
                 id: control.closest(Selectors.form).querySelector(Selectors.id).value, choice: control.value});
         } else if (control.matches(Selectors.fileResolution) && control.value) {
-            request({...formState(), action: 'resolve', kind: 'file', id: control.dataset.multipickerFileResolution,
+            request({...formState(), action: 'resolve', kind: 'file', id: control.dataset.coursefilesFileResolution,
                 choice: control.value});
         } else if (control.matches(Selectors.pageSize)) {
             const state = formState();
@@ -249,7 +249,7 @@ export const createActions = async(root) => {
         if (!link) {
             return;
         }
-        if (link.hasAttribute('data-multipicker-continue') && (pending || !canContinue || failed)) {
+        if (link.hasAttribute('data-coursefiles-continue') && (pending || !canContinue || failed)) {
             event.preventDefault();
             return;
         }

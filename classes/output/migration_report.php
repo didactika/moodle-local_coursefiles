@@ -17,12 +17,12 @@
 /**
  * Paged migration review presentation.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\output;
+namespace local_coursefiles\output;
 
 /**
  * Groups a bounded result page while retaining whole-plan counts and permissions.
@@ -50,36 +50,36 @@ final class migration_report {
         int $perpage = 50
     ): array {
         global $DB, $OUTPUT;
-        require_capability('local/multipicker:planmigration', \context_system::instance());
+        require_capability('local/coursefiles:planmigration', \context_system::instance());
         if (!in_array($decision, ['', 'copy', 'skip', 'blocked'], true)) {
             throw new \invalid_parameter_exception('Unknown decision filter');
         }
-        $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
+        $plan = $DB->get_record('local_coursefiles_plan', ['id' => $planid], '*', MUST_EXIST);
         $document = json_decode($plan->configjson, true);
-        $revision = $DB->get_record('local_multipicker_revision', ['id' => $plan->revisionid], '*', MUST_EXIST);
+        $revision = $DB->get_record('local_coursefiles_revision', ['id' => $plan->revisionid], '*', MUST_EXIST);
         $config = json_decode($revision->configjson, true);
         $config['migration'] = $document['migration'] ?? $config['migration'] ?? [];
         $perpage = in_array($perpage, [10, 25, 50], true) ? $perpage : 50;
-        $url = new \moodle_url('/local/multipicker/admin/migration_review.php', ['planid' => $planid, 'perpage' => $perpage]);
+        $url = new \moodle_url('/local/coursefiles/admin/migration_review.php', ['planid' => $planid, 'perpage' => $perpage]);
         $data = ['planid' => $planid, 'uuid' => $plan->uuid, 'planstate' => display::outcome($plan->state),
             'sourceedition' => $document['sourceedition'], 'targetedition' => $document['targetedition'],
             'executionstep' => $execution, 'reviewstep' => !$execution, 'search' => $search,
-            'selectioneditable' => !$DB->record_exists('local_multipicker_run', ['planid' => $planid]),
+            'selectioneditable' => !$DB->record_exists('local_coursefiles_run', ['planid' => $planid]),
             'reviewurl' => $url->out(false), 'executionurl' => (new \moodle_url($url, ['step' => 'execute']))->out(false),
             'summary' => profile_summary::data($config) + ['revision' => $revision->revision],
             'actionurl' => $url->out(false), 'sesskey' => sesskey(), 'digest' => $plan->digest, 'perpage' => $perpage,
             'contextid' => \context_system::instance()->id,
-            'selectionhelp' => $OUTPUT->help_icon('reviewselection', 'local_multipicker'),
-            'searchhelp' => $OUTPUT->help_icon('migrationsearch', 'local_multipicker'),
-            'executionhelp' => $OUTPUT->help_icon('confirmmigration', 'local_multipicker'),
+            'selectionhelp' => $OUTPUT->help_icon('reviewselection', 'local_coursefiles'),
+            'searchhelp' => $OUTPUT->help_icon('migrationsearch', 'local_coursefiles'),
+            'executionhelp' => $OUTPUT->help_icon('confirmmigration', 'local_coursefiles'),
             'issues' => [], 'runs' => [], 'groups' => [], 'filters' => [],
             'newplanurl' => (new \moodle_url(
-                '/local/multipicker/admin/migration.php',
+                '/local/coursefiles/admin/migration.php',
                 ['fromplan' => $plan->id, 'profileid' => $plan->profileid, 'sourceedition' => $document['sourceedition'],
                 'targetedition' => $document['targetedition'], 'scopekey' => $document['scopekey'] ?? 'edition', 'step' => 'scope']
             ))->out(false),
             'blocked' => $plan->state === 'blocked',
-            'emptycancelled' => $plan->state === 'cancelled' && !\local_multipicker\local\migration\plan_history::has_work($planid),
+            'emptycancelled' => $plan->state === 'cancelled' && !\local_coursefiles\local\migration\plan_history::has_work($planid),
             'refreshurl' => $url->out(false),
         ];
         $counts = ['copy' => 0, 'skip' => 0, 'blocked' => 0];
@@ -87,7 +87,7 @@ final class migration_report {
         $includedtotal = 0;
         $completed = 0;
         $totals = $DB->get_recordset_sql(
-            'SELECT decision, state, included, COUNT(1) AS amount FROM {local_multipicker_operation}
+            'SELECT decision, state, included, COUNT(1) AS amount FROM {local_coursefiles_operation}
               WHERE planid = ? GROUP BY decision, state, included',
             [$planid]
         );
@@ -102,10 +102,10 @@ final class migration_report {
         $totals->close();
         $data['total'] = $total;
         foreach ($counts as $key => $count) {
-            $data['metrics'][] = ['count' => $count, 'label' => get_string('metric_' . $key, 'local_multipicker')];
+            $data['metrics'][] = ['count' => $count, 'label' => get_string('metric_' . $key, 'local_coursefiles')];
         }
         foreach (['' => $total] + $counts as $key => $count) {
-            $data['filters'][] = ['label' => get_string($key === '' ? 'allfiles' : 'metric_' . $key, 'local_multipicker'),
+            $data['filters'][] = ['label' => get_string($key === '' ? 'allfiles' : 'metric_' . $key, 'local_coursefiles'),
                 'count' => $count, 'active' => $decision === $key,
                 'url' => (new \moodle_url($url, ['decision' => $key, 'q' => $search]))->out(false)];
         }
@@ -127,9 +127,9 @@ final class migration_report {
             $params['snapshotsearch'] = '%' . $DB->sql_like_escape($search) . '%';
             $params['coursesearch'] = $params['snapshotsearch'];
         }
-        $filtered = $DB->count_records_select('local_multipicker_operation', $condition, $params);
-        $data['included'] = $DB->count_records('local_multipicker_operation', ['planid' => $planid, 'included' => 1]);
-        $data['includedlabel'] = get_string('includedcount', 'local_multipicker', $data['included']);
+        $filtered = $DB->count_records_select('local_coursefiles_operation', $condition, $params);
+        $data['included'] = $DB->count_records('local_coursefiles_operation', ['planid' => $planid, 'included' => 1]);
+        $data['includedlabel'] = get_string('includedcount', 'local_coursefiles', $data['included']);
         $data['editable'] = $data['selectioneditable'];
         $data['page'] = $page;
         $data['decision'] = $decision;
@@ -139,7 +139,7 @@ final class migration_report {
         $groups = [];
         foreach (
             $DB->get_records_select(
-                'local_multipicker_operation',
+                'local_coursefiles_operation',
                 $condition,
                 $params,
                 'targetcmid, id',
@@ -152,7 +152,7 @@ final class migration_report {
             $target = $snapshot['target'];
             foreach ([$snapshot['sourcecourse'], $target['courseid']] as $courseid) {
                 $courses[$courseid] = $courses[$courseid] ?? ($DB->get_field('course', 'shortname', ['id' => $courseid])
-                    ?: get_string('unknowncourse', 'local_multipicker'));
+                    ?: get_string('unknowncourse', 'local_coursefiles'));
             }
             $targetkey = $operation->targetcmid ?: ($snapshot['targetkey'] ?? '');
             $key = $snapshot['sourcecourse'] . ':' . $operation->sourcecmid . ':' . $targetkey;
@@ -161,7 +161,7 @@ final class migration_report {
                     'targetcourse' => $courses[$target['courseid']], 'targetfolder' => $target['name'],
                     'targetsection' => $target['sectionname'] ?: get_string(
                         'sectionnumber',
-                        'local_multipicker',
+                        'local_coursefiles',
                         $target['sectionnum']
                     ), 'operations' => [], 'groupcourseid' => $operation->sourcecourseid, 'groupcmid' => $operation->sourcecmid];
                 $sourcecontext = \context_course::instance($snapshot['sourcecourse'], IGNORE_MISSING)
@@ -179,11 +179,11 @@ final class migration_report {
             $result = json_decode($operation->result, true);
             $groups[$key]['operations'][] = ['id' => $operation->id, 'included' => (bool)$operation->included,
                 'resolvable' => $data['selectioneditable'] && $operation->decision === 'blocked_content',
-                'resolutionhelp' => $OUTPUT->help_icon('conflictpolicy', 'local_multipicker'),
+                'resolutionhelp' => $OUTPUT->help_icon('conflictpolicy', 'local_coursefiles'),
                 'filename' => $snapshot['source']['filename'],
                 'sourcecourseid' => $operation->sourcecourseid, 'sourcecmid' => $operation->sourcecmid,
                 'filepath' => $snapshot['source']['filepath'],
-                'author' => $snapshot['source']['author'] ?: get_string('unknownauthor', 'local_multipicker'),
+                'author' => $snapshot['source']['author'] ?: get_string('unknownauthor', 'local_coursefiles'),
                 'license' => $snapshot['source']['license'], 'decisionlabel' => display::outcome($operation->decision),
                 'statelabel' => display::outcome($operation->state),
                 'resultlabel' => isset($result['error']) ? display::reason($result['error'])
@@ -194,8 +194,8 @@ final class migration_report {
         foreach ($data['groups'] as &$group) {
             $conditions = ['planid' => $planid, 'sourcecourseid' => $group['groupcourseid'],
                 'sourcecmid' => $group['groupcmid']];
-            $grouptotal = $DB->count_records('local_multipicker_operation', $conditions);
-            $groupincluded = $DB->count_records('local_multipicker_operation', $conditions + ['included' => 1]);
+            $grouptotal = $DB->count_records('local_coursefiles_operation', $conditions);
+            $groupincluded = $DB->count_records('local_coursefiles_operation', $conditions + ['included' => 1]);
             $group['grouptotal'] = $grouptotal;
             $group['groupincluded'] = $groupincluded;
             $group['groupchecked'] = $grouptotal > 0 && $groupincluded === $grouptotal;
@@ -205,8 +205,8 @@ final class migration_report {
                 $coursegroups[$key] = $group;
                 $coursegroups[$key]['folders'] = [];
                 $conditions = ['planid' => $planid, 'sourcecourseid' => $group['groupcourseid']];
-                $total = $DB->count_records('local_multipicker_operation', $conditions);
-                $included = $DB->count_records('local_multipicker_operation', $conditions + ['included' => 1]);
+                $total = $DB->count_records('local_coursefiles_operation', $conditions);
+                $included = $DB->count_records('local_coursefiles_operation', $conditions + ['included' => 1]);
                 $coursegroups[$key]['coursetotal'] = $total;
                 $coursegroups[$key]['courseincluded'] = $included;
                 $coursegroups[$key]['coursechecked'] = $total > 0 && $total === $included;
@@ -219,7 +219,7 @@ final class migration_report {
         $issuecount = count($document['issues']);
         $issuepage = pagination::clamp($issuecount, $issuepage, $perpage);
         $data['issuepage'] = $issuepage;
-        $data['issuepageinfo'] = get_string('reviewissuepage', 'local_multipicker', (object)[
+        $data['issuepageinfo'] = get_string('reviewissuepage', 'local_coursefiles', (object)[
             'page' => $issuepage + 1, 'pages' => max(1, (int)ceil($issuecount / $perpage)), 'total' => $issuecount,
         ]);
         $destinations = [];
@@ -240,14 +240,14 @@ final class migration_report {
             }
             foreach (array_unique($courseids) as $courseid) {
                 $courses[$courseid] = $courses[$courseid] ?? ($DB->get_field('course', 'shortname', ['id' => $courseid])
-                    ?: get_string('unknowncourse', 'local_multipicker'));
+                    ?: get_string('unknowncourse', 'local_coursefiles'));
                 $references[] = $courses[$courseid];
             }
             $choices = [];
             if ($data['selectioneditable'] && ($issue['blocking'] ?? true)) {
                 $choices[] = ['value' => 'exclude', 'label' => get_string(
                     !empty($issue['sourcecmid']) ? 'exclude_source' : 'exclude_pair',
-                    'local_multipicker'
+                    'local_coursefiles'
                 )];
                 if (
                     !empty($issue['targetcourseid']) && !empty($issue['sourcecmid'])
@@ -262,7 +262,7 @@ final class migration_report {
                                 $destinations[$courseid][] = ['value' => 'folder:' . $destination->id,
                                     'label' => get_string(
                                         'use_destination',
-                                        'local_multipicker',
+                                        'local_coursefiles',
                                         strip_tags(display::name($destination->name, $destination->context))
                                     )];
                             }
@@ -271,7 +271,7 @@ final class migration_report {
                             foreach (get_fast_modinfo($courseid)->get_section_info_all() as $section) {
                                 $label = get_section_name(get_course($courseid), $section);
                                 $destinations[$courseid][] = ['value' => 'create:' . $section->id,
-                                    'label' => get_string('create_destination', 'local_multipicker', strip_tags($label))];
+                                    'label' => get_string('create_destination', 'local_coursefiles', strip_tags($label))];
                             }
                         }
                     }
@@ -280,12 +280,12 @@ final class migration_report {
             }
             $data['issues'][] = ['id' => $index, 'description' => display::reason($issue['reason']),
                 'context' => implode(' / ', $references), 'choices' => $choices, 'resolvable' => (bool)$choices,
-                'help' => $OUTPUT->help_icon('resolvemigration', 'local_multipicker')];
+                'help' => $OUTPUT->help_icon('resolvemigration', 'local_coursefiles')];
         }
-        $canexecute = has_capability('local/multipicker:executemigration', \context_system::instance());
+        $canexecute = has_capability('local/coursefiles:executemigration', \context_system::instance());
         $data['canexecute'] = $plan->state === 'reviewable' && $canexecute
-            && $DB->record_exists('local_multipicker_operation', ['planid' => $planid, 'included' => 1, 'state' => 'pending']);
-        foreach ($DB->get_records('local_multipicker_run', ['planid' => $planid], 'id DESC') as $run) {
+            && $DB->record_exists('local_coursefiles_operation', ['planid' => $planid, 'included' => 1, 'state' => 'pending']);
+        foreach ($DB->get_records('local_coursefiles_run', ['planid' => $planid], 'id DESC') as $run) {
             $active = in_array($run->state, ['queued', 'running'], true);
             $data['runs'][] = ['id' => $run->id, 'statelabel' => display::outcome($run->state),
                 'cancancel' => $canexecute && $active];
@@ -308,12 +308,12 @@ final class migration_report {
         $data['plantotal'] = max(1, $includedtotal);
         $data['planprogress'] = get_string(
             'progresslabel',
-            'local_multipicker',
+            'local_coursefiles',
             (object)['done' => $completed, 'total' => $includedtotal]
         );
         $data['pageinfo'] = get_string(
             'reviewpage',
-            'local_multipicker',
+            'local_coursefiles',
             (object)['page' => $page + 1, 'pages' => max(1, (int)ceil($filtered / $perpage)), 'total' => $filtered]
         );
         foreach (['previousurl' => $page - 1, 'nexturl' => $page + 1] as $name => $number) {

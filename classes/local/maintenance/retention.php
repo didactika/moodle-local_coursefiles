@@ -17,12 +17,12 @@
 /**
  * Bounded operational history retention.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\maintenance;
+namespace local_coursefiles\local\maintenance;
 
 /**
  * Removes expired operational history in bounded, indexed batches.
@@ -38,13 +38,13 @@ final class retention {
         global $DB;
         $now = $now ?? time();
         $counts = ['logs' => 0, 'plans' => 0];
-        $logdays = get_config('local_multipicker', 'logretentiondays');
-        $plandays = get_config('local_multipicker', 'migrationretentiondays');
+        $logdays = get_config('local_coursefiles', 'logretentiondays');
+        $plandays = get_config('local_coursefiles', 'migrationretentiondays');
         $logdays = $logdays === false ? 90 : (int)$logdays;
         $plandays = $plandays === false ? 365 : (int)$plandays;
         if ($logdays > 0) {
             $logs = $DB->get_records_select(
-                'local_multipicker_log',
+                'local_coursefiles_log',
                 'timecreated < ?',
                 [$now - $logdays * DAYSECS],
                 'timecreated, id',
@@ -53,18 +53,18 @@ final class retention {
                 1000
             );
             if ($logs) {
-                $DB->delete_records_list('local_multipicker_log', 'id', array_keys($logs));
+                $DB->delete_records_list('local_coursefiles_log', 'id', array_keys($logs));
                 $counts['logs'] = count($logs);
             }
         }
         if ($plandays > 0) {
             $cutoff = $now - $plandays * DAYSECS;
-            $plans = $DB->get_records_sql('SELECT p.id FROM {local_multipicker_plan} p
-                WHERE p.timecreated < ? AND NOT EXISTS (SELECT 1 FROM {local_multipicker_run} r
+            $plans = $DB->get_records_sql('SELECT p.id FROM {local_coursefiles_plan} p
+                WHERE p.timecreated < ? AND NOT EXISTS (SELECT 1 FROM {local_coursefiles_run} r
                     WHERE r.planid = p.id AND (r.state = ? OR r.state = ? OR r.timemodified >= ?))
                 ORDER BY p.timecreated, p.id', [$cutoff, 'queued', 'running', $cutoff], 0, 100);
             foreach ($plans as $plan) {
-                $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('plan:' . $plan->id, 0);
+                $lock = \core\lock\lock_config::get_lock_factory('local_coursefiles')->get_lock('plan:' . $plan->id, 0);
                 if (!$lock) {
                     continue;
                 }
@@ -72,15 +72,15 @@ final class retention {
                     $transaction = $DB->start_delegated_transaction();
                     if (
                         !$DB->record_exists_sql(
-                            'SELECT id FROM {local_multipicker_run}
+                            'SELECT id FROM {local_coursefiles_run}
                         WHERE planid = ? AND (state = ? OR state = ? OR timemodified >= ?)',
                             [$plan->id, 'queued', 'running', $cutoff]
                         )
                     ) {
-                        $DB->delete_records('local_multipicker_target', ['planid' => $plan->id]);
-                        $DB->delete_records('local_multipicker_operation', ['planid' => $plan->id]);
-                        $DB->delete_records('local_multipicker_run', ['planid' => $plan->id]);
-                        $DB->delete_records('local_multipicker_plan', ['id' => $plan->id]);
+                        $DB->delete_records('local_coursefiles_target', ['planid' => $plan->id]);
+                        $DB->delete_records('local_coursefiles_operation', ['planid' => $plan->id]);
+                        $DB->delete_records('local_coursefiles_run', ['planid' => $plan->id]);
+                        $DB->delete_records('local_coursefiles_plan', ['id' => $plan->id]);
                         $counts['plans']++;
                     }
                     $transaction->allow_commit();
@@ -89,7 +89,7 @@ final class retention {
                 }
             }
         }
-        $counts['versions'] = \local_multipicker\local\profile\profile_history::clean($now);
+        $counts['versions'] = \local_coursefiles\local\profile\profile_history::clean($now);
         return $counts;
     }
 }

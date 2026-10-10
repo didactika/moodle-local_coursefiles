@@ -17,17 +17,17 @@
 /**
  * Reviewed immutable family migration planning.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\migration;
+namespace local_coursefiles\local\migration;
 
-use local_multipicker\local\catalog\material_source;
-use local_multipicker\local\profile\profiles;
-use local_multipicker\local\policy\author_policy;
-use local_multipicker\local\logging\log;
+use local_coursefiles\local\catalog\material_source;
+use local_coursefiles\local\profile\profiles;
+use local_coursefiles\local\policy\author_policy;
+use local_coursefiles\local\logging\log;
 
 /**
  * Creates explicit file decisions without writing course materials.
@@ -53,7 +53,7 @@ final class migration_planner {
         array $options = []
     ): \stdClass {
         global $DB, $USER;
-        require_capability('local/multipicker:planmigration', \context_system::instance());
+        require_capability('local/coursefiles:planmigration', \context_system::instance());
         [$profile, $revision, $rules] = profiles::load($profileid);
         $scopecapture = $scopekey !== '' ? course_scope::capture($rules, $scopekey) : '';
         $config = $options['migration'] ?? $rules->get_config()['migration'] ?? [];
@@ -65,11 +65,11 @@ final class migration_planner {
         if ($filters !== null) {
             foreach (['source', 'target'] as $side) {
                 if (!is_array($filters[$side] ?? null) || array_diff_key($filters[$side], $rules->filter_definitions())) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                 }
                 foreach ($filters[$side] as $value) {
                     if (!is_string($value) || strlen($value) > 255) {
-                        throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                        throw new \moodle_exception('invalidprofile', 'local_coursefiles');
                     }
                 }
                 $filters[$side] = array_filter($filters[$side], static fn($value) => $value !== '');
@@ -79,10 +79,10 @@ final class migration_planner {
             ($filters === null && ($sourceedition === '' || $targetedition === '' || $sourceedition === $targetedition))
                 || (($config['section_match']['strategy'] ?? 'ordinal') === 'ordinal' && !$layoutconfirmed)
         ) {
-            throw new \moodle_exception('layoutrequired', 'local_multipicker');
+            throw new \moodle_exception('layoutrequired', 'local_coursefiles');
         }
         $pairs = [];
-        $members = $DB->get_records('local_multipicker_course', ['revisionid' => $revision->id], 'courseid');
+        $members = $DB->get_records('local_coursefiles_course', ['revisionid' => $revision->id], 'courseid');
         foreach ($members as $member) {
             $course = $DB->get_record('course', ['id' => $member->courseid]);
             if (!$course || !($identity = $rules->resolve($course))) {
@@ -152,11 +152,11 @@ final class migration_planner {
                     $captures += ['name' => $sourcecm->name, 'idnumber' => $sourcecm->idnumber];
                     try {
                         // Authorize public leaves before producing destination errors or creation requests.
-                        $provider = \local_multipicker\local\catalog\source_registry::provider($sourcecm->modname);
+                        $provider = \local_coursefiles\local\catalog\source_registry::provider($sourcecm->modname);
                         $files = [];
                         foreach ($provider ? $provider->files($sourcecm) : [] as $candidate) {
                             if (
-                                \local_multipicker\local\catalog\source_registry::enabled(
+                                \local_coursefiles\local\catalog\source_registry::enabled(
                                     $rules->get_config()['publication']['allowed_sources']
                                     ?? ['mod_folder/content', 'mod_resource/content'],
                                     $candidate
@@ -194,7 +194,7 @@ final class migration_planner {
                             count($targets) > 1 || ($targets && $targets[0]->modname !== 'folder')
                             || (!$targets && empty($override['create']) && ($config['missing_target'] ?? 'block') !== 'create')
                         ) {
-                            throw new \moodle_exception('placementambiguous', 'local_multipicker');
+                            throw new \moodle_exception('placementambiguous', 'local_coursefiles');
                         }
                         if (!$targets) {
                             $targetdata = target_binding::descriptor(
@@ -210,7 +210,7 @@ final class migration_planner {
                                     && ($targetdata['idnumber'] !== '' ? $existingcm->idnumber === $targetdata['idnumber']
                                         : $existingcm->name === $targetdata['name'])
                                 ) {
-                                    throw new \moodle_exception('placementambiguous', 'local_multipicker');
+                                    throw new \moodle_exception('placementambiguous', 'local_coursefiles');
                                 }
                             }
                             $targetkey = hash('sha256', json_encode($targetdata));
@@ -328,17 +328,17 @@ final class migration_planner {
         $haswork = array_filter($operations, static fn($op) => $op['included']
             && in_array($op['decision'], ['copy', 'overwrite'], true));
         $transaction = $DB->start_delegated_transaction();
-        $planid = $DB->insert_record('local_multipicker_plan', (object)[
+        $planid = $DB->insert_record('local_coursefiles_plan', (object)[
             'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
             'userid' => $USER->id, 'configjson' => $json, 'digest' => hash('sha256', $json),
             'state' => $blocked ? 'blocked' : ($haswork ? 'reviewable' : 'cancelled'), 'timecreated' => time(),
         ]);
         foreach ($creations as $key => $definition) {
-            $DB->insert_record('local_multipicker_target', (object)['planid' => $planid, 'targetkey' => $key,
+            $DB->insert_record('local_coursefiles_target', (object)['planid' => $planid, 'targetkey' => $key,
                 'definitionjson' => json_encode($definition), 'cmid' => 0, 'snapshotjson' => '{}']);
         }
         foreach ($operations as $operation) {
-            $DB->insert_record('local_multipicker_operation', (object)[
+            $DB->insert_record('local_coursefiles_operation', (object)[
                 'planid' => $planid, 'opkey' => $operation['opkey'], 'sourcehash' => $operation['sourcehash'],
                 'targetcmid' => $operation['targetcmid'], 'sourcecourseid' => $operation['snapshot']['sourcecourse'],
                 'targetcourseid' => $operation['snapshot']['target']['courseid'],
@@ -349,11 +349,11 @@ final class migration_planner {
         }
         $document['operationsdigest'] = plan_selection::manifest_digest($planid);
         $json = json_encode($document, JSON_UNESCAPED_SLASHES);
-        $DB->update_record('local_multipicker_plan', (object)[
+        $DB->update_record('local_coursefiles_plan', (object)[
             'id' => $planid, 'configjson' => $json, 'digest' => hash('sha256', $json),
         ]);
         $transaction->allow_commit();
-        $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
+        $plan = $DB->get_record('local_coursefiles_plan', ['id' => $planid], '*', MUST_EXIST);
         log::record('migration_previewed', $plan->uuid, ['operations' => count($operations), 'blocked' => (bool)$blocked]);
         return $plan;
     }

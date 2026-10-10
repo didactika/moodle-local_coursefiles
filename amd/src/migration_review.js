@@ -4,10 +4,10 @@
 /**
  * Native entry point; behavior lives in the organized feature controller.
  *
- * @module local_multipicker/migration_review
+ * @module local_coursefiles/migration_review
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-export {init} from 'local_multipicker/local/migration/controller';
+export {init} from 'local_coursefiles/local/migration/controller';

@@ -17,15 +17,15 @@
 /**
  * Owning native form scope integration checks.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\fixture;
+namespace local_coursefiles\fixture;
 
-use local_multipicker\form\scoped_filemanager;
+use local_coursefiles\form\scoped_filemanager;
 
 /**
  * Owning native form used by integration checks.
@@ -38,7 +38,7 @@ final class scoped_form extends \moodleform {
         scoped_filemanager::register();
         $this->_form->addElement('text', 'title', 'Title');
         $this->_form->setType('title', PARAM_TEXT);
-        $this->_form->addElement('multipickerfilemanager', 'files', 'Files', null, $this->_customdata);
+        $this->_form->addElement('coursefilesfilemanager', 'files', 'Files', null, $this->_customdata);
         $this->_form->addElement('submit', 'refresh', 'Refresh draft');
         $this->_form->registerNoSubmitButton('refresh');
         $this->add_action_buttons();

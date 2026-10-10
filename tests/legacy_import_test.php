@@ -17,20 +17,20 @@
 /**
  * Legacy component rename preservation.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker;
+namespace local_coursefiles;
 
-use local_multipicker\local\upgrade\legacy_import;
+use local_coursefiles\local\upgrade\legacy_import;
 
 /**
 
  * Verifies IDs, history and settings survive the component rename.
 
- * @covers \local_multipicker\local\upgrade\legacy_import
+ * @covers \local_coursefiles\local\upgrade\legacy_import
  */
 final class legacy_import_test extends \advanced_testcase {
     /**
@@ -45,10 +45,10 @@ final class legacy_import_test extends \advanced_testcase {
         $file->loadXMLStructure();
         $tables = [];
         foreach ($file->getStructure()->getTables() as $table) {
-            if ($table->getName() === 'local_multipicker_value') {
+            if ($table->getName() === 'local_coursefiles_value') {
                 continue;
             }
-            $table->setName(str_replace('local_multipicker', 'local_coursebridge', $table->getName()));
+            $table->setName(str_replace('local_coursefiles', 'local_coursebridge', $table->getName()));
             $manager->create_table($table);
             $tables[] = $table;
         }
@@ -66,15 +66,15 @@ final class legacy_import_test extends \advanced_testcase {
                 'timemodified' => time(), 'modifierid' => 2,
             ]);
             legacy_import::execute();
-            $this->assertSame('Retained profile', $DB->get_field('local_multipicker', 'name', ['id' => 42]));
-            $this->assertSame('{"revision":1}', $DB->get_field('local_multipicker_log', 'details', ['id' => 64]));
-            $this->assertSame('editable_with_provenance', get_config('local_multipicker', 'author_policy'));
+            $this->assertSame('Retained profile', $DB->get_field('local_coursefiles', 'name', ['id' => 42]));
+            $this->assertSame('{"revision":1}', $DB->get_field('local_coursefiles_log', 'details', ['id' => 64]));
+            $this->assertSame('editable_with_provenance', get_config('local_coursefiles', 'author_policy'));
             $this->assertFalse(get_config('local_coursebridge', 'version'));
             $this->assertEquals(CAP_PROHIBIT, $DB->get_field('role_capabilities', 'permission', [
-                'roleid' => $roleid, 'capability' => 'local/multipicker:reuse',
+                'roleid' => $roleid, 'capability' => 'local/coursefiles:reuse',
                 'contextid' => \context_system::instance()->id,
             ]));
-            $id = $DB->insert_record('local_multipicker', (object)['uuid' => \core\uuid::generate(),
+            $id = $DB->insert_record('local_coursefiles', (object)['uuid' => \core\uuid::generate(),
                 'name' => 'New profile', 'activeid' => 0, 'enabled' => 1]);
             $this->assertGreaterThan(42, $id);
             $this->expectException(\coding_exception::class);
