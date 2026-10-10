@@ -88,6 +88,7 @@ final class retention {
                 }
             }
         }
+        $counts['versions'] = \local_multipicker\local\profile\profile_history::clean($now);
         return $counts;
     }
 }

@@ -5,13 +5,20 @@ left to right direction
 state "Preview not stored" as Preview
 state "reviewable" as Reviewable
 state "blocked" as Blocked
+state "cancelled\n(no included writes)" as Cancelled
 [*] --> Preview
-Preview --> Reviewable : no preview blockers
+Preview --> Reviewable : no blockers and included writes
+Preview --> Cancelled : no blockers and no included writes
 Preview --> Blocked : blockers found
 Reviewable --> [*]
 Blocked --> [*]
+Cancelled --> [*]
 Reviewable --> Blocked : include a blocked operation
-Blocked --> Reviewable : exclude all blocked operations\n(no unresolved placement issues)
+Blocked --> Reviewable : no blockers and included writes
+Reviewable --> Cancelled : exclude all writes
+Blocked --> Cancelled : no blockers or included writes
+Cancelled --> Reviewable : include writes before first run
+Cancelled --> Blocked : include a blocked operation
 note bottom of Reviewable
 Snapshots and decisions remain unchanged.
 Inclusion changes update the approval digest

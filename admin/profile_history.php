@@ -1,0 +1,82 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Profile version history and side-by-side comparison.
+ * @package local_multipicker
+ * @copyright 2026 MultiPicker contributors
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+require_once(__DIR__ . '/../../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
+
+use local_multipicker\local\profile\profile_history;
+use local_multipicker\output\display;
+use local_multipicker\output\navigation;
+
+$profileid = required_param('profileid', PARAM_INT);
+$url = new moodle_url('/local/multipicker/admin/profile_history.php', ['profileid' => $profileid]);
+admin_externalpage_setup('local_multipicker_profiles', '', ['profileid' => $profileid], $url);
+$profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
+if (data_submitted()) {
+    require_sesskey();
+    profile_history::restore($profileid, required_param('restore', PARAM_INT));
+    redirect($url, get_string('versionrestored', 'local_multipicker'), null, \core\output\notification::NOTIFY_SUCCESS);
+}
+$page = max(0, optional_param('page', 0, PARAM_INT));
+$total = $DB->count_records('local_multipicker_revision', ['profileid' => $profileid]);
+$page = min($page, max(0, (int)ceil($total / 25) - 1));
+$records = $DB->get_records('local_multipicker_revision', ['profileid' => $profileid], 'revision DESC', '*', $page * 25, 25);
+$left = optional_param('left', 0, PARAM_INT);
+$right = optional_param('right', (int)$profile->activeid, PARAM_INT);
+$data = ['name' => display::name($profile->name), 'profileid' => $profileid, 'action' => $url->out(false),
+    'sesskey' => sesskey(), 'versions' => [], 'choices' => [], 'rows' => [],
+    'backurl' => (new moodle_url('/local/multipicker/admin/profile.php', ['profileid' => $profileid]))->out(false),
+    'pagination' => $OUTPUT->paging_bar($total, $page, 25, $url)];
+$choices = $records;
+foreach (array_unique([$profile->activeid, $left, $right]) as $id) {
+    if ($id) {
+        $choices[$id] = $DB->get_record('local_multipicker_revision', ['id' => $id, 'profileid' => $profileid], '*', MUST_EXIST);
+    }
+}
+foreach ($choices as $version) {
+    $data['choices'][] = ['id' => $version->id, 'number' => $version->revision,
+        'left' => $version->id == $left, 'right' => $version->id == $right];
+}
+foreach ($records as $version) {
+    $data['versions'][] = ['id' => $version->id, 'number' => $version->revision, 'date' => userdate($version->timecreated),
+        'active' => $version->id == $profile->activeid,
+        'compareurl' => (new moodle_url($url, ['left' => $version->id, 'right' => $profile->activeid]))->out(false)];
+}
+if ($left && $right) {
+    $data['comparing'] = true;
+    $data['leftnumber'] = $choices[$left]->revision;
+    $data['rightnumber'] = $choices[$right]->revision;
+    $data['rows'] = profile_history::compare(
+        json_decode($choices[$left]->configjson, true),
+        json_decode($choices[$right]->configjson, true)
+    );
+    if (optional_param('changesonly', false, PARAM_BOOL)) {
+        $data['rows'] = array_values(array_filter($data['rows'], static fn($row) => $row['changed']));
+        $data['changesonly'] = true;
+    }
+}
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
+echo $PAGE->get_renderer('local_multipicker')->render(navigation::site('profiles'));
+echo $OUTPUT->render_from_template('local_multipicker/local/profile/history', $data);
+echo $OUTPUT->footer();

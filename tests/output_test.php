@@ -29,7 +29,11 @@ use local_multipicker\output\view;
 
 /**
  * Exercises actual templates through Moodle's renderer.
+ * @covers \local_multipicker\output\display
+ * @covers \local_multipicker\output\view
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\display::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\view::class)]
 final class output_test extends \advanced_testcase {
     /**
      * Personal action fields remain escaped and the log filters have labels.
@@ -119,7 +123,8 @@ final class output_test extends \advanced_testcase {
     public function test_migration_report_uses_readable_decisions(): void {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('migration_report', [
-            'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025', 'targetedition' => '2026', 'reviewstep' => true,
+            'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025',
+            'targetedition' => '2026', 'reviewstep' => true,
             'hasoperations' => true, 'groups' => [[
                 'sourcecourse' => 'BIO101-2025', 'targetcourse' => 'BIO101-2026',
                 'targetsection' => 'Week 1', 'targetfolder' => 'Class materials', 'operations' => [[

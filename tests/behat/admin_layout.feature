@@ -8,6 +8,24 @@ Feature: Clear administration tabs and immutable migration previews
       | name                 |
       | Migration acceptance |
 
+  Scenario: Profile bulk icons are hidden until profiles are selected
+    Given I log in as "admin"
+    When I open MultiPicker administration "profiles"
+    Then MultiPicker profile bulk actions should be "hidden"
+    When I click on "input[name='profiles[]']" "css_element"
+    Then MultiPicker profile bulk actions should be "visible"
+    And I capture MultiPicker administration "bulk-selected"
+    When I click on "input[name='profiles[]']" "css_element"
+    Then MultiPicker profile bulk actions should be "hidden"
+    When I click on "[data-multipicker-selectall]" "css_element"
+    And I press "Disable selected"
+    Then I should see "Disabled" in the ".multipicker-profiles table" "css_element"
+    And MultiPicker profile bulk actions should be "hidden"
+    When I click on "input[name='profiles[]']" "css_element"
+    And I press "Enable selected"
+    Then I should see "Enabled" in the ".multipicker-profiles table" "css_element"
+    And I capture MultiPicker administration "bulk-icons"
+
   Scenario: Native settings save without leaving the administration tabs
     Given I log in as "admin"
     When I open MultiPicker administration "settings"
@@ -47,7 +65,7 @@ Feature: Clear administration tabs and immutable migration previews
     And I should see "lesson.txt"
     And I should see "Original teacher"
     When I follow "Continue to execution"
-    Then I should see "Execution becomes available when site maintenance mode is enabled"
+    Then I should see "Files are processed in the background without enabling site maintenance"
     When I follow "Back to review"
     And I capture MultiPicker administration "migration-review"
     When I follow "Already available (0)"
@@ -72,7 +90,7 @@ Feature: Clear administration tabs and immutable migration previews
     And I follow "Migration acceptance"
     Then "#id_configjson" "css_element" should not be visible
     When I set the field "Name" to "Guided profile"
-    And I press "Validate and activate revision"
+    And I press "Save profile"
     Then I should see "Guided profile"
     And I should not see "Migration acceptance"
 
@@ -98,7 +116,7 @@ Feature: Clear administration tabs and immutable migration previews
     Then I should see "1 files included across all pages"
     When I press "Include every file"
     And I follow "Continue to execution"
-    Then I should see "I have reviewed the complete preview"
+    Then I should see "I have reviewed every destination and copy decision"
     And I should not see "Find a course, folder or file"
 
   @_file_upload
@@ -123,3 +141,64 @@ Feature: Clear administration tabs and immutable migration previews
     And I click on ".multipicker-log button[type='submit']" "css_element"
     Then I should see "Profile activated"
     And I capture MultiPicker administration "log"
+
+  Scenario: Create and edit a blank guided profile with the Spanish native form
+    Given the MultiPicker administrator uses Spanish
+    And I log in as "admin"
+    When I open MultiPicker administration "profiles"
+    And I follow "Nuevo perfil"
+    Then the field "profilename" matches value ""
+    And the field "coursepattern" matches value ""
+    And the field "familytemplate" matches value ""
+    And the field "displaytemplate" matches value ""
+    And the MultiPicker profile inputs should align
+    And I capture MultiPicker administration "blank-profile"
+    When I set the field "profilename" to "Perfil nuevo"
+    And I set the field "coursepattern" to "~^(?<group>.+)$~"
+    And I set the field "familytemplate" to "${group}"
+    And I press "Guardar perfil"
+    Then I should see "Perfil nuevo"
+    When I follow "Perfil nuevo"
+    And I set the field "profilename" to "Perfil editado"
+    And I press "Guardar perfil"
+    Then I should see "Perfil editado"
+    And I capture MultiPicker administration "spanish-profiles"
+
+  Scenario: Edit a blocked migration without rewriting its original review
+    Given I log in as "admin"
+    When I open MultiPicker administration "migration"
+    And I follow "New migration"
+    And I press "Continue to source and destination"
+    And I set the field "sourcefilters[edition]" to "2025"
+    And I set the field "targetfilters[edition]" to "2026"
+    And I set the field "layoutconfirmed" to "1"
+    And I set the MultiPicker destination folder rule to "New destination"
+    And I press "Create preview"
+    Then I should see "Blocked"
+    When I open MultiPicker administration "migration"
+    And I click on "a[title='Edit']" "css_element"
+    Then the field "sourcefilters[edition]" matches value "2025"
+    And the field "targetfilters[edition]" matches value "2026"
+    When I set the field "missingtarget" to "create"
+    And I press "Create preview"
+    Then I should see "Continue to execution"
+    And MultiPicker should retain "2" migration plans
+
+  Scenario: Compare and restore versions without creating another profile
+    Given I log in as "admin"
+    When I open MultiPicker administration "profiles"
+    And I follow "Migration acceptance"
+    And I set the field "profilename" to "Updated acceptance"
+    And I press "Save profile"
+    And I follow "Updated acceptance"
+    And I press "Version history"
+    Then I should see "One profile keeps its saved versions"
+    And I capture MultiPicker administration "version-history"
+    When I compare the oldest MultiPicker profile version
+    Then I should see "Updated acceptance" in the ".multipicker-version-diff" "css_element"
+    And I capture MultiPicker administration "version-compare"
+    When I press "Restore this version"
+    Then I should see "The configuration was restored as a new version of the same profile"
+    When I open MultiPicker administration "profiles"
+    Then I should see "Migration acceptance" in the ".multipicker-profiles table" "css_element"
+    And I should not see "Updated acceptance" in the ".multipicker-profiles table" "css_element"

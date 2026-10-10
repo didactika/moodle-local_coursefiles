@@ -142,5 +142,13 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
         }
         upgrade_plugin_savepoint(true, 2026100905, 'local', 'multipicker');
     }
+    if ($oldversion < 2026101000) {
+        $table = new xmldb_table('local_multipicker_revision');
+        $index = new xmldb_index('timecreated-id', XMLDB_INDEX_NOTUNIQUE, ['timecreated', 'id']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2026101000, 'local', 'multipicker');
+    }
     return true;
 }

@@ -33,6 +33,7 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="profileid-revision" UNIQUE="true" FIELDS="profileid, revision" />
+        <INDEX NAME="timecreated-id" UNIQUE="false" FIELDS="timecreated, id" />
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_multipicker_course" COMMENT="Rebuildable course family memberships">

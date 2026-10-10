@@ -35,7 +35,21 @@ use local_multipicker\output\display;
 
  * Exercises the real index, live authorization and native names.
 
+ * @covers \local_multipicker\local\profile\profiles
+ * @covers \local_multipicker\local\catalog\catalog
+ * @covers \local_multipicker\local\catalog\indexer
+ * @covers \local_multipicker\local\selection\selection_basket
+ * @covers \local_multipicker\local\selection\browser_listing
+ * @covers \local_multipicker\output\capture_filters
+ * @covers \local_multipicker\output\display
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\catalog::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\indexer::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\selection_basket::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\browser_listing::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\capture_filters::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\display::class)]
 final class capture_filters_test extends \advanced_testcase {
     /**
      * Guided fields retain unrelated advanced rules and produce named capture definitions.
@@ -104,7 +118,8 @@ final class capture_filters_test extends \advanced_testcase {
             ], 'Unique page document ' . $i);
         }
         indexer::refresh($source->id);
-        $scope = ['courseid' => $target->id, 'contextid' => $destination->context->id];
+        $scope = ['courseid' => $target->id, 'contextid' => $destination->context->id,
+            'limits' => ['maxfiles' => -1]];
         $state = ['profileid' => $fixture['profileid'], 'filters' => ['q' => 'page-document-',
             'captures' => [], 'mimetype' => ''], 'after' => '', 'folder' => '', 'selected' => []];
         $first = browser_listing::page($scope, $state);

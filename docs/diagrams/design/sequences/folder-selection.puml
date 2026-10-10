@@ -15,7 +15,7 @@ Form -> Browser : Embed scoped HTML chooser
 Teacher -> Browser : Filter / browse / select all or check materials
 Browser -> Scope : Authenticated Fragment request
 Scope --> Browser : Authorized results; canonical checks / folder counts
-note right of Browser : Filters stay enabled; only results refresh
+note right of Browser : Filters retain focus and width.\nCheckboxes patch existing cards.\nFolder / cursor / scroll remain.
 Teacher -> Browser : Review selection
 Browser -> Scope : Expand and recheck selected sources
 Scope --> Browser : Resulting tree / readable filenames / approval

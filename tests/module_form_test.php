@@ -31,7 +31,15 @@ use local_multipicker\local\selection\selection_options;
 
 /**
  * Exercises native controls, browser selections and restricted folder editing.
+ * @covers \local_multipicker\local\catalog\indexer
+ * @covers \local_multipicker\local\catalog\material_source
+ * @covers \local_multipicker\local\profile\profiles
+ * @covers \local_multipicker\local\selection\selection_options
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\indexer::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\material_source::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\selection_options::class)]
 final class module_form_test extends \advanced_testcase {
     /**
      * Native settings render one real manager without extra settings sections.

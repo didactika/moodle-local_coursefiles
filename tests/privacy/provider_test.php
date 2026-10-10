@@ -31,7 +31,9 @@ use core_privacy\local\request\writer;
 
 /**
  * Checks actual actor records, native files and approved context boundaries.
+ * @covers \local_multipicker\privacy\provider
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\privacy\provider::class)]
 final class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Exports include every actor table and exclude the other actor's records.

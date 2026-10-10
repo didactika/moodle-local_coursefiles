@@ -46,7 +46,7 @@ final class migration_report {
         bool $execution = false,
         int $issuepage = 0
     ): array {
-        global $CFG, $DB;
+        global $DB;
         require_capability('local/multipicker:planmigration', \context_system::instance());
         if (!in_array($decision, ['', 'copy', 'skip', 'blocked'], true)) {
             throw new \invalid_parameter_exception('Unknown decision filter');
@@ -70,7 +70,8 @@ final class migration_report {
                 ['fromplan' => $plan->id, 'profileid' => $plan->profileid, 'sourceedition' => $document['sourceedition'],
                 'targetedition' => $document['targetedition'], 'scopekey' => $document['scopekey'] ?? 'edition', 'step' => 'scope']
             ))->out(false),
-            'maintenance' => !empty($CFG->maintenance_enabled), 'blocked' => $plan->state === 'blocked',
+            'blocked' => $plan->state === 'blocked',
+            'emptycancelled' => $plan->state === 'cancelled' && !\local_multipicker\local\migration\plan_history::has_work($planid),
             'refreshurl' => $url->out(false),
         ];
         $counts = ['copy' => 0, 'skip' => 0, 'blocked' => 0];

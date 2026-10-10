@@ -35,6 +35,15 @@ export const init = () => {
     if (!form) {
         return;
     }
+    form.addEventListener('click', event => {
+        const row = event.target.closest('.multipicker-tree-file');
+        if (!row || event.target.closest('button, a, input, label')) {
+            return;
+        }
+        const check = row.querySelector('input[type=checkbox]');
+        check.checked = !check.checked;
+        check.dispatchEvent(new Event('change', {bubbles: true}));
+    });
     form.addEventListener('click', async event => {
         const button = event.target.closest('[data-multipicker-rename]');
         if (!button || button.disabled) {
@@ -56,7 +65,7 @@ export const init = () => {
                     return;
                 }
                 name.value = input.value;
-                form.requestSubmit(form.querySelector('[data-multipicker-save-review]'));
+                form.requestSubmit();
             });
             modal.getRoot().on(ModalEvents.hidden, () => {
                 button.disabled = false;

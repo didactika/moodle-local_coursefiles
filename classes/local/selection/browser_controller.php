@@ -50,7 +50,7 @@ final class browser_controller {
         $captures = $raw['captures'] ?? [];
         if (
             !is_array($items) || count($items) > material_selection::MAX_FILES || !is_array($captures)
-                || count($captures) > 12 || array_filter($items, static fn($item) => !is_string($item))
+                || count($captures) > 9 || array_filter($items, static fn($item) => !is_string($item))
                 || array_filter($captures, static fn($value) => !is_string($value) || strlen($value) > 255)
         ) {
             throw new \moodle_exception('invalidselection', 'local_multipicker');
@@ -92,6 +92,7 @@ final class browser_controller {
         $state['layout'] = $state['layout'] ?? 'grid';
         $capturecontrols = [];
         $message = '';
+        $originalstate = $state;
 
         try {
             if (array_filter($state['selected'], static fn($value) => str_starts_with($value, 'folder:'))) {
@@ -202,6 +203,7 @@ final class browser_controller {
                 ), true);
                 $state['roots'] = array_slice($state['roots'], -material_selection::MAX_FILES);
                 $state['renames'] = array_intersect_key($state['renames'], $selectedhashes);
+                selection_limits::require_capacity($scope, $state['selected']);
                 draft_scope::select_destination($token, $input['destination'], sesskey());
                 draft_scope::select_mode($token, $input['mode'], sesskey());
                 draft_scope::remember_view($token, $state, sesskey());
@@ -217,13 +219,27 @@ final class browser_controller {
                 $listing['suggestions']
             );
             $listing['previouspage'] = (bool)$state['history'];
+            $catalogpending = false;
+            if (empty($listing['cards']) && isset($profiles[$state['profileid']])) {
+                [$profile, , $rules] = \local_multipicker\local\profile\profiles::load((int)$state['profileid']);
+                $catalogpending = !$DB->record_exists(
+                    'local_multipicker_course',
+                    ['courseid' => $course->id, 'revisionid' => $profile->activeid]
+                ) && $rules->resolve($course) !== null;
+            }
         } catch (\moodle_exception $exception) {
+            $state = $originalstate;
+            $catalogpending = false;
             $message = $OUTPUT->notification(display::reason($exception->errorcode), 'error');
             $listing = ['cards' => [], 'selecteditems' => array_map(static fn($value) => ['value' => $value], $state['selected']),
                 'retained' => array_map(static fn($value) => ['value' => $value], $state['selected']),
                 'next' => '', 'parent' => '', 'infolder' => false, 'count' => count($state['selected'])];
+            if ($exception->errorcode === 'selectionfull') {
+                $listing = browser_listing::page($scope, $state);
+            }
         }
         return ['review' => false, 'message' => $message, 'data' => $listing + [
+        'catalogpending' => $catalogpending, 'selectioncapacity' => selection_limits::capacity($scope),
         'contextid' => $scope['contextid'],
         'repositoryname' => display::name($scope['repositoryname'] ?? get_string('pluginname', 'local_multipicker')),
         'layout' => $state['layout'],

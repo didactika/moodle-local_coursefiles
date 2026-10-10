@@ -63,7 +63,12 @@ final class guided_config {
      */
     public static function apply(array $config, array $data): array {
         if (array_key_exists('displaytemplate', $data)) {
-            $config['relationship']['display_label'] = trim($data['displaytemplate']);
+            $label = trim($data['displaytemplate']);
+            if ($label === '') {
+                unset($config['relationship']['display_label']);
+            } else {
+                $config['relationship']['display_label'] = $label;
+            }
         }
         if (array_key_exists('editioncapture', $data)) {
             $capture = trim($data['editioncapture']);

@@ -31,7 +31,15 @@ use local_multipicker\local\profile\profiles;
 
 /**
  * Verify live public-area adapters and native control ownership on both supported cores.
+ * @covers \local_multipicker\local\catalog\catalog
+ * @covers \local_multipicker\local\catalog\indexer
+ * @covers \local_multipicker\local\catalog\material_source
+ * @covers \local_multipicker\local\profile\profiles
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\catalog::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\indexer::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\material_source::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
 final class public_sources_test extends \advanced_testcase {
     /**
      * AJAX filters cannot render another native control's context or perform review actions.

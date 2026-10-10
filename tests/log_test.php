@@ -29,7 +29,11 @@ use local_multipicker\privacy\provider;
 
 /**
  * Exercises actual stored actions rather than synthetic UI counts.
+ * @covers \local_multipicker\local\logging\log
+ * @covers \local_multipicker\privacy\provider
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\logging\log::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\privacy\provider::class)]
 final class log_test extends \advanced_testcase {
     /**
      * Date bounds remain effective on subsequent cursor pages.

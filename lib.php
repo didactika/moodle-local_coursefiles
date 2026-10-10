@@ -74,7 +74,8 @@ function local_multipicker_output_fragment_browser(array $args): string {
         unset($raw[$action]);
     }
     $raw['search'] = false;
-    $raw['refresh'] = true;
+    // Checkbox changes retain the server-owned folder, cursor and pagination history.
+    $raw['refresh'] = empty($raw['toggleitem']);
     $input = \local_multipicker\local\selection\browser_controller::input($raw);
     $result = \local_multipicker\local\selection\browser_controller::data($token, $input);
     return html_writer::div(

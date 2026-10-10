@@ -34,6 +34,8 @@ use local_multipicker\local\profile\profiles;
  * @covers \local_multipicker\local\profile\profile_bundle
  * @covers \local_multipicker\local\profile\guided_config
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profile_bundle::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\guided_config::class)]
 final class profile_bundle_test extends \advanced_testcase {
     /**
      * Guided edits use server-loaded rules even when a posted document is invalid.

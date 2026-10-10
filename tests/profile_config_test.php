@@ -35,7 +35,21 @@ use local_multipicker\local\migration\migration_executor;
 /**
  * Tests actual file, identity, authorization and migration contracts.
  *
+ * @covers \local_multipicker\local\profile\profile_config
+ * @covers \local_multipicker\local\profile\profiles
+ * @covers \local_multipicker\local\catalog\indexer
+ * @covers \local_multipicker\local\catalog\catalog
+ * @covers \local_multipicker\local\migration\copy_decision
+ * @covers \local_multipicker\local\migration\migration_planner
+ * @covers \local_multipicker\local\migration\migration_executor
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profile_config::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\indexer::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\catalog::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\copy_decision::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\migration_planner::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\migration_executor::class)]
 final class profile_config_test extends \advanced_testcase {
     /**
      * Either course can tighten an editable site policy before a folder write.
@@ -45,7 +59,7 @@ final class profile_config_test extends \advanced_testcase {
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
         set_config('author_course_override', 'tighten_only', 'local_multipicker');
-        $CFG->maintenance_enabled = 1;
+        $CFG->maintenance_enabled = false;
         $fs = get_file_storage();
         $files = $fs->get_area_files(
             \context_module::instance($sfolder->cmid)->id,
@@ -83,7 +97,7 @@ final class profile_config_test extends \advanced_testcase {
         global $CFG;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
-        $CFG->maintenance_enabled = 1;
+        $CFG->maintenance_enabled = false;
         $fs = get_file_storage();
         $context = \context_module::instance($tfolder->cmid);
         $existing = $fs->create_file_from_string([
@@ -113,10 +127,10 @@ final class profile_config_test extends \advanced_testcase {
     /**
      * Calling the destination adapter directly cannot bypass the strict policy.
      */
-    public function test_folder_adapter_checks_policy_before_creating_drafts(): void {
+    public function test_folder_adapter_checks_policy_before_writing_files(): void {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
-        $CFG->maintenance_enabled = 1;
+        $CFG->maintenance_enabled = false;
         $files = get_file_storage()->get_area_files(
             \context_module::instance($sfolder->cmid)->id,
             'mod_folder',
@@ -284,17 +298,21 @@ final class profile_config_test extends \advanced_testcase {
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $this->assertSame('blocked', $plan->state);
         $document = json_decode($plan->configjson, true);
-        $this->assertSame('blocked_policy', $GLOBALS['DB']->get_field('local_multipicker_operation', 'decision', ['planid' => $plan->id]));
+        $this->assertSame('blocked_policy', $GLOBALS['DB']->get_field(
+            'local_multipicker_operation',
+            'decision',
+            ['planid' => $plan->id]
+        ));
     }
 
     /**
-     * Maintenance copies preserve author, path and source; reruns add nothing.
+     * Online copies preserve author, path and source; reruns add nothing.
      */
     public function test_reviewed_copy_is_idempotent(): void {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
-        $CFG->maintenance_enabled = 1;
+        $CFG->maintenance_enabled = false;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $this->assertSame('reviewable', $plan->state);
         $runid = migration_executor::queue($plan->id, $plan->digest);
@@ -352,12 +370,11 @@ final class profile_config_test extends \advanced_testcase {
             'contextid' => \context_module::instance($tfolder->cmid)->id,
             'filepath' => '/', 'filename' => 'renamed.pdf',
         ], reset($sourcefile));
-        $CFG->maintenance_enabled = 1;
+        $CFG->maintenance_enabled = false;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $this->assertSame('skip_content', $DB->get_field('local_multipicker_operation', 'decision', ['planid' => $plan->id]));
-        $runid = migration_executor::queue($plan->id, $plan->digest);
-        $this->assertFalse(migration_executor::execute($runid));
-        $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
+        $this->assertSame('cancelled', $plan->state);
+        $this->assertFalse($DB->record_exists('local_multipicker_run', ['planid' => $plan->id]));
         $this->assertCount(1, get_file_storage()->get_area_files(
             \context_module::instance($tfolder->cmid)->id,
             'mod_folder',
@@ -394,7 +411,7 @@ final class profile_config_test extends \advanced_testcase {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
-        $CFG->maintenance_enabled = 1;
+        $CFG->maintenance_enabled = false;
         $sourcefiles = get_file_storage()->get_area_files(
             \context_module::instance($sfolder->cmid)->id,
             'mod_folder',
@@ -439,7 +456,7 @@ final class profile_config_test extends \advanced_testcase {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
-        $CFG->maintenance_enabled = 1;
+        $CFG->maintenance_enabled = false;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $runid = migration_executor::queue($plan->id, $plan->digest);
         profiles::save(json_encode($this->config()), $profileid);
@@ -462,7 +479,7 @@ final class profile_config_test extends \advanced_testcase {
         global $CFG, $DB;
         [$profileid, $source, $target, $sfolder, $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
-        $CFG->maintenance_enabled = 1;
+        $CFG->maintenance_enabled = false;
         $plan = migration_planner::preview($profileid, '2025', '2026', true);
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $DB->set_field('folder', 'name', 'changed', ['id' => $tfolder->id]);

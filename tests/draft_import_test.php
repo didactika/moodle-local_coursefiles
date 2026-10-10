@@ -30,7 +30,13 @@ use local_multipicker\local\profile\profiles;
 
 /**
  * Exercises real core drafts and current source permissions.
+ * @covers \local_multipicker\local\selection\draft_import
+ * @covers \local_multipicker\local\selection\material_selection
+ * @covers \local_multipicker\local\profile\profiles
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\draft_import::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\material_selection::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
 final class draft_import_test extends \advanced_testcase {
     /** @var array Authoritative fixture form options. */
     private const LIMITS = ['maxfiles' => 20, 'maxbytes' => 1024, 'areamaxbytes' => 10240,

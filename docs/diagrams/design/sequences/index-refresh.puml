@@ -1,8 +1,10 @@
 @startuml
 !include ../../_style.puml
+skinparam maxMessageSize 220
 title Course-scoped catalog refresh
 participant "Moodle event / cron" as Event
 participant "refresh_course" as Task
+participant "refresh_profile" as ProfileTask
 participant indexer as Index
 participant profiles as Profiles
 database "Course / file catalog" as DB
@@ -13,4 +15,19 @@ Profiles --> Index : Validated rules
 Index -> DB : Replace course metadata in transaction / lock
 DB --> Index : Commit
 Index --> Task : Complete
+== Profile activation ==
+Profiles -> ProfileTask : Queue active profile / revision
+ProfileTask -> Profiles : Verify enabled current revision
+alt revision is current
+  ProfileTask -> DB : Read next 25 courses by ID
+  loop matching or previously indexed courses
+    ProfileTask -> Index : refresh(courseid)
+    Index -> DB : Replace metadata using current rules
+  end
+  opt full slice
+    ProfileTask -> ProfileTask : Queue successor after last course ID
+  end
+else obsolete or disabled
+  ProfileTask -> ProfileTask : Finish without rebuilding
+end
 @enduml

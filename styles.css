@@ -10,6 +10,7 @@
     display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .6rem;
 }
 .multipicker-actionbar { justify-content: flex-start; }
+.multipicker-admin [hidden] { display: none !important; }
 .multipicker-heading { margin-bottom: .65rem; }
 .multipicker-toolbar { margin: .65rem 0; }
 .multipicker-gap-end { margin-inline-end: .5rem; }
@@ -54,8 +55,10 @@ body.multipicker-embedded, .multipicker-embedded #page,
     background: var(--multipicker-host-background, var(--multipicker-surface));
 }
 .multipicker-filterbar {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); gap: .4rem .6rem;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem .6rem;
 }
+.multipicker-filterbar > div { min-width: 0; }
+.multipicker-filterbar .form-control, .multipicker-filterbar select { width: 100%; min-width: 0; }
 .multipicker-filterbar label { margin-bottom: .15rem; font-size: .75rem; }
 .multipicker-options {
     margin-top: .5rem; padding: .45rem .65rem; border-radius: var(--multipicker-radius);
@@ -157,6 +160,13 @@ body.multipicker-embedded, .multipicker-embedded #page,
 .multipicker-row-editor th { font-size: .8rem; font-weight: 500; white-space: nowrap; }
 .multipicker-row-editor .multipicker-row-check { margin-inline: .5rem; }
 .multipicker-table-search { max-width: 24rem; }
+.multipicker-row-actions .btn { padding: .35rem .5rem; white-space: nowrap; }
+.multipicker-row-actions .icon { margin: 0; }
+.multipicker-admin .mform .fitem > .col-form-label { padding-inline-start: 0; }
+.multipicker-admin .mform fieldset { margin-inline: 0; padding-inline: 0; }
+.multipicker-admin .mform .felement > input[type=text], .multipicker-admin .mform .felement > textarea { width: 100%; }
+.multipicker-admin .mform #fgroup_id_buttons > .col-form-label { display: none; }
+.multipicker-admin .mform #fgroup_id_buttons > .felement { margin-inline-start: 0; flex: 0 0 100%; max-width: 100%; }
 .multipicker-admin .multipicker-filter-popover { position: relative; padding: 0; border: 0; }
 .multipicker-filter-menu {
     position: absolute; inset-inline-end: 0; top: calc(100% + .4rem); width: min(24rem, 85vw);
@@ -176,12 +186,48 @@ body.multipicker-embedded, .multipicker-embedded #page,
     .multipicker-native-host .fp-repo-area + div { width: 100%; max-width: 100%; min-width: 0; }
     .multipicker-native-host .fp-repo-items { width: 100%; }
     .multipicker-browser { padding: .75rem !important; }
-    .multipicker-browser .multipicker-search { grid-column: 1 / -1; }
+    .multipicker-filterbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .multipicker-footer .btn { width: 100%; }
     .multipicker-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .multipicker-steps li { padding: .5rem; }
+}
+@media (max-width: 359.98px) {
+    .multipicker-filterbar { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
     .multipicker-card { transition: none; }
     .multipicker-skeleton span { animation: none; }
 }
+
+/* Stable result rows and a bounded native-style filter menu. */
+.multipicker-browser-filters { position: relative; gap: .5rem; }
+.multipicker-browser-filters .multipicker-search { flex: 1 1 12rem; max-width: 24rem; }
+.multipicker-browser-filters .multipicker-filter-popover { position: static; margin: 0; padding: 0; border: 0; }
+.multipicker-browser-filters .multipicker-filter-menu {
+    width: min(38rem, 100%); max-height: min(55vh, 22rem); overflow: auto;
+    top: 100%; background: var(--multipicker-host-background, #fff); z-index: 10;
+}
+.multipicker-card .multipicker-card-content { display: grid; grid-template-rows: 1.5rem 2.6rem 2.1rem auto; }
+.multipicker-card-title, .multipicker-origin {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+.multipicker-card-title { line-height: 1.3rem; max-height: 2.6rem; }
+.multipicker-origin { line-height: 1rem; max-height: 2rem; }
+.multipicker-card .multipicker-card-meta { min-height: 2rem; align-content: start; }
+.multipicker-browser .multipicker-open.btn {
+    display: inline-flex; align-items: center; justify-content: center; padding: 0;
+    width: 1.8rem; height: 1.8rem; border-radius: .5rem; line-height: 1;
+    color: var(--multipicker-primary); background: color-mix(in srgb, var(--multipicker-primary) 12%, #fff);
+}
+.multipicker-browser .multipicker-open .icon { display: inline-flex; align-items: center; justify-content: center; line-height: 1; margin: 0; }
+.multipicker-tree-file { cursor: pointer; }
+.multipicker-tree-file .multipicker-review-name { flex: 1 1 70%; min-width: 0; }
+.multipicker-review-name [data-multipicker-file-name] { min-width: 0; overflow-wrap: anywhere; flex: 0 1 auto; }
+.multipicker-review-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .35rem; }
+.multipicker-review-actions { display: flex; align-items: center; gap: .35rem; }
+.multipicker-review-actions .badge { white-space: normal; max-width: 8rem; }
+.multipicker-tree-file .badge { flex-shrink: 0; max-width: 100%; overflow-wrap: anywhere; }
+.multipicker-pencil.btn { border: 0; background: transparent; padding: .25rem; box-shadow: none; flex-shrink: 0; }
+.multipicker-pencil.btn:hover, .multipicker-pencil.btn:active, .multipicker-pencil.btn:focus { border: 0; background: transparent; box-shadow: none; }
+.multipicker-pencil.btn:focus-visible { outline: 2px solid var(--multipicker-primary); outline-offset: 2px; }
+.multipicker-version-diff code { white-space: pre-wrap; overflow-wrap: anywhere; }

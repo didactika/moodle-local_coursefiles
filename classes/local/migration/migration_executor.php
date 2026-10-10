@@ -40,7 +40,7 @@ final class migration_executor {
      * @return int Run.
      */
     public static function queue(int $planid, string $digest): int {
-        global $CFG, $DB, $USER;
+        global $DB, $USER;
         require_capability('local/multipicker:executemigration', \context_system::instance());
         $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('plan:' . $planid, 10);
         if (!$lock) {
@@ -64,9 +64,6 @@ final class migration_executor {
             ) {
                 throw new \moodle_exception('planstale', 'local_multipicker');
             }
-            if (empty($CFG->maintenance_enabled)) {
-                throw new \moodle_exception('maintenance_required', 'local_multipicker');
-            }
             $document = json_decode($plan->configjson, true);
             if (
                 isset($document['operationsdigest'])
@@ -79,6 +76,11 @@ final class migration_executor {
                     && !hash_equals($document['selectiondigest'], plan_selection::digest($planid))
             ) {
                 throw new \moodle_exception('planstale', 'local_multipicker');
+            }
+            if (!plan_history::has_work($planid)) {
+                $DB->set_field('local_multipicker_plan', 'state', 'cancelled', ['id' => $planid]);
+                log::record('migration_empty_cancelled', $plan->uuid, []);
+                return 0;
             }
             if (
                 !$DB->record_exists('local_multipicker_operation', ['planid' => $planid, 'included' => 1, 'state' => 'pending'])
@@ -117,16 +119,13 @@ final class migration_executor {
      * @return bool More eligible operations remain.
      */
     public static function execute(int $runid): bool {
-        global $CFG, $DB, $USER;
+        global $DB, $USER;
         $run = $DB->get_record('local_multipicker_run', ['id' => $runid], '*', MUST_EXIST);
         $plan = $DB->get_record('local_multipicker_plan', ['id' => $run->planid], '*', MUST_EXIST);
         if ((int)$USER->id !== (int)$run->userid) {
             throw new \moodle_exception('planstale', 'local_multipicker');
         }
         require_capability('local/multipicker:executemigration', \context_system::instance());
-        if (empty($CFG->maintenance_enabled)) {
-            throw new \moodle_exception('maintenance_required', 'local_multipicker');
-        }
         if ($run->cancelled) {
             $DB->set_field('local_multipicker_run', 'state', 'cancelled', ['id' => $runid]);
             return false;
@@ -235,7 +234,7 @@ final class migration_executor {
                 if ($decision === 'copy' || $decision === 'overwrite') {
                     author_policy::require_native_copy($source, $sourcecm->course, $target['courseid']);
                     $attributionid = author_policy::capture($source);
-                    $saved = folder_destination::copy($source, $targetcmid, $decision === 'overwrite');
+                    $saved = folder_destination::copy($source, $targetcmid, $decision === 'overwrite', $actual);
                     $origin = (object)[
                         'pathnamehash' => $saved->get_pathnamehash(), 'attributionid' => $attributionid,
                         'contenthash' => $saved->get_contenthash(), 'userid' => $USER->id, 'timecreated' => time(),

@@ -42,12 +42,11 @@ if ($profileid) {
     $revision = $DB->get_record('local_multipicker_revision', ['id' => $profile->activeid], '*', MUST_EXIST);
     $config = json_decode($revision->configjson, true);
 } else {
-    $config = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+    $config = [];
 }
-$rules = new \local_multipicker\local\profile\profile_config($config);
-$definitions = $rules->filter_definitions();
+$definitions = $config ? (new \local_multipicker\local\profile\profile_config($config))->filter_definitions() : [];
 $form = new profile_form(null, ['profileid' => $profileid, 'config' => $config, 'filtercount' => max(2, count($definitions)),
-    'sources' => $config['publication']['allowed_sources'] ?? ['mod_folder/content', 'mod_resource/content']]);
+    'sources' => $config['publication']['allowed_sources'] ?? []]);
 $listurl = new moodle_url('/local/multipicker/admin/profiles.php');
 if ($form->is_cancelled()) {
     redirect($listurl);
@@ -69,27 +68,33 @@ if ($data = $form->get_data()) {
 }
 if (!$form->is_submitted()) {
     $defaults = ['profileid' => $profileid, 'profilename' => $config['name'] ?? '',
-        'editmode' => count($config['relationship']['parsers']) === 1 ? 'guided' : 'advanced',
-        'coursefield' => $config['relationship']['parsers'][0]['field'],
-        'coursepattern' => $config['relationship']['parsers'][0]['pattern'],
-        'familytemplate' => $config['relationship']['family_key'],
-        'configjson' => json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)];
+        'editmode' => !$config || count($config['relationship']['parsers']) === 1 ? 'guided' : 'advanced',
+        'coursefield' => $config['relationship']['parsers'][0]['field'] ?? 'idnumber',
+        'coursepattern' => $config['relationship']['parsers'][0]['pattern'] ?? '',
+        'familytemplate' => $config['relationship']['family_key'] ?? '',
+        'configjson' => $config ? json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : ''];
     foreach ($definitions as $key => $definition) {
         $defaults['filtercapture'][] = $definition['capture'];
         $defaults['filterlabel'][] = $definition['label'];
         $defaults['filteroptional'][] = !empty($definition['optional']);
         $defaults['filterkey'][] = $key;
     }
-    $form->set_data($defaults + \local_multipicker\local\profile\guided_config::defaults($config));
+    $form->set_data($defaults + ($config ? \local_multipicker\local\profile\guided_config::defaults($config)
+        : ['displaytemplate' => '', 'pairdimensions' => '', 'categoryids' => []]));
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
 $renderer = $PAGE->get_renderer('local_multipicker');
 echo $renderer->render(navigation::site('profiles'));
-echo html_writer::link($listurl, get_string('backtoprofiles', 'local_multipicker'), ['class' => 'btn btn-link mb-3']);
 echo $OUTPUT->heading(get_string($profileid ? 'profileeditor' : 'newprofile', 'local_multipicker'), 3);
-echo html_writer::tag('p', get_string('profileeditorhelp', 'local_multipicker'), ['class' => 'text-muted']);
+if ($profileid) {
+    echo $OUTPUT->single_button(
+        new moodle_url('/local/multipicker/admin/profile_history.php', ['profileid' => $profileid]),
+        get_string('versionhistory', 'local_multipicker'),
+        'get'
+    );
+}
 if ($summary !== null) {
     echo $OUTPUT->notification(get_string('unsavedpreview', 'local_multipicker'), 'info');
     echo $renderer->render(new view('profile_summary', $summary));

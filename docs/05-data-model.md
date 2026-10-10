@@ -64,3 +64,5 @@ Course refresh replaces only that course's cache inside a transaction; event del
 Version 2026100903 adds the operation `included` flag (default 1) and plan/included/state index. Existing plans retain every operation selected on upgrade; historical decisions and results are preserved.
 
 Version 2026100905 includes the target binding table, operation sourcecourseid/targetcourseid/sourcecmid fields and group indexes, the profile deleted flag, and retention indexes on plan timecreated/id and run planid/state/timemodified. Existing snapshot data backfills operation group fields; reviewed source/target snapshots remain immutable. See [retention](23-history-and-retention.md).
+
+Profile versions use the revision table under one profile identity. Its nonunique timecreated/id index is installed and upgraded at package version 2026101000 for bounded history expiration. Activeid identifies the current configuration; retained migration revisionid references protect their configurations from version cleanup.

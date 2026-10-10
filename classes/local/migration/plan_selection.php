@@ -114,7 +114,7 @@ final class plan_selection {
                 [$planid, 'blocked%']
             );
             $issues = array_filter($document['issues'] ?? [], static fn($issue) => $issue['blocking'] ?? true);
-            $plan->state = $issues || $blocked ? 'blocked' : 'reviewable';
+            $plan->state = $issues || $blocked ? 'blocked' : (plan_history::has_work($planid) ? 'reviewable' : 'cancelled');
             $DB->update_record('local_multipicker_plan', $plan);
             \local_multipicker\local\logging\log::record(
                 'migration_selection_changed',

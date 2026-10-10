@@ -28,6 +28,22 @@ namespace local_multipicker\form;
  */
 final class row_data {
     /**
+     * Keep translated schemas on their native field, outside AMD call arguments.
+     *
+     * @param \MoodleQuickForm $form Native form.
+     * @param string $name Field name.
+     * @param array $columns Editable column contracts.
+     * @param int $maximum Server-enforced row limit.
+     */
+    public static function enhance(\MoodleQuickForm $form, string $name, array $columns, int $maximum): void {
+        global $PAGE;
+        $form->getElement($name)->updateAttributes([
+            'data-multipicker-schema' => json_encode(['columns' => $columns, 'maximum' => $maximum], JSON_UNESCAPED_UNICODE),
+        ]);
+        $PAGE->requires->js_call_amd('local_multipicker/row_editor', 'init', ['id_' . $name]);
+    }
+
+    /**
      * Decode a list without coercing malformed input.
      *
      * @param string $json Serialized form rows.

@@ -29,7 +29,9 @@ use local_multipicker\local\upgrade\legacy_import;
 
  * Verifies IDs, history and settings survive the component rename.
 
+ * @covers \local_multipicker\local\upgrade\legacy_import
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\upgrade\legacy_import::class)]
 final class legacy_import_test extends \advanced_testcase {
     /**
      * Import populated legacy tables and reset sequences for subsequent writes.

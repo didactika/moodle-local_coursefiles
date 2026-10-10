@@ -42,3 +42,13 @@ See [public source areas](22-public-material-sources.md), [author policy](09-aut
 The compact browser selects by clicking a card body or its checkbox/label. Folder navigation buttons do not toggle selection. Folder views place course/path context beside Back; the selection list is displayed on the separate review screen. Compact automatic filter inputs, native MIME icons, small folder arrows and Cards/List layouts share the theme palette.
 
 The embedded surface follows the native repository background. Filters and bottom actions stay fixed while only results scroll. Every automatic result load displays light skeleton placeholders only in the result area. The review counts resolved files, retains the folder tree and does not repeat a selected-material basket. The user-supplied plugin icon is shared by both components; other controls use core icons.
+
+Checkbox changes retain the current server-owned folder, pagination cursor and history. Fragment responses update existing checkbox states and folder counts in place; result cards remain connected and their scroll position is preserved. Filter changes replace only the result region, keeping active inputs and caret positions.
+
+Filter grids have at most three equally sized columns, reducing to two or one on narrower screens. A profile defines at most nine capture filters. Result skeletons are used when searching, not when toggling a card.
+
+Filters open from the top-right Filters button in a bounded, scrollable menu; filename search remains immediately accessible. Filter controls retain their DOM nodes while only results reload. Selection capacity is the smaller of the batch ceiling and native maxfiles minus existing draft files. Whole-result and recursive-folder requests exceeding that capacity are refused without truncating or changing the previous selection. Final import independently rechecks the native limits.
+
+Card names display at most two lines with an ellipsis and the full plain name in their tooltip. Kind, name, origin and metadata occupy aligned row tracks. Folder navigation uses a compact, centered core chevron on a theme-primary tinted button.
+
+Review lists only resulting files. Clicking anywhere in a file row toggles its removal checkbox, except its native pencil and delete actions. The pencil has no button border or persistent active background and opens a native modal; saving there persists the rename automatically. There is no extra Save changes action in the review. Decision badges wrap separately from long filenames.

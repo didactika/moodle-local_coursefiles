@@ -36,6 +36,9 @@ use local_multipicker\output\navigation;
  * @covers \local_multipicker\output\navigation
  * @covers \local_multipicker\form\profile_form
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\migration_report::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\navigation::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\form\profile_form::class)]
 final class admin_layout_test extends \advanced_testcase {
     /**
      * A delegated profile manager sees only the permitted administration tab.
@@ -97,7 +100,8 @@ final class admin_layout_test extends \advanced_testcase {
                 'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
                 'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),
                 'snapshot' => json_encode(['sourcecourse' => $source->id,
-                    'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/', 'author' => 'Original', 'license' => 'cc'],
+                    'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/',
+                        'author' => 'Original', 'license' => 'cc'],
                     'target' => ['courseid' => $target->id, 'name' => 'Materials', 'sectionname' => 'Topic', 'sectionnum' => 1]]),
             ]);
         }

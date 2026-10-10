@@ -76,7 +76,7 @@ final class migration_form extends \moodleform {
             'textarea',
             'correspondencesjson',
             get_string('foldercorrespondences', 'local_multipicker'),
-            ['rows' => 8, 'class' => 'w-100', 'id' => 'id_correspondencesjson']
+            ['rows' => 8, 'id' => 'id_correspondencesjson']
         );
         $form->setType('correspondencesjson', PARAM_RAW);
         $form->setDefault('correspondencesjson', json_encode($rows));
@@ -92,7 +92,7 @@ final class migration_form extends \moodleform {
             $columns[] = ['key' => $side . 'value', 'label' => get_string($side . 'foldervalue', 'local_multipicker'),
                 'type' => 'text', 'maxlength' => 2048];
         }
-        $PAGE->requires->js_call_amd('local_multipicker/row_editor', 'init', ['id_correspondencesjson', $columns, 20]);
+        row_data::enhance($form, 'correspondencesjson', $columns, 20);
         $choices = [
             'sectionstrategy' => ['ordinal' => 'section_ordinal', 'name' => 'section_name', 'mapping' => 'section_mapping'],
             'duplicatepolicy' => ['skip-and-report' => 'duplicateskip', 'keep' => 'duplicatekeep'],
@@ -122,15 +122,19 @@ final class migration_form extends \moodleform {
             $sectionrows[] = ['source' => (string)$source, 'target' => (string)$target];
         }
         $form->setDefault('sectionmapjson', json_encode($sectionrows));
-        $PAGE->requires->js_call_amd('local_multipicker/row_editor', 'init', ['id_sectionmapjson', [
+        row_data::enhance($form, 'sectionmapjson', [
             ['key' => 'source', 'label' => get_string('sourcesectionid', 'local_multipicker'), 'type' => 'text'],
             ['key' => 'target', 'label' => get_string('targetsectionid', 'local_multipicker'), 'type' => 'text'],
-        ], 200]);
+        ], 200);
         $form->hideIf('sectionmapjson', 'sectionstrategy', 'neq', 'mapping');
         $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_multipicker'));
         $form->hideIf('layoutconfirmed', 'sectionstrategy', 'neq', 'ordinal');
         $form->addElement('static', 'layouthelp', '', get_string('layouthelp', 'local_multipicker'));
         $this->add_action_buttons(false, get_string('createpreview', 'local_multipicker'));
+        $form->insertElementBefore(
+            $form->removeElement('submitbutton', false),
+            $this->_customdata['dimensions'] ? 'sourcescope' : 'placementreview'
+        );
     }
 
     /**
