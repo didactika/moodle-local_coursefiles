@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * Capture scope and layout selection before preview.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_multipicker\local\migration;
 
@@ -59,7 +60,11 @@ final class migration_rules {
                 ) {
                     throw new \moodle_exception('invalidprofile', 'local_multipicker');
                 }
-                $rule[$side . '_module'] = ['type' => 'folder', 'field' => $field, $method => trim($value)];
+                $type = $side === 'source' ? ($row['sourcetype'] ?? 'folder') : 'folder';
+                if (!is_string($type) || !\local_multipicker\local\catalog\source_registry::provider($type)) {
+                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                }
+                $rule[$side . '_module'] = ['type' => $type, 'field' => $field, $method => trim($value)];
             }
             $config['correspondences'][] = $rule;
         }

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * User-facing language strings.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
@@ -119,8 +120,8 @@ $string['copyfolder'] = 'Include the selected folder';
 $string['copymode'] = 'Folder structure';
 $string['copymode_help'] = 'Keep source paths, include the source folder, or copy its contents directly into the destination.';
 $string['copypaths'] = 'Keep original paths';
-$string['correspondencesjson'] = 'Folder correspondences';
-$string['correspondencesjson_help'] = 'Each row matches source folders and defines their destinations. Exact values, named-capture expressions and capture templates are supported. Add separate rows for different folder rules.';
+$string['correspondencesjson'] = 'Activity correspondences';
+$string['correspondencesjson_help'] = 'Each row selects a public source activity type and matches its destination folder. Exact values, named-capture expressions and templates are supported. Add separate rows for different matching rules.';
 $string['coursefield'] = 'Course identity field';
 $string['coursefield_help'] = 'Choose the course field whose value is matched by the expression.';
 $string['courseidentity'] = 'Course grouping';
@@ -184,7 +185,7 @@ $string['filtermaterials'] = 'Filter materials';
 $string['filteroptional'] = 'Allow courses without this value';
 $string['filtersjson'] = 'Search filters';
 $string['filtersjson_help'] = 'Add up to nine search filters. Each row defines a unique key, a named capture, its visible label and whether a missing value is allowed. Labels use Moodle text formatting.';
-$string['foldercorrespondences'] = 'Folder correspondences';
+$string['foldercorrespondences'] = 'Activity correspondences';
 $string['folderselectioncount'] = '{$a->selected} / {$a->total} selected';
 $string['formscopeunavailable'] = 'This form connection is unavailable or has expired. Reopen the material selection from the form.';
 $string['guidedmode'] = 'Simple fields';
@@ -253,15 +254,15 @@ $string['migrationdeleteconfirm'] = 'Delete the selected migration history? Cour
 $string['migrationdimension'] = 'Match courses using';
 $string['migrationfilter'] = 'Course filter';
 $string['migrationfilter_help'] = 'Only courses matching this value participate on this side. Leave a field empty to accept any value. The profile defines the available filters.';
-$string['migrationintro'] = 'Choose the source and destination editions. Review the resulting file list before copying into existing folders.';
+$string['migrationintro'] = 'Choose related source and destination courses using the available filters. Review the public files and destination folders before copying.';
 $string['migrationinuse'] = 'Cancel or finish the active migration before deleting its history.';
 $string['migrationprofile'] = 'Migration profile';
-$string['migrationprofile_help'] = 'The profile determines related courses and available course filters. Folder correspondences and conflict choices belong to this migration.';
-$string['migrationprofilehelp'] = 'Choose the rules that identify related courses and match their folders.';
+$string['migrationprofile_help'] = 'The profile determines related courses and available course filters. Activity correspondences and conflict choices belong to this migration.';
+$string['migrationprofilehelp'] = 'Choose the rules that identify related courses and available public materials.';
 $string['migrationqueued'] = 'Migration queued. Refresh the status to follow its progress.';
 $string['migrationretentiondays'] = 'Keep migrations (days)';
 $string['migrationretentiondays_help'] = 'Number of days to retain inactive migration history. Zero disables automatic deletion. Active runs and their required profile versions are protected.';
-$string['migrationrules'] = 'Folder matching';
+$string['migrationrules'] = 'Material matching';
 $string['migrations'] = 'Migrations';
 $string['migrationscopehelp'] = 'Choose the value to copy from and the value to copy to. All matching courses are prepared; the preview is paginated.';
 $string['migrationscoperequired'] = 'Set at least one source or destination filter.';
@@ -394,7 +395,7 @@ $string['removeselected'] = 'Remove from selection';
 $string['renamefile'] = 'Rename file';
 $string['report'] = 'Migration report';
 $string['resolvemigration'] = 'Resolve conflict';
-$string['resolvemigration_help'] = 'Choose an existing destination folder, propose creating one in an existing section, or exclude this source folder. A new review is prepared automatically without writing course files. Earlier reviews and file exclusions remain available.';
+$string['resolvemigration_help'] = 'Choose an existing destination folder, propose creating one in an existing section, or exclude this source activity. A new review is prepared automatically without writing course files. Earlier reviews and file exclusions remain available.';
 $string['restoreversion'] = 'Restore this version';
 $string['retention'] = 'History retention';
 $string['retentionhelp'] = 'Use 0 to keep records indefinitely. Cleanup runs hourly in bounded batches. Queued, running and recently finished migrations are retained. Files and original authorship are retained.';
@@ -420,9 +421,11 @@ $string['rowfield_optional_help'] = 'Allow the captured value to be absent witho
 $string['rowfield_source'] = 'Source section';
 $string['rowfield_source_help'] = 'Native ID of a source section; its course is checked during planning.';
 $string['rowfield_sourcefield'] = 'Source field';
-$string['rowfield_sourcefield_help'] = 'Match the source folder name or ID number.';
+$string['rowfield_sourcefield_help'] = 'Match the source activity name or ID number.';
 $string['rowfield_sourcemethod'] = 'Source match';
 $string['rowfield_sourcemethod_help'] = 'Choose an exact value, a regular expression with named groups, or a capture template.';
+$string['rowfield_sourcetype'] = 'Source activity';
+$string['rowfield_sourcetype_help'] = 'Choose the activity whose public files will be copied into the destination folder. Private submissions and other user files are excluded.';
 $string['rowfield_sourcevalue'] = 'Source value';
 $string['rowfield_sourcevalue_help'] = 'Enter the exact source value, expression, or capture template for this correspondence.';
 $string['rowfield_target'] = 'Destination section';
@@ -471,9 +474,9 @@ $string['source'] = 'Source';
 $string['source_module'] = 'Source folder rule';
 $string['sourcecourses'] = 'Source courses';
 $string['sourceedition'] = 'Source edition';
-$string['sourcefolderfield'] = 'Source folder field';
-$string['sourcefoldermissing'] = 'No source folder matches this correspondence.';
-$string['sourcefoldervalue'] = 'Source folder name or expression';
+$string['sourcefolderfield'] = 'Source activity field';
+$string['sourcefoldermissing'] = 'No source activity matches this correspondence.';
+$string['sourcefoldervalue'] = 'Source activity name or expression';
 $string['sourcesectionid'] = 'Source section ID';
 $string['sourcevalue'] = 'Source value';
 $string['state'] = 'State';

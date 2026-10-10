@@ -1,4 +1,7 @@
 {{!
+    @copyright 2026 Didactika.org
+    @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+    @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
     @template local_multipicker/local/migration/report
     Bounded live review, explicit conflict resolutions and separate execution.
     Example context (json): {"planid":1,"planstate":"Blocked","courses":[],"issues":[],"runs":[]}
@@ -38,7 +41,7 @@
     </form>
     <form method="post" action="{{actionurl}}" data-multipicker-migration-selection>
         <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="digest" value="{{digest}}"><input type="hidden" name="q" value="{{search}}"><input type="hidden" name="page" value="{{page}}"><input type="hidden" name="decision" value="{{decision}}"><input type="hidden" name="issuepage" value="{{issuepage}}"><input type="hidden" name="perpage" value="{{perpage}}">
-        {{#selectioneditable}}<div class="multipicker-toolbar d-flex align-items-center justify-content-between flex-wrap my-2"><label class="mb-0 small"><input type="checkbox" data-multipicker-selectall data-partial="{{allpartial}}" {{#allchecked}}checked{{/allchecked}}> {{#str}}selectall, core{{/str}} </label> {{{selectionhelp}}}<span class="small text-muted" role="status" data-multipicker-save-status></span></div>{{/selectioneditable}}
+        {{#selectioneditable}}<div class="multipicker-toolbar d-flex align-items-center justify-content-between flex-wrap my-2"><div class="d-inline-flex align-items-center multipicker-actionbar"><label class="mb-0 small"><input type="checkbox" data-multipicker-selectall data-partial="{{allpartial}}" {{#allchecked}}checked{{/allchecked}}> {{#str}}selectall, core{{/str}}</label>{{{selectionhelp}}}</div><span class="small text-muted" role="status" data-multipicker-save-status></span></div>{{/selectioneditable}}
         {{#courses}}<details open class="multipicker-migration-group mb-3" data-multipicker-group="{{groupcourseid}}">
             <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span><span class="text-break">{{{sourcecoursehtml}}} → {{{targetcoursehtml}}}</span>{{#selectioneditable}}<input type="checkbox" data-multipicker-course="{{groupcourseid}}" data-total="{{coursetotal}}" data-included="{{courseincluded}}" aria-label="{{#str}}selectcourse, local_multipicker{{/str}}" {{#coursechecked}}checked{{/coursechecked}} data-partial="{{coursepartial}}">{{/selectioneditable}}</summary>
             {{#folders}}<details open class="multipicker-migration-folder mt-2" data-multipicker-folder-group="{{groupcmid}}"><summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span><span class="text-break">{{{sourcefolderhtml}}} → {{{targetfolderhtml}}}</span>{{#selectioneditable}}<input type="checkbox" data-multipicker-folder="{{groupcmid}}" data-total="{{grouptotal}}" data-included="{{groupincluded}}" data-course="{{groupcourseid}}" aria-label="{{#str}}selectfolder, local_multipicker{{/str}}" {{#groupchecked}}checked{{/groupchecked}} data-partial="{{grouppartial}}">{{/selectioneditable}}</summary>

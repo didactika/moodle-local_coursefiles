@@ -1,6 +1,14 @@
 # Changelog
 
-## [Unreleased]
+## [4.5.0] - 2026-10-10
+
+- English-only source language strings; detailed documentation and UML moved to the central services workspace.
+
+- Stable Moodle 4.5 distribution with Didactika copyright, author metadata and GPLv3 LICENSE.
+- Correct Back navigation after changing layouts and compact lazy trees without broken grid grouping.
+- Canonical selection counts overlapping content once across editions; existing draft content is excluded before browsing.
+- Migration correspondence rows select a supported public source activity type and copy its authorized files into Folder destinations.
+- One visible Local plugins entry, table-head profile selection and responsive correspondence controls.
 
 - Native multi-file selection, configurable relationship profiles and reviewed background migrations on separate Moodle 4.5 and 5.3 distributions.
 - One profile with retained configuration history, two-version checkbox comparison and activation of an existing version when restoring. Version-preserving portable bundles and bounded retention.

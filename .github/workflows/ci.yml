@@ -1,3 +1,6 @@
+# @copyright 2026 Didactika.org
+# @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+# @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 name: Moodle Plugin CI
 
 # Adapted from didactika/template-moodle-plugin.
@@ -8,7 +11,7 @@ on:
     branches:
       - main
       - master
-      - 'support/moodle-*'
+      - 'MOODLE_*_STABLE'
   workflow_dispatch:
 
 jobs:
@@ -146,12 +149,18 @@ jobs:
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
       - name: Register the native repository test integration
+        env:
+          COMPANION_PR_HEAD: ${{ github.head_ref }}
         run: |
-          branch="${{ github.base_ref || github.ref_name }}"
-          case "$branch" in
-            support/moodle-5|feat/*-5) dependency=support/moodle-5 ;;
-            *) dependency=support/moodle-45 ;;
+          case "${{ matrix.moodle-branch }}" in
+            MOODLE_405_STABLE) dependency=MOODLE_405_STABLE ;;
+            MOODLE_503_STABLE) dependency=main ;;
+            *) echo "Unsupported distribution"; exit 1 ;;
           esac
+          candidate="$COMPANION_PR_HEAD"
+          if [ -n "$candidate" ] && git ls-remote --exit-code --heads https://github.com/didactika/moodle-repository_multipicker.git "refs/heads/$candidate" >/dev/null 2>&1; then
+            dependency="$candidate"
+          fi
           moodle-plugin-ci add-plugin --branch="$dependency" didactika/moodle-repository_multipicker
 
       - name: Install moodle-plugin-ci
@@ -194,6 +203,13 @@ jobs:
       - name: Grunt
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci grunt --max-lint-warnings 0
+
+      - name: Moodle 5.3 React and TypeScript
+        if: ${{ !cancelled() && matrix.moodle-branch == 'MOODLE_503_STABLE' }}
+        working-directory: moodle
+        run: |
+          npx tsc --noEmit --jsx react-jsx --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck public/local/multipicker/js/esm/src/layout.ts public/local/multipicker/js/esm/src/ViewSelector.tsx
+          npx grunt esm
 
       - name: PHPUnit tests
         if: ${{ !cancelled() }}

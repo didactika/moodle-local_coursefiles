@@ -1,4 +1,7 @@
 {{!
+    @copyright 2026 Didactika.org
+    @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+    @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
     @template local_multipicker/local/selection/card
     One authorized material node shared by grid, list and course tree layouts.
     Example context (json): {"title":"Notes","isfolder":false,"value":"file:hash","id":"material"}
@@ -6,7 +9,7 @@
 {{#isfolder}}<div class="multipicker-browser-folder" data-tree-folder="{{value}}">{{/isfolder}}
 <div class="card multipicker-card {{#checked}}multipicker-selected{{/checked}}">
             <div class="card-body d-flex align-items-start p-2">
-                <input type="checkbox" id="{{id}}" name="choices[]" data-multipicker-choice value="{{value}}" data-partial="{{partial}}" {{#checked}}checked{{/checked}}>
+                <input type="checkbox" id="{{id}}" name="choices[]" data-multipicker-choice value="{{value}}" data-contenthash="{{contenthash}}" data-partial="{{partial}}" {{#checked}}checked{{/checked}}>
                 <div class="multipicker-card-content">
                     <div class="multipicker-card-kind d-flex align-items-center mb-1">{{#isfolder}}{{#pix}}f/folder, core{{/pix}}{{/isfolder}}{{^isfolder}}{{#pix}}{{icon}}, core{{/pix}}{{/isfolder}} <span class="multipicker-chip">{{#isfolder}}{{#str}}folder, core{{/str}}{{/isfolder}}{{^isfolder}}{{#str}}file, core{{/str}}{{/isfolder}}</span></div>
                     <label for="{{id}}" class="multipicker-card-title" title="{{plaintitle}}">{{{title}}}</label>

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * MultiPicker native material import integration.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
@@ -154,7 +155,7 @@ class behat_local_multipicker extends behat_base {
                 . 'const aligned=[...editor.querySelectorAll("tbody tr")].every(row=>{'
                 . 'if(getComputedStyle(row).display!=="grid"||getComputedStyle(row).gridTemplateColumns.split(" ").length!==2)'
                 . '{return true;}const fields=[...row.querySelectorAll("[data-field]")];'
-                . 'return fields.every((input,index)=>index%2===1||'
+                . 'return fields.every((input,index)=>index%2===1||!fields[index+1]||'
                 . 'Math.abs(input.getBoundingClientRect().bottom-fields[index+1].getBoundingClientRect().bottom)<2);});'
                 . 'return JSON.stringify({fits,aligned,'
                 . 'page:document.documentElement.scrollWidth-document.documentElement.clientWidth,'
@@ -407,18 +408,31 @@ class behat_local_multipicker extends behat_base {
      * @Then /^MultiPicker layouts should share selections and mark the active view$/
      */
     public function native_browser_layouts(): void {
+        global $CFG;
         $this->wait_for_browser();
+        if (
+            $CFG->version >= 2026100500 && !$this->getSession()->wait(
+                10000,
+                '!!document.querySelector(".fp-object-container")?.contentDocument'
+                . '?.querySelector("[data-multipicker-react-view]")'
+            )
+        ) {
+            throw new \Exception('The native Moodle 5.3 React layout component did not mount.');
+        }
         $correct = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
             . 'const form=doc.querySelector(".multipicker-browser"),card=doc.querySelector(".multipicker-card");'
             . 'for(const layout of ["list","tree"]){form.querySelector("[data-multipicker-layout="+layout+"]").click();'
             . 'if(form.dataset.layout!==layout||form.querySelectorAll("[data-multipicker-layout].active").length!==1)'
             . '{return false;}}const group=doc.querySelector(".multipicker-browser-tree-group");'
-            . 'if(!group.querySelector("summary").getClientRects().length){return false;}group.open=false;'
+            . 'if(!group.querySelector("[data-multipicker-course-toggle]").getClientRects().length){return false;}'
+            . 'group.querySelector("[data-multipicker-course-toggle]").click();'
             . 'const hidden=!group.querySelector(".multipicker-card").getClientRects().length;'
             . 'form.querySelector("[data-multipicker-layout=grid]").click();'
-            . 'return hidden&&group.open&&card===doc.querySelector(".multipicker-card")'
-            . '&&doc.querySelector("[data-multipicker-layout=grid]").getAttribute("aria-pressed")==="true";})()'
+            . 'return hidden&&group.dataset.collapsed==="false"&&card===doc.querySelector(".multipicker-card")'
+            . '&&doc.querySelector("[data-multipicker-layout=grid]").getAttribute("aria-pressed")==="true"'
+            . '&&[...doc.querySelectorAll("[data-multipicker-course-toggle]")].every(heading=>'
+            . '!heading.getClientRects().length);})()'
         );
         if (!$correct) {
             throw new \Exception('The course tree, native active view or shared result nodes are incorrect.');
@@ -505,6 +519,42 @@ class behat_local_multipicker extends behat_base {
             throw new \Exception('Recursive tree selection did not update files and nested folder checks in place.');
         }
         file_put_contents('/tmp/multipicker-recursive-tree.png', $this->getSession()->getScreenshot());
+    }
+
+    /**
+     * The tree disclosure handler must not intercept native parent navigation.
+     * @Then /^MultiPicker Back should work after switching layouts inside a folder$/
+     */
+    public function native_tree_back(): void {
+        $this->wait_for_browser();
+        $this->getSession()->getDriver()->executeScript(
+            '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'doc.querySelector(".multipicker-open").click();})()'
+        );
+        if (
+            !$this->getSession()->wait(
+                10000,
+                '!!document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-back")'
+            )
+        ) {
+            throw new \Exception('The folder did not open.');
+        }
+        $this->wait_for_browser();
+        $this->getSession()->getDriver()->executeScript(
+            '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'doc.querySelector("[data-multipicker-layout=tree]").click();'
+            . 'doc.querySelector(".multipicker-back").click();})()'
+        );
+        if (
+            !$this->getSession()->wait(
+                10000,
+                'document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
+                . '&&!document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-back")'
+            )
+        ) {
+            throw new \Exception('Tree layout intercepted native Back navigation.');
+        }
+        $this->wait_for_browser();
     }
 
     /**

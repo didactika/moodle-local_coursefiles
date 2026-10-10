@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    @copyright 2026 Didactika.org
+    @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+    @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+-->
 <XMLDB PATH="local/multipicker/db" VERSION="20261008" COMMENT="MultiPicker metadata schema">
   <TABLES>
     <TABLE NAME="local_multipicker" COMMENT="Relationship profiles">
