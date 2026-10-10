@@ -41,6 +41,16 @@ final class display {
     }
 
     /**
+     * Apply Moodle text filters and cleaning to a configurable filter label.
+     *
+     * @param string $value Configured label.
+     * @return string Clean, filtered HTML for a label slot.
+     */
+    public static function label(string $value): string {
+        return format_text($value, FORMAT_HTML, ['context' => \context_system::instance(), 'para' => false]);
+    }
+
+    /**
      * Export select options.
      *
      * @param array $choices Value to label map.

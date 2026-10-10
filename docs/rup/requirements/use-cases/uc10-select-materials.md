@@ -28,3 +28,5 @@ Empty/oversized selections, stale approvals, changed/deleted destinations, revok
 File activities preserve their main-file choice: [File screen contract](../../../18-resource-selection.md).
 
 ![File-specific sequence](../../../diagrams/design/sequences/resource-selection.svg)
+
+Folder choices resolve canonical descendant file selections. Select all covers every filtered page. The heading uses the configured native repository name. Review shows plain filenames with pencil actions opening native rename modals and supports individual/bulk removal; saving those changes creates a fresh approval. Header filters and footer actions remain fixed while result files scroll.

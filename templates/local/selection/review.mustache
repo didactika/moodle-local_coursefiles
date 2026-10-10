@@ -1,26 +1,24 @@
 {{!
     @template local_multipicker/local/selection/review
-    Separate embedded review page. Native saving remains on the owning form.
-    Example context (json): {"backurl":"#","count":2,"size":"1 KB","nodes":[],"approved":false}
+    Reviewed resulting files with editable destination names.
+    Example context (json): {"backurl":"#","count":2,"nodes":[],"approved":false}
 }}
 <main class="multipicker-browser multipicker-selection-review p-3">
     <div class="multipicker-heading">
-        <a href="{{backurl}}" class="btn btn-outline-secondary multipicker-back">{{#pix}}back, local_multipicker{{/pix}} {{#str}}backtoselection, local_multipicker{{/str}}</a>
-        <h2 class="h4 mb-0">{{#str}}batchreview, local_multipicker{{/str}}</h2>
+        <a href="{{backurl}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a>
+        <h2 class="h6 mb-0">{{#str}}batchreview, local_multipicker{{/str}}</h2>
+        <span class="small text-muted">{{count}} {{#str}}files, core{{/str}}</span>
     </div>
-<form method="post" action="{{action}}"><input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="scope" value="{{scope}}">
-    {{#hasbasket}}<details class="multipicker-options multipicker-basket mt-2">
-        <summary>{{#str}}selectionbasket, local_multipicker{{/str}}</summary>
-        <ul class="list-group mt-2">{{#basket}}<li class="list-group-item d-flex align-items-center justify-content-between">
-            <span class="text-break">{{{title}}}</span><button name="removeitem" value="{{value}}" class="btn btn-sm btn-outline-secondary mx-2" aria-label="{{#str}}removeselected, local_multipicker{{/str}}">{{#pix}}t/delete, core{{/pix}}</button>
-        </li>{{/basket}}</ul>
-    </details>{{/hasbasket}}
-</form>
+    {{#renameerror}}<div class="alert alert-danger" role="alert">{{renameerror}}</div>{{/renameerror}}
     {{#error}}<div class="alert alert-danger" role="alert">{{error}}</div>{{/error}}
-    {{^error}}<p class="text-muted mt-3">{{#str}}batchresult, local_multipicker{{/str}} {{count}} ({{size}})</p>
-    <ul class="multipicker-tree multipicker-tree-root">{{#nodes}}{{> local_multipicker/local/selection/review_node}}{{/nodes}}</ul>
+    {{^error}}
+    <form method="post" action="{{action}}" class="multipicker-review-form">
+        <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="scope" value="{{scope}}">
+        <div class="multipicker-results"><ul class="multipicker-tree multipicker-tree-root">{{#nodes}}{{> local_multipicker/local/selection/review_node}}{{/nodes}}</ul></div>
+        <div class="multipicker-toolbar"><button class="btn btn-sm btn-outline-secondary" data-multipicker-save-review>{{#str}}savechanges, core{{/str}}</button><button name="removeselected" value="1" class="btn btn-sm btn-outline-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_multipicker{{/str}}</button></div>
+    </form>
     <div class="multipicker-footer">
-        {{#approved}}<button type="button" data-multipicker-confirm disabled class="btn btn-primary">{{#str}}importselection, local_multipicker{{/str}}</button>{{/approved}}
+        {{#approved}}<button type="button" data-multipicker-confirm disabled class="btn btn-sm btn-primary">{{#str}}importselection, local_multipicker{{/str}}</button>{{/approved}}
         <span data-multipicker-status role="status" class="small text-muted"></span>
     </div>{{/error}}
 </main>

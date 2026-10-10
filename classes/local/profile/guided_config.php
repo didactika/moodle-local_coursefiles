@@ -87,30 +87,17 @@ final class guided_config {
             $config['scope']['category_ids'] = array_values(array_unique(array_map('intval', $data['categoryids'] ?? [])));
             foreach (
                 ['publicationmode' => ['source-access-only', 'explicit-family-publication'],
-                'sectionstrategy' => ['ordinal', 'name', 'mapping'],
-                'duplicatepolicy' => ['skip-and-report', 'keep']] as $key => $values
+
+                ] as $key => $values
             ) {
                 if (!in_array($data[$key] ?? '', $values, true)) {
                     throw new \moodle_exception('invalidprofile', 'local_multipicker');
                 }
             }
             $config['publication']['mode'] = $data['publicationmode'];
-            $config['migration']['section_match']['strategy'] = $data['sectionstrategy'];
-            $config['migration']['same_content_different_path'] = $data['duplicatepolicy'];
-            foreach (['source', 'target'] as $side) {
-                $field = $data[$side . 'folderfield'] ?? '';
-                $kind = $data[$side . 'foldermatch'] ?? '';
-                $value = trim($data[$side . 'foldervalue'] ?? '');
-                if (!in_array($field, ['name', 'idnumber'], true) || !in_array($kind, ['equals', 'pattern', 'template'], true)) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
-                }
-                if ($value === '' || strlen($value) > 2048) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
-                }
-                if ($kind === 'pattern' && (!in_array($value[0], ['~', '#', '/'], true) || @preg_match($value, '') === false)) {
-                    throw new \moodle_exception('invalidprofile', 'local_multipicker');
-                }
-                $config['migration'][$side . '_module'] = ['type' => 'folder', 'field' => $field, $kind => $value];
+            if (isset($data['sectionstrategy'], $data['duplicatepolicy'])) {
+                $config['migration']['section_match']['strategy'] = $data['sectionstrategy'];
+                $config['migration']['same_content_different_path'] = $data['duplicatepolicy'];
             }
         }
         return $config;

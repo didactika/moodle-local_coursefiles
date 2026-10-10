@@ -1,0 +1,15 @@
+{{!
+    @template local_multipicker/local/migration/list
+    Searchable, paginated migration history and current run status.
+    Example context (json): {"records":[],"states":[],"newurl":"#"}
+}}
+<section class="multipicker-admin">
+<div class="multipicker-toolbar"><h2 class="h4 mb-0">{{#str}}migrations, local_multipicker{{/str}}</h2><a href="{{newurl}}" class="btn btn-sm btn-primary">{{#pix}}t/add, core{{/pix}}{{#str}}newmigration, local_multipicker{{/str}}</a></div>
+<div class="d-flex justify-content-end mb-3"><details class="multipicker-filter-popover"><summary class="btn btn-sm btn-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}</summary><form method="get" action="{{formurl}}" class="multipicker-filter-menu">
+<label for="mpmigrationsearch">{{#str}}profile, local_multipicker{{/str}}</label><input type="search" class="form-control form-control-sm mb-3" name="q" id="mpmigrationsearch" value="{{search}}">
+<label for="mpmigrationstate">{{#str}}status, core{{/str}}</label><select class="form-control form-control-sm mb-3" name="state" id="mpmigrationstate"><option value="">{{#str}}all, core{{/str}}</option>{{#states}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/states}}</select><button class="btn btn-sm btn-primary">{{#str}}apply, core{{/str}}</button><a href="{{formurl}}" class="btn btn-sm btn-link">{{#str}}reset, core{{/str}}</a>
+</form></details></div>
+<div class="table-responsive"><table class="table table-hover"><thead><tr><th>{{#str}}planreference, local_multipicker{{/str}}</th><th>{{#str}}profile, local_multipicker{{/str}}</th><th>{{#str}}date, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}actions, core{{/str}}</th></tr></thead><tbody>{{#records}}<tr><td>{{reference}}</td><td><a href="{{url}}">{{{name}}}</a></td><td>{{date}}</td><td><span class="multipicker-chip">{{status}}</span></td><td><a href="{{url}}" class="btn btn-sm btn-link">{{#str}}view, core{{/str}}</a></td></tr>{{/records}}</tbody></table></div>
+{{^records}}<p class="alert alert-info">{{#str}}nomigrations, local_multipicker{{/str}}</p>{{/records}}
+{{{pagination}}}
+</section>

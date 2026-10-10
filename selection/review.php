@@ -40,20 +40,36 @@ $PAGE->set_pagelayout('embedded');
 $PAGE->set_title(get_string('batchreview', 'local_multipicker'));
 $PAGE->set_heading($PAGE->course->fullname);
 $state = $scope['view'] ?? [];
+$renameerror = '';
 if (data_submitted()) {
     require_sesskey();
-    $removed = required_param('removeitem', PARAM_RAW);
-    $state['selected'] = array_values(array_diff($state['selected'] ?? [], [$removed]));
-    draft_scope::remember_view($token, $state, sesskey());
-    redirect($PAGE->url);
+    $removed = optional_param('removeitem', '', PARAM_RAW);
+    $removeditems = optional_param('removeselected', false, PARAM_BOOL)
+        ? optional_param_array('removefiles', [], PARAM_ALPHANUM) : [];
+    if ($removed !== '') {
+        $removeditems[] = str_starts_with($removed, 'file:') ? substr($removed, 5) : $removed;
+    }
+    $state['selected'] = array_values(array_diff(
+        $state['selected'] ?? [],
+        array_map(static fn($hash) => 'file:' . $hash, $removeditems)
+    ));
+    $renames = optional_param_array('renames', [], PARAM_RAW);
+    $hashes = array_map(static fn($value) => substr($value, 5), $state['selected']);
+    $state['renames'] = array_intersect_key($renames, array_flip($hashes));
+    try {
+        foreach ($state['renames'] as $filename) {
+            selection_options::filename($filename);
+        }
+        draft_scope::remember_view($token, $state, sesskey());
+        redirect($PAGE->url);
+    } catch (moodle_exception $exception) {
+        $renameerror = display::reason($exception->errorcode);
+        $state = $scope['view'] ?? [];
+    }
 }
 $data = ['backurl' => (new moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false)];
-$data += ['action' => $PAGE->url->out(false), 'sesskey' => sesskey(), 'scope' => $token,
-    'basket' => \local_multipicker\local\selection\selection_basket::data(
-        $scope['courseid'],
-        (int)($state['profileid'] ?? 0),
-        $state['selected'] ?? []
-    ), 'hasbasket' => !empty($state['selected'])];
+$data += ['renameerror' => $renameerror];
+$data += ['action' => $PAGE->url->out(false), 'sesskey' => sesskey(), 'scope' => $token];
 try {
     $review = draft_scope::review(
         $token,
@@ -61,9 +77,9 @@ try {
         selection_options::parse($state['selected'] ?? []),
         sesskey()
     );
-    $data += ['count' => $review['filecount'], 'size' => display_size($review['bytes']),
+    $data += ['count' => count($review['operations']), 'size' => display_size($review['bytes']),
         'nodes' => review_tree::data($review['operations']), 'approved' => !$review['blocked']];
-    if (!$review['blocked']) {
+    if (!$review['blocked'] && $review['operations']) {
         $source = get_file_storage()->get_file_by_hash($review['operations'][0]['pathnamehash']);
         $file = ['title' => $source->get_filename(), 'author' => $source->get_author(),
             'license' => $source->get_license(), 'thumbnail' => $OUTPUT->image_url('f/document')->out(false),
@@ -76,6 +92,7 @@ try {
     $data['error'] = display::reason($exception->errorcode);
 }
 $PAGE->requires->js_call_amd('local_multipicker/browser', 'presentation');
+$PAGE->requires->js_call_amd('local_multipicker/review', 'init');
 echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('local_multipicker/local/selection/review', $data);
 echo $OUTPUT->footer();

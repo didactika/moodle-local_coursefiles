@@ -1,22 +1,16 @@
-# Configurable course and placement rules
+# Course grouping and search filters
 
-Configure profiles through the guided native form, preview the rules and activate a validated revision. Advanced JSON remains available for rules without a guided control. Saved configurations are data, not PHP, SQL or executable callbacks. Each activation creates an immutable revision; existing migration plans never change meaning silently.
+Profiles describe which courses belong together and which public material areas are searchable. Folder correspondences, section matching and destination conflict choices belong to each migration.
 
-![Profile configuration sequence](diagrams/design/sequences/uc03-configure-profile.svg)
+![Profile configuration](diagrams/design/sequences/uc03-configure-profile.svg)
 
-## Course relationship
+## Guided editor
 
-A parser selects `idnumber`, `shortname` or `fullname` and an anchored delimited PCRE expression with named captures. Required captures, normalization and a family template resolve a course to its family, nullable edition and optional pairing dimensions. Category scope is supported. Trim/case normalizers are explicit; editions stay strings.
+The ordinary Moodle form edits the name, course identity field, named-capture expression, family template, matching dimensions, category scope and publication/source choices. There is no separate annual-edition setting. An edition, semester, cohort or another dimension is a configurable search-filter row.
 
-All parsers are evaluated; conflicting identities block resolution unless the administrator explicitly selects first-match order. Pattern length, input length and PCRE match/depth work are bounded. Invalid or over-budget expressions fail rather than matching loosely. The supported parser fields are idnumber, shortname and fullname; other parser sources are not accepted.
+The filter table has editable key, capture, label and optional columns, Add row and a native delete action. Keys are stable technical identifiers; labels are independent display text. Each capture must exist in the expression; duplicate keys, missing labels and invalid patterns are refused. A profile has at most twelve filters. Removing all rows stores an explicit empty filter set.
 
-## Guided profile editor and capture filters
-
-The profile editor opens with Name, Editor, Course identity field, Pattern with named captures and Course group key. Guided fields also expose display templates, optional edition capture, pairing dimensions and category scope. Public-source/publication and folder/section/duplicate rules use collapsed native sections. Search filters are a collapsed repeatable section: each row has a capture name, its display label and an optional-value choice. Add a filter creates another row. Guided editing starts from the server-loaded revision and preserves rules without a form control. Advanced mode retains the complete document and supports multiple parsers and explicit section-map entries. Saving creates an immutable, validated revision. Preview rules reads submitted values without writing a revision.
-
-The Profiles page supports selected/all JSON export and atomic new-profile import through a native upload form. See [administration](20-administration-layout.md) for the portable bundle, limits and site-specific values to review.
-
-Filter keys are stable technical identifiers; labels are independent display names. For example:
+For example, an expression can capture year and term, while the filter keys remain edition and semester:
 
 ```json
 "filters": {
@@ -25,43 +19,18 @@ Filter keys are stable technical identifiers; labels are independent display nam
 }
 ```
 
-The regex must declare those named captures. The picker generates controls from these definitions, offers up to 100 suggestions drawn only from the currently authorized result page, accepts exact string values and checks current course identities again after querying the index. A profile permits at most twelve filters; empty optional captures do not create indexed values. These search filters do not change family grouping or migration pair dimensions. Old profiles without a filters object expose their existing edition capture automatically.
+Labels pass through Moodle format_text with cleaning and configured text filters. Native course and profile names use format_string. Technical keys, expressions, filenames and input attributes remain escaped. Suggestions contain at most 100 values from the authorized result page.
 
-Names and labels use Moodle `format_string` with the relevant display context, including configured string filters such as Multilang. Names are single-line values, rather than rich descriptions; `format_text` is reserved for rich content. Raw filenames, capture keys, regex patterns and input attributes remain escaped.
+## Advanced rules and portable profiles
 
-## Institutional preset
+Advanced mode replaces the guided grouping, filter and public-source sections with the complete JSON editor. The ordinary form does not require JSON or YAML. New-profile import and selected/all export use portable JSON; importing validates the complete bundle before creating independent profiles.
 
-Actual fields may be:
+Preview rules validates submitted fields without saving. Activating a revision creates immutable rules. Guided saves remove the old separate edition and migration configuration from that profile; legacy documents remain readable, and existing migration plans retain their original reviewed rules.
 
-```text
-idnumber = 550e8400-e29b-41d4-a716-446655440000||MAT101||2025
-shortname = MAT101||2025
-```
+## Identity and publication
 
-The [institutional profile](../examples/institutional-profile.json) parses the full ID number with a UUID family, code and optional four-digit edition. Family grouping uses only the UUID; code is a display/validation dimension; an absent year stays null. Multiple courses with the same family/edition require a configured captured pairing dimension to resolve the pair; ambiguous pairs are blocked.
+A parser reads idnumber, shortname or fullname using delimited PCRE with named captures. Required captures, explicit trim/case normalizers, a family template and optional matching dimensions resolve the identity. Multiple parsers are evaluated; conflicting identities fail unless first-match order is explicitly configured. Pattern/input size and PCRE work are bounded.
 
-![Course and placement matching](diagrams/behavior/processes/course-and-placement-matching.svg)
+The [institutional example](../examples/institutional-profile.json) groups UUID||code||year identifiers by UUID. The [generic example](../examples/generic-profile.json) groups subject and term names without requiring annual editions. Missing optional values remain absent. Legacy profiles without a filters object retain their existing edition capture as a compatibility fallback.
 
-The [generic preset](../examples/generic-profile.json) groups `BIO101@spring-2026` and `BIO101@autumn-2026` by subject with nonnumeric edition labels. This proves the engine is not tied to annual UUID conventions.
-
-## Module predicates
-
-Select type `folder`, then use exact `name`/`idnumber` comparison or a bounded PCRE predicate. Named source module captures can fill a destination template. `materiales_de_clase.module` is treated as a display name in the institutional preset; change the configured field if it is actually a module ID number. No Moodle ID numbers are rewritten.
-
-## Section matching
-
-Core sections do not have a native `idnumber`. Supported strategies are reviewed ordinal, unique nonempty section name, or explicit mapping of source section ID to destination section ID. A map is course-pair-specific and checked against the destination course, not an assertion that section IDs are portable. Hidden/restricted teaching sources remain ineligible regardless of their match.
-
-## Implemented migration policies
-
-The initial executor supports existing-folder additive copy, same-path identical skip, content/attribution conflict blocking and cross-path duplicate skip/report. Missing or ambiguous destinations block. Relative paths, source content and target visibility are preserved. The executor performs additive copies into existing folders and rejects unsupported policy choices.
-
-## Import workflow
-
-Open Site administration → Plugins → Local plugins → MultiPicker, then the Profiles tab. Create or edit a profile using simple fields and repeatable filters. Advanced JSON remains available for supported custom rules. Refresh affected courses through the course screen, the scheduled reconciler or `cli/reindex.php`; then inspect actual grouped materials before previewing a bulk migration. Source-access-only is the default. To publish historical materials explicitly, select `publication.mode = explicit-family-publication` and grant specific eligible modules.
-
-The package's examples are executable inputs for the current supported subset. `examples/authorship-policy.json` is a configuration explanation, not a relationship-profile import.
-
-## Public source choices
-
-The guided profile editor has a collapsed Public material sources section. Checkboxes activate declared teaching areas, including Assignment handouts and instructions, Page/Book content and public activity introductions. Existing source rules remain opt-in; specific introduction areas configured in advanced JSON survive guided editing. See [source contracts](22-public-material-sources.md).
+Public-source checkboxes opt into declared teaching file areas. Private submissions, feedback and user files cannot become sources through arbitrary JSON. Historical modules require ordinary source access or an explicit eligible module publication. See [public sources](22-public-material-sources.md), [migration rules](06-migrations.md) and [administration](20-administration-layout.md).

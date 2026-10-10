@@ -36,9 +36,10 @@ Feature: Clear administration tabs and immutable migration previews
     Given I log in as "admin"
     When I open MultiPicker administration "migration"
     Then I should see "Migrations"
-    When I press "Continue to source and destination"
-    And I set the field "Source value" to "2025"
-    And I set the field "Destination value" to "2026"
+    When I follow "New migration"
+    And I press "Continue to source and destination"
+    And I set the field "sourcefilters[edition]" to "2025"
+    And I set the field "targetfilters[edition]" to "2026"
     And I set the field "layoutconfirmed" to "1"
     And I press "Create preview"
     Then I should see "CB2025"
@@ -52,8 +53,8 @@ Feature: Clear administration tabs and immutable migration previews
     When I follow "Already available (0)"
     Then I should see "No files match this decision filter"
     When I follow "Change configuration and create a new preview"
-    Then the field "Source value" matches value "2025"
-    And the field "Destination value" matches value "2026"
+    Then the field "sourcefilters[edition]" matches value "2025"
+    And the field "targetfilters[edition]" matches value "2026"
 
   Scenario: Delegated profile management has its own authorized entry
     Given the MultiPicker teacher can manage site profiles
@@ -78,9 +79,10 @@ Feature: Clear administration tabs and immutable migration previews
   Scenario: Migration exclusions survive searches and the execution step
     Given I log in as "admin"
     When I open MultiPicker administration "migration"
+    And I follow "New migration"
     And I press "Continue to source and destination"
-    And I set the field "Source value" to "2025"
-    And I set the field "Destination value" to "2026"
+    And I set the field "sourcefilters[edition]" to "2025"
+    And I set the field "targetfilters[edition]" to "2026"
     And I set the field "layoutconfirmed" to "1"
     And I press "Create preview"
     And I press "Exclude every file"
@@ -114,6 +116,7 @@ Feature: Clear administration tabs and immutable migration previews
   Scenario: Material reuse logs are available as a native report
     Given I log in as "admin"
     When I navigate to "Reports > MultiPicker material reuse" in site administration
+    When I click on ".multipicker-filter-popover summary" "css_element"
     Then I should see "From date"
     And I should see "Through date"
     When I set the field "Action" to "profile_activated"

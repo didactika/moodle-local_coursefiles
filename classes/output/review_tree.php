@@ -45,7 +45,7 @@ final class review_tree {
                 }
                 $node = &$node['children'][$key];
             }
-            $key = 'file:' . $operation['filename'];
+            $key = 'file:' . $operation['filename'] . ':' . ($operation['pathnamehash'] ?? '');
             $previous = $node['children'][$key] ?? null;
             if (
                 $previous && ($previous['blocked'] || ($previous['copy']
@@ -55,7 +55,7 @@ final class review_tree {
                 continue;
             }
             $node['children'][$key] = [
-                'name' => $operation['filename'], 'folder' => false,
+                'name' => $operation['filename'], 'hash' => $operation['pathnamehash'] ?? '', 'folder' => false,
                 'author' => $operation['snapshot']['author'], 'license' => $operation['snapshot']['license'],
                 'decision' => display::outcome($operation['decision']),
                 'blocked' => str_starts_with($operation['decision'], 'blocked_'),

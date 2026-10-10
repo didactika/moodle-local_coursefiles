@@ -45,10 +45,10 @@ final class profile_bundle {
             throw new \moodle_exception('selectprofiles', 'local_multipicker');
         }
         $params = [];
-        $where = '';
+        $where = ' WHERE p.deleted = 0';
         if (!$all) {
             [$condition, $params] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
-            $where = ' WHERE p.id ' . $condition;
+            $where .= ' AND p.id ' . $condition;
         }
         $records = $DB->get_recordset_sql('SELECT p.id, r.configjson FROM {local_multipicker} p
             JOIN {local_multipicker_revision} r ON r.id = p.activeid' . $where . ' ORDER BY p.name, p.id', $params);

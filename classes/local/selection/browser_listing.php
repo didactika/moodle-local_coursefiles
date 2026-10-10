@@ -31,6 +31,39 @@ use local_multipicker\local\catalog\catalog;
  */
 final class browser_listing {
     /**
+     * Select all currently filtered results across pages, preserving the synchronous batch bound.
+     *
+     * @param array $scope Validated destination binding.
+     * @param array $state Current filters, folder and selection.
+     * @return array Canonical selected files and placement roots.
+     */
+    public static function select_all(array $scope, array $state): array {
+        $state['after'] = '';
+        $selected = array_fill_keys($state['selected'], true);
+        $roots = array_fill_keys($state['roots'] ?? [], true);
+        do {
+            $page = self::page($scope, $state);
+            if ($page['cards']) {
+                $values = array_column($page['cards'], 'value');
+                $files = material_selection::resolve($scope['courseid'], $state['profileid'], selection_options::parse($values));
+                foreach ($files as $hash => $file) {
+                    $selected['file:' . $hash] = true;
+                }
+                foreach ($page['cards'] as $card) {
+                    if ($card['isfolder']) {
+                        $roots[$card['value']] = true;
+                    }
+                }
+                if (count($selected) > material_selection::MAX_FILES || count($roots) > material_selection::MAX_FILES) {
+                    throw new \moodle_exception('batchlimit', 'local_multipicker');
+                }
+            }
+            $state['after'] = $page['next'];
+        } while ($state['after'] !== '');
+        return ['selected' => array_keys($selected), 'roots' => array_keys($roots)];
+    }
+
+    /**
      * Build a navigable page without treating deduplicated content groups as folders.
      *
      * @param array $scope Validated destination binding.
@@ -122,14 +155,40 @@ final class browser_listing {
         }
         uasort($cards, static fn($left, $right) => ($right['isfolder'] <=> $left['isfolder'])
             ?: strnatcasecmp($left['title'], $right['title']));
-        $retained = [];
-        foreach ($state['selected'] as $value) {
-            if (!isset($cards[$value])) {
-                $retained[] = ['value' => $value];
-            }
-        }
+        $selecteditems = array_map(static fn($value) => ['value' => $value], $state['selected']);
+        $retained = array_values(array_filter($selecteditems, static fn($item) => !isset($cards[$item['value']])));
         foreach ($cards as &$card) {
-            $card['checked'] = in_array($card['value'], $state['selected'], true);
+            if ($card['isfolder']) {
+                global $DB;
+                $selector = selection_options::parse([$card['value']])[0];
+                $context = \context_module::instance($selector['cmid']);
+                $condition = 'contextid = ? AND component = ? AND filearea = ? AND itemid = 0 AND filename <> ? AND '
+                    . $DB->sql_like('filepath', '?', true);
+                $params = [$context->id, 'mod_folder', 'content', '.', $DB->sql_like_escape($selector['filepath']) . '%'];
+                $total = $DB->count_records_select('files', $condition, $params);
+                $selected = 0;
+                if ($state['selected']) {
+                    [$in, $selectedparams] = $DB->get_in_or_equal(array_map(
+                        static fn($value) => substr($value, 5),
+                        $state['selected']
+                    ));
+                    $selected = $DB->count_records_select(
+                        'files',
+                        $condition . ' AND pathnamehash ' . $in,
+                        array_merge($params, $selectedparams)
+                    );
+                }
+                $card['checked'] = $total > 0 && $selected === $total;
+                $card['partial'] = $selected > 0 && !$card['checked'];
+                $card['selectionlabel'] = get_string(
+                    'folderselectioncount',
+                    'local_multipicker',
+                    (object)['selected' => $selected, 'total' => $total]
+                );
+            } else {
+                $card['checked'] = in_array($card['value'], $state['selected'], true);
+            }
+            $card['showorigin'] = !$folder;
             $card['id'] = 'cbitem-' . sha1($card['value']);
         }
         unset($card);
@@ -139,7 +198,10 @@ final class browser_listing {
             $parent = 'folder:' . $folder['cmid'] . ':' . base64_encode($parentpath === '/' ? '/' : $parentpath . '/');
         }
         return ['cards' => array_values($cards), 'suggestions' => $suggestions,
-            'retained' => $retained, 'next' => $result['next'],
+            'retained' => $retained, 'selecteditems' => $selecteditems, 'next' => $result['next'],
+            'location' => $folder ? \local_multipicker\output\display::name(
+                get_course(get_coursemodule_from_id('folder', $folder['cmid'])->course)->shortname
+            ) . ' / ' . s($folder['filepath']) : '',
             'parent' => $parent, 'infolder' => $folder !== null, 'path' => $folder['filepath'] ?? '',
             'count' => count($state['selected'])];
     }

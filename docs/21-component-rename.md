@@ -1,6 +1,6 @@
 # Component rename from CourseBridge
 
-The current components are **local_multipicker** and **repository_multipicker**, installed at `local/multipicker` and `repository/multipicker`. Each component remains a standalone Git repository. All thirteen business tables use the `local_multipicker` prefix; the repository owns no business tables.
+The current components are **local_multipicker** and **repository_multipicker**, installed at `local/multipicker` and `repository/multipicker`. Each component remains a standalone Git repository. All fourteen business tables use the `local_multipicker` prefix; the repository owns no business tables.
 
 ![Component rename](diagrams/design/sequences/component-rename.svg)
 

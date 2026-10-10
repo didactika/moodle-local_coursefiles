@@ -58,6 +58,9 @@ final class profiles {
                 ]);
             }
             $profile = $DB->get_record('local_multipicker', ['id' => $profileid], '*', MUST_EXIST);
+            if ($profile->deleted) {
+                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            }
             $number = 1 + (int)$DB->get_field_sql(
                 'SELECT MAX(revision) FROM {local_multipicker_revision} WHERE profileid = ?',
                 [$profileid]
@@ -78,6 +81,52 @@ final class profiles {
     }
 
     /**
+     * Enable, disable or remove selected profiles, retaining referenced revisions.
+     *
+     * @param array $ids Profile IDs.
+     * @param string $action enable, disable or delete.
+     */
+    public static function change_state(array $ids, string $action): void {
+        global $DB;
+        require_capability('local/multipicker:manageprofiles', \context_system::instance());
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        sort($ids);
+        if (!$ids || count($ids) > 500 || !in_array($action, ['enable', 'disable', 'delete'], true)) {
+            throw new \moodle_exception('selectprofiles', 'local_multipicker');
+        }
+        $locks = [];
+        try {
+            foreach ($ids as $id) {
+                $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('profile:' . $id, 10);
+                if (!$lock) {
+                    throw new \moodle_exception('lockfailed', 'local_multipicker');
+                }
+                $locks[] = $lock;
+            }
+            $transaction = $DB->start_delegated_transaction();
+            foreach ($ids as $id) {
+                $profile = $DB->get_record('local_multipicker', ['id' => $id, 'deleted' => 0], '*', MUST_EXIST);
+                if (
+                    $DB->record_exists_sql('SELECT r.id FROM {local_multipicker_run} r
+                    JOIN {local_multipicker_plan} p ON p.id = r.planid
+                    WHERE p.profileid = ? AND (r.state = ? OR r.state = ?)', [$id, 'queued', 'running'])
+                ) {
+                    throw new \moodle_exception('profileinuse', 'local_multipicker');
+                }
+                $profile->enabled = $action === 'enable' ? 1 : 0;
+                $profile->deleted = $action === 'delete' ? 1 : 0;
+                $DB->update_record('local_multipicker', $profile);
+                log::record('profile_state_changed', $profile->uuid, ['action' => $action]);
+            }
+            $transaction->allow_commit();
+        } finally {
+            foreach (array_reverse($locks) as $lock) {
+                $lock->release();
+            }
+        }
+    }
+
+    /**
      * Load an exact enabled revision.
      *
      * @param int $profileid Profile.
@@ -85,7 +134,7 @@ final class profiles {
      */
     public static function load(int $profileid): array {
         global $DB;
-        $profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'enabled' => 1], '*', MUST_EXIST);
+        $profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'enabled' => 1, 'deleted' => 0], '*', MUST_EXIST);
         $revision = $DB->get_record('local_multipicker_revision', ['id' => $profile->activeid], '*', MUST_EXIST);
         return [$profile, $revision, new profile_config(json_decode($revision->configjson, true))];
     }

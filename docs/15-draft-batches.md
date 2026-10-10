@@ -32,3 +32,5 @@ The strict site/course author policy still refuses native copies because later n
 
 Integration tests cover mixed overlapping selections, multiple source folders, content skipping, conflicts, destination limits, draft ownership, hidden sources, changed drafts/profiles/policies and rollback after a second-copy failure. Exact core results are recorded in [validation](07-validation-and-decisions.md). No new tables are introduced. The browser page reviews selections; the existing native repository endpoint performs transfer.
 
+
+Review accepts server-held placement roots and per-source destination filenames. Filenames must pass native PARAM_FILE validation and accepted-type checks. Removal leaves only actual selected source hashes. The approval covers the destination filenames, source snapshots, paths and native draft state; changing a filename invalidates an earlier approval.

@@ -55,6 +55,7 @@ final class migration_report {
         $document = json_decode($plan->configjson, true);
         $revision = $DB->get_record('local_multipicker_revision', ['id' => $plan->revisionid], '*', MUST_EXIST);
         $config = json_decode($revision->configjson, true);
+        $config['migration'] = $document['migration'] ?? $config['migration'] ?? [];
         $url = new \moodle_url('/local/multipicker/admin/migration_review.php', ['planid' => $planid]);
         $data = ['planid' => $planid, 'uuid' => $plan->uuid, 'planstate' => display::outcome($plan->state),
             'sourceedition' => $document['sourceedition'], 'targetedition' => $document['targetedition'],
@@ -66,7 +67,7 @@ final class migration_report {
             'issues' => [], 'runs' => [], 'groups' => [], 'filters' => [],
             'newplanurl' => (new \moodle_url(
                 '/local/multipicker/admin/migration.php',
-                ['profileid' => $plan->profileid, 'sourceedition' => $document['sourceedition'],
+                ['fromplan' => $plan->id, 'profileid' => $plan->profileid, 'sourceedition' => $document['sourceedition'],
                 'targetedition' => $document['targetedition'], 'scopekey' => $document['scopekey'] ?? 'edition', 'step' => 'scope']
             ))->out(false),
             'maintenance' => !empty($CFG->maintenance_enabled), 'blocked' => $plan->state === 'blocked',
@@ -82,8 +83,9 @@ final class migration_report {
             [$planid]
         );
         foreach ($totals as $row) {
-            $counts[$row->decision === 'copy' ? 'copy' : (strpos($row->decision, 'skip_') === 0 ? 'skip' : 'blocked')]
-                += (int)$row->amount;
+            $category = in_array($row->decision, ['copy', 'overwrite'], true) ? 'copy'
+                : (str_starts_with($row->decision, 'skip_') ? 'skip' : 'blocked');
+            $counts[$category] += (int)$row->amount;
             $total += (int)$row->amount;
             $includedtotal += $row->included ? (int)$row->amount : 0;
             $completed += $row->included && $row->state !== 'pending' ? (int)$row->amount : 0;
@@ -100,8 +102,9 @@ final class migration_report {
         $condition = 'planid = :planid';
         $params = ['planid' => $planid];
         if ($decision === 'copy') {
-            $condition .= ' AND decision = :decision';
-            $params['decision'] = 'copy';
+            $condition .= ' AND (decision = :copydecision OR decision = :overwritedecision)';
+            $params['copydecision'] = 'copy';
+            $params['overwritedecision'] = 'overwrite';
         } else if ($decision !== '') {
             $condition .= ' AND ' . $DB->sql_like('decision', ':decision');
             $params['decision'] = $DB->sql_like_escape($decision . '_') . '%';
@@ -141,7 +144,8 @@ final class migration_report {
                 $courses[$courseid] = $courses[$courseid] ?? ($DB->get_field('course', 'shortname', ['id' => $courseid])
                     ?: get_string('unknowncourse', 'local_multipicker'));
             }
-            $key = $snapshot['sourcecourse'] . ':' . $operation->targetcmid;
+            $targetkey = $operation->targetcmid ?: ($snapshot['targetkey'] ?? '');
+            $key = $snapshot['sourcecourse'] . ':' . $operation->sourcecmid . ':' . $targetkey;
             if (!isset($groups[$key])) {
                 $groups[$key] = ['sourcecourse' => $courses[$snapshot['sourcecourse']],
                     'targetcourse' => $courses[$target['courseid']], 'targetfolder' => $target['name'],
@@ -149,7 +153,7 @@ final class migration_report {
                         'sectionnumber',
                         'local_multipicker',
                         $target['sectionnum']
-                    ), 'operations' => []];
+                    ), 'operations' => [], 'groupcourseid' => $operation->sourcecourseid, 'groupcmid' => $operation->sourcecmid];
                 $sourcecontext = \context_course::instance($snapshot['sourcecourse'], IGNORE_MISSING)
                     ?: \context_system::instance();
                 $targetcontext = \context_course::instance($target['courseid'], IGNORE_MISSING) ?: \context_system::instance();
@@ -158,12 +162,14 @@ final class migration_report {
                     'sourcecoursehtml' => display::name($courses[$snapshot['sourcecourse']], $sourcecontext),
                     'targetcoursehtml' => display::name($courses[$target['courseid']], $targetcontext),
                     'targetfolderhtml' => display::name($target['name'], $foldercontext),
+                    'sourcefolderhtml' => display::name($snapshot['sourcefoldername'] ?? '', $sourcecontext),
                     'targetsectionhtml' => display::name($groups[$key]['targetsection'], $targetcontext),
                 ];
             }
             $result = json_decode($operation->result, true);
             $groups[$key]['operations'][] = ['id' => $operation->id, 'included' => (bool)$operation->included,
                 'filename' => $snapshot['source']['filename'],
+                'sourcecourseid' => $operation->sourcecourseid, 'sourcecmid' => $operation->sourcecmid,
                 'filepath' => $snapshot['source']['filepath'],
                 'author' => $snapshot['source']['author'] ?: get_string('unknownauthor', 'local_multipicker'),
                 'license' => $snapshot['source']['license'], 'decisionlabel' => display::outcome($operation->decision),
@@ -172,6 +178,32 @@ final class migration_report {
                     : (!empty($result['outcome']) ? display::outcome($result['outcome']) : '')];
         }
         $data['groups'] = array_values($groups);
+        $coursegroups = [];
+        foreach ($data['groups'] as &$group) {
+            $conditions = ['planid' => $planid, 'sourcecourseid' => $group['groupcourseid'],
+                'sourcecmid' => $group['groupcmid']];
+            $grouptotal = $DB->count_records('local_multipicker_operation', $conditions);
+            $groupincluded = $DB->count_records('local_multipicker_operation', $conditions + ['included' => 1]);
+            $group['grouptotal'] = $grouptotal;
+            $group['groupincluded'] = $groupincluded;
+            $group['groupchecked'] = $grouptotal > 0 && $groupincluded === $grouptotal;
+            $group['grouppartial'] = $groupincluded > 0 && !$group['groupchecked'];
+            $key = $group['groupcourseid'] . ':' . $group['targetcourse'];
+            if (!isset($coursegroups[$key])) {
+                $coursegroups[$key] = $group;
+                $coursegroups[$key]['folders'] = [];
+                $conditions = ['planid' => $planid, 'sourcecourseid' => $group['groupcourseid']];
+                $total = $DB->count_records('local_multipicker_operation', $conditions);
+                $included = $DB->count_records('local_multipicker_operation', $conditions + ['included' => 1]);
+                $coursegroups[$key]['coursetotal'] = $total;
+                $coursegroups[$key]['courseincluded'] = $included;
+                $coursegroups[$key]['coursechecked'] = $total > 0 && $total === $included;
+                $coursegroups[$key]['coursepartial'] = $included > 0 && $included < $total;
+            }
+            $coursegroups[$key]['folders'][] = $group;
+        }
+        unset($group);
+        $data['courses'] = array_values($coursegroups);
         $issuecount = count($document['issues']);
         $issuepage = max(0, min($issuepage, max(0, (int)ceil($issuecount / 50) - 1)));
         $data['issuepage'] = $issuepage;
@@ -183,7 +215,8 @@ final class migration_report {
             $courseids = array_merge(
                 $issue['courses']['source'] ?? [],
                 $issue['courses']['target'] ?? [],
-                !empty($issue['targetcourseid']) ? [$issue['targetcourseid']] : []
+                !empty($issue['targetcourseid']) ? [$issue['targetcourseid']] : [],
+                !empty($issue['sourcecourseid']) ? [$issue['sourcecourseid']] : []
             );
             if (!empty($issue['sourcecmid'])) {
                 $cm = get_coursemodule_from_id(null, $issue['sourcecmid']);

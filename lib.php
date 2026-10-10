@@ -69,14 +69,14 @@ function local_multipicker_output_fragment_browser(array $args): string {
     if (!is_array($raw)) {
         throw new moodle_exception('invalidselection', 'local_multipicker');
     }
-    // Fragments update filters only. Review and transfer use their separate native flows.
-    foreach (['review', 'clear', 'selectpage', 'openfolder', 'previouspage', 'next', 'removeitem'] as $action) {
+    // Fragments refresh filters and canonical checkbox selections. Review and transfer use their separate native flows.
+    foreach (['review', 'clear', 'selectpage', 'selectall', 'openfolder', 'previouspage', 'next', 'removeitem'] as $action) {
         unset($raw[$action]);
     }
-    $raw['search'] = true;
+    $raw['search'] = false;
+    $raw['refresh'] = true;
     $input = \local_multipicker\local\selection\browser_controller::input($raw);
     $result = \local_multipicker\local\selection\browser_controller::data($token, $input);
-    $PAGE->requires->js_call_amd('local_multipicker/browser', 'selection');
     return html_writer::div(
         $result['message']
         . $OUTPUT->render_from_template('local_multipicker/local/selection/browser', $result['data']),

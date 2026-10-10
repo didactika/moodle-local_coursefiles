@@ -46,7 +46,7 @@ final class capture_filters {
             $values = array_values($suggestions[$name] ?? []);
             natsort($values);
             $controls[] = ['key' => $name, 'id' => 'mp-filter-' . $name,
-                'label' => display::name($definition['label']), 'value' => $selected[$name] ?? '',
+                'label' => display::label($definition['label']), 'value' => $selected[$name] ?? '',
                 'suggestions' => array_map(static fn($value) => ['value' => $value], array_slice($values, 0, 100))];
         }
         return $controls;

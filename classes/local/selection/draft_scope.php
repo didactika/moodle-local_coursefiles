@@ -79,13 +79,23 @@ final class draft_scope {
     public static function remember_view(string $token, array $view, string $sesskey): void {
         global $SESSION;
         $scope = self::resolve($token, $sesskey);
-        if (
-            isset($scope['review']) && ($scope['review']['profileid'] !== $view['profileid']
-                || $scope['review']['items'] !== selection_options::parse($view['selected']))
-        ) {
+        if (isset($scope['review']) && ($scope['view'] ?? []) !== $view) {
             unset($SESSION->local_multipicker_drafts[$token]['review']);
         }
         $SESSION->local_multipicker_drafts[$token]['view'] = $view;
+    }
+
+    /**
+     * Use the name of the native repository instance that opened this scope.
+     *
+     * @param string $token Actual form scope.
+     * @param string $name Server-loaded repository instance name.
+     * @param string $sesskey Session key.
+     */
+    public static function select_repository(string $token, string $name, string $sesskey): void {
+        global $SESSION;
+        self::resolve($token, $sesskey);
+        $SESSION->local_multipicker_drafts[$token]['repositoryname'] = $name;
     }
 
     /**
@@ -141,7 +151,8 @@ final class draft_scope {
             $saved['items'],
             $scope['limits'],
             $scope['basepath'],
-            $scope['copymode'] ?? 'paths'
+            $scope['copymode'] ?? 'paths',
+            ['roots' => $scope['view']['roots'] ?? [], 'renames' => $scope['view']['renames'] ?? []]
         );
         if ($review['blocked'] || !hash_equals($review['digest'], $digest)) {
             throw new \moodle_exception('batchconflict', 'local_multipicker');
@@ -372,7 +383,8 @@ final class draft_scope {
             $items,
             $scope['limits'],
             $scope['basepath'],
-            $scope['copymode'] ?? 'paths'
+            $scope['copymode'] ?? 'paths',
+            ['roots' => $scope['view']['roots'] ?? [], 'renames' => $scope['view']['renames'] ?? []]
         );
         $SESSION->local_multipicker_drafts[$token]['review'] = [
             'profileid' => $profileid, 'items' => $items, 'digest' => $review['digest'],
@@ -404,7 +416,8 @@ final class draft_scope {
             $scope['limits'],
             $digest,
             $scope['basepath'],
-            $scope['copymode'] ?? 'paths'
+            $scope['copymode'] ?? 'paths',
+            ['roots' => $scope['view']['roots'] ?? [], 'renames' => $scope['view']['renames'] ?? []]
         );
         $SESSION->local_multipicker_drafts[$token]['imported'] = array_map(static fn($operation) => [
             'filepath' => $operation['filepath'], 'filename' => $operation['filename'],

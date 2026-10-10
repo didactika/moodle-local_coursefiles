@@ -8,6 +8,7 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="activeid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
         <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1" />
+        <FIELD NAME="deleted" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
@@ -167,8 +168,24 @@
         <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_multipicker_revision" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
+        <INDEX NAME="timecreated-id" UNIQUE="false" FIELDS="timecreated, id" />
         <INDEX NAME="uuid" UNIQUE="true" FIELDS="uuid" />
       </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_multipicker_target" COMMENT="Reviewed destination folder creation and native binding">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+        <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="targetkey" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="definitionjson" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
+        <FIELD NAME="snapshotjson" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_multipicker_plan" REFFIELDS="id" />
+      </KEYS>
+      <INDEXES><INDEX NAME="planid-targetkey" UNIQUE="true" FIELDS="planid, targetkey" /></INDEXES>
     </TABLE>
     <TABLE NAME="local_multipicker_operation" COMMENT="Deterministic file copy decisions and snapshots">
       <FIELDS>
@@ -177,6 +194,9 @@
         <FIELD NAME="opkey" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="sourcehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="targetcmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+        <FIELD NAME="sourcecourseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
+        <FIELD NAME="targetcourseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
+        <FIELD NAME="sourcecmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" />
         <FIELD NAME="snapshot" TYPE="text" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="decision" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" />
         <FIELD NAME="included" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="1" />
@@ -189,6 +209,7 @@
         <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_multipicker_plan" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
+        <INDEX NAME="planid-course-folder" UNIQUE="false" FIELDS="planid, sourcecourseid, sourcecmid" />
         <INDEX NAME="planid-opkey" UNIQUE="true" FIELDS="planid, opkey" />
         <INDEX NAME="planid-state" UNIQUE="false" FIELDS="planid, state" />
         <INDEX NAME="planid-included-state" UNIQUE="false" FIELDS="planid, included, state" />
@@ -209,6 +230,7 @@
         <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_multipicker_plan" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
+        <INDEX NAME="planid-state-time" UNIQUE="false" FIELDS="planid, state, timemodified" />
         <INDEX NAME="planid" UNIQUE="false" FIELDS="planid" />
       </INDEXES>
     </TABLE>

@@ -1,160 +1,187 @@
-/* Scope all presentation rules to the embedded chooser or its active native host. */
-.multipicker-browser {
-    --multipicker-primary: var(--bs-primary, var(--primary, #0f6cbf));
-    --multipicker-border: var(--bs-border-color, #dee2e6);
-    --multipicker-surface: var(--bs-body-bg, #fff);
-    --multipicker-radius: var(--bs-border-radius, .5rem);
-    color: var(--bs-body-color, inherit);
-    max-width: 100%;
-}
-.multipicker-heading, .multipicker-toolbar, .multipicker-footer, .multipicker-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: .75rem;
-}
-.multipicker-heading { margin-bottom: 1rem; }
-.multipicker-filterbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .75rem; }
-.multipicker-search { grid-column: 1 / -1; }
-.multipicker-options { padding: .75rem; border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); }
-.multipicker-options summary { font-weight: 500; cursor: pointer; }
-.multipicker-toolbar { margin: 1rem 0; }
-.multipicker-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: .75rem; }
-.multipicker-card { border-radius: var(--multipicker-radius); transition: border-color .15s ease, box-shadow .15s ease; }
-.multipicker-card .card-body { display: flex; gap: .75rem; align-items: flex-start; padding: 1rem; }
-.multipicker-card input[type=checkbox] { margin-top: .3rem; accent-color: var(--multipicker-primary); width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
-.multipicker-card-content { min-width: 0; flex-grow: 1; }
-.multipicker-card-title { display: block; margin-bottom: .4rem; cursor: pointer; overflow-wrap: anywhere; font-weight: 600; }
-.multipicker-card:hover, .multipicker-card:focus-within, .multipicker-selected { border-color: var(--multipicker-primary); box-shadow: 0 0 0 1px var(--multipicker-primary); }
-.multipicker-card:hover { background-color: color-mix(in srgb, var(--multipicker-primary) 5%, var(--multipicker-surface)); }
-.multipicker-selected { background-color: color-mix(in srgb, var(--multipicker-primary) 8%, var(--multipicker-surface)); }
-.multipicker-open { flex-shrink: 0; border-radius: 50%; padding: .25rem; }
-.multipicker-open .icon, .multipicker-back .icon, .multipicker-toolbar .btn-group .icon { margin: 0; }
-.multipicker-browser[data-layout=list] .multipicker-cards { grid-template-columns: 1fr; }
-.multipicker-browser[data-layout=list] .multipicker-card .card-body { padding: .75rem 1rem; align-items: center; }
-.multipicker-footer { position: sticky; bottom: 0; margin-top: 1rem; padding: 1rem 0 .25rem; background: var(--multipicker-surface); border-top: 1px solid var(--multipicker-border); z-index: 1; }
-.multipicker-tree { list-style: none; margin: 0; padding-left: 1rem; border-left: 1px solid var(--multipicker-border); }
-.multipicker-tree-root { padding: .75rem; border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); }
-.multipicker-tree-node { padding: .35rem 0; }
-.multipicker-tree-node summary { cursor: pointer; padding: .25rem; font-weight: 600; overflow-wrap: anywhere; }
-.multipicker-tree-file { padding: .5rem; border-radius: .25rem; }
-.multipicker-tree-file:hover { background-color: color-mix(in srgb, var(--multipicker-primary) 5%, var(--multipicker-surface)); }
-.multipicker-tree-file .badge { margin: .25rem 0; white-space: normal; }
-.multipicker-native-host .fp-navbar { display: none; }
-.multipicker-native-host .fp-content { height: min(72vh, 48rem) !important; max-height: none !important; }
-.multipicker-native-host .fp-object-container { width: 100%; height: 100%; border: 0; }
-@media (max-width: 575.98px) {
-    .multipicker-native-host .fp-repo-area {
-        width: 100%;
-        max-width: 100%;
-        flex-direction: row !important;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: .5rem;
-    }
-    .multipicker-native-host .fp-repo { flex-shrink: 0; }
-    .multipicker-native-host .fp-repo a { white-space: nowrap; }
-    .multipicker-native-host .fp-repo-area + div { width: 100%; max-width: 100%; min-width: 0; }
-    .multipicker-native-host .fp-repo-items { width: 100%; }
-    .multipicker-browser { padding: .75rem !important; }
-    .multipicker-footer .btn { width: 100%; }
-}
-@media (prefers-reduced-motion: reduce) { .multipicker-card { transition: none; } }
-
-/* Shared component surfaces and disclosures; native Moodle fieldsets stay native. */
+/* Shared surfaces follow the active Moodle theme. */
 .multipicker-admin, .multipicker-browser, .multipicker-log {
     --multipicker-primary: var(--bs-primary, var(--primary, #0f6cbf));
     --multipicker-border: var(--bs-border-color, #dee2e6);
     --multipicker-surface: var(--bs-body-bg, #fff);
     --multipicker-radius: var(--bs-border-radius, .5rem);
 }
-.multipicker-admin details, .multipicker-log details {
-    border: 1px solid var(--multipicker-border);
-    border-radius: var(--multipicker-radius);
-    padding: .65rem .85rem;
+.multipicker-browser { color: var(--bs-body-color, inherit); max-width: 100%; }
+.multipicker-heading, .multipicker-toolbar, .multipicker-footer, .multipicker-pagination, .multipicker-actionbar {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .6rem;
 }
-.multipicker-browser summary, .multipicker-admin summary, .multipicker-log summary {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    list-style: none;
-    cursor: pointer;
-}
-.multipicker-browser summary::-webkit-details-marker,
-.multipicker-admin summary::-webkit-details-marker,
-.multipicker-log summary::-webkit-details-marker { display: none; }
-.multipicker-browser summary::after, .multipicker-admin summary::after, .multipicker-log summary::after {
-    content: '';
-    width: .45rem;
-    height: .45rem;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    transform: rotate(45deg);
-    transition: transform .15s ease;
-    margin: 0 .2rem .2rem auto;
-    flex-shrink: 0;
-    color: var(--multipicker-primary);
-}
-.multipicker-browser details[open] > summary::after,
-.multipicker-admin details[open] > summary::after,
-.multipicker-log details[open] > summary::after { transform: rotate(225deg); margin-bottom: -.2rem; }
-.multipicker-browser .multipicker-heading { margin-bottom: .65rem; }
-.multipicker-browser .multipicker-filterbar { gap: .4rem .6rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); }
-.multipicker-browser .multipicker-search { grid-column: auto; }
-.multipicker-browser .multipicker-filterbar label { margin-bottom: .15rem; font-size: .75rem; }
-.multipicker-browser .multipicker-options { margin-top: .5rem; padding: .45rem .65rem; border: 0; background: color-mix(in srgb, var(--multipicker-primary) 4%, var(--multipicker-surface)); }
-.multipicker-browser .multipicker-options summary { font-size: .8rem; }
-.multipicker-browser .multipicker-toolbar { margin: .65rem 0; gap: .4rem; }
-.multipicker-browser .multipicker-cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .5rem; }
-.multipicker-browser .multipicker-card { cursor: pointer; }
-.multipicker-browser .multipicker-card .card-body { padding: .65rem; gap: .5rem; }
-.multipicker-browser .multipicker-card-title { font-size: .9rem; margin-bottom: .25rem; }
-.multipicker-origin { font-size: .75rem; line-height: 1.35; }
-.multipicker-card-meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: .35rem; margin-top: .4rem; font-size: .7rem; }
-.multipicker-chip { display: inline-block; border-radius: 1rem; padding: .15rem .5rem; font-size: .72rem; font-weight: 600; color: var(--multipicker-primary); background: color-mix(in srgb, var(--multipicker-primary) 10%, var(--multipicker-surface)); }
-.multipicker-browser .multipicker-open { width: 1.75rem; height: 1.75rem; min-width: 1.75rem; padding: .15rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; border: 0; color: var(--multipicker-primary); background: color-mix(in srgb, var(--multipicker-primary) 8%, var(--multipicker-surface)); }
-.multipicker-browser .multipicker-open .icon { width: .85rem; height: .85rem; }
-.multipicker-browser .multipicker-footer { margin-top: .65rem; padding: .65rem 0 .2rem; }
-.multipicker-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; padding: 0; list-style: none; }
-.multipicker-steps li { display: flex; align-items: center; gap: .6rem; border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); padding: .75rem; font-size: .85rem; }
-.multipicker-steps li[aria-current=step] { border-color: var(--multipicker-primary); color: var(--multipicker-primary); background: color-mix(in srgb, var(--multipicker-primary) 6%, var(--multipicker-surface)); }
-.multipicker-step-number { display: inline-flex; justify-content: center; align-items: center; width: 1.7rem; height: 1.7rem; flex-shrink: 0; border-radius: 50%; border: 1px solid currentColor; font-weight: 600; }
-.multipicker-panel { padding: 1rem; border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); margin-bottom: 1rem; }
-.multipicker-admin .fdescription, .multipicker-admin .form-control, .multipicker-admin .custom-select { max-width: 100%; }
-.multipicker-admin .btn { max-width: 100%; white-space: normal; }
-.multipicker-admin form > .multipicker-panel { gap: .5rem; }
-.multipicker-browser select.form-control, .multipicker-admin select:not([multiple]) {
-    appearance: none;
-    padding-right: 1.6rem;
-    background-image: linear-gradient(45deg, transparent 50%, var(--multipicker-primary) 50%), linear-gradient(135deg, var(--multipicker-primary) 50%, transparent 50%);
-    background-position: calc(100% - 12px) center, calc(100% - 8px) center;
-    background-size: 4px 4px;
-    background-repeat: no-repeat;
-}
-.multipicker-log .multipicker-log-row { display: grid; grid-template-columns: minmax(8rem, .8fr) minmax(0, 2fr); gap: .75rem; border-bottom: 1px solid var(--multipicker-border); padding: .85rem 0; }
-.multipicker-log .multipicker-log-row:last-child { border-bottom: 0; }
-@media (max-width: 575.98px) {
-    .multipicker-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .multipicker-steps li { padding: .5rem; }
-    .multipicker-browser .multipicker-search { grid-column: 1 / -1; }
-    .multipicker-log .multipicker-log-row { grid-template-columns: 1fr; gap: .25rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .multipicker-browser summary::after, .multipicker-admin summary::after, .multipicker-log summary::after { transition: none; }
-}
-
-/* Shared logical spacing and hidden labels avoid Bootstrap-version-specific utility aliases. */
+.multipicker-actionbar { justify-content: flex-start; }
+.multipicker-heading { margin-bottom: .65rem; }
+.multipicker-toolbar { margin: .65rem 0; }
 .multipicker-gap-end { margin-inline-end: .5rem; }
 .multipicker-gap-end-lg { margin-inline-end: .75rem; }
 .multipicker-visually-hidden {
-    position: absolute !important;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Native chevrons replace browser disclosure markers. */
+.multipicker-admin details, .multipicker-log details {
+    border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); padding: .65rem .85rem;
+}
+.multipicker-browser summary, .multipicker-admin summary, .multipicker-log summary {
+    display: flex; align-items: center; gap: .5rem; list-style: none; cursor: pointer;
+}
+.multipicker-browser summary::-webkit-details-marker,
+.multipicker-admin summary::-webkit-details-marker, .multipicker-log summary::-webkit-details-marker { display: none; }
+.multipicker-disclosure-icon {
+    display: inline-flex; width: 1.8rem; height: 1.8rem; border: 1px solid var(--multipicker-border);
+    border-radius: .5rem; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.multipicker-disclosure-icon .icon { margin: 0; width: .85rem; height: .85rem; }
+details[open] > summary > .multipicker-disclosure-icon .icon { transform: rotate(90deg); }
+
+/* The embedded host has a stable viewport; only results scroll. */
+.multipicker-native-host .fp-navbar { display: none; }
+.multipicker-native-host .fp-content { height: min(72vh, 48rem) !important; max-height: none !important; }
+.multipicker-native-host .fp-object-container { width: 100%; height: 100%; border: 0; }
+body.multipicker-embedded, .multipicker-embedded #page,
+.multipicker-embedded #page-content, .multipicker-embedded #region-main { background: var(--multipicker-host-background, #fff); }
+.multipicker-embedded { overflow: hidden; }
+.multipicker-embedded #page { padding: 0; }
+.multipicker-embedded .multipicker-browser {
+    height: calc(100dvh - .5rem); display: flex; flex-direction: column;
+    min-height: 0; background: var(--multipicker-host-background, #fff);
+}
+.multipicker-browser > * { flex-shrink: 0; }
+.multipicker-browser .multipicker-results { flex: 1 1 auto; min-height: 5rem; overflow: auto; padding: .2rem; }
+.multipicker-footer {
+    margin-top: .65rem; padding: .65rem 0 .2rem; border-top: 1px solid var(--multipicker-border);
+    background: var(--multipicker-host-background, var(--multipicker-surface));
+}
+.multipicker-filterbar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); gap: .4rem .6rem;
+}
+.multipicker-filterbar label { margin-bottom: .15rem; font-size: .75rem; }
+.multipicker-options {
+    margin-top: .5rem; padding: .45rem .65rem; border-radius: var(--multipicker-radius);
+    background: color-mix(in srgb, var(--multipicker-primary) 4%, var(--multipicker-surface));
+}
+.multipicker-options > summary { min-height: 2rem; font-size: .8rem; font-weight: 500; }
+
+/* Compact material cards retain native icons and selection controls. */
+.multipicker-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .5rem; align-content: start;
+}
+.multipicker-card { border-radius: var(--multipicker-radius); cursor: pointer; transition: border-color .15s ease; }
+.multipicker-card .card-body { display: flex; gap: .5rem; align-items: flex-start; padding: .65rem; }
+.multipicker-card input[type=checkbox] {
+    margin-top: .3rem; accent-color: var(--multipicker-primary); width: 1.1rem; height: 1.1rem; flex-shrink: 0;
+}
+.multipicker-card-content { min-width: 0; flex-grow: 1; }
+.multipicker-card-title {
+    display: block; margin-bottom: .25rem; font-size: .9rem; font-weight: 600; cursor: pointer; overflow-wrap: anywhere;
+}
+.multipicker-card-kind { display: flex; align-items: center; gap: .4rem; margin-bottom: .4rem; }
+.multipicker-card-kind .icon { height: 1.1rem; width: 1.1rem; margin: 0; }
+.multipicker-origin { font-size: .75rem; line-height: 1.35; }
+.multipicker-card-meta {
+    display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .4rem; padding-top: .4rem;
+    border-top: 1px solid var(--multipicker-border); font-size: .7rem;
+}
+.multipicker-chip {
+    display: inline-block; border-radius: 1rem; padding: .15rem .5rem; font-size: .72rem; font-weight: 600;
+    color: var(--multipicker-primary); background: color-mix(in srgb, var(--multipicker-primary) 10%, var(--multipicker-surface));
+}
+.multipicker-card:hover, .multipicker-card:focus-within, .multipicker-selected {
+    border-color: var(--multipicker-primary); box-shadow: 0 0 0 1px var(--multipicker-primary);
+}
+.multipicker-card:hover { background: color-mix(in srgb, var(--multipicker-primary) 5%, var(--multipicker-surface)); }
+.multipicker-selected { background: color-mix(in srgb, var(--multipicker-primary) 8%, var(--multipicker-surface)); }
+.multipicker-open {
+    display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem;
+    min-width: 1.75rem; padding: .15rem; flex-shrink: 0; border: 0; border-radius: 50%;
+    color: var(--multipicker-primary); background: color-mix(in srgb, var(--multipicker-primary) 8%, var(--multipicker-surface));
+}
+.multipicker-open .icon { width: .85rem; height: .85rem; }
+.multipicker-open .icon, .multipicker-back .icon, .multipicker-toolbar .btn-group .icon { margin: 0; }
+.multipicker-browser[data-layout=list] .multipicker-cards { grid-template-columns: 1fr; }
+.multipicker-browser[data-layout=list] .multipicker-card .card-body { align-items: center; }
+
+/* Light result placeholders leave surrounding controls and dimensions intact. */
+.multipicker-loading { pointer-events: none; }
+.multipicker-skeleton { display: none; }
+.multipicker-loading > .multipicker-cards, .multipicker-loading > .multipicker-empty,
+.multipicker-loading > .multipicker-pagination { display: none; }
+.multipicker-loading > .multipicker-skeleton {
+    display: grid; height: 100%; align-content: start; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem;
+}
+.multipicker-skeleton span {
+    border-radius: var(--multipicker-radius); min-height: 7rem;
+    background: color-mix(in srgb, var(--multipicker-border) 35%, var(--multipicker-surface));
+    animation: multipicker-pulse 1s ease-in-out infinite alternate;
+}
+.multipicker-browser[data-layout=list] .multipicker-skeleton { grid-template-columns: 1fr; }
+@keyframes multipicker-pulse { to { opacity: .45; } }
+
+/* Resulting-file review keeps names readable until the native rename modal opens. */
+.multipicker-review-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.multipicker-review-name { flex: 1 1 12rem; min-width: 0; gap: .4rem; margin-inline-end: .75rem; }
+.multipicker-tree { list-style: none; margin: 0; padding-left: 1rem; border-left: 1px solid var(--multipicker-border); }
+.multipicker-tree-root { padding: .75rem; border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); }
+.multipicker-tree-node { padding: .35rem 0; }
+.multipicker-tree-node summary { padding: .25rem; font-weight: 600; overflow-wrap: anywhere; }
+.multipicker-tree .multipicker-disclosure-icon { width: 1.4rem; height: 1.4rem; border: 0; }
+.multipicker-tree-file { padding: .5rem; border-radius: .25rem; }
+.multipicker-tree-file:hover { background: color-mix(in srgb, var(--multipicker-primary) 5%, var(--multipicker-surface)); }
+.multipicker-tree-file .badge { margin: .25rem 0; white-space: normal; }
+
+/* Native administration forms, compact tables and independent filter popovers. */
+.multipicker-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; padding: 0; list-style: none; }
+.multipicker-steps li {
+    display: flex; align-items: center; gap: .6rem; border: 1px solid var(--multipicker-border);
+    border-radius: var(--multipicker-radius); padding: .75rem; font-size: .85rem;
+}
+.multipicker-steps li[aria-current=step] {
+    border-color: var(--multipicker-primary); color: var(--multipicker-primary);
+    background: color-mix(in srgb, var(--multipicker-primary) 6%, var(--multipicker-surface));
+}
+.multipicker-step-number {
+    display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem;
+    flex-shrink: 0; border-radius: 50%; border: 1px solid currentColor; font-weight: 600;
+}
+.multipicker-panel {
+    padding: 1rem; border: 1px solid var(--multipicker-border); border-radius: var(--multipicker-radius); margin-bottom: 1rem;
+}
+.multipicker-admin .fdescription, .multipicker-admin .form-control, .multipicker-admin .custom-select { max-width: 100%; }
+.multipicker-admin .btn { max-width: 100%; white-space: normal; }
+.multipicker-admin input[type=checkbox] { width: 1rem; height: 1rem; margin-inline-end: .6rem; vertical-align: middle; }
+.multipicker-admin .table td, .multipicker-admin .table th { vertical-align: middle; padding: .6rem .75rem; font-size: .875rem; }
+.multipicker-row-editor input:not([type=checkbox]), .multipicker-row-editor select { min-width: 7rem; }
+.multipicker-row-editor .table { margin-bottom: 0; }
+.multipicker-row-editor .table td, .multipicker-row-editor .table th { border: 0; padding: .35rem; }
+.multipicker-row-editor th { font-size: .8rem; font-weight: 500; white-space: nowrap; }
+.multipicker-row-editor .multipicker-row-check { margin-inline: .5rem; }
+.multipicker-table-search { max-width: 24rem; }
+.multipicker-admin .multipicker-filter-popover { position: relative; padding: 0; border: 0; }
+.multipicker-filter-menu {
+    position: absolute; inset-inline-end: 0; top: calc(100% + .4rem); width: min(24rem, 85vw);
+    border: 1px solid var(--multipicker-border); border-radius: .5rem; box-shadow: 0 .3rem 1rem #0002;
+    padding: 1rem; background: var(--multipicker-surface); z-index: 5;
+}
+.multipicker-migration-group > summary { font-weight: 600; }
+.multipicker-migration-group > summary input, .multipicker-migration-folder > summary input { margin-inline-start: auto; }
+
+@media (max-width: 575.98px) {
+    .multipicker-native-host .fp-repo-area {
+        width: 100%; max-width: 100%; flex-direction: row !important; flex-wrap: nowrap;
+        overflow-x: auto; padding-bottom: .5rem;
+    }
+    .multipicker-native-host .fp-repo { flex-shrink: 0; }
+    .multipicker-native-host .fp-repo a { white-space: nowrap; }
+    .multipicker-native-host .fp-repo-area + div { width: 100%; max-width: 100%; min-width: 0; }
+    .multipicker-native-host .fp-repo-items { width: 100%; }
+    .multipicker-browser { padding: .75rem !important; }
+    .multipicker-browser .multipicker-search { grid-column: 1 / -1; }
+    .multipicker-footer .btn { width: 100%; }
+    .multipicker-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .multipicker-steps li { padding: .5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .multipicker-card { transition: none; }
+    .multipicker-skeleton span { animation: none; }
 }

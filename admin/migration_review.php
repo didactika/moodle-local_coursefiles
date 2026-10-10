@@ -35,7 +35,18 @@ admin_externalpage_setup('local_multipicker_migration', '', ['planid' => $planid
 if (data_submitted()) {
     require_sesskey();
     $action = required_param('action', PARAM_ALPHA);
-    if ($action === 'execute') {
+    if ($action === 'group') {
+        \local_multipicker\local\migration\plan_selection::save(
+            $planid,
+            required_param('digest', PARAM_ALPHANUM),
+            optional_param_array('visible', [], PARAM_INT),
+            optional_param_array('included', [], PARAM_INT),
+            'group',
+            ['courseid' => required_param('groupcourse', PARAM_INT), 'cmid' => optional_param('groupcmid', 0, PARAM_INT),
+                'included' => required_param('groupincluded', PARAM_INT)]
+        );
+        $message = get_string('selectionupdated', 'local_multipicker');
+    } else if ($action === 'execute') {
         if (!required_param('confirmed', PARAM_BOOL)) {
             throw new moodle_exception('reviewrequired', 'local_multipicker');
         }

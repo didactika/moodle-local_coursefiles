@@ -2,13 +2,19 @@
 !include ../../_style.puml
 title Process - configure, select, review and execute
 start
-:Step 1: choose an enabled profile;
-:Step 2: choose edition or configured capture;
-:Enter source and destination values;
-:Review folder / section matching;
+:Open paginated migration history;
+:New migration: choose an enabled profile;
+if (Profile has capture filters?) then (yes)
+  :Set source and destination capture values;
+else (no)
+  :Use folder correspondences within matched courses;
+endif
+:Edit folder correspondence rows;
+:Choose missing-target and overwrite behavior;
+:Review section matching;
 :Prepare all matching operations;
 :Step 3: search and review pages of 50 files;
-:Include all or save page-specific exclusions;
+:Include all or select courses / folders / files;
 :Update review digest and log selection;
 if (Included blockers or unresolved placement issues?) then (yes)
   :Exclude conflicting files or create a corrected preview;

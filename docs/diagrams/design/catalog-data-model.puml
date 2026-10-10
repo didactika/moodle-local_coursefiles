@@ -6,7 +6,7 @@ hide methods
 entity "local_multipicker" as profile {
   * id
   uuid
-  name / enabled
+  name / enabled / deleted
   activeid
 }
 

@@ -40,6 +40,14 @@ if ($data = $form->get_data()) {
             $changes[$name] = ['previous' => $previous, 'current' => $data->$name];
         }
     }
+    foreach (['logretentiondays', 'migrationretentiondays'] as $name) {
+        $previous = get_config('local_multipicker', $name);
+        if ((string)$previous !== (string)$data->$name) {
+            set_config($name, $data->$name, 'local_multipicker');
+            add_to_config_log($name, $previous, $data->$name, 'local_multipicker');
+            $changes[$name] = ['previous' => $previous, 'current' => $data->$name];
+        }
+    }
     if ($changes) {
         \local_multipicker\local\logging\log::record('site_policy_changed', \core\uuid::generate(), $changes);
     }
@@ -48,6 +56,10 @@ if ($data = $form->get_data()) {
 $defaults = [];
 foreach (settings_form::choices() as $name => $values) {
     $defaults[$name] = get_config('local_multipicker', $name) ?: $values[0];
+}
+foreach (['logretentiondays' => 90, 'migrationretentiondays' => 365] as $name => $days) {
+    $saved = get_config('local_multipicker', $name);
+    $defaults[$name] = $saved === false ? $days : (int)$saved;
 }
 $form->set_data($defaults);
 echo $OUTPUT->header();

@@ -20,8 +20,14 @@ class migration_executor {
   + cancel(runid)
 }
 class folder_destination {
-  + copy(source, targetcmid)
+  + copy(source, targetcmid, overwrite)
 }
+class target_binding {
+  + descriptor(...)
+  + resolve(planid, key, reviewed)
+}
+migration_executor --> target_binding
+migration_planner --> target_binding
 migration_planner --> placement
 migration_planner --> copy_decision
 migration_executor --> placement
@@ -30,5 +36,5 @@ migration_executor --> folder_destination
 migration_planner -[hidden]right-> migration_executor
 placement -[hidden]right-> copy_decision
 copy_decision -[hidden]right-> folder_destination
-note bottom of folder_destination : Native additive save under an exclusive maintenance window.
+note bottom of folder_destination : Native reviewed save under an exclusive maintenance window.
 @enduml

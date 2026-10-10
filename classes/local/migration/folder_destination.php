@@ -34,9 +34,10 @@ final class folder_destination {
      *
      * @param \stored_file $source Authorized source.
      * @param int $cmid Destination folder.
+     * @param bool $overwrite Explicitly reviewed replacement.
      * @return \stored_file Saved file.
      */
-    public static function copy(\stored_file $source, int $cmid): \stored_file {
+    public static function copy(\stored_file $source, int $cmid, bool $overwrite = false): \stored_file {
         global $CFG, $DB, $USER;
         if (empty($CFG->maintenance_enabled)) {
             throw new \moodle_exception('maintenance_required', 'local_multipicker');
@@ -57,6 +58,30 @@ final class folder_destination {
             'filearea' => 'draft', 'itemid' => $draftid, 'filepath' => $source->get_filepath(),
             'filename' => $source->get_filename(), 'author' => $source->get_author(),
             'license' => $source->get_license(), 'userid' => $USER->id];
+        if ($overwrite) {
+            $old = $fs->get_file(
+                $context->id,
+                'mod_folder',
+                'content',
+                0,
+                $source->get_filepath(),
+                $source->get_filename()
+            );
+            if ($old) {
+                author_policy::capture($old);
+            }
+            $old = $fs->get_file(
+                $record['contextid'],
+                'user',
+                'draft',
+                $draftid,
+                $source->get_filepath(),
+                $source->get_filename()
+            );
+            if ($old) {
+                $old->delete();
+            }
+        }
         $fs->create_file_from_storedfile($record, $source);
         $folder = $DB->get_record('folder', ['id' => $cm->instance], '*', MUST_EXIST);
         $folder->instance = $folder->id;

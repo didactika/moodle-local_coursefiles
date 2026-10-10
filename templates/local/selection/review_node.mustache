@@ -4,13 +4,13 @@
     Example context (json): {"name":"notes","folder":true,"children":[]}
 }}
 <li class="multipicker-tree-node">
-    {{#folder}}<details open><summary>{{#pix}}f/folder, core{{/pix}} <span>{{name}}</span></summary>
+    {{#folder}}<details open><summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}f/folder, core{{/pix}} <span>{{name}}</span></summary>
         <ul class="multipicker-tree">{{#children}}{{> local_multipicker/local/selection/review_node}}{{/children}}</ul>
     </details>{{/folder}}
     {{^folder}}<div class="multipicker-tree-file">
         <div class="d-flex flex-wrap align-items-center justify-content-between">
-            <span class="text-break">{{#pix}}f/document, core{{/pix}} {{name}}</span>
-            <span class="badge {{#blocked}}bg-danger{{/blocked}}{{^blocked}}{{#copy}}bg-success{{/copy}}{{^copy}}bg-secondary{{/copy}}{{/blocked}} text-white">{{decision}}</span>
+            <div class="d-flex align-items-center multipicker-review-name"><input type="checkbox" name="removefiles[]" value="{{hash}}" aria-label="{{name}}" class="multipicker-gap-end">{{#pix}}f/document, core{{/pix}}<input type="hidden" name="renames[{{hash}}]" value="{{name}}"><span class="text-break" data-multipicker-file-name>{{name}}</span><button type="button" class="btn btn-sm btn-link" data-multipicker-rename aria-label="{{#str}}renamefile, local_multipicker{{/str}}">{{#pix}}t/edit, core{{/pix}}</button></div>
+            <span class="badge {{#blocked}}bg-danger{{/blocked}}{{^blocked}}{{#copy}}bg-success{{/copy}}{{^copy}}bg-secondary{{/copy}}{{/blocked}} text-white">{{decision}}</span><button class="btn btn-sm btn-link text-danger" name="removeitem" value="{{hash}}" aria-label="{{#str}}removeselected, local_multipicker{{/str}}">{{#pix}}t/delete, core{{/pix}}</button>
         </div>
         <div class="small text-muted">{{#str}}author, repository{{/str}}: {{author}} · {{#str}}license, repository{{/str}}: {{license}}</div>
     </div>{{/folder}}
