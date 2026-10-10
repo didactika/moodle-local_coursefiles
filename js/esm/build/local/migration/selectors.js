@@ -1,7 +1,7 @@
-import e from"@moodle/lms/local_coursefiles/local/selectors";/**
+import e from"@moodle/lms/local_filebank/local/selectors";/**
  * DOM contract for this feature.
  *
- * @module local_coursefiles/local/migration/selectors
+ * @module local_filebank/local/migration/selectors
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

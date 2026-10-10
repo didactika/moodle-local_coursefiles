@@ -17,14 +17,14 @@
 /**
  * Configurable source and destination course dimensions.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\migration;
+namespace local_filebank\local\migration;
 
-use local_coursefiles\local\profile\profile_config;
+use local_filebank\local\profile\profile_config;
 
 /**
  * Resolves the selected dimension from the exact profile revision.
@@ -40,7 +40,7 @@ final class course_scope {
         $choices = [];
         foreach ($rules->filter_definitions() as $key => $definition) {
             if (!isset($choices[$key])) {
-                $choices[$key] = \local_coursefiles\output\display::label($definition['label']);
+                $choices[$key] = \local_filebank\output\display::label($definition['label']);
             }
         }
         return $choices;
@@ -59,7 +59,7 @@ final class course_scope {
         }
         $definitions = $rules->filter_definitions();
         if (!isset($definitions[$key])) {
-            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         return $definitions[$key]['capture'];
     }

@@ -3,19 +3,19 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_coursefiles/local/picker/bridge
+ * @module local_filebank/local/picker/bridge
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Selectors from "@moodle/lms/local_coursefiles/local/selectors";
-import { listen, eventElement } from "@moodle/lms/local_coursefiles/local/listeners";
+import Selectors from "@moodle/lms/local_filebank/local/selectors";
+import { listen, eventElement } from "@moodle/lms/local_filebank/local/listeners";
 let hostObject = null;
 let hostObserver = null;
 const presentation = /* @__PURE__ */ __name(() => {
   const browser = document.querySelector(Selectors.browser);
   if (browser) {
-    browser.dataset.coursefilesReady = "true";
+    browser.dataset.filebankReady = "true";
   }
   if (window.parent === window) {
     return;
@@ -25,12 +25,12 @@ const presentation = /* @__PURE__ */ __name(() => {
   if (!object || !picker || hostObject === object) {
     return;
   }
-  picker.classList.add("coursefiles-native-host");
-  document.body.classList.add("coursefiles-embedded");
+  picker.classList.add("filebank-native-host");
+  document.body.classList.add("filebank-embedded");
   const surface = picker.querySelector(Selectors.pickerSurface);
   const background = window.parent.getComputedStyle(surface).backgroundColor;
   if (background !== "rgba(0, 0, 0, 0)") {
-    document.body.style.setProperty("--coursefiles-host-background", background);
+    document.body.style.setProperty("--filebank-host-background", background);
   }
   const repositories = picker.querySelector(Selectors.repositories);
   const active = repositories?.querySelector(Selectors.activeRepository);
@@ -45,7 +45,7 @@ const presentation = /* @__PURE__ */ __name(() => {
   hostObject = object;
   hostObserver = new MutationObserver(() => {
     if (!object.isConnected) {
-      picker.classList.remove("coursefiles-native-host");
+      picker.classList.remove("filebank-native-host");
       hostObserver?.disconnect();
       hostObject = null;
       window.parent.removeEventListener("resize", revealRepository);
@@ -54,7 +54,7 @@ const presentation = /* @__PURE__ */ __name(() => {
   hostObserver.observe(picker, { childList: true, subtree: true });
   listen(window, "pagehide", () => {
     if (!object.isConnected) {
-      picker.classList.remove("coursefiles-native-host");
+      picker.classList.remove("filebank-native-host");
     }
     hostObserver?.disconnect();
     window.parent.removeEventListener("resize", revealRepository);
@@ -80,7 +80,7 @@ const complete = /* @__PURE__ */ __name((file) => {
     }
     button.disabled = true;
     if (file.editorid) {
-      window.parent.require(["local_coursefiles/editor_import"], (bridge) => bridge.watch(file.scope, file.editorid));
+      window.parent.require(["local_filebank/editor_import"], (bridge) => bridge.watch(file.scope, file.editorid));
     }
     window.parent.M.core_filepicker.select_file(file);
     const confirmation = window.parent.document.querySelector(Selectors.nativeConfirmation);

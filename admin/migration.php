@@ -17,7 +17,7 @@
 /**
  * Bulk migration configuration and saved previews.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,14 +26,14 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use local_coursefiles\output\display;
-use local_coursefiles\output\navigation;
-use local_coursefiles\output\view;
+use local_filebank\output\display;
+use local_filebank\output\navigation;
+use local_filebank\output\view;
 
-admin_externalpage_setup('local_coursefiles_migration');
+admin_externalpage_setup('local_filebank_migration');
 $planid = optional_param('planid', 0, PARAM_INT);
 if ($planid) {
-    redirect(new moodle_url('/local/coursefiles/admin/migration_review.php', ['planid' => $planid]));
+    redirect(new moodle_url('/local/filebank/admin/migration_review.php', ['planid' => $planid]));
 }
 if (
     !optional_param('new', false, PARAM_BOOL) && !optional_param('profileid', 0, PARAM_INT)
@@ -42,7 +42,7 @@ if (
     require(__DIR__ . '/migration_list.php');
     exit;
 }
-$profiles = $DB->get_records('local_coursefiles', ['enabled' => 1], 'name');
+$profiles = $DB->get_records('local_filebank', ['enabled' => 1], 'name');
 $profileid = optional_param('profileid', 0, PARAM_INT);
 $step = optional_param('step', 'profile', PARAM_ALPHA);
 if (!in_array($step, ['profile', 'scope'], true)) {
@@ -53,18 +53,18 @@ if (!$profileid && $profiles) {
 }
 $form = null;
 $data = ['profiles' => [], 'hasprofiles' => (bool)$profiles,
-    'profilehelp' => $OUTPUT->help_icon('migrationprofile', 'local_coursefiles'),
-    'actionurl' => (new moodle_url('/local/coursefiles/admin/migration.php'))->out(false)];
+    'profilehelp' => $OUTPUT->help_icon('migrationprofile', 'local_filebank'),
+    'actionurl' => (new moodle_url('/local/filebank/admin/migration.php'))->out(false)];
 foreach ($profiles as $profile) {
     $data['profiles'][] = ['value' => $profile->id, 'label' => display::name($profile->name),
         'selected' => $profile->id == $profileid];
 }
 if ($profileid && $step === 'scope') {
-    [$profile, $revision, $rules] = \local_coursefiles\local\profile\profiles::load($profileid);
+    [$profile, $revision, $rules] = \local_filebank\local\profile\profiles::load($profileid);
     $config = $rules->get_config();
-    $dimensions = \local_coursefiles\local\migration\course_scope::choices($rules);
+    $dimensions = \local_filebank\local\migration\course_scope::choices($rules);
     $data['hasscope'] = (bool)$dimensions;
-    $form = new \local_coursefiles\form\migration_form(null, [
+    $form = new \local_filebank\form\migration_form(null, [
         'profileid' => $profileid, 'dimensions' => $dimensions,
         'ordinal' => ($config['migration']['section_match']['strategy'] ?? 'ordinal') === 'ordinal',
         'migration' => $config['migration'] ?? []]);
@@ -72,24 +72,24 @@ if ($profileid && $step === 'scope') {
         if ((int)$submitted->profileid !== $profileid) {
             throw new invalid_parameter_exception('The selected profile changed');
         }
-        $plan = \local_coursefiles\local\migration\migration_planner::preview(
+        $plan = \local_filebank\local\migration\migration_planner::preview(
             $profileid,
             implode(' / ', array_filter((array)($submitted->sourcefilters ?? []))),
             implode(' / ', array_filter((array)($submitted->targetfilters ?? []))),
             !empty($submitted->layoutconfirmed),
             '',
-            ['migration' => \local_coursefiles\local\migration\migration_rules::from_form((array)$submitted),
+            ['migration' => \local_filebank\local\migration\migration_rules::from_form((array)$submitted),
                 'filters' => ['source' => (array)($submitted->sourcefilters ?? []),
                     'target' => (array)($submitted->targetfilters ?? [])]]
         );
-        redirect(new moodle_url('/local/coursefiles/admin/migration_review.php', ['planid' => $plan->id]));
+        redirect(new moodle_url('/local/filebank/admin/migration_review.php', ['planid' => $plan->id]));
     }
     if ($form && !$form->is_submitted()) {
         $defaults = ['sourcefilters' => [], 'targetfilters' => []];
         $previousplanid = optional_param('fromplan', 0, PARAM_INT);
         if ($previousplanid) {
             $previous = $DB->get_record(
-                'local_coursefiles_plan',
+                'local_filebank_plan',
                 ['id' => $previousplanid, 'profileid' => $profileid],
                 '*',
                 MUST_EXIST
@@ -131,20 +131,20 @@ if ($profileid && $step === 'scope') {
 
 $data['chooseprofile'] = $step === 'profile';
 $data['choosescope'] = $step === 'scope';
-$data['listurl'] = (new moodle_url('/local/coursefiles/admin/migration.php'))->out(false);
-$profileurl = new moodle_url('/local/coursefiles/admin/migration.php', ['profileid' => $profileid, 'new' => 1]);
+$data['listurl'] = (new moodle_url('/local/filebank/admin/migration.php'))->out(false);
+$profileurl = new moodle_url('/local/filebank/admin/migration.php', ['profileid' => $profileid, 'new' => 1]);
 $data['profileurl'] = $profileurl->out(false);
 $data['scopebackurl'] = (new moodle_url(
-    '/local/coursefiles/admin/migration.php',
+    '/local/filebank/admin/migration.php',
     ['profileid' => $profileid, 'new' => 1, 'step' => 'profile']
 ))->out(false);
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_coursefiles'));
-$renderer = $PAGE->get_renderer('local_coursefiles');
+echo $OUTPUT->heading(get_string('pluginname', 'local_filebank'));
+$renderer = $PAGE->get_renderer('local_filebank');
 echo $renderer->render(navigation::site('migration'));
 echo $renderer->render(new view('migration_setup', $data));
 if ($form !== null) {
-    echo html_writer::start_div('coursefiles-admin coursefiles-panel');
+    echo html_writer::start_div('filebank-admin filebank-panel');
     $form->display();
     echo html_writer::end_div();
 }

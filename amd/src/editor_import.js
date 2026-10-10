@@ -4,12 +4,12 @@
 /**
  * Compatibility entry point for native Moodle AMD calls; all behavior is TypeScript ESM.
  *
- * @module local_coursefiles/editor_import
+ * @module local_filebank/editor_import
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Controller from 'core/esm!@moodle/lms/local_coursefiles/local/editor/controller';
+import Controller from 'core/esm!@moodle/lms/local_filebank/local/editor/controller';
 
 export const watch = Controller.watch;

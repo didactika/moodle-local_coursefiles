@@ -16,27 +16,27 @@
 
 /**
  * Version round trips, retention, plan lifecycle and native capacity.
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles;
+namespace local_filebank;
 
-use local_coursefiles\local\profile\profiles;
-use local_coursefiles\local\profile\profile_history;
-use local_coursefiles\local\profile\profile_bundle;
-use local_coursefiles\local\migration\migration_planner;
-use local_coursefiles\local\migration\migration_executor;
-use local_coursefiles\local\migration\plan_history;
-use local_coursefiles\local\selection\selection_limits;
+use local_filebank\local\profile\profiles;
+use local_filebank\local\profile\profile_history;
+use local_filebank\local\profile\profile_bundle;
+use local_filebank\local\migration\migration_planner;
+use local_filebank\local\migration\migration_executor;
+use local_filebank\local\migration\plan_history;
+use local_filebank\local\selection\selection_limits;
 
 /**
  * Exercises public service contracts with real Moodle files and profiles.
- * @covers \local_coursefiles\local\profile\profile_history
- * @covers \local_coursefiles\local\profile\profile_bundle
- * @covers \local_coursefiles\local\migration\plan_history
- * @covers \local_coursefiles\local\selection\selection_limits
+ * @covers \local_filebank\local\profile\profile_history
+ * @covers \local_filebank\local\profile\profile_bundle
+ * @covers \local_filebank\local\migration\plan_history
+ * @covers \local_filebank\local\selection\selection_limits
  */
 final class profile_history_test extends \advanced_testcase {
     /**
@@ -48,18 +48,18 @@ final class profile_history_test extends \advanced_testcase {
         $this->setAdminUser();
         $config = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
         $id = profiles::save(json_encode($config));
-        $first = $DB->get_field('local_coursefiles', 'activeid', ['id' => $id]);
-        $original = $DB->get_record('local_coursefiles_revision', ['id' => $first]);
+        $first = $DB->get_field('local_filebank', 'activeid', ['id' => $id]);
+        $original = $DB->get_record('local_filebank_revision', ['id' => $first]);
         $config['name'] = 'Changed profile';
         profiles::save(json_encode($config), $id);
         $this->assertSame($id, profile_history::restore($id, $first));
-        $this->assertSame(1, $DB->count_records('local_coursefiles'));
-        $this->assertSame(2, $DB->count_records('local_coursefiles_revision', ['profileid' => $id]));
-        $this->assertEquals($first, $DB->get_field('local_coursefiles', 'activeid', ['id' => $id]));
-        $this->assertNotSame('Changed profile', $DB->get_field('local_coursefiles', 'name', ['id' => $id]));
-        $this->assertEquals($original, $DB->get_record('local_coursefiles_revision', ['id' => $first]));
+        $this->assertSame(1, $DB->count_records('local_filebank'));
+        $this->assertSame(2, $DB->count_records('local_filebank_revision', ['profileid' => $id]));
+        $this->assertEquals($first, $DB->get_field('local_filebank', 'activeid', ['id' => $id]));
+        $this->assertNotSame('Changed profile', $DB->get_field('local_filebank', 'name', ['id' => $id]));
+        $this->assertEquals($original, $DB->get_record('local_filebank_revision', ['id' => $first]));
         profile_history::restore($id, $first);
-        $this->assertSame(2, $DB->count_records('local_coursefiles_revision', ['profileid' => $id]));
+        $this->assertSame(2, $DB->count_records('local_filebank_revision', ['profileid' => $id]));
         $bundle = profile_bundle::export([$id]);
         $document = json_decode($bundle, true);
         $this->assertSame(2, $document['version']);
@@ -93,14 +93,14 @@ final class profile_history_test extends \advanced_testcase {
         $id = profiles::save($config);
         $args = ['context' => \context_system::instance(),
             'state' => json_encode(['ids' => [$id], 'action' => 'disable', 'sesskey' => sesskey()])];
-        $html = \local_coursefiles_output_fragment_profiles($args);
-        $this->assertStringContainsString('data-coursefiles-profile-state', $html);
-        $this->assertEquals(0, $DB->get_field('local_coursefiles', 'enabled', ['id' => $id]));
-        $this->assertSame(1, $DB->count_records('local_coursefiles_revision', ['profileid' => $id]));
+        $html = \local_filebank_output_fragment_profiles($args);
+        $this->assertStringContainsString('data-filebank-profile-state', $html);
+        $this->assertEquals(0, $DB->get_field('local_filebank', 'enabled', ['id' => $id]));
+        $this->assertSame(1, $DB->count_records('local_filebank_revision', ['profileid' => $id]));
         $args['state'] = json_encode(['ids' => [$id], 'action' => 'enable', 'sesskey' => 'invalid']);
         $this->expectException(\moodle_exception::class);
         $this->expectExceptionMessage(get_string('invalidsesskey', 'error'));
-        \local_coursefiles_output_fragment_profiles($args);
+        \local_filebank_output_fragment_profiles($args);
     }
 
     /**
@@ -110,7 +110,7 @@ final class profile_history_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Pinned version']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         [, , $rules] = profiles::load($fixture['profileid']);
@@ -119,10 +119,10 @@ final class profile_history_test extends \advanced_testcase {
         profiles::save(json_encode($config), $fixture['profileid']);
         $config['name'] = 'Third name';
         profiles::save(json_encode($config), $fixture['profileid']);
-        set_config('versionretentionmax', 1, 'local_coursefiles');
+        set_config('versionretentionmax', 1, 'local_filebank');
         $this->assertGreaterThanOrEqual(1, profile_history::clean(time()));
-        $this->assertTrue($DB->record_exists('local_coursefiles_revision', ['id' => $plan->revisionid]));
-        $this->assertSame(2, $DB->count_records('local_coursefiles_revision', ['profileid' => $fixture['profileid']]));
+        $this->assertTrue($DB->record_exists('local_filebank_revision', ['id' => $plan->revisionid]));
+        $this->assertSame(2, $DB->count_records('local_filebank_revision', ['profileid' => $fixture['profileid']]));
     }
 
     /**
@@ -132,7 +132,7 @@ final class profile_history_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Safe removal']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         $run = migration_executor::queue($plan->id, $plan->digest);
@@ -149,7 +149,7 @@ final class profile_history_test extends \advanced_testcase {
         $files = $DB->get_records_menu('files', ['component' => 'mod_folder'], 'id', 'id, contenthash');
         plan_history::delete($empty->id);
         plan_history::delete($plan->id);
-        $this->assertFalse($DB->record_exists('local_coursefiles_plan', ['id' => $plan->id]));
+        $this->assertFalse($DB->record_exists('local_filebank_plan', ['id' => $plan->id]));
         $this->assertSame($files, $DB->get_records_menu('files', ['component' => 'mod_folder'], 'id', 'id, contenthash'));
     }
 
@@ -168,7 +168,7 @@ final class profile_history_test extends \advanced_testcase {
         $this->assertSame(1, selection_limits::capacity($scope));
         selection_limits::require_capacity($scope, ['file:first']);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('selectionfull', 'local_coursefiles'));
+        $this->expectExceptionMessage(get_string('selectionfull', 'local_filebank'));
         selection_limits::require_capacity($scope, ['file:first', 'file:second']);
     }
 }

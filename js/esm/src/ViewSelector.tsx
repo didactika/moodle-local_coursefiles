@@ -4,7 +4,7 @@
 /**
  * Native Moodle 5.3 React layout selector with theme-overridable markup.
  *
- * @module local_coursefiles/ViewSelector
+ * @module local_filebank/ViewSelector
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,14 +28,14 @@ export default function ViewSelector({initialLayout, views}: ViewSelectorProps) 
     const firstButton = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
-        const form = firstButton.current?.closest<HTMLFormElement>('form.coursefiles-browser');
+        const form = firstButton.current?.closest<HTMLFormElement>('form.filebank-browser');
         if (!form) {
             return;
         }
         const sync = () => setActive(normalizeLayout(form.dataset.layout || initialLayout));
         sync();
-        form.addEventListener('coursefiles:layoutchanged', sync);
-        return () => form.removeEventListener('coursefiles:layoutchanged', sync);
+        form.addEventListener('filebank:layoutchanged', sync);
+        return () => form.removeEventListener('filebank:layoutchanged', sync);
     }, [initialLayout]);
 
     return <>{views.map((view, index) => <button
@@ -43,12 +43,12 @@ export default function ViewSelector({initialLayout, views}: ViewSelectorProps) 
         key={view.value}
         type="button"
         className={`btn btn-sm btn-outline-secondary${active === view.value ? ' active' : ''}`}
-        data-coursefiles-layout={view.value}
-        data-coursefiles-react-view="true"
+        data-filebank-layout={view.value}
+        data-filebank-react-view="true"
         aria-pressed={active === view.value}
         title={view.label}
     >
         <span dangerouslySetInnerHTML={{__html: view.icon}} />
-        <span className="coursefiles-visually-hidden">{view.label}</span>
+        <span className="filebank-visually-hidden">{view.label}</span>
     </button>)}</>;
 }

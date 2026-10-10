@@ -4,7 +4,7 @@
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 -->
-<ruleset name="CourseFiles Moodle standard">
+<ruleset name="FileBank Moodle standard">
   <description>Moodle plugin coding conventions.</description>
   <rule ref="moodle"/>
   <arg name="extensions" value="php"/>

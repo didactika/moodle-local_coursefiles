@@ -17,7 +17,7 @@
 /**
  * Native browser fixture generator mapping.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,7 +26,7 @@
 /**
  * Makes published multi-edition materials available to native browser scenarios.
  */
-final class behat_local_coursefiles_generator extends behat_generator_base {
+final class behat_local_filebank_generator extends behat_generator_base {
     /**
      * Describe component fixtures available to Moodle's generic generator step.
      *

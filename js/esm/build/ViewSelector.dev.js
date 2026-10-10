@@ -4,7 +4,7 @@ import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
 /**
  * Native Moodle 5.3 React layout selector with theme-overridable markup.
  *
- * @module local_coursefiles/ViewSelector
+ * @module local_filebank/ViewSelector
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -15,14 +15,14 @@ function ViewSelector({ initialLayout, views }) {
   const [active, setActive] = useState(normalizeLayout(initialLayout));
   const firstButton = useRef(null);
   useEffect(() => {
-    const form = firstButton.current?.closest("form.coursefiles-browser");
+    const form = firstButton.current?.closest("form.filebank-browser");
     if (!form) {
       return;
     }
     const sync = /* @__PURE__ */ __name(() => setActive(normalizeLayout(form.dataset.layout || initialLayout)), "sync");
     sync();
-    form.addEventListener("coursefiles:layoutchanged", sync);
-    return () => form.removeEventListener("coursefiles:layoutchanged", sync);
+    form.addEventListener("filebank:layoutchanged", sync);
+    return () => form.removeEventListener("filebank:layoutchanged", sync);
   }, [initialLayout]);
   return /* @__PURE__ */ jsxDEV(Fragment, { children: views.map((view, index) => /* @__PURE__ */ jsxDEV(
     "button",
@@ -30,18 +30,18 @@ function ViewSelector({ initialLayout, views }) {
       ref: index === 0 ? firstButton : void 0,
       type: "button",
       className: `btn btn-sm btn-outline-secondary${active === view.value ? " active" : ""}`,
-      "data-coursefiles-layout": view.value,
-      "data-coursefiles-react-view": "true",
+      "data-filebank-layout": view.value,
+      "data-filebank-react-view": "true",
       "aria-pressed": active === view.value,
       title: view.label,
       children: [
         /* @__PURE__ */ jsxDEV("span", { dangerouslySetInnerHTML: { __html: view.icon } }, void 0, false, {
-          fileName: "public/local/coursefiles/js/esm/src/ViewSelector.tsx",
+          fileName: "public/local/filebank/js/esm/src/ViewSelector.tsx",
           lineNumber: 51,
           columnNumber: 9
         }, this),
-        /* @__PURE__ */ jsxDEV("span", { className: "coursefiles-visually-hidden", children: view.label }, void 0, false, {
-          fileName: "public/local/coursefiles/js/esm/src/ViewSelector.tsx",
+        /* @__PURE__ */ jsxDEV("span", { className: "filebank-visually-hidden", children: view.label }, void 0, false, {
+          fileName: "public/local/filebank/js/esm/src/ViewSelector.tsx",
           lineNumber: 52,
           columnNumber: 9
         }, this)
@@ -50,13 +50,13 @@ function ViewSelector({ initialLayout, views }) {
     view.value,
     true,
     {
-      fileName: "public/local/coursefiles/js/esm/src/ViewSelector.tsx",
+      fileName: "public/local/filebank/js/esm/src/ViewSelector.tsx",
       lineNumber: 41,
       columnNumber: 42
     },
     this
   )) }, void 0, false, {
-    fileName: "public/local/coursefiles/js/esm/src/ViewSelector.tsx",
+    fileName: "public/local/filebank/js/esm/src/ViewSelector.tsx",
     lineNumber: 41,
     columnNumber: 12
   }, this);

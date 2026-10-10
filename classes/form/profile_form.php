@@ -17,12 +17,12 @@
 /**
  * Profile editor with validated unsaved previews.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\form;
+namespace local_filebank\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -41,25 +41,25 @@ final class profile_form extends \moodleform {
         $form->addElement('text', 'profilename', get_string('name', 'core'), ['maxlength' => 255]);
         $form->setType('profilename', PARAM_TEXT);
         $form->addRule('profilename', null, 'required');
-        $form->addElement('select', 'editmode', get_string('editmode', 'local_coursefiles'), [
-            'guided' => get_string('guidedmode', 'local_coursefiles'),
-            'advanced' => get_string('advancedmode', 'local_coursefiles'),
+        $form->addElement('select', 'editmode', get_string('editmode', 'local_filebank'), [
+            'guided' => get_string('guidedmode', 'local_filebank'),
+            'advanced' => get_string('advancedmode', 'local_filebank'),
         ]);
         $form->setDefault('editmode', 'guided');
-        $form->addElement('header', 'identitysettings', get_string('courseidentity', 'local_coursefiles'));
-        $form->addElement('select', 'coursefield', get_string('coursefield', 'local_coursefiles'), [
+        $form->addElement('header', 'identitysettings', get_string('courseidentity', 'local_filebank'));
+        $form->addElement('select', 'coursefield', get_string('coursefield', 'local_filebank'), [
             'idnumber' => get_string('idnumbercourse'), 'shortname' => get_string('shortnamecourse'),
             'fullname' => get_string('fullnamecourse'),
         ]);
         foreach (['coursepattern', 'familytemplate'] as $name) {
-            $form->addElement('text', $name, get_string($name, 'local_coursefiles'));
+            $form->addElement('text', $name, get_string($name, 'local_filebank'));
             $form->setType($name, PARAM_RAW);
         }
         foreach (['coursefield', 'coursepattern', 'familytemplate'] as $name) {
             $form->hideIf($name, 'editmode', 'eq', 'advanced');
         }
         foreach (['displaytemplate', 'pairdimensions'] as $name) {
-            $form->addElement('text', $name, get_string($name, 'local_coursefiles'));
+            $form->addElement('text', $name, get_string($name, 'local_filebank'));
             $form->setType($name, PARAM_RAW_TRIMMED);
             $form->hideIf($name, 'editmode', 'eq', 'advanced');
         }
@@ -68,41 +68,41 @@ final class profile_form extends \moodleform {
         $form->hideIf('categoryids', 'editmode', 'eq', 'advanced');
         $form->addElement('hidden', 'guidedsettings', 1);
         $form->setType('guidedsettings', PARAM_BOOL);
-        $form->addElement('header', 'capturefilters', get_string('capturefilters', 'local_coursefiles'));
+        $form->addElement('header', 'capturefilters', get_string('capturefilters', 'local_filebank'));
         $form->setExpanded('capturefilters', false);
         $rows = [];
         $config = $this->_customdata['config'] ?? [];
-        $definitions = $config ? (new \local_coursefiles\local\profile\profile_config($config))->filter_definitions() : [];
+        $definitions = $config ? (new \local_filebank\local\profile\profile_config($config))->filter_definitions() : [];
         foreach ($definitions as $key => $filter) {
             $rows[] = ['key' => $key] + $filter;
         }
         $form->addElement(
             'textarea',
             'filtersjson',
-            get_string('capturefilters', 'local_coursefiles'),
+            get_string('capturefilters', 'local_filebank'),
             ['rows' => 6, 'id' => 'id_filtersjson']
         );
         $form->setType('filtersjson', PARAM_RAW);
         $form->setDefault('filtersjson', json_encode($rows, JSON_UNESCAPED_UNICODE));
         $columns = [];
         foreach (['key', 'capture', 'label', 'optional'] as $column) {
-            $columns[] = ['key' => $column, 'label' => get_string('filter' . $column, 'local_coursefiles'),
+            $columns[] = ['key' => $column, 'label' => get_string('filter' . $column, 'local_filebank'),
                 'type' => $column === 'optional' ? 'checkbox' : 'text', 'maxlength' => $column === 'label' ? 255 : 64];
         }
         global $PAGE;
         row_data::enhance($form, 'filtersjson', $columns, 9);
-        $PAGE->requires->js_call_amd('local_coursefiles/row_editor', 'profile');
-        $form->addElement('header', 'sourcesettings', get_string('publicsources', 'local_coursefiles'));
+        $PAGE->requires->js_call_amd('local_filebank/row_editor', 'profile');
+        $form->addElement('header', 'sourcesettings', get_string('publicsources', 'local_filebank'));
         $form->setExpanded('sourcesettings', false);
-        $form->addElement('select', 'publicationmode', get_string('publicationmode', 'local_coursefiles'), [
-            'source-access-only' => get_string('publication_source-access-only', 'local_coursefiles'),
-            'explicit-family-publication' => get_string('publication_explicit-family-publication', 'local_coursefiles'),
+        $form->addElement('select', 'publicationmode', get_string('publicationmode', 'local_filebank'), [
+            'source-access-only' => get_string('publication_source-access-only', 'local_filebank'),
+            'explicit-family-publication' => get_string('publication_explicit-family-publication', 'local_filebank'),
         ]);
         $form->hideIf('publicationmode', 'editmode', 'eq', 'advanced');
         $form->addElement('hidden', 'sourcesdefined', 1);
         $form->setType('sourcesdefined', PARAM_BOOL);
         foreach (self::source_controls() as $key => $area) {
-            $label = $area === 'mod_*/intro' ? get_string('activityintroductions', 'local_coursefiles')
+            $label = $area === 'mod_*/intro' ? get_string('activityintroductions', 'local_filebank')
                 : get_string('modulename', substr(explode('/', $area)[0], 4));
             if (str_starts_with($area, 'mod_assign/')) {
                 $label .= ' / ' . get_string(explode('/', $area)[1] . 's', 'mod_assign');
@@ -112,27 +112,27 @@ final class profile_form extends \moodleform {
             $form->setDefault('sources[' . $key . ']', in_array($area, $this->_customdata['sources'] ?? [], true));
             $form->hideIf('sources[' . $key . ']', 'editmode', 'eq', 'advanced');
         }
-        $form->addElement('header', 'rules', get_string('advancedmode', 'local_coursefiles'));
+        $form->addElement('header', 'rules', get_string('advancedmode', 'local_filebank'));
         $form->setExpanded('rules', false);
         $form->addElement(
             'textarea',
             'configjson',
-            get_string('profilejson', 'local_coursefiles'),
+            get_string('profilejson', 'local_filebank'),
             ['rows' => 14]
         );
         $form->setType('configjson', PARAM_RAW);
         $form->hideIf('configjson', 'editmode', 'neq', 'advanced');
         $buttons = [];
-        $buttons[] = $form->createElement('submit', 'saveprofile', get_string('saveprofile', 'local_coursefiles'));
-        $buttons[] = $form->createElement('submit', 'previewrules', get_string('previewrules', 'local_coursefiles'));
+        $buttons[] = $form->createElement('submit', 'saveprofile', get_string('saveprofile', 'local_filebank'));
+        $buttons[] = $form->createElement('submit', 'previewrules', get_string('previewrules', 'local_filebank'));
         $buttons[] = $form->createElement('cancel');
         if (!empty($this->_customdata['profileid'])) {
             $buttons[] = $form->createElement('static', 'profilehistory', '', \html_writer::link(
                 new \moodle_url(
-                    '/local/coursefiles/admin/profile_history.php',
+                    '/local/filebank/admin/profile_history.php',
                     ['profileid' => $this->_customdata['profileid']]
                 ),
-                get_string('versionhistory', 'local_coursefiles'),
+                get_string('versionhistory', 'local_filebank'),
                 ['class' => 'btn btn-outline-info']
             ));
         }
@@ -142,10 +142,10 @@ final class profile_form extends \moodleform {
             ['profilename', 'editmode', 'coursefield', 'coursepattern', 'familytemplate', 'displaytemplate',
             'pairdimensions', 'categoryids', 'filtersjson', 'publicationmode', 'configjson'] as $name
         ) {
-            $form->addHelpButton($name, $name, 'local_coursefiles');
+            $form->addHelpButton($name, $name, 'local_filebank');
         }
         foreach (array_keys(self::source_controls()) as $key) {
-            $form->addHelpButton('sources[' . $key . ']', 'publicsources', 'local_coursefiles');
+            $form->addHelpButton('sources[' . $key . ']', 'publicsources', 'local_filebank');
         }
     }
 
@@ -165,14 +165,14 @@ final class profile_form extends \moodleform {
             ]))
                 : json_decode($data['configjson'] ?? '', true, 64, JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
-            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         if (!is_array($config)) {
-            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         if (($data['editmode'] ?? 'advanced') === 'guided') {
             if (count($config['relationship']['parsers']) !== 1) {
-                throw new \moodle_exception('advancedprofilerequired', 'local_coursefiles');
+                throw new \moodle_exception('advancedprofilerequired', 'local_filebank');
             }
             $config['relationship']['parsers'][0]['field'] = $data['coursefield'];
             $config['relationship']['parsers'][0]['pattern'] = trim($data['coursepattern']);
@@ -191,14 +191,14 @@ final class profile_form extends \moodleform {
                 $config['relationship']['display_label'] = $config['relationship']['family_key'];
             }
             if (isset($data['filtersjson'])) {
-                $rows = \local_coursefiles\form\row_data::decode($data['filtersjson'], 9);
+                $rows = \local_filebank\form\row_data::decode($data['filtersjson'], 9);
                 foreach ($rows as $row) {
                     if (
                         array_diff(['capture', 'label', 'optional', 'key'], array_keys($row))
                         || !is_bool($row['optional']) || !is_string($row['capture']) || !is_string($row['label'])
                         || !is_string($row['key'])
                     ) {
-                        throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+                        throw new \moodle_exception('invalidprofile', 'local_filebank');
                     }
                 }
                 foreach (['capture', 'label', 'optional', 'key'] as $column) {
@@ -213,7 +213,7 @@ final class profile_form extends \moodleform {
                 }
                 $key = ($data['filterkey'][$index] ?? '') ?: $capture;
                 if (isset($definitions[$key]) || $label === '' || !in_array($capture, $captures, true)) {
-                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+                    throw new \moodle_exception('invalidprofile', 'local_filebank');
                 }
                 $definitions[$key] = ['capture' => $capture, 'label' => $label,
                     'optional' => !empty($data['filteroptional'][$index])];
@@ -227,16 +227,16 @@ final class profile_form extends \moodleform {
                     array_filter($controls, static fn($key) => !empty($data['sources'][$key]), ARRAY_FILTER_USE_KEY)
                 ));
             }
-            $config = \local_coursefiles\local\profile\guided_config::apply($config, $data);
+            $config = \local_filebank\local\profile\guided_config::apply($config, $data);
             if (isset($data['filtersjson'])) {
                 unset($config['relationship']['edition'], $config['migration']);
             }
         }
         $config['name'] = trim($data['profilename']);
         if ($config['name'] === '' || \core_text::strlen($config['name']) > 255) {
-            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
-        new \local_coursefiles\local\profile\profile_config($config);
+        new \local_filebank\local\profile\profile_config($config);
         return $config;
     }
 
@@ -247,7 +247,7 @@ final class profile_form extends \moodleform {
      */
     public static function source_controls(): array {
         $controls = [];
-        foreach (\local_coursefiles\local\catalog\source_registry::keys() as $area) {
+        foreach (\local_filebank\local\catalog\source_registry::keys() as $area) {
             if ($area !== 'mod_*/intro' && str_ends_with($area, '/intro')) {
                 continue;
             }
@@ -277,7 +277,7 @@ final class profile_form extends \moodleform {
             try {
                 row_data::decode($data['filtersjson'] ?? '[]', 9);
             } catch (\moodle_exception $exception) {
-                $errors['filtersjson'] = get_string('invalidfilterrows', 'local_coursefiles');
+                $errors['filtersjson'] = get_string('invalidfilterrows', 'local_filebank');
                 return $errors;
             }
         }

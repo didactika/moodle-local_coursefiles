@@ -17,14 +17,14 @@
 /**
  * Site/course author protection and provenance.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\policy;
+namespace local_filebank\local\policy;
 
-use local_coursefiles\local\logging\log;
+use local_filebank\local\logging\log;
 
 /**
  * Resolves effective protection independently of content identity.
@@ -38,11 +38,11 @@ final class author_policy {
      */
     public static function locked(int $courseid): bool {
         global $DB;
-        if (get_config('local_coursefiles', 'author_policy') !== 'editable_with_provenance') {
+        if (get_config('local_filebank', 'author_policy') !== 'editable_with_provenance') {
             return true;
         }
-        return get_config('local_coursefiles', 'author_course_override') === 'tighten_only'
-            && $DB->get_field('local_coursefiles_policy', 'policy', ['courseid' => $courseid]) === 'preserve_locked';
+        return get_config('local_filebank', 'author_course_override') === 'tighten_only'
+            && $DB->get_field('local_filebank_policy', 'policy', ['courseid' => $courseid]) === 'preserve_locked';
     }
 
     /**
@@ -54,17 +54,17 @@ final class author_policy {
      */
     public static function require_native_copy(\stored_file $file, int $sourcecourse, int $targetcourse): void {
         global $DB;
-        $origin = $DB->get_record('local_coursefiles_origin', ['pathnamehash' => $file->get_pathnamehash()]);
+        $origin = $DB->get_record('local_filebank_origin', ['pathnamehash' => $file->get_pathnamehash()]);
         $originlocked = $origin && $DB->get_field(
-            'local_coursefiles_author',
+            'local_filebank_author',
             'locked',
             ['id' => $origin->attributionid]
         );
         if (self::locked($sourcecourse) || self::locked($targetcourse) || $originlocked) {
-            throw new \moodle_exception('lockedunsupported', 'local_coursefiles');
+            throw new \moodle_exception('lockedunsupported', 'local_filebank');
         }
-        if (!$file->get_author() && get_config('local_coursefiles', 'author_missing_policy') === 'block_reuse') {
-            throw new \moodle_exception('missingauthor', 'local_coursefiles');
+        if (!$file->get_author() && get_config('local_filebank', 'author_missing_policy') === 'block_reuse') {
+            throw new \moodle_exception('missingauthor', 'local_filebank');
         }
     }
 
@@ -76,21 +76,21 @@ final class author_policy {
      */
     public static function save(int $courseid, string $policy): void {
         global $DB, $USER;
-        require_capability('local/coursefiles:managecoursepolicy', \context_course::instance($courseid));
+        require_capability('local/filebank:managecoursepolicy', \context_course::instance($courseid));
         if (
-            get_config('local_coursefiles', 'author_course_override') !== 'tighten_only'
+            get_config('local_filebank', 'author_course_override') !== 'tighten_only'
                 || !in_array($policy, ['inherit', 'preserve_locked'], true)
         ) {
-            throw new \moodle_exception('invalidpolicy', 'local_coursefiles');
+            throw new \moodle_exception('invalidpolicy', 'local_filebank');
         }
-        $record = $DB->get_record('local_coursefiles_policy', ['courseid' => $courseid]);
+        $record = $DB->get_record('local_filebank_policy', ['courseid' => $courseid]);
         $data = (object)['courseid' => $courseid, 'policy' => $policy,
             'revision' => ($record->revision ?? 0) + 1, 'userid' => $USER->id, 'timemodified' => time()];
         if ($record) {
             $data->id = $record->id;
-            $DB->update_record('local_coursefiles_policy', $data);
+            $DB->update_record('local_filebank_policy', $data);
         } else {
-            $DB->insert_record('local_coursefiles_policy', $data);
+            $DB->insert_record('local_filebank_policy', $data);
         }
         log::record('course_policy_changed', '', ['courseid' => $courseid, 'policy' => $policy]);
     }
@@ -103,13 +103,13 @@ final class author_policy {
      */
     public static function capture(\stored_file $file): int {
         global $DB, $USER;
-        $parent = $DB->get_record('local_coursefiles_origin', ['pathnamehash' => $file->get_pathnamehash()]);
+        $parent = $DB->get_record('local_filebank_origin', ['pathnamehash' => $file->get_pathnamehash()]);
         $parentuuid = $parent ? $DB->get_field(
-            'local_coursefiles_author',
+            'local_filebank_author',
             'uuid',
             ['id' => $parent->attributionid]
         ) : '';
-        return $DB->insert_record('local_coursefiles_author', (object)[
+        return $DB->insert_record('local_filebank_author', (object)[
             'uuid' => \core\uuid::generate(), 'parentuuid' => $parentuuid ?: '',
             'sourcehash' => $file->get_pathnamehash(), 'contenthash' => $file->get_contenthash(),
             'author' => $file->get_author(), 'license' => $file->get_license(), 'locked' => 0,

@@ -16,15 +16,15 @@
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_coursefiles/local/picker/bridge
+ * @module local_filebank/local/picker/bridge
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import type {ApprovedFile} from '@moodle/lms/local_coursefiles/local/contracts';
-import Selectors from '@moodle/lms/local_coursefiles/local/selectors';
-import {listen, eventElement} from '@moodle/lms/local_coursefiles/local/listeners';
+import type {ApprovedFile} from '@moodle/lms/local_filebank/local/contracts';
+import Selectors from '@moodle/lms/local_filebank/local/selectors';
+import {listen, eventElement} from '@moodle/lms/local_filebank/local/listeners';
 
 let hostObject: HTMLObjectElement | null = null;
 let hostObserver: MutationObserver | null = null;
@@ -35,7 +35,7 @@ let hostObserver: MutationObserver | null = null;
 export const presentation = () => {
     const browser = document.querySelector<HTMLFormElement>(Selectors.browser)!;
     if (browser) {
-        browser.dataset.coursefilesReady = 'true';
+        browser.dataset.filebankReady = 'true';
     }
     if (window.parent === window) {
         return;
@@ -46,12 +46,12 @@ export const presentation = () => {
     if (!object || !picker || hostObject === object) {
         return;
     }
-    picker.classList.add('coursefiles-native-host');
-    document.body.classList.add('coursefiles-embedded');
+    picker.classList.add('filebank-native-host');
+    document.body.classList.add('filebank-embedded');
     const surface = picker.querySelector<HTMLElement>(Selectors.pickerSurface)!;
     const background = window.parent.getComputedStyle(surface).backgroundColor;
     if (background !== 'rgba(0, 0, 0, 0)') {
-        document.body.style.setProperty('--coursefiles-host-background', background);
+        document.body.style.setProperty('--filebank-host-background', background);
     }
     const repositories = picker.querySelector<HTMLElement>(Selectors.repositories)!;
     const active = repositories?.querySelector<HTMLElement>(Selectors.activeRepository);
@@ -67,7 +67,7 @@ export const presentation = () => {
     hostObject = object;
     hostObserver = new MutationObserver(() => {
         if (!object.isConnected) {
-            picker.classList.remove('coursefiles-native-host');
+            picker.classList.remove('filebank-native-host');
             hostObserver?.disconnect();
             hostObject = null;
             window.parent.removeEventListener('resize', revealRepository);
@@ -76,7 +76,7 @@ export const presentation = () => {
     hostObserver.observe(picker, {childList: true, subtree: true});
     listen(window, 'pagehide', () => {
         if (!object.isConnected) {
-            picker.classList.remove('coursefiles-native-host');
+            picker.classList.remove('filebank-native-host');
         }
         hostObserver?.disconnect();
         window.parent.removeEventListener('resize', revealRepository);
@@ -109,7 +109,7 @@ export const complete = (file: ApprovedFile) => {
         button.disabled = true;
         // The editor bridge runs in the owning document, which survives picker closure.
         if (file.editorid) {
-            window.parent.require(['local_coursefiles/editor_import'], (bridge: {watch: (scope: string, editorid: string) => void}) => bridge.watch(file.scope, file.editorid));
+            window.parent.require(['local_filebank/editor_import'], (bridge: {watch: (scope: string, editorid: string) => void}) => bridge.watch(file.scope, file.editorid));
         }
         window.parent.M!.core_filepicker!.select_file!(file);
         const confirmation = window.parent.document.querySelector<HTMLElement>(Selectors.nativeConfirmation)!;

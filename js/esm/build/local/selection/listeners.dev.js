@@ -3,13 +3,13 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 /**
  * Bind feature events to scoped actions without owning business state.
  *
- * @module local_coursefiles/local/selection/listeners
+ * @module local_filebank/local/selection/listeners
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { listen } from "@moodle/lms/local_coursefiles/local/listeners";
-import Selectors from "@moodle/lms/local_coursefiles/local/selection/selectors";
+import { listen } from "@moodle/lms/local_filebank/local/listeners";
+import Selectors from "@moodle/lms/local_filebank/local/selection/selectors";
 const registerListeners = /* @__PURE__ */ __name((form, actions) => {
   listen(document, "click", actions.outsideClick);
   listen(form, "keydown", actions.escapeFilters);
@@ -22,7 +22,7 @@ const registerListeners = /* @__PURE__ */ __name((form, actions) => {
   listen(form, "submit", actions.submit);
   listen(form, "click", actions.changeLayout);
   form.querySelectorAll(Selectors.options).forEach((detail) => {
-    const key = "coursefiles-options";
+    const key = "filebank-options";
     try {
       detail.open = sessionStorage.getItem(key) === "open";
     } catch (error) {

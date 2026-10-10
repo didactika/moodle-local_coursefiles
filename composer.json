@@ -1,5 +1,5 @@
 {
-  "name": "didactika/moodle-local_coursefiles",
+  "name": "didactika/moodle-local_filebank",
   "description": "Configurable Moodle teaching-material reuse",
   "type": "moodle-local",
   "license": "GPL-3.0-or-later",

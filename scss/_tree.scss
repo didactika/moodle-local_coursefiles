@@ -4,11 +4,11 @@
 
 /* The same authorized material nodes become a collapsible course tree. */
 
-.coursefiles-browser-tree-group, .coursefiles-tree-entries {
+.filebank-browser-tree-group, .filebank-tree-entries {
     display: contents;
 }
 
-.coursefiles-browser {
+.filebank-browser {
     &-folder {
         display: contents;
     }
@@ -16,41 +16,41 @@
         display: none;
     }
     &[data-layout=tree] {
-        .coursefiles-browser-folder {
+        .filebank-browser-folder {
             display: block;
         }
-        .coursefiles-browser-children:not([hidden]) {
+        .filebank-browser-children:not([hidden]) {
             display: block;
             margin-inline-start: 1rem;
             padding-inline-start: .75rem;
-            border-inline-start: 1px solid var(--coursefiles-border);
+            border-inline-start: 1px solid var(--filebank-border);
         }
-        .coursefiles-open[aria-expanded=true] .icon {
+        .filebank-open[aria-expanded=true] .icon {
             transform: rotate(90deg);
         }
     }
 }
 
-.coursefiles-tree {
+.filebank-tree {
     &-placeholder span {
         display: block;
         height: 3rem;
         margin-block: .35rem;
-        border-radius: var(--coursefiles-radius);
-        background: color-mix(in srgb, var(--coursefiles-primary) 4%, var(--coursefiles-surface));
+        border-radius: var(--filebank-radius);
+        background: color-mix(in srgb, var(--filebank-primary) 4%, var(--filebank-surface));
     }
 }
 
-.coursefiles-browser {
+.filebank-browser {
     &[data-layout=tree] {
-        .coursefiles-cards {
+        .filebank-cards {
             display: block;
         }
-        .coursefiles-browser-tree-group {
+        .filebank-browser-tree-group {
             display: block;
             margin-bottom: .5rem;
         }
-        .coursefiles-course-heading {
+        .filebank-course-heading {
             display: flex;
             align-items: center;
             gap: .5rem;
@@ -61,61 +61,61 @@
     }
 }
 
-.coursefiles-course-heading[aria-expanded=true] .coursefiles-disclosure-icon .icon {
+.filebank-course-heading[aria-expanded=true] .filebank-disclosure-icon .icon {
     transform: rotate(90deg);
 }
 
-.coursefiles-browser {
+.filebank-browser {
     &[data-layout=tree] {
-        .coursefiles-tree-entries {
+        .filebank-tree-entries {
             display: block;
             padding-inline-start: 1rem;
-            border-inline-start: 1px solid var(--coursefiles-border);
+            border-inline-start: 1px solid var(--filebank-border);
         }
-        .coursefiles-card {
+        .filebank-card {
             margin-bottom: .15rem;
             border-color: transparent;
             box-shadow: none;
         }
-        .coursefiles-card .card-body {
+        .filebank-card .card-body {
             align-items: center !important;
         }
-        .coursefiles-card input {
+        .filebank-card input {
             order: 0;
             margin-top: 0;
         }
-        .coursefiles-open {
+        .filebank-open {
             order: 1;
         }
-        .coursefiles-card-content {
+        .filebank-card-content {
             order: 2;
             grid-template-columns: auto minmax(0, 1fr) auto;
             grid-template-rows: auto;
             align-items: center;
             gap: .5rem;
         }
-        .coursefiles-card-kind {
+        .filebank-card-kind {
             margin-bottom: 0 !important;
         }
-        .coursefiles-card-kind .coursefiles-chip {
+        .filebank-card-kind .filebank-chip {
             display: none;
         }
-        .coursefiles-card-title {
+        .filebank-card-title {
             margin-bottom: 0;
         }
-        .coursefiles-card-meta {
+        .filebank-card-meta {
             border-top: 0 !important;
             margin-top: 0 !important;
             padding-top: 0 !important;
             min-height: 0;
         }
-        .coursefiles-browser-tree-group[data-collapsed=true] > .coursefiles-tree-entries {
+        .filebank-browser-tree-group[data-collapsed=true] > .filebank-tree-entries {
             display: none;
         }
-        .coursefiles-origin {
+        .filebank-origin {
             display: none;
         }
-        .coursefiles-skeleton {
+        .filebank-skeleton {
             grid-template-columns: 1fr;
         }
     }

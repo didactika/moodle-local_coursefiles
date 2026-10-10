@@ -4,13 +4,13 @@
 /**
  * Compatibility entry point for native Moodle AMD calls; all behavior is TypeScript ESM.
  *
- * @module local_coursefiles/row_editor
+ * @module local_filebank/row_editor
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Controller from 'core/esm!@moodle/lms/local_coursefiles/local/form/controller';
+import Controller from 'core/esm!@moodle/lms/local_filebank/local/form/controller';
 
 export const init = Controller.init;
 export const profile = Controller.profile;

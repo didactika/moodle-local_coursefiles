@@ -3,15 +3,15 @@
 
 /**
  * form listeners.
- * @module local_coursefiles/local/form/listeners
+ * @module local_filebank/local/form/listeners
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from '@moodle/lms/local_coursefiles/local/form/selectors';
-import {listen, eventElement} from '@moodle/lms/local_coursefiles/local/listeners';
-import type {createRows, createProfile} from '@moodle/lms/local_coursefiles/local/form/actions';
+import Selectors from '@moodle/lms/local_filebank/local/form/selectors';
+import {listen, eventElement} from '@moodle/lms/local_filebank/local/listeners';
+import type {createRows, createProfile} from '@moodle/lms/local_filebank/local/form/actions';
 
 /**
  * Delegated events also cover rows appended after initialization.

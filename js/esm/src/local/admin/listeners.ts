@@ -3,16 +3,16 @@
 
 /**
  * admin listeners.
- * @module local_coursefiles/local/admin/listeners
+ * @module local_filebank/local/admin/listeners
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from '@moodle/lms/local_coursefiles/local/admin/selectors';
-import {listen} from '@moodle/lms/local_coursefiles/local/listeners';
-import {changePage} from '@moodle/lms/local_coursefiles/local/admin/actions';
-import type {createBulkActions, createHistoryActions} from '@moodle/lms/local_coursefiles/local/admin/actions';
+import Selectors from '@moodle/lms/local_filebank/local/admin/selectors';
+import {listen} from '@moodle/lms/local_filebank/local/listeners';
+import {changePage} from '@moodle/lms/local_filebank/local/admin/actions';
+import type {createBulkActions, createHistoryActions} from '@moodle/lms/local_filebank/local/admin/actions';
 
 /**
  * Bind a bulk form while preserving selection after saves.
@@ -43,8 +43,8 @@ export const registerHistory = (history: HTMLElement, actions: NonNullable<Retur
  * Register the delegated pagination listener once.
  */
 export const registerPagination = () => {
-    if (!document.body.dataset.coursefilesPagination) {
-        document.body.dataset.coursefilesPagination = 'true';
+    if (!document.body.dataset.filebankPagination) {
+        document.body.dataset.filebankPagination = 'true';
         listen(document, 'change', changePage);
     }
 };

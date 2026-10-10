@@ -17,24 +17,24 @@
 /**
  * Native output escaping and form semantics tests.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursefiles;
+namespace local_filebank;
 
-use local_coursefiles\output\display;
-use local_coursefiles\output\view;
+use local_filebank\output\display;
+use local_filebank\output\view;
 
 /**
  * Exercises actual templates through Moodle's renderer.
- * @covers \local_coursefiles\output\display
- * @covers \local_coursefiles\output\view
+ * @covers \local_filebank\output\display
+ * @covers \local_filebank\output\view
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\output\display::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\output\view::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\output\display::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\output\view::class)]
 final class output_test extends \advanced_testcase {
     /**
      * Personal action fields remain escaped and the log filters have labels.
@@ -42,7 +42,7 @@ final class output_test extends \advanced_testcase {
     public function test_log_escapes_records_and_labels_filters(): void {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('log', [
-            'hasrecords' => true, 'formurl' => '/local/coursefiles/admin/log.php',
+            'hasrecords' => true, 'formurl' => '/local/filebank/admin/log.php',
             'entityuuid' => '" autofocus onfocus="alert(1)',
             'records' => [['date' => 'Today', 'action' => '<script>action</script>',
                 'user' => '<script>user</script>', 'reference' => '<script>reference</script>']],
@@ -69,8 +69,8 @@ final class output_test extends \advanced_testcase {
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $PAGE->set_context(\context_course::instance($course->id));
-        $PAGE->set_url('/local/coursefiles/course/index.php', ['courseid' => $course->id]);
-        return $PAGE->get_renderer('local_coursefiles');
+        $PAGE->set_url('/local/filebank/course/index.php', ['courseid' => $course->id]);
+        return $PAGE->get_renderer('local_filebank');
     }
 
     /**
@@ -80,7 +80,7 @@ final class output_test extends \advanced_testcase {
         $renderer = $this->renderer();
         $data = [
             'hasprofiles' => true, 'hasassets' => true, 'courseid' => 2,
-            'actionurl' => '/local/coursefiles/course/index.php', 'reseturl' => '/local/coursefiles/course/index.php',
+            'actionurl' => '/local/filebank/course/index.php', 'reseturl' => '/local/filebank/course/index.php',
             'profiles' => display::options([1 => '<script>profile</script>'], '1'),
             'filters' => ['q' => '" autofocus onfocus="alert(1)'],
             'modules' => display::options(['' => 'All activities'], ''),
@@ -112,9 +112,9 @@ final class output_test extends \advanced_testcase {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('policy', [
             'locked' => true, 'canoverride' => false,
-            'effectivelabel' => get_string('preserve_locked', 'local_coursefiles'),
+            'effectivelabel' => get_string('preserve_locked', 'local_filebank'),
         ]));
-        $this->assertStringContainsString(get_string('lockedpolicyhelp', 'local_coursefiles'), $html);
+        $this->assertStringContainsString(get_string('lockedpolicyhelp', 'local_filebank'), $html);
         $this->assertStringNotContainsString('<select', $html);
     }
 
@@ -136,7 +136,7 @@ final class output_test extends \advanced_testcase {
             ]],
         ]));
         $this->assertStringContainsString('BIO101-2026', $html);
-        $this->assertStringContainsString(get_string('outcome_skip_content', 'local_coursefiles'), $html);
+        $this->assertStringContainsString(get_string('outcome_skip_content', 'local_filebank'), $html);
         $this->assertStringNotContainsString('<pre', $html);
         $this->assertStringNotContainsString('skip_content', $html);
     }

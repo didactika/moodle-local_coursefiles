@@ -17,17 +17,17 @@
 /**
  * Revalidated idempotent migration execution.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\migration;
+namespace local_filebank\local\migration;
 
-use local_coursefiles\local\catalog\material_source;
-use local_coursefiles\local\profile\profiles;
-use local_coursefiles\local\policy\author_policy;
-use local_coursefiles\local\logging\log;
+use local_filebank\local\catalog\material_source;
+use local_filebank\local\profile\profiles;
+use local_filebank\local\policy\author_policy;
+use local_filebank\local\logging\log;
 
 /**
  * Executes immutable plans without silently repairing stale destinations.
@@ -42,63 +42,63 @@ final class migration_executor {
      */
     public static function queue(int $planid, string $digest): int {
         global $DB, $USER;
-        require_capability('local/coursefiles:executemigration', \context_system::instance());
-        $lock = \core\lock\lock_config::get_lock_factory('local_coursefiles')->get_lock('plan:' . $planid, 10);
+        require_capability('local/filebank:executemigration', \context_system::instance());
+        $lock = \core\lock\lock_config::get_lock_factory('local_filebank')->get_lock('plan:' . $planid, 10);
         if (!$lock) {
-            throw new \moodle_exception('lockfailed', 'local_coursefiles');
+            throw new \moodle_exception('lockfailed', 'local_filebank');
         }
         $profilelock = null;
         try {
-            $plan = $DB->get_record('local_coursefiles_plan', ['id' => $planid], '*', MUST_EXIST);
-            $profilelock = \core\lock\lock_config::get_lock_factory('local_coursefiles')
+            $plan = $DB->get_record('local_filebank_plan', ['id' => $planid], '*', MUST_EXIST);
+            $profilelock = \core\lock\lock_config::get_lock_factory('local_filebank')
                 ->get_lock('profile:' . $plan->profileid, 10);
             if (!$profilelock) {
-                throw new \moodle_exception('lockfailed', 'local_coursefiles');
+                throw new \moodle_exception('lockfailed', 'local_filebank');
             }
             [, $revision] = profiles::load($plan->profileid);
             if ((int)$revision->id !== (int)$plan->revisionid) {
-                throw new \moodle_exception('planstale', 'local_coursefiles');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
             if (
                 $plan->state !== 'reviewable' || !hash_equals($plan->digest, $digest)
                     || !hash_equals($plan->digest, hash('sha256', $plan->configjson))
             ) {
-                throw new \moodle_exception('planstale', 'local_coursefiles');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
             $document = json_decode($plan->configjson, true);
             if (
                 isset($document['operationsdigest'])
                     && !hash_equals($document['operationsdigest'], plan_selection::manifest_digest($planid))
             ) {
-                throw new \moodle_exception('planstale', 'local_coursefiles');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
             if (
                 isset($document['selectiondigest'])
                     && !hash_equals($document['selectiondigest'], plan_selection::digest($planid))
             ) {
-                throw new \moodle_exception('planstale', 'local_coursefiles');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
             if (!plan_history::has_work($planid)) {
-                $DB->set_field('local_coursefiles_plan', 'state', 'cancelled', ['id' => $planid]);
+                $DB->set_field('local_filebank_plan', 'state', 'cancelled', ['id' => $planid]);
                 log::record('migration_empty_cancelled', $plan->uuid, []);
                 return 0;
             }
             if (
-                !$DB->record_exists('local_coursefiles_operation', ['planid' => $planid, 'included' => 1, 'state' => 'pending'])
+                !$DB->record_exists('local_filebank_operation', ['planid' => $planid, 'included' => 1, 'state' => 'pending'])
                     || $DB->record_exists_select(
-                        'local_coursefiles_run',
+                        'local_filebank_run',
                         'planid = ? AND (state = ? OR state = ?)',
                         [$planid, 'queued', 'running']
                     )
             ) {
-                throw new \moodle_exception('planstale', 'local_coursefiles');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
             $transaction = $DB->start_delegated_transaction();
-            $runid = $DB->insert_record('local_coursefiles_run', (object)[
+            $runid = $DB->insert_record('local_filebank_run', (object)[
                 'planid' => $planid, 'userid' => $USER->id, 'state' => 'queued', 'cancelled' => 0,
                 'timecreated' => time(), 'timemodified' => time(),
             ]);
-            $task = new \local_coursefiles\task\execute_migration();
+            $task = new \local_filebank\task\execute_migration();
             $task->set_userid($USER->id);
             $task->set_custom_data(['runid' => $runid]);
             \core\task\manager::queue_adhoc_task($task);
@@ -121,28 +121,28 @@ final class migration_executor {
      */
     public static function execute(int $runid): bool {
         global $DB, $USER;
-        $run = $DB->get_record('local_coursefiles_run', ['id' => $runid], '*', MUST_EXIST);
-        $plan = $DB->get_record('local_coursefiles_plan', ['id' => $run->planid], '*', MUST_EXIST);
+        $run = $DB->get_record('local_filebank_run', ['id' => $runid], '*', MUST_EXIST);
+        $plan = $DB->get_record('local_filebank_plan', ['id' => $run->planid], '*', MUST_EXIST);
         if ((int)$USER->id !== (int)$run->userid) {
-            throw new \moodle_exception('planstale', 'local_coursefiles');
+            throw new \moodle_exception('planstale', 'local_filebank');
         }
-        require_capability('local/coursefiles:executemigration', \context_system::instance());
+        require_capability('local/filebank:executemigration', \context_system::instance());
         if ($run->cancelled) {
-            $DB->set_field('local_coursefiles_run', 'state', 'cancelled', ['id' => $runid]);
+            $DB->set_field('local_filebank_run', 'state', 'cancelled', ['id' => $runid]);
             return false;
         }
         if (!hash_equals($plan->digest, hash('sha256', $plan->configjson))) {
-            throw new \moodle_exception('planstale', 'local_coursefiles');
+            throw new \moodle_exception('planstale', 'local_filebank');
         }
-        $DB->set_field('local_coursefiles_run', 'state', 'running', ['id' => $runid]);
+        $DB->set_field('local_filebank_run', 'state', 'running', ['id' => $runid]);
         [$profile, $revision, $rules] = profiles::load($plan->profileid);
         if ((int)$revision->id !== (int)$plan->revisionid) {
-            $DB->set_field('local_coursefiles_run', 'state', 'blocked', ['id' => $runid]);
+            $DB->set_field('local_filebank_run', 'state', 'blocked', ['id' => $runid]);
             log::record('migration_blocked', $plan->uuid, ['runid' => $runid, 'reason' => 'planstale']);
             return false;
         }
         $operations = $DB->get_records(
-            'local_coursefiles_operation',
+            'local_filebank_operation',
             ['planid' => $plan->id, 'state' => 'pending', 'included' => 1],
             'id',
             '*',
@@ -150,18 +150,18 @@ final class migration_executor {
             25
         );
         foreach ($operations as $operation) {
-            if ($DB->get_field('local_coursefiles_run', 'cancelled', ['id' => $runid])) {
+            if ($DB->get_field('local_filebank_run', 'cancelled', ['id' => $runid])) {
                 break;
             }
             $preview = json_decode($operation->snapshot, true);
-            $lock = \core\lock\lock_config::get_lock_factory('local_coursefiles')
+            $lock = \core\lock\lock_config::get_lock_factory('local_filebank')
                 ->get_lock('destination:' . ($operation->targetcmid ?: 'create:' . $preview['targetkey']), 10);
             if (!$lock) {
-                throw new \moodle_exception('lockfailed', 'local_coursefiles');
+                throw new \moodle_exception('lockfailed', 'local_filebank');
             }
             $destinationlock = null;
             try {
-                $operation = $DB->get_record('local_coursefiles_operation', ['id' => $operation->id], '*', MUST_EXIST);
+                $operation = $DB->get_record('local_filebank_operation', ['id' => $operation->id], '*', MUST_EXIST);
                 if ($operation->state !== 'pending') {
                     continue;
                 }
@@ -176,7 +176,7 @@ final class migration_executor {
                     || $rules->resolve(get_course($sourcecm->course)) !== $snapshot['sourceidentity']
                     || $rules->resolve(get_course($snapshot['target']['courseid'])) !== $snapshot['targetidentity']
                 ) {
-                    throw new \moodle_exception('planstale', 'local_coursefiles');
+                    throw new \moodle_exception('planstale', 'local_filebank');
                 }
                 if (in_array($operation->decision, ['copy', 'overwrite'], true)) {
                     author_policy::require_native_copy($source, $sourcecm->course, $snapshot['target']['courseid']);
@@ -185,13 +185,13 @@ final class migration_executor {
                     : target_binding::resolve($plan->id, $snapshot['targetkey'], $snapshot['target']);
                 $targetcmid = $target['cmid'];
                 if (!$operation->targetcmid) {
-                    $destinationlock = \core\lock\lock_config::get_lock_factory('local_coursefiles')
+                    $destinationlock = \core\lock\lock_config::get_lock_factory('local_filebank')
                         ->get_lock('destination:' . $targetcmid, 10);
                     if (!$destinationlock) {
-                        throw new \moodle_exception('lockfailed', 'local_coursefiles');
+                        throw new \moodle_exception('lockfailed', 'local_filebank');
                     }
                     if (placement::snapshot($targetcmid) !== $target) {
-                        throw new \moodle_exception('planstale', 'local_coursefiles');
+                        throw new \moodle_exception('planstale', 'local_filebank');
                     }
                 }
                 require_capability('moodle/course:manageactivities', \context_module::instance($targetcmid));
@@ -206,7 +206,7 @@ final class migration_executor {
                         || $rules->resolve(get_course($sourcecm->course)) !== $snapshot['sourceidentity']
                         || $rules->resolve(get_course($target['courseid'])) !== $snapshot['targetidentity']
                 ) {
-                    throw new \moodle_exception('planstale', 'local_coursefiles');
+                    throw new \moodle_exception('planstale', 'local_filebank');
                 }
                 $context = \context_module::instance($targetcmid);
                 $existing = get_file_storage()->get_file(
@@ -222,12 +222,12 @@ final class migration_executor {
                 if ($operation->decision === 'skip_content') {
                     $duplicate = get_file_storage()->get_file_by_hash($snapshot['duplicate']['pathnamehash']);
                     if (!$duplicate || copy_decision::snapshot($duplicate) !== $snapshot['duplicate']) {
-                        throw new \moodle_exception('planstale', 'local_coursefiles');
+                        throw new \moodle_exception('planstale', 'local_filebank');
                     }
                     $decision = 'skip_content';
                 }
                 if ($actual !== $snapshot['existing'] && $decision !== 'skip_identical') {
-                    throw new \moodle_exception('planstale', 'local_coursefiles');
+                    throw new \moodle_exception('planstale', 'local_filebank');
                 }
                 if ($operation->decision === 'overwrite' && $decision === 'blocked_content') {
                     $decision = 'overwrite';
@@ -240,18 +240,18 @@ final class migration_executor {
                         'pathnamehash' => $saved->get_pathnamehash(), 'attributionid' => $attributionid,
                         'contenthash' => $saved->get_contenthash(), 'userid' => $USER->id, 'timecreated' => time(),
                     ];
-                    $previous = $DB->get_field('local_coursefiles_origin', 'id', ['pathnamehash' => $origin->pathnamehash]);
+                    $previous = $DB->get_field('local_filebank_origin', 'id', ['pathnamehash' => $origin->pathnamehash]);
                     if ($previous) {
                         $origin->id = $previous;
-                        $DB->update_record('local_coursefiles_origin', $origin);
+                        $DB->update_record('local_filebank_origin', $origin);
                     } else {
-                        $DB->insert_record('local_coursefiles_origin', $origin);
+                        $DB->insert_record('local_filebank_origin', $origin);
                     }
                     $outcome = ['runid' => $runid, 'outcome' => 'copied', 'pathnamehash' => $saved->get_pathnamehash()];
                 } else if ($decision === 'skip_identical' || $decision === 'skip_content') {
                     $outcome = ['runid' => $runid, 'outcome' => 'already_present'];
                 } else {
-                    throw new \moodle_exception('planstale', 'local_coursefiles');
+                    throw new \moodle_exception('planstale', 'local_filebank');
                 }
                 $operation->state = 'done';
                 $operation->result = json_encode($outcome);
@@ -260,19 +260,19 @@ final class migration_executor {
                 $operation->result = json_encode(['runid' => $runid, 'error' => $exception->errorcode]);
             } finally {
                 $operation->timemodified = time();
-                $DB->update_record('local_coursefiles_operation', $operation);
+                $DB->update_record('local_filebank_operation', $operation);
                 if ($destinationlock) {
                     $destinationlock->release();
                 }
                 $lock->release();
             }
         }
-        $more = $DB->record_exists('local_coursefiles_operation', ['planid' => $plan->id, 'state' => 'pending', 'included' => 1]);
-        $cancelled = $DB->get_field('local_coursefiles_run', 'cancelled', ['id' => $runid]);
+        $more = $DB->record_exists('local_filebank_operation', ['planid' => $plan->id, 'state' => 'pending', 'included' => 1]);
+        $cancelled = $DB->get_field('local_filebank_run', 'cancelled', ['id' => $runid]);
         $state = $cancelled ? 'cancelled' : ($more ? 'running' : (
-            $DB->record_exists('local_coursefiles_operation', ['planid' => $plan->id, 'state' => 'blocked', 'included' => 1])
+            $DB->record_exists('local_filebank_operation', ['planid' => $plan->id, 'state' => 'blocked', 'included' => 1])
                 ? 'partial' : 'completed'));
-        $DB->update_record('local_coursefiles_run', (object)[
+        $DB->update_record('local_filebank_run', (object)[
             'id' => $runid, 'state' => $state, 'timemodified' => time(),
         ]);
         log::record('migration_batch', $plan->uuid, ['runid' => $runid, 'state' => $state]);
@@ -286,7 +286,7 @@ final class migration_executor {
      */
     public static function cancel(int $runid): void {
         global $DB;
-        require_capability('local/coursefiles:executemigration', \context_system::instance());
-        $DB->set_field('local_coursefiles_run', 'cancelled', 1, ['id' => $runid]);
+        require_capability('local/filebank:executemigration', \context_system::instance());
+        $DB->set_field('local_filebank_run', 'cancelled', 1, ['id' => $runid]);
     }
 }

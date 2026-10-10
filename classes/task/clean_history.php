@@ -17,12 +17,12 @@
 /**
  * Bounded operational history retention.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\task;
+namespace local_filebank\task;
 
 /**
  * Scheduled retention of operational records.
@@ -34,15 +34,15 @@ final class clean_history extends \core\task\scheduled_task {
      * @return string Task name.
      */
     public function get_name(): string {
-        return get_string('cleanhistory', 'local_coursefiles');
+        return get_string('cleanhistory', 'local_filebank');
     }
 
     /**
      * Run one bounded cleanup batch.
      */
     public function execute(): void {
-        $counts = \local_coursefiles\local\maintenance\retention::clean();
-        mtrace('CourseFiles: removed ' . $counts['logs'] . ' logs and ' . $counts['plans']
+        $counts = \local_filebank\local\maintenance\retention::clean();
+        mtrace('FileBank: removed ' . $counts['logs'] . ' logs and ' . $counts['plans']
             . ' expired plans and ' . $counts['versions'] . ' profile versions.');
     }
 }

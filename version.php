@@ -17,14 +17,14 @@
 /**
  * Plugin version metadata.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_coursefiles';
+$plugin->component = 'local_filebank';
 $plugin->version = 2026101101;
 $plugin->requires = 2026100500;
 $plugin->maturity = MATURITY_STABLE;

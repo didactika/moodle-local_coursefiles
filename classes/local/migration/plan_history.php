@@ -16,12 +16,12 @@
 
 /**
  * Explicit migration history removal and empty-plan classification.
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\migration;
+namespace local_filebank\local\migration;
 
 /**
  * Removes inactive plan records without touching native material or attribution.
@@ -33,7 +33,7 @@ final class plan_history {
      */
     public static function delete_many(array $ids): void {
         global $DB;
-        require_capability('local/coursefiles:planmigration', \context_system::instance());
+        require_capability('local/filebank:planmigration', \context_system::instance());
         $ids = array_values(array_unique(array_map('intval', $ids)));
         sort($ids);
         if (!$ids || count($ids) > 50 || min($ids) < 1) {
@@ -42,32 +42,32 @@ final class plan_history {
         $locks = [];
         try {
             foreach ($ids as $id) {
-                $lock = \core\lock\lock_config::get_lock_factory('local_coursefiles')->get_lock('plan:' . $id, 10);
+                $lock = \core\lock\lock_config::get_lock_factory('local_filebank')->get_lock('plan:' . $id, 10);
                 if (!$lock) {
-                    throw new \moodle_exception('lockfailed', 'local_coursefiles');
+                    throw new \moodle_exception('lockfailed', 'local_filebank');
                 }
                 $locks[] = $lock;
                 if (
                     $DB->record_exists_select(
-                        'local_coursefiles_run',
+                        'local_filebank_run',
                         'planid = ? AND (state = ? OR state = ?)',
                         [$id, 'queued', 'running']
                     )
                 ) {
-                    throw new \moodle_exception('migrationinuse', 'local_coursefiles');
+                    throw new \moodle_exception('migrationinuse', 'local_filebank');
                 }
-                $DB->get_record('local_coursefiles_plan', ['id' => $id], '*', MUST_EXIST);
+                $DB->get_record('local_filebank_plan', ['id' => $id], '*', MUST_EXIST);
             }
             $transaction = $DB->start_delegated_transaction();
             foreach ($ids as $id) {
-                $plan = $DB->get_record('local_coursefiles_plan', ['id' => $id], '*', MUST_EXIST);
+                $plan = $DB->get_record('local_filebank_plan', ['id' => $id], '*', MUST_EXIST);
                 foreach (
-                    ['local_coursefiles_target', 'local_coursefiles_operation', 'local_coursefiles_run',
-                    'local_coursefiles_plan'] as $table
+                    ['local_filebank_target', 'local_filebank_operation', 'local_filebank_run',
+                    'local_filebank_plan'] as $table
                 ) {
-                    $DB->delete_records($table, [$table === 'local_coursefiles_plan' ? 'id' : 'planid' => $id]);
+                    $DB->delete_records($table, [$table === 'local_filebank_plan' ? 'id' : 'planid' => $id]);
                 }
-                \local_coursefiles\local\logging\log::record('migration_deleted', $plan->uuid, []);
+                \local_filebank\local\logging\log::record('migration_deleted', $plan->uuid, []);
             }
             $transaction->allow_commit();
         } finally {
@@ -93,7 +93,7 @@ final class plan_history {
     public static function has_work(int $planid): bool {
         global $DB;
         return $DB->record_exists_select(
-            'local_coursefiles_operation',
+            'local_filebank_operation',
             'planid = ? AND included = 1 AND state = ? AND (decision = ? OR decision = ?)',
             [$planid, 'pending', 'copy', 'overwrite']
         );

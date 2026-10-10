@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * CourseFiles native material import integration.
+ * FileBank native material import integration.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursefiles\local\selection;
+namespace local_filebank\local\selection;
 
-use local_coursefiles\local\catalog\catalog;
+use local_filebank\local\catalog\catalog;
 
 /**
  * Presents bounded authorized file and folder cards.
@@ -63,7 +63,7 @@ final class browser_listing {
                 $selected = array_fill_keys(selected_content::unique(array_keys($selected)), true);
                 selection_limits::require_capacity($scope, array_keys($selected));
                 if (count($selected) > material_selection::MAX_FILES || count($roots) > material_selection::MAX_FILES) {
-                    throw new \moodle_exception('batchlimit', 'local_coursefiles');
+                    throw new \moodle_exception('batchlimit', 'local_filebank');
                 }
             }
             $state['after'] = $page['next'];
@@ -85,7 +85,7 @@ final class browser_listing {
         if ($state['folder'] !== '') {
             $folder = selection_options::parse([$state['folder']])[0];
             if (!isset($folder['cmid'])) {
-                throw new \moodle_exception('invalidselection', 'local_coursefiles');
+                throw new \moodle_exception('invalidselection', 'local_filebank');
             }
             $filters['cmid'] = $folder['cmid'];
             $filters['sourcepath'] = $folder['filepath'];
@@ -119,15 +119,15 @@ final class browser_listing {
                         }
                         $cards[$value] = ['value' => $value, 'title' => s($origin['filename']), 'isfolder' => false,
                             'courseid' => $origin['courseid'], 'contenthash' => $sourcefile->get_contenthash(),
-                            'coursename' => \local_coursefiles\output\display::name(
+                            'coursename' => \local_filebank\output\display::name(
                                 $origin['shortname'],
                                 \context_course::instance($origin['courseid'])
                             ),
-                            'origin' => \local_coursefiles\output\display::name(
+                            'origin' => \local_filebank\output\display::name(
                                 $origin['shortname'],
                                 \context_course::instance($origin['courseid'])
                             ) . ' / '
-                                . \local_coursefiles\output\display::name(
+                                . \local_filebank\output\display::name(
                                     $origin['modulename'],
                                     \context_module::instance($origin['cmid'])
                                 ),
@@ -143,7 +143,7 @@ final class browser_listing {
                 ) {
                     if (!$folder) {
                         $targetpath = '/';
-                        $title = \local_coursefiles\output\display::name(
+                        $title = \local_filebank\output\display::name(
                             $origin['modulename'],
                             \context_module::instance($origin['cmid'])
                         );
@@ -159,11 +159,11 @@ final class browser_listing {
                     $value = 'folder:' . $origin['cmid'] . ':' . base64_encode($targetpath);
                     $cards[$value] = ['value' => $value, 'title' => $title, 'isfolder' => true,
                         'courseid' => $origin['courseid'],
-                        'coursename' => \local_coursefiles\output\display::name(
+                        'coursename' => \local_filebank\output\display::name(
                             $origin['shortname'],
                             \context_course::instance($origin['courseid'])
                         ),
-                        'origin' => \local_coursefiles\output\display::name(
+                        'origin' => \local_filebank\output\display::name(
                             $origin['shortname'],
                             \context_course::instance($origin['courseid'])
                         ), 'details' => '',
@@ -209,7 +209,7 @@ final class browser_listing {
             'folderstates' => json_encode(array_values($folderstates)),
             'selectedcontent' => json_encode(array_values($selectedcontent)),
             'retained' => $retained, 'selecteditems' => $selecteditems, 'next' => $result['next'],
-            'location' => $folder ? \local_coursefiles\output\display::name(
+            'location' => $folder ? \local_filebank\output\display::name(
                 get_course(get_coursemodule_from_id('folder', $folder['cmid'])->course)->shortname
             ) . ' / ' . s($folder['filepath']) : '',
             'parent' => $parent, 'infolder' => $folder !== null, 'path' => $folder['filepath'] ?? '',
@@ -281,7 +281,7 @@ final class browser_listing {
                 'partial' => $checked > 0 && $checked < $total,
                 'selectionlabel' => get_string(
                     'folderselectioncount',
-                    'local_coursefiles',
+                    'local_filebank',
                     (object)['selected' => $checked, 'total' => $total]
                 )];
         }

@@ -17,15 +17,15 @@
 /**
  * Authorized names for persistent mixed selections.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\selection;
+namespace local_filebank\local\selection;
 
-use local_coursefiles\local\catalog\material_source;
-use local_coursefiles\output\display;
+use local_filebank\local\catalog\material_source;
+use local_filebank\output\display;
 
 /**
 
@@ -48,7 +48,7 @@ final class selection_basket {
         foreach ($items as $item) {
             $value = isset($item['pathnamehash']) ? 'file:' . $item['pathnamehash']
                 : 'folder:' . $item['cmid'] . ':' . base64_encode($item['filepath']);
-            $title = get_string('selectionunavailable', 'local_coursefiles');
+            $title = get_string('selectionunavailable', 'local_filebank');
             try {
                 $hash = $item['pathnamehash'] ?? '';
                 if (!$hash) {
@@ -73,7 +73,7 @@ final class selection_basket {
                     . display::name($cm->name, \context_module::instance($cm->id)) . ' / '
                     . (isset($item['filepath']) ? s($item['filepath']) : s($file->get_filename()));
             } catch (\moodle_exception $exception) {
-                $title = get_string('selectionunavailable', 'local_coursefiles');
+                $title = get_string('selectionunavailable', 'local_filebank');
             }
             $rows[] = ['value' => $value, 'title' => $title];
         }

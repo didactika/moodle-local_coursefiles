@@ -17,15 +17,15 @@
 /**
  * Native filemanager and editor integration for activity forms.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursefiles\form;
+namespace local_filebank\form;
 
-use local_coursefiles\local\selection\draft_scope;
+use local_filebank\local\selection\draft_scope;
 
 /**
  * Preserve the native control and bind only supported material editing routes.
@@ -41,12 +41,12 @@ class native_filemanager extends scoped_filemanager {
         require_once($CFG->libdir . '/formslib.php');
         \MoodleQuickForm::registerElementType(
             'editor',
-            $CFG->dirroot . '/local/coursefiles/classes/form/native_editor.php',
+            $CFG->dirroot . '/local/filebank/classes/form/native_editor.php',
             native_editor::class
         );
         \MoodleQuickForm::registerElementType(
             'filemanager',
-            $CFG->dirroot . '/local/coursefiles/classes/form/native_filemanager.php',
+            $CFG->dirroot . '/local/filebank/classes/form/native_filemanager.php',
             self::class
         );
     }
@@ -67,11 +67,11 @@ class native_filemanager extends scoped_filemanager {
         if ((!$content && !$settings) || $this->isFrozen() || !isloggedin() || isguestuser()) {
             return $html;
         }
-        if (!$DB->record_exists('local_coursefiles', ['enabled' => 1])) {
+        if (!$DB->record_exists('local_filebank', ['enabled' => 1])) {
             return $html;
         }
         try {
-            \local_coursefiles\local\selection\destination_access::require(
+            \local_filebank\local\selection\destination_access::require(
                 (int)$PAGE->context->get_course_context()->instanceid,
                 $PAGE->context,
                 $this->getName()

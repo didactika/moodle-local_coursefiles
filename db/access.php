@@ -17,7 +17,7 @@
 /**
  * Capability definitions.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,55 +25,55 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-    'local/coursefiles:browse' => [
+    'local/filebank:browse' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
     ],
-    'local/coursefiles:reuse' => [
+    'local/filebank:reuse' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursefiles:publish' => [
+    'local/filebank:publish' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursefiles:manageprofiles' => [
+    'local/filebank:manageprofiles' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursefiles:planmigration' => [
+    'local/filebank:planmigration' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursefiles:executemigration' => [
+    'local/filebank:executemigration' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursefiles:viewlog' => [
+    'local/filebank:viewlog' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_PERSONAL,
-        'clonepermissionsfrom' => 'local/coursefiles:viewaudit',
+        'clonepermissionsfrom' => 'local/filebank:viewaudit',
     ],
-    'local/coursefiles:managecoursepolicy' => [
+    'local/filebank:managecoursepolicy' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/coursefiles:correctattribution' => [
+    'local/filebank:correctattribution' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],

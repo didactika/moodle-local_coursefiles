@@ -16,20 +16,20 @@
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_coursefiles/local/selection/actions
+ * @module local_filebank/local/selection/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import type {FolderState, BrowserRequest} from '@moodle/lms/local_coursefiles/local/contracts';
-import Selectors from '@moodle/lms/local_coursefiles/local/selection/selectors';
-import {formControl} from '@moodle/lms/local_coursefiles/local/dom';
-import {eventElement} from '@moodle/lms/local_coursefiles/local/listeners';
+import type {FolderState, BrowserRequest} from '@moodle/lms/local_filebank/local/contracts';
+import Selectors from '@moodle/lms/local_filebank/local/selection/selectors';
+import {formControl} from '@moodle/lms/local_filebank/local/dom';
+import {eventElement} from '@moodle/lms/local_filebank/local/listeners';
 import {getString} from '@moodle/lms/core/stringUtils';
-import {loadFragment} from '@moodle/lms/local_coursefiles/local/repository';
-import Templates from '@moodle/lms/local_coursefiles/compat/templates';
-import Notification from '@moodle/lms/local_coursefiles/compat/notification';
+import {loadFragment} from '@moodle/lms/local_filebank/local/repository';
+import Templates from '@moodle/lms/local_filebank/compat/templates';
+import Notification from '@moodle/lms/local_filebank/compat/notification';
 
 
 /**
@@ -47,7 +47,7 @@ export const createActions = (form: HTMLFormElement) => {
         form.dataset.layout = layout;
         formControl(form, 'layout').value = layout;
         form.querySelectorAll<HTMLButtonElement>(Selectors.layouts).forEach(button => {
-            const active = button.dataset.coursefilesLayout === layout;
+            const active = button.dataset.filebankLayout === layout;
             button.setAttribute('aria-pressed', String(active));
             button.classList.toggle('active', active);
         });
@@ -59,7 +59,7 @@ export const createActions = (form: HTMLFormElement) => {
                 heading.closest<HTMLElement>(Selectors.browserTreeGroup)!.dataset.collapsed = 'false';
             }
         });
-        form.dispatchEvent(new CustomEvent('coursefiles:layoutchanged', {detail: {layout}}));
+        form.dispatchEvent(new CustomEvent('filebank:layoutchanged', {detail: {layout}}));
     };
     const filters = form.querySelector<HTMLDetailsElement>(Selectors.filterMenu)!;
     const outsideClick = (event: MouseEvent) => {
@@ -101,7 +101,7 @@ export const createActions = (form: HTMLFormElement) => {
             input.indeterminate = input.dataset.partial === '1';
         });
         form.querySelectorAll<HTMLElement>(Selectors.card).forEach(card => {
-            card.classList.toggle('coursefiles-selected', card.querySelector<HTMLInputElement>(Selectors.checkbox)!.checked);
+            card.classList.toggle('filebank-selected', card.querySelector<HTMLInputElement>(Selectors.checkbox)!.checked);
         });
         form.querySelector<HTMLButtonElement>(Selectors.clearFilters)!.disabled = ![...form.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
             Selectors.restrictions
@@ -131,14 +131,14 @@ export const createActions = (form: HTMLFormElement) => {
         }
         form.setAttribute('aria-busy', 'true');
         if (!toggleitem) {
-            form.querySelector<HTMLElement>(Selectors.results)!.classList.add('coursefiles-loading');
+            form.querySelector<HTMLElement>(Selectors.results)!.classList.add('filebank-loading');
         }
         const actions = [...form.querySelectorAll<HTMLInputElement>(Selectors.pendingActions)];
         actions.forEach(button => {
-            button.dataset.coursefilesDisabled = String(button.disabled);
+            button.dataset.filebankDisabled = String(button.disabled);
             button.disabled = true;
         });
-        getString('filterloading', 'local_coursefiles').then(text => {
+        getString('filterloading', 'local_filebank').then(text => {
             form.querySelector<HTMLElement>(Selectors.loading)!.textContent = text;
             return text;
         }).catch(() => {});
@@ -212,9 +212,9 @@ export const createActions = (form: HTMLFormElement) => {
             loading = false;
             if (form.isConnected) {
                 form.removeAttribute('aria-busy');
-                form.querySelector<HTMLElement>(Selectors.results)!.classList.remove('coursefiles-loading');
+                form.querySelector<HTMLElement>(Selectors.results)!.classList.remove('filebank-loading');
                 actions.forEach(button => {
-                    button.disabled = button.dataset.coursefilesDisabled === 'true';
+                    button.disabled = button.dataset.filebankDisabled === 'true';
                 });
                 form.querySelector<HTMLElement>(Selectors.loading)!.textContent = '';
                 update();
@@ -249,7 +249,7 @@ export const createActions = (form: HTMLFormElement) => {
         button.disabled = true;
         entries.setAttribute('aria-busy', 'true');
         const skeleton = document.createElement('div');
-        skeleton.className = 'coursefiles-tree-placeholder';
+        skeleton.className = 'filebank-tree-placeholder';
         skeleton.innerHTML = '<span></span><span></span>';
         entries.append(skeleton);
         try {
@@ -318,7 +318,7 @@ export const createActions = (form: HTMLFormElement) => {
     const selectionChange = (event: Event) => {
         changes++;
         if (eventElement(event).matches(Selectors.choice)) {
-            eventElement(event).closest<HTMLElement>(Selectors.card)!.classList.toggle('coursefiles-selected', (eventElement(event) as HTMLInputElement).checked);
+            eventElement(event).closest<HTMLElement>(Selectors.card)!.classList.toggle('filebank-selected', (eventElement(event) as HTMLInputElement).checked);
             apply((eventElement(event) as HTMLInputElement).value);
             return;
         }
@@ -352,7 +352,7 @@ export const createActions = (form: HTMLFormElement) => {
         }
         submitting = true;
         form.setAttribute('aria-busy', 'true');
-        getString('filterloading', 'local_coursefiles').then(text => {
+        getString('filterloading', 'local_filebank').then(text => {
             form.querySelector<HTMLElement>(Selectors.loading)!.textContent = text;
             return text;
         }).catch(() => {});
@@ -360,7 +360,7 @@ export const createActions = (form: HTMLFormElement) => {
     const changeLayout = (event: MouseEvent) => {
         const button = eventElement(event).closest<HTMLButtonElement>(Selectors.layouts)!;
         if (button) {
-            syncLayout(button.dataset.coursefilesLayout);
+            syncLayout(button.dataset.filebankLayout);
         }
     };
     update();

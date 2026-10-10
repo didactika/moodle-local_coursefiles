@@ -3,33 +3,33 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 /**
  * Accessible selection controls for native administration forms.
  *
- * @module local_coursefiles/local/form/actions
+ * @module local_filebank/local/form/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Selectors from "@moodle/lms/local_coursefiles/local/form/selectors";
+import Selectors from "@moodle/lms/local_filebank/local/form/selectors";
 import { getStrings } from "@moodle/lms/core/stringUtils";
-import Templates from "@moodle/lms/local_coursefiles/compat/templates";
-import Notification from "@moodle/lms/local_coursefiles/compat/notification";
+import Templates from "@moodle/lms/local_filebank/compat/templates";
+import Notification from "@moodle/lms/local_filebank/compat/notification";
 const createRows = /* @__PURE__ */ __name(async (id) => {
   const field = document.getElementById(id);
-  if (!(field instanceof HTMLTextAreaElement) || field.dataset.coursefilesRows) {
+  if (!(field instanceof HTMLTextAreaElement) || field.dataset.filebankRows) {
     return;
   }
   try {
-    const { columns, maximum } = JSON.parse(field.dataset.coursefilesSchema);
+    const { columns, maximum } = JSON.parse(field.dataset.filebankSchema);
     const values = JSON.parse(field.value || "[]");
     if (!Array.isArray(values) || values.length > maximum) {
       return;
     }
     const [add, remove] = await getStrings([
-      { key: "addrow", component: "local_coursefiles" },
+      { key: "addrow", component: "local_filebank" },
       { key: "delete", component: "core" }
     ]);
-    const { html, js } = await Templates.renderForPromise("local_coursefiles/local/form/rows", { columns, add });
+    const { html, js } = await Templates.renderForPromise("local_filebank/local/form/rows", { columns, add });
     const wrapper = document.createElement("div");
-    wrapper.className = "coursefiles-row-fields";
+    wrapper.className = "filebank-row-fields";
     field.after(wrapper);
     await Templates.replaceNodeContents(wrapper, html, js);
     const body = wrapper.querySelector(Selectors.rowBody);
@@ -47,7 +47,7 @@ const createRows = /* @__PURE__ */ __name(async (id) => {
       for (const column of columns) {
         const cell2 = row.insertCell();
         const label = document.createElement("span");
-        label.className = "coursefiles-row-label text-muted";
+        label.className = "filebank-row-label text-muted";
         label.textContent = column.label;
         const help = document.createElement("span");
         help.innerHTML = column.help || "";
@@ -69,15 +69,15 @@ const createRows = /* @__PURE__ */ __name(async (id) => {
             }
           }
         }
-        input.className = column.type === "checkbox" ? "coursefiles-row-check" : column.options ? "form-select form-select-sm" : "form-control form-control-sm";
+        input.className = column.type === "checkbox" ? "filebank-row-check" : column.options ? "form-select form-select-sm" : "form-control form-control-sm";
         if (column.type !== "checkbox") {
           input.value = String(value[column.key] || column.options?.[0]?.value || "");
         }
         cell2.append(input);
       }
       const cell = row.insertCell();
-      cell.className = "coursefiles-row-remove";
-      const { html: html2, js: js2 } = await Templates.renderForPromise("local_coursefiles/local/form/remove_row", { remove });
+      cell.className = "filebank-row-remove";
+      const { html: html2, js: js2 } = await Templates.renderForPromise("local_filebank/local/form/remove_row", { remove });
       await Templates.replaceNodeContents(cell, html2, js2);
       body.append(row);
       return row;
@@ -86,7 +86,7 @@ const createRows = /* @__PURE__ */ __name(async (id) => {
       await append(value);
     }
     field.hidden = true;
-    field.dataset.coursefilesRows = "true";
+    field.dataset.filebankRows = "true";
     const addRow = /* @__PURE__ */ __name(async () => {
       if (body.rows.length >= maximum) {
         return;

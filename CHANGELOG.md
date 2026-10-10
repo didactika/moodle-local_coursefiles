@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Rename the related-course suite to CourseFiles and preserve existing MultiPicker metadata through an explicit adoption CLI.
+- Rename the related-course suite to FileBank and preserve existing MultiPicker metadata through an explicit adoption CLI.
 - Support legacy core callbacks and editors on the shared Moodle 4.0–5.2 line; keep Moodle 5.3 native TypeScript/ESM integration separate.
 - Shorten policy, publication and author table names to respect Moodle 4.0 XMLDB limits without losing records.
 - Import retained versions from legacy profile bundles and validate every declared Moodle release in the CI matrix.
@@ -10,7 +10,7 @@
 
 ## [5.3.0] - 2026-10-10
 
-- Rename the components and distributions to CourseFiles, preserve existing metadata through explicit adoption, and use the Didactika README format.
+- Rename the components and distributions to FileBank, preserve existing metadata through explicit adoption, and use the Didactika README format.
 - Correct CI matrix parsing so repeated supported-version bounds remain separate values.
 
 - Keep profile-defined search filters after all common controls and copy options so changing collections preserves their positions.

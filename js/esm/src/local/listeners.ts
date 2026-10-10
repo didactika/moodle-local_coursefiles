@@ -4,7 +4,7 @@
 /**
  * Typed native event registration and target narrowing for feature controllers.
  *
- * @module local_coursefiles/local/listeners
+ * @module local_filebank/local/listeners
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

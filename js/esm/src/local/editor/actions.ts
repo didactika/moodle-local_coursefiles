@@ -16,16 +16,16 @@
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_coursefiles/local/editor/actions
+ * @module local_filebank/local/editor/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from '@moodle/lms/local_coursefiles/local/selectors';
+import Selectors from '@moodle/lms/local_filebank/local/selectors';
 
-import type {EditorImportStatus} from '@moodle/lms/local_coursefiles/local/contracts';
-import type {Editor} from '@moodle/lms/local_coursefiles/compat/editor';
+import type {EditorImportStatus} from '@moodle/lms/local_filebank/local/contracts';
+import type {Editor} from '@moodle/lms/local_filebank/compat/editor';
 
 /**
  * Append approved links after Moodle inserts the first one.

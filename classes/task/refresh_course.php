@@ -17,12 +17,12 @@
 /**
  * Bounded course catalog refresh task.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\task;
+namespace local_filebank\task;
 
 /**
  * Refreshes one dirty course independently of migration execution.
@@ -32,6 +32,6 @@ final class refresh_course extends \core\task\adhoc_task {
      * Execute a refresh.
      */
     public function execute(): void {
-        \local_coursefiles\local\catalog\indexer::refresh((int)$this->get_custom_data()->courseid);
+        \local_filebank\local\catalog\indexer::refresh((int)$this->get_custom_data()->courseid);
     }
 }

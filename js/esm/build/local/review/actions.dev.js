@@ -3,17 +3,17 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 /**
  * Rename reviewed files through Moodle's native save/cancel modal.
  *
- * @module local_coursefiles/local/review/actions
+ * @module local_filebank/local/review/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Selectors from "@moodle/lms/local_coursefiles/local/review/selectors";
-import { eventElement } from "@moodle/lms/local_coursefiles/local/listeners";
-import { ModalSaveCancel, ModalEvents } from "@moodle/lms/local_coursefiles/compat/modal";
+import Selectors from "@moodle/lms/local_filebank/local/review/selectors";
+import { eventElement } from "@moodle/lms/local_filebank/local/listeners";
+import { ModalSaveCancel, ModalEvents } from "@moodle/lms/local_filebank/compat/modal";
 import { getString } from "@moodle/lms/core/stringUtils";
-import Templates from "@moodle/lms/local_coursefiles/compat/templates";
-import Notification from "@moodle/lms/local_coursefiles/compat/notification";
+import Templates from "@moodle/lms/local_filebank/compat/templates";
+import Notification from "@moodle/lms/local_filebank/compat/notification";
 const createActions = /* @__PURE__ */ __name((form) => {
   const update = /* @__PURE__ */ __name(() => {
     const selected = [...form.querySelectorAll(Selectors.removeFiles)].filter((check) => check.checked);
@@ -53,8 +53,8 @@ const createActions = /* @__PURE__ */ __name((form) => {
     button.disabled = true;
     try {
       const name = button.closest(Selectors.reviewFile).querySelector(Selectors.renameField);
-      const title = await getString("renamefile", "local_coursefiles");
-      const { html, js } = await Templates.renderForPromise("local_coursefiles/local/selection/rename", {
+      const title = await getString("renamefile", "local_filebank");
+      const { html, js } = await Templates.renderForPromise("local_filebank/local/selection/rename", {
         name: name.value,
         label: title
       });

@@ -4,16 +4,16 @@
 /**
  * Authenticated backend requests shared by the typed feature actions.
  *
- * @module local_coursefiles/local/repository
+ * @module local_filebank/local/repository
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import Config from '@moodle/lms/core/config';
-import type {EditorImportStatus} from '@moodle/lms/local_coursefiles/local/contracts';
-import Fragment from '@moodle/lms/local_coursefiles/compat/fragment';
-import type {RenderedTemplate} from '@moodle/lms/local_coursefiles/compat/templates';
+import type {EditorImportStatus} from '@moodle/lms/local_filebank/local/contracts';
+import Fragment from '@moodle/lms/local_filebank/compat/fragment';
+import type {RenderedTemplate} from '@moodle/lms/local_filebank/compat/templates';
 
 /**
  * Load an authorized fragment without exposing jQuery to the controllers.
@@ -24,7 +24,7 @@ import type {RenderedTemplate} from '@moodle/lms/local_coursefiles/compat/templa
  */
 export const loadFragment = (name: string, contextid: number, args: object): Promise<RenderedTemplate> =>
     new Promise((resolve, reject) => {
-        Fragment.loadFragment('local_coursefiles', name, contextid, args)
+        Fragment.loadFragment('local_filebank', name, contextid, args)
             .then((html, js) => resolve({html, js: js || ''}), reject);
     });
 
@@ -35,7 +35,7 @@ export const loadFragment = (name: string, contextid: number, args: object): Pro
  * @returns {Promise<Object|null>} Approved receipt, or null when unavailable.
  */
 export const getImportStatus = async(scope: string): Promise<EditorImportStatus | null> => {
-    const url = Config.wwwroot + '/local/coursefiles/selection/status.php?'
+    const url = Config.wwwroot + '/local/filebank/selection/status.php?'
         + new URLSearchParams({scope, sesskey: Config.sesskey});
     const response = await fetch(url, {credentials: 'same-origin'});
     return response.ok ? await response.json() as EditorImportStatus : null;
