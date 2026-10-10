@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Preserve CourseBridge installations when adopting the MultiPicker component names.
+ * Preserve CourseBridge installations when adopting the CourseFiles component names.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\upgrade;
+namespace local_coursefiles\local\upgrade;
 
 /**
 
@@ -39,11 +39,11 @@ final class legacy_import {
         $transaction = $DB->start_delegated_transaction();
         $DB->delete_records('task_scheduled', ['component' => 'local_coursebridge']);
         foreach ($DB->get_records('task_adhoc', ['component' => 'local_coursebridge']) as $task) {
-            $classname = str_replace('local_coursebridge\\', 'local_multipicker\\', $task->classname);
+            $classname = str_replace('local_coursebridge\\', 'local_coursefiles\\', $task->classname);
             if (!is_subclass_of($classname, \core\task\adhoc_task::class)) {
                 throw new \coding_exception('Unsupported legacy queued task: ' . $task->classname);
             }
-            $task->component = 'local_multipicker';
+            $task->component = 'local_coursefiles';
             $task->classname = $classname;
             if (property_exists($task, 'identityhash')) {
                 // Moodle 5.3 rebuilds nullable legacy identities when deduplicating queued work.
@@ -65,25 +65,36 @@ final class legacy_import {
         }
         $tables = ['', '_revision', '_course', '_file', '_coursepolicy', '_publication',
             '_attribution', '_origin', '_plan', '_operation', '_run', '_log'];
+        $targets = ['_coursepolicy' => '_policy', '_publication' => '_publish', '_attribution' => '_author'];
+        $sources = [];
         foreach ($tables as $suffix) {
-            if ($DB->record_exists('local_multipicker' . $suffix, [])) {
-                throw new \coding_exception('MultiPicker already contains data; the legacy import cannot merge installations.');
+            if ($DB->record_exists('local_coursefiles' . ($targets[$suffix] ?? $suffix), [])) {
+                throw new \coding_exception('CourseFiles already contains data; the legacy import cannot merge installations.');
             }
-            if (!$dbman->table_exists(new \xmldb_table('local_coursebridge' . $suffix))) {
-                throw new \coding_exception('Upgrade CourseBridge before installing MultiPicker: missing legacy table ' . $suffix);
+            $source = 'local_coursebridge' . $suffix;
+            $shortsource = 'local_coursebridge' . ($targets[$suffix] ?? $suffix);
+            if (
+                !$dbman->table_exists(new \xmldb_table($source))
+                    && $dbman->table_exists(new \xmldb_table($shortsource))
+            ) {
+                $source = $shortsource;
             }
+            if (!$dbman->table_exists(new \xmldb_table($source))) {
+                throw new \coding_exception('Upgrade CourseBridge before installing CourseFiles: missing legacy table ' . $suffix);
+            }
+            $sources[$suffix] = $source;
         }
         $transaction = $DB->start_delegated_transaction();
         foreach ($tables as $suffix) {
-            $records = $DB->get_recordset('local_coursebridge' . $suffix, [], 'id');
+            $records = $DB->get_recordset($sources[$suffix], [], 'id');
             foreach ($records as $record) {
-                $DB->import_record('local_multipicker' . $suffix, $record);
+                $DB->import_record('local_coursefiles' . ($targets[$suffix] ?? $suffix), $record);
             }
             $records->close();
         }
         foreach ($DB->get_records('config_plugins', ['plugin' => 'local_coursebridge']) as $setting) {
             if ($setting->name !== 'version') {
-                set_config($setting->name, $setting->value, 'local_multipicker');
+                set_config($setting->name, $setting->value, 'local_coursefiles');
             }
         }
         foreach (['local/coursebridge:', 'repository/coursebridge:'] as $prefix) {
@@ -93,7 +104,7 @@ final class legacy_import {
                 ['prefix' => $DB->sql_like_escape($prefix) . '%']
             );
             foreach ($records as $record) {
-                $record->capability = str_replace('/coursebridge:', '/multipicker:', $record->capability);
+                $record->capability = str_replace('/coursebridge:', '/coursefiles:', $record->capability);
                 $existing = $DB->get_record('role_capabilities', ['roleid' => $record->roleid,
                     'contextid' => $record->contextid, 'capability' => $record->capability]);
                 if ($existing) {
@@ -107,12 +118,12 @@ final class legacy_import {
         }
         // Old scheduled tasks must not run against the retained rollback tables.
         self::repair_tasks();
-        set_config('legacy_version', get_config('local_coursebridge', 'version'), 'local_multipicker');
+        set_config('legacy_version', get_config('local_coursebridge', 'version'), 'local_coursefiles');
         unset_config('version', 'local_coursebridge');
-        set_config('legacy_imported', time(), 'local_multipicker');
+        set_config('legacy_imported', time(), 'local_coursefiles');
         $transaction->allow_commit();
         foreach ($tables as $suffix) {
-            $dbman->reset_sequence(new \xmldb_table('local_multipicker' . $suffix));
+            $dbman->reset_sequence(new \xmldb_table('local_coursefiles' . ($targets[$suffix] ?? $suffix)));
         }
     }
 }

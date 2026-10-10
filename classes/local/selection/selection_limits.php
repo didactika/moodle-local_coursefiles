@@ -16,12 +16,12 @@
 
 /**
  * Native owning-field selection capacity.
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\selection;
+namespace local_coursefiles\local\selection;
 
 /**
  * Enforces server-owned file count limits before persisting a selection.
@@ -57,7 +57,7 @@ final class selection_limits {
      */
     public static function require_capacity(array $scope, array $selected): void {
         if (count(array_unique($selected)) > self::capacity($scope)) {
-            throw new \moodle_exception('selectionfull', 'local_multipicker');
+            throw new \moodle_exception('selectionfull', 'local_coursefiles');
         }
     }
 }

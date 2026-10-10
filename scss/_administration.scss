@@ -4,7 +4,7 @@
 
 /* Native administration forms, compact tables and independent filter popovers. */
 
-.multipicker-steps {
+.coursefiles-steps {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: .5rem;
@@ -14,19 +14,19 @@
         display: flex;
         align-items: center;
         gap: .6rem;
-        border: 1px solid var(--multipicker-border);
-        border-radius: var(--multipicker-radius);
+        border: 1px solid var(--coursefiles-border);
+        border-radius: var(--coursefiles-radius);
         padding: .75rem;
         font-size: .85rem;
     }
     li[aria-current=step] {
-        border-color: var(--multipicker-primary);
-        color: var(--multipicker-primary);
-        background: color-mix(in srgb, var(--multipicker-primary) 6%, var(--multipicker-surface));
+        border-color: var(--coursefiles-primary);
+        color: var(--coursefiles-primary);
+        background: color-mix(in srgb, var(--coursefiles-primary) 6%, var(--coursefiles-surface));
     }
 }
 
-.multipicker-step-number {
+.coursefiles-step-number {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -38,18 +38,18 @@
     font-weight: 600;
 }
 
-.multipicker-panel {
+.coursefiles-panel {
     padding: 1rem;
-    border: 1px solid var(--multipicker-border);
-    border-radius: var(--multipicker-radius);
+    border: 1px solid var(--coursefiles-border);
+    border-radius: var(--coursefiles-radius);
     margin-bottom: 1rem;
 }
 
-.multipicker-admin .fdescription, .multipicker-admin .form-control, .multipicker-admin .custom-select {
+.coursefiles-admin .fdescription, .coursefiles-admin .form-control, .coursefiles-admin .custom-select {
     max-width: 100%;
 }
 
-.multipicker-admin {
+.coursefiles-admin {
     .btn {
         max-width: 100%;
         white-space: normal;
@@ -62,43 +62,43 @@
     }
 }
 
-.multipicker-admin .table td, .multipicker-admin .table th {
+.coursefiles-admin .table td, .coursefiles-admin .table th {
     vertical-align: middle;
     padding: .6rem .75rem;
     font-size: .875rem;
 }
 
-.multipicker-row-fields {
+.coursefiles-row-fields {
     width: 100%;
     min-width: 0;
 }
 
-.multipicker-row-editor {
+.coursefiles-row-editor {
     container-type: inline-size;
     width: 100%;
     min-width: 0;
     overflow-x: clip;
 }
 
-.multipicker-row-label {
+.coursefiles-row-label {
     display: block;
     min-height: 2.5rem;
     font-size: .8rem;
     overflow-wrap: anywhere;
 }
 
-.multipicker-row-editor {
+.coursefiles-row-editor {
     .table {
         margin-bottom: 0;
     }
 }
 
-.multipicker-row-editor .table, .multipicker-row-editor tbody {
+.coursefiles-row-editor .table, .coursefiles-row-editor tbody {
     display: block;
     width: 100%;
 }
 
-.multipicker-row-editor {
+.coursefiles-row-editor {
     thead {
         position: absolute;
         width: 1px;
@@ -111,48 +111,48 @@
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
         gap: .5rem;
         padding: .75rem 0;
-        border-bottom: 1px solid var(--multipicker-border);
+        border-bottom: 1px solid var(--coursefiles-border);
     }
     .table td {
         min-width: 0;
     }
 }
 
-.multipicker-row-editor input:not([type=checkbox]), .multipicker-row-editor select {
+.coursefiles-row-editor input:not([type=checkbox]), .coursefiles-row-editor select {
     width: 100%;
     min-width: 0;
 }
 
-.multipicker-row-editor .table td, .multipicker-row-editor .table th {
+.coursefiles-row-editor .table td, .coursefiles-row-editor .table th {
     border: 0;
     padding: .35rem;
 }
 
-.multipicker-row-editor {
+.coursefiles-row-editor {
     th {
         font-size: .8rem;
         font-weight: 500;
         white-space: nowrap;
     }
-    .multipicker-row-check {
+    .coursefiles-row-check {
         margin-inline: .5rem;
     }
 }
 
-.multipicker-table-search {
+.coursefiles-table-search {
     max-width: 24rem;
 }
 
-.multipicker-row-actions .btn {
+.coursefiles-row-actions .btn {
     padding: .35rem .5rem;
     white-space: nowrap;
 }
 
-.multipicker-row-actions .icon {
+.coursefiles-row-actions .icon {
     margin: 0;
 }
 
-.multipicker-admin {
+.coursefiles-admin {
     .mform .fitem > .col-form-label {
         padding-inline-start: 0;
     }
@@ -165,11 +165,11 @@
     }
 }
 
-.multipicker-admin .mform .felement > input[type=text], .multipicker-admin .mform .felement > textarea {
+.coursefiles-admin .mform .felement > input[type=text], .coursefiles-admin .mform .felement > textarea {
     width: 100%;
 }
 
-.multipicker-admin {
+.coursefiles-admin {
     .mform #fgroup_id_buttons > .col-form-label {
         display: none;
     }
@@ -178,40 +178,40 @@
         flex: 0 0 100%;
         max-width: 100%;
     }
-    .multipicker-filter-popover {
+    .coursefiles-filter-popover {
         position: relative;
         padding: 0;
         border: 0;
     }
 }
 
-.multipicker-filter-menu {
+.coursefiles-filter-menu {
     position: absolute;
     inset-inline-end: 0;
     top: calc(100% + .4rem);
     width: min(24rem, 85vw);
-    border: 1px solid var(--multipicker-border);
+    border: 1px solid var(--coursefiles-border);
     border-radius: .5rem;
     box-shadow: 0 .3rem 1rem #0002;
     padding: 1rem;
-    background: var(--multipicker-surface);
+    background: var(--coursefiles-surface);
     z-index: 5;
 }
 
-.multipicker-migration-group > summary {
+.coursefiles-migration-group > summary {
     font-weight: 600;
 }
 
-.multipicker-migration-group > summary input, .multipicker-migration-folder > summary input {
+.coursefiles-migration-group > summary input, .coursefiles-migration-folder > summary input {
     margin-inline-start: auto;
 }
 
-.multipicker-version-diff code {
+.coursefiles-version-diff code {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 
-.multipicker-migration [data-multipicker-continue].disabled {
+.coursefiles-migration [data-coursefiles-continue].disabled {
     opacity: .45;
 }
 

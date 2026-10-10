@@ -3,14 +3,14 @@
 
 /**
  * form controller.
- * @module local_multipicker/local/form/controller
+ * @module local_coursefiles/local/form/controller
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {createRows, createProfile} from '@moodle/lms/local_multipicker/local/form/actions';
-import {registerRows, registerProfile} from '@moodle/lms/local_multipicker/local/form/listeners';
+import {createRows, createProfile} from '@moodle/lms/local_coursefiles/local/form/actions';
+import {registerRows, registerProfile} from '@moodle/lms/local_coursefiles/local/form/listeners';
 
 /**
  * Enhance a native textarea without changing its PHP contract.

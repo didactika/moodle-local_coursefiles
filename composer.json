@@ -1,5 +1,5 @@
 {
-  "name": "multipicker/moodle-local_multipicker",
+  "name": "didactika/moodle-local_coursefiles",
   "description": "Configurable Moodle teaching-material reuse",
   "type": "moodle-local",
   "license": "GPL-3.0-or-later",

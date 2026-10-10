@@ -16,17 +16,17 @@
 /**
  * Accessible selection controls for native administration forms.
  *
- * @module local_multipicker/local/form/actions
+ * @module local_coursefiles/local/form/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import type {RowSchema, RowValue} from '@moodle/lms/local_multipicker/local/contracts';
-import Selectors from '@moodle/lms/local_multipicker/local/form/selectors';
+import type {RowSchema, RowValue} from '@moodle/lms/local_coursefiles/local/contracts';
+import Selectors from '@moodle/lms/local_coursefiles/local/form/selectors';
 import {getStrings} from '@moodle/lms/core/stringUtils';
-import Templates from '@moodle/lms/local_multipicker/compat/templates';
-import Notification from '@moodle/lms/local_multipicker/compat/notification';
+import Templates from '@moodle/lms/local_coursefiles/compat/templates';
+import Notification from '@moodle/lms/local_coursefiles/compat/notification';
 
 /**
  * Enhance a native textarea with bounded, editable form rows.
@@ -35,21 +35,21 @@ import Notification from '@moodle/lms/local_multipicker/compat/notification';
  */
 export const createRows = async(id: string) => {
     const field = document.getElementById(id);
-    if (!(field instanceof HTMLTextAreaElement) || field.dataset.multipickerRows) {
+    if (!(field instanceof HTMLTextAreaElement) || field.dataset.coursefilesRows) {
         return;
     }
     try {
-        const {columns, maximum} = JSON.parse(field.dataset.multipickerSchema!) as RowSchema;
+        const {columns, maximum} = JSON.parse(field.dataset.coursefilesSchema!) as RowSchema;
         const values = JSON.parse(field.value || '[]') as RowValue[];
         if (!Array.isArray(values) || values.length > maximum) {
             return;
         }
         const [add, remove] = await getStrings([
-            {key: 'addrow', component: 'local_multipicker'}, {key: 'delete', component: 'core'},
+            {key: 'addrow', component: 'local_coursefiles'}, {key: 'delete', component: 'core'},
         ]);
-        const {html, js} = await Templates.renderForPromise('local_multipicker/local/form/rows', {columns, add});
+        const {html, js} = await Templates.renderForPromise('local_coursefiles/local/form/rows', {columns, add});
         const wrapper = document.createElement('div');
-        wrapper.className = 'multipicker-row-fields';
+        wrapper.className = 'coursefiles-row-fields';
         field.after(wrapper);
         await Templates.replaceNodeContents(wrapper, html, js);
         const body = wrapper.querySelector<HTMLTableSectionElement>(Selectors.rowBody)!;
@@ -67,7 +67,7 @@ export const createRows = async(id: string) => {
             for (const column of columns) {
                 const cell = row.insertCell();
                 const label = document.createElement('span');
-                label.className = 'multipicker-row-label text-muted';
+                label.className = 'coursefiles-row-label text-muted';
                 label.textContent = column.label;
                 const help = document.createElement('span');
                 help.innerHTML = column.help || '';
@@ -90,7 +90,7 @@ export const createRows = async(id: string) => {
                         }
                     }
                 }
-                input.className = column.type === 'checkbox' ? 'multipicker-row-check'
+                input.className = column.type === 'checkbox' ? 'coursefiles-row-check'
                     : (column.options ? 'form-select form-select-sm' : 'form-control form-control-sm');
                 if (column.type !== 'checkbox') {
                     input.value = String(value[column.key] || column.options?.[0]?.value || '');
@@ -98,8 +98,8 @@ export const createRows = async(id: string) => {
                 cell.append(input);
             }
             const cell = row.insertCell();
-            cell.className = 'multipicker-row-remove';
-            const {html, js} = await Templates.renderForPromise('local_multipicker/local/form/remove_row', {remove});
+            cell.className = 'coursefiles-row-remove';
+            const {html, js} = await Templates.renderForPromise('local_coursefiles/local/form/remove_row', {remove});
             await Templates.replaceNodeContents(cell, html, js);
             body.append(row);
             return row;
@@ -108,7 +108,7 @@ export const createRows = async(id: string) => {
             await append(value);
         }
         field.hidden = true;
-        field.dataset.multipickerRows = 'true';
+        field.dataset.coursefilesRows = 'true';
         const addRow = async() => {
             if (body.rows.length >= maximum) {
                 return;

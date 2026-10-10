@@ -4,7 +4,7 @@
 /**
  * Native Moodle 5.3 React layout selector with theme-overridable markup.
  *
- * @module local_multipicker/ViewSelector
+ * @module local_coursefiles/ViewSelector
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,14 +28,14 @@ export default function ViewSelector({initialLayout, views}: ViewSelectorProps) 
     const firstButton = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
-        const form = firstButton.current?.closest<HTMLFormElement>('form.multipicker-browser');
+        const form = firstButton.current?.closest<HTMLFormElement>('form.coursefiles-browser');
         if (!form) {
             return;
         }
         const sync = () => setActive(normalizeLayout(form.dataset.layout || initialLayout));
         sync();
-        form.addEventListener('multipicker:layoutchanged', sync);
-        return () => form.removeEventListener('multipicker:layoutchanged', sync);
+        form.addEventListener('coursefiles:layoutchanged', sync);
+        return () => form.removeEventListener('coursefiles:layoutchanged', sync);
     }, [initialLayout]);
 
     return <>{views.map((view, index) => <button
@@ -43,12 +43,12 @@ export default function ViewSelector({initialLayout, views}: ViewSelectorProps) 
         key={view.value}
         type="button"
         className={`btn btn-sm btn-outline-secondary${active === view.value ? ' active' : ''}`}
-        data-multipicker-layout={view.value}
-        data-multipicker-react-view="true"
+        data-coursefiles-layout={view.value}
+        data-coursefiles-react-view="true"
         aria-pressed={active === view.value}
         title={view.label}
     >
         <span dangerouslySetInnerHTML={{__html: view.icon}} />
-        <span className="multipicker-visually-hidden">{view.label}</span>
+        <span className="coursefiles-visually-hidden">{view.label}</span>
     </button>)}</>;
 }

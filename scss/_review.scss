@@ -4,7 +4,7 @@
 
 /* Resulting-file review keeps names readable until the native rename modal opens. */
 
-.multipicker-review {
+.coursefiles-review {
     &-form {
         display: flex;
         flex-direction: column;
@@ -19,15 +19,15 @@
     }
 }
 
-.multipicker-tree {
+.coursefiles-tree {
     list-style: none;
     margin: 0;
     padding-left: 1rem;
-    border-left: 1px solid var(--multipicker-border);
+    border-left: 1px solid var(--coursefiles-border);
     &-root {
         padding: .75rem;
-        border: 1px solid var(--multipicker-border);
-        border-radius: var(--multipicker-radius);
+        border: 1px solid var(--coursefiles-border);
+        border-radius: var(--coursefiles-radius);
     }
     &-node {
         padding: .35rem 0;
@@ -37,19 +37,19 @@
         font-weight: 600;
         overflow-wrap: anywhere;
     }
-    .multipicker-disclosure-icon {
+    .coursefiles-disclosure-icon {
         width: 1.4rem;
         height: 1.4rem;
         border: 0;
     }
 }
 
-.multipicker-tree-file {
+.coursefiles-tree-file {
     padding: .5rem;
     border-radius: .25rem;
     cursor: pointer;
     &:hover {
-        background: color-mix(in srgb, var(--multipicker-primary) 5%, var(--multipicker-surface));
+        background: color-mix(in srgb, var(--coursefiles-primary) 5%, var(--coursefiles-surface));
     }
     .badge {
         margin: .25rem 0;
@@ -60,8 +60,8 @@
     }
 }
 
-.multipicker-review {
-    &-name [data-multipicker-file-name] {
+.coursefiles-review {
+    &-name [data-coursefiles-file-name] {
         min-width: 0;
         overflow-wrap: anywhere;
         flex: 0 1 auto;
@@ -83,7 +83,7 @@
     }
 }
 
-.multipicker-pencil {
+.coursefiles-pencil {
     &.btn {
         border: 0;
         background: transparent;
@@ -93,15 +93,15 @@
     }
 }
 
-.multipicker-pencil.btn:hover, .multipicker-pencil.btn:active, .multipicker-pencil.btn:focus {
+.coursefiles-pencil.btn:hover, .coursefiles-pencil.btn:active, .coursefiles-pencil.btn:focus {
     border: 0;
     background: transparent;
     box-shadow: none;
 }
 
-.multipicker-pencil {
+.coursefiles-pencil {
     &.btn:focus-visible {
-        outline: 2px solid var(--multipicker-primary);
+        outline: 2px solid var(--coursefiles-primary);
         outline-offset: 2px;
     }
 }

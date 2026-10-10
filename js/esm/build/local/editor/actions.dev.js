@@ -3,12 +3,12 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_multipicker/local/editor/actions
+ * @module local_coursefiles/local/editor/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Selectors from "@moodle/lms/local_multipicker/local/selectors";
+import Selectors from "@moodle/lms/local_coursefiles/local/selectors";
 const appendLinks = /* @__PURE__ */ __name((editor, result) => {
   const linked = new Set([...editor.getBody().querySelectorAll(Selectors.links)].map((link) => link.href));
   if (result.files.some((file) => linked.has(file.url))) {

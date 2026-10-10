@@ -3,15 +3,15 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 /**
  * Initialize the feature actions and event listeners.
  *
- * @module local_multipicker/local/selection/controller
+ * @module local_coursefiles/local/selection/controller
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Selectors from "@moodle/lms/local_multipicker/local/selection/selectors";
-import { createActions } from "@moodle/lms/local_multipicker/local/selection/actions";
-import { registerListeners } from "@moodle/lms/local_multipicker/local/selection/listeners";
-import { presentation } from "@moodle/lms/local_multipicker/local/picker/bridge";
+import Selectors from "@moodle/lms/local_coursefiles/local/selection/selectors";
+import { createActions } from "@moodle/lms/local_coursefiles/local/selection/actions";
+import { registerListeners } from "@moodle/lms/local_coursefiles/local/selection/listeners";
+import { presentation } from "@moodle/lms/local_coursefiles/local/picker/bridge";
 const selection = /* @__PURE__ */ __name(() => {
   presentation();
   const form = document.querySelector(Selectors.selectionForm);

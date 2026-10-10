@@ -4,13 +4,13 @@
 
 /* Native chevrons replace browser disclosure markers. */
 
-.multipicker-admin details, .multipicker-log details {
-    border: 1px solid var(--multipicker-border);
-    border-radius: var(--multipicker-radius);
+.coursefiles-admin details, .coursefiles-log details {
+    border: 1px solid var(--coursefiles-border);
+    border-radius: var(--coursefiles-radius);
     padding: .65rem .85rem;
 }
 
-.multipicker-browser summary, .multipicker-admin summary, .multipicker-log summary {
+.coursefiles-browser summary, .coursefiles-admin summary, .coursefiles-log summary {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -18,16 +18,16 @@
     cursor: pointer;
 }
 
-.multipicker-browser summary::-webkit-details-marker,
-.multipicker-admin summary::-webkit-details-marker, .multipicker-log summary::-webkit-details-marker {
+.coursefiles-browser summary::-webkit-details-marker,
+.coursefiles-admin summary::-webkit-details-marker, .coursefiles-log summary::-webkit-details-marker {
     display: none;
 }
 
-.multipicker-disclosure-icon {
+.coursefiles-disclosure-icon {
     display: inline-flex;
     width: 1.8rem;
     height: 1.8rem;
-    border: 1px solid var(--multipicker-border);
+    border: 1px solid var(--coursefiles-border);
     border-radius: .5rem;
     align-items: center;
     justify-content: center;
@@ -39,7 +39,7 @@
     }
 }
 
-details[open] > summary > .multipicker-disclosure-icon .icon {
+details[open] > summary > .coursefiles-disclosure-icon .icon {
     transform: rotate(90deg);
 }
 

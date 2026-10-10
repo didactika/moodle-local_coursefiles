@@ -15,18 +15,18 @@
 
 /**
  * Native list selection, confirmation and shared pagination controls.
- * @module local_multipicker/local/admin/actions
+ * @module local_coursefiles/local/admin/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import type {ProfileRowState} from '@moodle/lms/local_multipicker/local/contracts';
-import Selectors from '@moodle/lms/local_multipicker/local/admin/selectors';
-import {formControl} from '@moodle/lms/local_multipicker/local/dom';
-import {eventElement} from '@moodle/lms/local_multipicker/local/listeners';
-import Notification from '@moodle/lms/local_multipicker/compat/notification';
-import {loadFragment} from '@moodle/lms/local_multipicker/local/repository';
-import {addToast} from '@moodle/lms/local_multipicker/compat/toast';
+import type {ProfileRowState} from '@moodle/lms/local_coursefiles/local/contracts';
+import Selectors from '@moodle/lms/local_coursefiles/local/admin/selectors';
+import {formControl} from '@moodle/lms/local_coursefiles/local/dom';
+import {eventElement} from '@moodle/lms/local_coursefiles/local/listeners';
+import Notification from '@moodle/lms/local_coursefiles/compat/notification';
+import {loadFragment} from '@moodle/lms/local_coursefiles/local/repository';
+import {addToast} from '@moodle/lms/local_coursefiles/compat/toast';
 import {getStrings} from '@moodle/lms/core/stringUtils';
 
 /**
@@ -53,7 +53,7 @@ export const createBulkActions = (form: HTMLFormElement) => {
             bulk.hidden = count === 0;
             bulk.querySelectorAll<HTMLButtonElement>(Selectors.button).forEach(button => {
                 button.disabled = count === 0 || saving;
-                if (form.hasAttribute('data-multipicker-profiles') && ['enable', 'disable'].includes(button.value)) {
+                if (form.hasAttribute('data-coursefiles-profiles') && ['enable', 'disable'].includes(button.value)) {
                     button.hidden = !checks.some(check => check.checked
                         && check.closest<HTMLTableRowElement>(Selectors.tableRow)!.dataset.enabled === (button.value === 'enable' ? '0' : '1'));
                 }
@@ -71,7 +71,7 @@ export const createBulkActions = (form: HTMLFormElement) => {
         const button = event.submitter instanceof HTMLButtonElement ? event.submitter : null;
         const row = button?.name === 'rowaction' ? button.value.split(':') : [];
         const action = row[0] || button?.value || '';
-        if (form.hasAttribute('data-multipicker-profiles') && ['enable', 'disable'].includes(action)) {
+        if (form.hasAttribute('data-coursefiles-profiles') && ['enable', 'disable'].includes(action)) {
             event.preventDefault();
             if (saving) {
                 return;
@@ -90,7 +90,7 @@ export const createBulkActions = (form: HTMLFormElement) => {
                 });
                 const doc = new DOMParser().parseFromString(html, 'text/html');
                 const states = JSON.parse(doc.querySelector<HTMLElement>(Selectors.profileState)!
-                    .dataset.multipickerProfileState!) as ProfileRowState[];
+                    .dataset.coursefilesProfileState!) as ProfileRowState[];
                 states.forEach(state => {
                     const item = form.querySelector<HTMLElement>('[data-profile-id="' + state.id + '"]')!;
                     item.dataset.enabled = String(state.enabled);
@@ -123,10 +123,10 @@ export const createBulkActions = (form: HTMLFormElement) => {
         }
         event.preventDefault();
         try {
-            const keys = ['confirm', form.hasAttribute('data-multipicker-migrations')
+            const keys = ['confirm', form.hasAttribute('data-coursefiles-migrations')
                 ? 'migrationdeleteconfirm' : 'profilestateconfirm', 'delete', 'cancel'];
             const [title, message, yes, no] = await getStrings(keys.map(key => ({
-                key, component: key.endsWith('confirm') && key !== 'confirm' ? 'local_multipicker' : 'core',
+                key, component: key.endsWith('confirm') && key !== 'confirm' ? 'local_coursefiles' : 'core',
             })));
             Notification.confirm(title, message, yes, no, () => {
                 form.dataset.confirmed = 'true';
@@ -147,7 +147,7 @@ export const createBulkActions = (form: HTMLFormElement) => {
  * @param {HTMLElement} history Version history container.
  */
 export const createHistoryActions = (history: HTMLElement) => {
-    const comparison = document.getElementById('multipicker-compare');
+    const comparison = document.getElementById('coursefiles-compare');
     if (!(comparison instanceof HTMLFormElement)) {
         return;
     }

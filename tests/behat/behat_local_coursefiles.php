@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,26 +28,26 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 /**
  * Exercises the native embedded chooser without replacing its transfer contract.
  */
-class behat_local_multipicker extends behat_base {
+class behat_local_coursefiles extends behat_base {
     /**
      * Retain actual DOM nodes to detect navigation or lost native checkbox properties.
-     * @When /^I remember the selected MultiPicker profile rows$/
+     * @When /^I remember the selected CourseFiles profile rows$/
      */
     public function remember_profile_rows(): void {
         $this->getSession()->getDriver()->executeScript(
-            'window.multipickerProfileRows=[...document.querySelectorAll("input[name=\\"profiles[]\\"]")]'
+            'window.coursefilesProfileRows=[...document.querySelectorAll("input[name=\\"profiles[]\\"]")]'
             . '.filter(check=>check.checked);'
         );
     }
 
     /**
      * State actions must retain checked rows rather than reloading the list.
-     * @Then /^MultiPicker should retain its selected profile rows$/
+     * @Then /^CourseFiles should retain its selected profile rows$/
      */
     public function retain_profile_rows(): void {
         $correct = $this->getSession()->getDriver()->evaluateScript(
-            '!!window.multipickerProfileRows?.length'
-            . '&&window.multipickerProfileRows.every(check=>check.isConnected&&check.checked)'
+            '!!window.coursefilesProfileRows?.length'
+            . '&&window.coursefilesProfileRows.every(check=>check.isConnected&&check.checked)'
         );
         if (!$correct) {
             throw new \Exception('A state change replaced the profile list or cleared its selection.');
@@ -56,26 +56,26 @@ class behat_local_multipicker extends behat_base {
 
     /**
      * Exercise native help links with actual pointer clicks inside the picker iframe.
-     * @Then /^all MultiPicker filter help icons should open their content$/
+     * @Then /^all CourseFiles filter help icons should open their content$/
      */
     public function filter_help_opens(): void {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
-            'const frame=document.querySelector(".fp-object-container");frame.id="multipickerhelpframe";'
-            . 'frame.name="multipickerhelpframe";'
-            . 'frame.contentDocument.querySelector("[data-multipicker-options]").open=true;'
+            'const frame=document.querySelector(".fp-object-container");frame.id="coursefileshelpframe";'
+            . 'frame.name="coursefileshelpframe";'
+            . 'frame.contentDocument.querySelector("[data-coursefiles-options]").open=true;'
         );
-        $this->getSession()->switchToIFrame('multipickerhelpframe');
+        $this->getSession()->switchToIFrame('coursefileshelpframe');
         try {
-            $selector = '.multipicker-browser-filters a[data-toggle="popover"],'
-                . '.multipicker-browser-filters a[data-bs-toggle="popover"]';
+            $selector = '.coursefiles-browser-filters a[data-toggle="popover"],'
+                . '.coursefiles-browser-filters a[data-bs-toggle="popover"]';
             $links = $this->getSession()->getPage()->findAll('css', $selector);
             if (count($links) < 6) {
                 throw new \Exception('Specific filter and copy-option help links are missing.');
             }
             foreach ($links as $link) {
                 $this->getSession()->getDriver()->executeScript(
-                    'document.querySelector("[data-multipicker-options]").open=true;'
+                    'document.querySelector("[data-coursefiles-options]").open=true;'
                 );
                 $link->click();
                 if (
@@ -94,14 +94,14 @@ class behat_local_multipicker extends behat_base {
             $this->getSession()->switchToIFrame(null);
             $this->getSession()->getDriver()->executeScript(
                 'document.querySelector(".fp-object-container").contentDocument'
-                . '.querySelector("[data-multipicker-options]").open=false;'
+                . '.querySelector("[data-coursefiles-options]").open=false;'
             );
         }
     }
 
     /**
      * Count actual restrictions, excluding empty/All choices and copy options.
-     * @Then /^MultiPicker should show "([0-9]+)" active filters$/
+     * @Then /^CourseFiles should show "([0-9]+)" active filters$/
      * @param string $count Expected restrictions.
      */
     public function active_filter_count(string $count): void {
@@ -109,7 +109,7 @@ class behat_local_multipicker extends behat_base {
         $expected = (int)$count ? '(' . $count . ')' : '';
         $actual = $this->getSession()->getDriver()->evaluateScript(
             'document.querySelector(".fp-object-container").contentDocument'
-            . '.querySelector("[data-multipicker-filter-count]").textContent'
+            . '.querySelector("[data-coursefiles-filter-count]").textContent'
         );
         if (trim($actual) !== $expected) {
             throw new \Exception('The active filter count is incorrect: ' . $actual);
@@ -119,13 +119,13 @@ class behat_local_multipicker extends behat_base {
     /**
      * Exercise real editable rows, serialization and native form bounds at both widths.
      *
-     * @Then /^the MultiPicker correspondence rows should fit narrow screens$/
+     * @Then /^the CourseFiles correspondence rows should fit narrow screens$/
      */
     public function responsive_correspondence_rows(): void {
         $this->getSession()->getDriver()->executeScript(
             'const field=document.getElementById("id_correspondencesjson");'
-            . 'window.multipickerOriginalRows=field.value;'
-            . 'field.nextElementSibling.querySelector("[data-multipicker-addrow]").click();'
+            . 'window.coursefilesOriginalRows=field.value;'
+            . 'field.nextElementSibling.querySelector("[data-coursefiles-addrow]").click();'
         );
         if (!$this->getSession()->wait(5000, 'document.querySelectorAll("[data-field=targetvalue]").length===2')) {
             throw new \Exception('A second native correspondence row was not added.');
@@ -138,16 +138,16 @@ class behat_local_multipicker extends behat_base {
             $this->getSession()->resizeWindow($width, 1000);
             if ($width === 480) {
                 $this->getSession()->getDriver()->executeScript(
-                    'window.multipickerRowsReady=false;require(["theme_boost/drawers"],drawers=>'
-                    . '{drawers.closeAllDrawers();window.multipickerRowsReady=true;});'
+                    'window.coursefilesRowsReady=false;require(["theme_boost/drawers"],drawers=>'
+                    . '{drawers.closeAllDrawers();window.coursefilesRowsReady=true;});'
                 );
-                if (!$this->getSession()->wait(3000, 'window.multipickerRowsReady&&!document.querySelector(".drawer.show")')) {
+                if (!$this->getSession()->wait(3000, 'window.coursefilesRowsReady&&!document.querySelector(".drawer.show")')) {
                     throw new \Exception('The native drawer did not close before checking correspondence fields.');
                 }
             }
             $result = $this->getSession()->getDriver()->evaluateScript(
                 '(()=>{const field=document.getElementById("id_correspondencesjson"),wrapper=field.nextElementSibling;'
-                . 'const editor=wrapper.querySelector(".multipicker-row-editor"),bounds=editor.getBoundingClientRect();'
+                . 'const editor=wrapper.querySelector(".coursefiles-row-editor"),bounds=editor.getBoundingClientRect();'
                 . 'editor.scrollIntoView({block:"center"});'
                 . 'const controls=[...editor.querySelectorAll("input,select,button")];'
                 . 'const fits=controls.every(control=>{const rect=control.getBoundingClientRect();'
@@ -169,12 +169,12 @@ class behat_local_multipicker extends behat_base {
             ) {
                 throw new \Exception('Native correspondence controls overflow or lose edits: ' . json_encode($result));
             }
-            file_put_contents('/tmp/multipicker-correspondences-' . $width . '.png', $this->getSession()->getScreenshot());
+            file_put_contents('/tmp/coursefiles-correspondences-' . $width . '.png', $this->getSession()->getScreenshot());
         }
         $this->getSession()->getDriver()->executeScript(
             'const field=document.getElementById("id_correspondencesjson");'
             . 'field.nextElementSibling.querySelectorAll("tbody tr")[1].querySelector("button").click();'
-            . 'if(field.value!==window.multipickerOriginalRows){throw new Error("Original correspondences changed.");}'
+            . 'if(field.value!==window.coursefilesOriginalRows){throw new Error("Original correspondences changed.");}'
         );
         $this->getSession()->resizeWindow(1366, 1000);
     }
@@ -182,13 +182,13 @@ class behat_local_multipicker extends behat_base {
     /**
      * Keep the native Back button at the leading edge without theme-specific placement.
      *
-     * @Then /^the MultiPicker history Back action should stay on the left$/
+     * @Then /^the CourseFiles history Back action should stay on the left$/
      */
     public function history_back_on_left(): void {
         foreach ([1366, 480] as $width) {
             $this->getSession()->resizeWindow($width, 1000);
             $correct = $this->getSession()->getDriver()->evaluateScript(
-                '(()=>{const back=document.querySelector(".multipicker-admin .multipicker-back");'
+                '(()=>{const back=document.querySelector(".coursefiles-admin .coursefiles-back");'
                 . 'return Math.abs(back.getBoundingClientRect().left-back.parentElement.getBoundingClientRect().left)<2'
                 . '&&back.classList.contains("btn-outline-secondary")&&!!back.querySelector(".icon");})()'
             );
@@ -201,34 +201,34 @@ class behat_local_multipicker extends behat_base {
 
     /**
      * Open the oldest retained configuration without assuming generated database IDs.
-     * @When /^I compare the oldest MultiPicker profile version$/
+     * @When /^I compare the oldest CourseFiles profile version$/
      */
     public function compare_oldest_profile_version(): void {
         $this->getSession()->getDriver()->executeScript(
-            'const checks=[...document.querySelectorAll("[data-multipicker-version]")];'
+            'const checks=[...document.querySelectorAll("[data-coursefiles-version]")];'
             . 'if(checks.length<2){throw new Error("Profile versions are missing.");}'
             . 'checks[0].click();checks.at(-1).click();'
-            . 'document.querySelector("#multipicker-compare button").click();'
+            . 'document.querySelector("#coursefiles-compare button").click();'
         );
     }
 
     /**
      * Check the real theme's clamping, card row alignment and centered navigation.
-     * @Then /^MultiPicker cards and filters should keep a compact aligned layout$/
+     * @Then /^CourseFiles cards and filters should keep a compact aligned layout$/
      */
     public function compact_browser_layout(): void {
         $this->wait_for_browser();
         $correct = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const cards=[...doc.querySelectorAll(".multipicker-card")];'
-            . 'const aligned=cards.every(card=>{const name=card.querySelector(".multipicker-card-title");'
+            . 'const cards=[...doc.querySelectorAll(".coursefiles-card")];'
+            . 'const aligned=cards.every(card=>{const name=card.querySelector(".coursefiles-card-title");'
             . 'return name.title&&doc.defaultView.getComputedStyle(name).webkitLineClamp==="2";});'
-            . 'const button=doc.querySelector(".multipicker-open"),icon=button.querySelector(".icon");'
+            . 'const button=doc.querySelector(".coursefiles-open"),icon=button.querySelector(".icon");'
             . 'const b=button.getBoundingClientRect(),i=icon.getBoundingClientRect();'
             . 'const centered=Math.abs(b.x+b.width/2-i.x-i.width/2)<2'
             . '&&Math.abs(b.y+b.height/2-i.y-i.height/2)<2;'
-            . 'const toggle=doc.querySelector("[data-multipicker-options]");toggle.open=true;'
-            . 'const menu=toggle.querySelector(".multipicker-filter-menu");'
+            . 'const toggle=doc.querySelector("[data-coursefiles-options]");toggle.open=true;'
+            . 'const menu=toggle.querySelector(".coursefiles-filter-menu");'
             . 'const bounded=menu.getBoundingClientRect().height<=353'
             . '&&doc.defaultView.getComputedStyle(menu).overflowY==="auto";'
             . 'toggle.open=false;return aligned&&centered&&bounded;})()'
@@ -240,18 +240,18 @@ class behat_local_multipicker extends behat_base {
 
     /**
      * Exercise whole-row checks without disabling native transfer approval.
-     * @Then /^the MultiPicker review should use compact selectable rows$/
+     * @Then /^the CourseFiles review should use compact selectable rows$/
      */
     public function compact_review_rows(): void {
         $this->wait_for_browser();
         $correct = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const row=doc.querySelector(".multipicker-tree-file"),check=row.querySelector("input[type=checkbox]");'
-            . 'row.querySelector("[data-multipicker-file-name]").click();'
-            . 'const selected=check.checked&&!doc.querySelector("[data-multipicker-confirm]").disabled;'
-            . 'row.querySelector("[data-multipicker-file-name]").click();'
-            . 'return selected&&!check.checked&&!doc.querySelector("[data-multipicker-save-review]")'
-            . '&&row.querySelector("[data-multipicker-rename]").classList.contains("multipicker-pencil");})()'
+            . 'const row=doc.querySelector(".coursefiles-tree-file"),check=row.querySelector("input[type=checkbox]");'
+            . 'row.querySelector("[data-coursefiles-file-name]").click();'
+            . 'const selected=check.checked&&!doc.querySelector("[data-coursefiles-confirm]").disabled;'
+            . 'row.querySelector("[data-coursefiles-file-name]").click();'
+            . 'return selected&&!check.checked&&!doc.querySelector("[data-coursefiles-save-review]")'
+            . '&&row.querySelector("[data-coursefiles-rename]").classList.contains("coursefiles-pencil");})()'
         );
         if (!$correct) {
             throw new \Exception('Whole-row selection changed native import approval or exposed the old save control.');
@@ -261,13 +261,13 @@ class behat_local_multipicker extends behat_base {
     /**
      * Verify actual visibility, compact labels and native action icons.
      *
-     * @Then /^MultiPicker profile bulk actions should be "(hidden|visible)"$/
+     * @Then /^CourseFiles profile bulk actions should be "(hidden|visible)"$/
      * @param string $state Expected visibility.
      */
     public function profile_bulk_actions(string $state): void {
         $visible = $state === 'visible' ? 'true' : 'false';
         $correct = $this->getSession()->getDriver()->evaluateScript(
-            '(()=>{const bar=document.querySelector("[data-multipicker-bulk-actions]");'
+            '(()=>{const bar=document.querySelector("[data-coursefiles-bulk-actions]");'
             . 'const buttons=[...bar.querySelectorAll("button")];'
             . 'return (bar.getClientRects().length>0)===' . $visible . '&&buttons.length===4'
             . '&&buttons.every(button=>button.textContent.trim()!==""&&button.getAttribute("title")'
@@ -281,7 +281,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Edit the actual row controls rather than posting an unrelated document.
      *
-     * @When /^I set the MultiPicker destination folder rule to "([^"]*)"$/
+     * @When /^I set the CourseFiles destination folder rule to "([^"]*)"$/
      * @param string $name Exact target folder name.
      */
     public function destination_folder_rule(string $name): void {
@@ -296,12 +296,12 @@ class behat_local_multipicker extends behat_base {
     /**
      * Reconfiguration keeps the initial reviewed record intact.
      *
-     * @Then /^MultiPicker should retain "([0-9]+)" migration plans$/
+     * @Then /^CourseFiles should retain "([0-9]+)" migration plans$/
      * @param string $count Expected stored plans.
      */
     public function retained_migration_plans(string $count): void {
         global $DB;
-        if ($DB->count_records('local_multipicker_plan') !== (int)$count) {
+        if ($DB->count_records('local_coursefiles_plan') !== (int)$count) {
             throw new \Exception('Migration reconfiguration replaced its original plan.');
         }
     }
@@ -309,7 +309,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Exercise translated native schemas and profile submissions.
      *
-     * @Given /^the MultiPicker administrator uses Spanish$/
+     * @Given /^the CourseFiles administrator uses Spanish$/
      */
     public function administrator_uses_spanish(): void {
         global $DB, $CFG;
@@ -328,7 +328,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Required markers and fieldsets keep the same native input column.
      *
-     * @Then /^the MultiPicker profile inputs should align$/
+     * @Then /^the CourseFiles profile inputs should align$/
      */
     public function profile_inputs_align(): void {
         $valid = $this->getSession()->getDriver()->evaluateScript(
@@ -351,25 +351,25 @@ class behat_local_multipicker extends behat_base {
     /**
      * A native folder checkbox must update state without replacing result nodes.
      *
-     * @When /^I select a MultiPicker card without rebuilding its results$/
+     * @When /^I select a CourseFiles card without rebuilding its results$/
      */
     public function select_without_rebuilding(): void {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const results=doc.querySelector("[data-multipicker-results]");results.style.maxHeight="60px";'
+            . 'const results=doc.querySelector("[data-coursefiles-results]");results.style.maxHeight="60px";'
             . 'results.scrollTop=results.scrollHeight;'
-            . 'window.multipickerStableSelection={cards:[...results.querySelectorAll(".multipicker-card")],'
+            . 'window.coursefilesStableSelection={cards:[...results.querySelectorAll(".coursefiles-card")],'
             . 'scroll:results.scrollTop,refresh:results.dataset.refresh||"0"};'
             . 'const choice=[...results.querySelectorAll("button[name=openfolder]")]'
-            . '.find(button=>button.closest(".multipicker-card").textContent.includes("Published materials"))'
-            . '.closest(".multipicker-card").querySelector("input");choice.click();'
+            . '.find(button=>button.closest(".coursefiles-card").textContent.includes("Published materials"))'
+            . '.closest(".coursefiles-card").querySelector("input");choice.click();'
         );
         if (
             !$this->getSession()->wait(
                 15000,
-                'document.querySelector(".fp-object-container").contentDocument.querySelector("[data-multipicker-results]")'
-                . '.dataset.refresh!==window.multipickerStableSelection.refresh'
+                'document.querySelector(".fp-object-container").contentDocument.querySelector("[data-coursefiles-results]")'
+                . '.dataset.refresh!==window.coursefilesStableSelection.refresh'
             )
         ) {
             throw new \Exception('The native selection request did not complete.');
@@ -378,8 +378,8 @@ class behat_local_multipicker extends behat_base {
         if (
             !$this->getSession()->getDriver()->evaluateScript(
                 '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-                . 'const state=window.multipickerStableSelection;return state.cards.every(card=>card.isConnected)'
-                . '&&doc.querySelector("[data-multipicker-results]").scrollTop===state.scroll;})()'
+                . 'const state=window.coursefilesStableSelection;return state.cards.every(card=>card.isConnected)'
+                . '&&doc.querySelector("[data-coursefiles-results]").scrollTop===state.scroll;})()'
             )
         ) {
             throw new \Exception('Selecting a folder replaced result cards or changed the scroll position.');
@@ -389,23 +389,23 @@ class behat_local_multipicker extends behat_base {
     /**
      * Navigate to a real registered administrative entry point.
      *
-     * @When /^I open MultiPicker administration "([^"]*)"$/
+     * @When /^I open CourseFiles administration "([^"]*)"$/
      * @param string $page Page name.
      */
     public function open_administration(string $page): void {
         if ($page === 'category') {
-            $this->getSession()->visit($this->locate_path('/admin/category.php?category=local_multipicker'));
+            $this->getSession()->visit($this->locate_path('/admin/category.php?category=local_coursefiles'));
             return;
         }
         if (!in_array($page, ['settings', 'profiles', 'migration', 'log'], true)) {
             throw new \Exception('Unknown administration page');
         }
-        $this->getSession()->visit($this->locate_path('/local/multipicker/admin/' . $page . '.php'));
+        $this->getSession()->visit($this->locate_path('/local/coursefiles/admin/' . $page . '.php'));
     }
 
     /**
      * Switch shared nodes between native grid, list and a collapsible course tree.
-     * @Then /^MultiPicker layouts should share selections and mark the active view$/
+     * @Then /^CourseFiles layouts should share selections and mark the active view$/
      */
     public function native_browser_layouts(): void {
         global $CFG;
@@ -414,24 +414,24 @@ class behat_local_multipicker extends behat_base {
             $CFG->version >= 2026100500 && !$this->getSession()->wait(
                 10000,
                 '!!document.querySelector(".fp-object-container")?.contentDocument'
-                . '?.querySelector("[data-multipicker-react-view]")'
+                . '?.querySelector("[data-coursefiles-react-view]")'
             )
         ) {
             throw new \Exception('The native Moodle 5.3 React layout component did not mount.');
         }
         $correct = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const form=doc.querySelector(".multipicker-browser"),card=doc.querySelector(".multipicker-card");'
-            . 'for(const layout of ["list","tree"]){form.querySelector("[data-multipicker-layout="+layout+"]").click();'
-            . 'if(form.dataset.layout!==layout||form.querySelectorAll("[data-multipicker-layout].active").length!==1)'
-            . '{return false;}}const group=doc.querySelector(".multipicker-browser-tree-group");'
-            . 'if(!group.querySelector("[data-multipicker-course-toggle]").getClientRects().length){return false;}'
-            . 'group.querySelector("[data-multipicker-course-toggle]").click();'
-            . 'const hidden=!group.querySelector(".multipicker-card").getClientRects().length;'
-            . 'form.querySelector("[data-multipicker-layout=grid]").click();'
-            . 'return hidden&&group.dataset.collapsed==="false"&&card===doc.querySelector(".multipicker-card")'
-            . '&&doc.querySelector("[data-multipicker-layout=grid]").getAttribute("aria-pressed")==="true"'
-            . '&&[...doc.querySelectorAll("[data-multipicker-course-toggle]")].every(heading=>'
+            . 'const form=doc.querySelector(".coursefiles-browser"),card=doc.querySelector(".coursefiles-card");'
+            . 'for(const layout of ["list","tree"]){form.querySelector("[data-coursefiles-layout="+layout+"]").click();'
+            . 'if(form.dataset.layout!==layout||form.querySelectorAll("[data-coursefiles-layout].active").length!==1)'
+            . '{return false;}}const group=doc.querySelector(".coursefiles-browser-tree-group");'
+            . 'if(!group.querySelector("[data-coursefiles-course-toggle]").getClientRects().length){return false;}'
+            . 'group.querySelector("[data-coursefiles-course-toggle]").click();'
+            . 'const hidden=!group.querySelector(".coursefiles-card").getClientRects().length;'
+            . 'form.querySelector("[data-coursefiles-layout=grid]").click();'
+            . 'return hidden&&group.dataset.collapsed==="false"&&card===doc.querySelector(".coursefiles-card")'
+            . '&&doc.querySelector("[data-coursefiles-layout=grid]").getAttribute("aria-pressed")==="true"'
+            . '&&[...doc.querySelectorAll("[data-coursefiles-course-toggle]")].every(heading=>'
             . '!heading.getClientRects().length);})()'
         );
         if (!$correct) {
@@ -439,33 +439,33 @@ class behat_local_multipicker extends behat_base {
         }
         $this->getSession()->getDriver()->executeScript(
             'document.querySelector(".fp-object-container").contentDocument'
-            . '.querySelector("[data-multipicker-layout=tree]").click();'
-            . 'window.multipickerTreePainted=false;requestAnimationFrame(()=>requestAnimationFrame(()=>'
-            . '{window.multipickerTreePainted=true;}));'
+            . '.querySelector("[data-coursefiles-layout=tree]").click();'
+            . 'window.coursefilesTreePainted=false;requestAnimationFrame(()=>requestAnimationFrame(()=>'
+            . '{window.coursefilesTreePainted=true;}));'
         );
-        if (!$this->getSession()->wait(3000, 'window.multipickerTreePainted')) {
+        if (!$this->getSession()->wait(3000, 'window.coursefilesTreePainted')) {
             throw new \Exception('The native tree layout did not finish painting.');
         }
-        file_put_contents('/tmp/multipicker-tree-desktop.png', $this->getSession()->getScreenshot());
+        file_put_contents('/tmp/coursefiles-tree-desktop.png', $this->getSession()->getScreenshot());
         $this->getSession()->getDriver()->executeScript(
             'document.querySelector(".fp-object-container").contentDocument'
-            . '.querySelector("[data-multipicker-layout=grid]").click();'
+            . '.querySelector("[data-coursefiles-layout=grid]").click();'
         );
     }
 
     /**
      * Folder removal checks include descendants and share the import action row.
-     * @Then /^MultiPicker review folders should select their files and reveal removal$/
+     * @Then /^CourseFiles review folders should select their files and reveal removal$/
      */
     public function review_folder_removal(): void {
         $this->wait_for_browser();
         $correct = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const remove=doc.querySelector("[data-multipicker-remove-selected]");if(!remove.hidden){return false;}'
-            . 'const folder=doc.querySelector("[data-multipicker-review-folder]");if(!folder){return false;}folder.click();'
+            . 'const remove=doc.querySelector("[data-coursefiles-remove-selected]");if(!remove.hidden){return false;}'
+            . 'const folder=doc.querySelector("[data-coursefiles-review-folder]");if(!folder){return false;}folder.click();'
             . 'const files=[...folder.closest("details").querySelectorAll("input[name=\\"removefiles[]\\"]")];'
             . 'const selected=files.every(check=>check.checked)&&!remove.hidden&&!remove.disabled;'
-            . 'const importButton=doc.querySelector("[data-multipicker-confirm]");'
+            . 'const importButton=doc.querySelector("[data-coursefiles-confirm]");'
             . 'const aligned=Math.abs(remove.getBoundingClientRect().y-importButton.getBoundingClientRect().y)<2;'
             . 'const approved=!importButton.disabled;'
             . 'folder.click();return selected&&aligned&&approved&&!importButton.disabled'
@@ -478,63 +478,63 @@ class behat_local_multipicker extends behat_base {
 
     /**
      * Load real recursive fragments, select their owning folder and retain all expanded nodes.
-     * @Then /^MultiPicker tree folders should load through to selectable files$/
+     * @Then /^CourseFiles tree folders should load through to selectable files$/
      */
     public function native_tree_files(): void {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'doc.querySelector("[data-multipicker-layout=tree]").click();'
+            . 'doc.querySelector("[data-coursefiles-layout=tree]").click();'
             . 'const root=doc.querySelector("[data-tree-folder]");'
-            . 'window.multipickerTreeTest={root,entries:root.querySelector("[data-tree-entries]")};'
-            . 'if(!window.multipickerTreeTest.entries.hidden||window.multipickerTreeTest.entries.children.length)'
+            . 'window.coursefilesTreeTest={root,entries:root.querySelector("[data-tree-entries]")};'
+            . 'if(!window.coursefilesTreeTest.entries.hidden||window.coursefilesTreeTest.entries.children.length)'
             . '{throw new Error("Tree children were eagerly loaded");}'
             . 'root.querySelector("[name=openfolder]").click();})()'
         );
-        if (!$this->getSession()->wait(10000, 'window.multipickerTreeTest.entries.dataset.loaded==="true"')) {
+        if (!$this->getSession()->wait(10000, 'window.coursefilesTreeTest.entries.dataset.loaded==="true"')) {
             throw new \Exception('The first native tree branch did not load.');
         }
         $this->getSession()->getDriver()->executeScript(
-            '(()=>{const state=window.multipickerTreeTest;const child=state.entries.querySelector("[data-tree-folder]");'
+            '(()=>{const state=window.coursefilesTreeTest;const child=state.entries.querySelector("[data-tree-folder]");'
             . 'if(!child||!child.querySelector("[data-tree-entries]").hidden'
-            . '||!state.entries.querySelector("[data-multipicker-choice][value^=\\"file:\\"]"))'
+            . '||!state.entries.querySelector("[data-coursefiles-choice][value^=\\"file:\\"]"))'
             . '{throw new Error("Missing selectable files or collapsed nested folder");}'
             . 'state.child=child;state.nested=child.querySelector("[data-tree-entries]");'
             . 'child.querySelector("[name=openfolder]").click();})()'
         );
-        if (!$this->getSession()->wait(10000, 'window.multipickerTreeTest.nested.dataset.loaded==="true"')) {
+        if (!$this->getSession()->wait(10000, 'window.coursefilesTreeTest.nested.dataset.loaded==="true"')) {
             throw new \Exception('The nested native tree branch did not load.');
         }
         $this->getSession()->getDriver()->executeScript(
-            'window.multipickerTreeTest.root.querySelector("[data-multipicker-choice]").click();'
+            'window.coursefilesTreeTest.root.querySelector("[data-coursefiles-choice]").click();'
         );
         $this->selected_file_count(2);
         $correct = $this->getSession()->getDriver()->evaluateScript(
-            '(()=>{const state=window.multipickerTreeTest;'
-            . 'const checks=[...state.root.querySelectorAll("[data-multipicker-choice]")];'
+            '(()=>{const state=window.coursefilesTreeTest;'
+            . 'const checks=[...state.root.querySelectorAll("[data-coursefiles-choice]")];'
             . 'return checks.length>=4&&checks.every(check=>check.checked)&&state.child.isConnected'
-            . '&&state.nested.querySelector("[data-multipicker-choice][value^=\\"file:\\"]")!==null;})()'
+            . '&&state.nested.querySelector("[data-coursefiles-choice][value^=\\"file:\\"]")!==null;})()'
         );
         if (!$correct) {
             throw new \Exception('Recursive tree selection did not update files and nested folder checks in place.');
         }
-        file_put_contents('/tmp/multipicker-recursive-tree.png', $this->getSession()->getScreenshot());
+        file_put_contents('/tmp/coursefiles-recursive-tree.png', $this->getSession()->getScreenshot());
     }
 
     /**
      * The tree disclosure handler must not intercept native parent navigation.
-     * @Then /^MultiPicker Back should work after switching layouts inside a folder$/
+     * @Then /^CourseFiles Back should work after switching layouts inside a folder$/
      */
     public function native_tree_back(): void {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'doc.querySelector(".multipicker-open").click();})()'
+            . 'doc.querySelector(".coursefiles-open").click();})()'
         );
         if (
             !$this->getSession()->wait(
                 10000,
-                '!!document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-back")'
+                '!!document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".coursefiles-back")'
             )
         ) {
             throw new \Exception('The folder did not open.');
@@ -542,14 +542,14 @@ class behat_local_multipicker extends behat_base {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'doc.querySelector("[data-multipicker-layout=tree]").click();'
-            . 'doc.querySelector(".multipicker-back").click();})()'
+            . 'doc.querySelector("[data-coursefiles-layout=tree]").click();'
+            . 'doc.querySelector(".coursefiles-back").click();})()'
         );
         if (
             !$this->getSession()->wait(
                 10000,
                 'document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
-                . '&&!document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-back")'
+                . '&&!document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".coursefiles-back")'
             )
         ) {
             throw new \Exception('Tree layout intercepted native Back navigation.');
@@ -560,7 +560,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Capture the actual native theme at desktop and mobile sizes.
      *
-     * @Then /^I capture MultiPicker administration "([^"]*)"$/
+     * @Then /^I capture CourseFiles administration "([^"]*)"$/
      * @param string $name Screenshot basename.
      */
     public function capture_administration(string $name): void {
@@ -568,21 +568,21 @@ class behat_local_multipicker extends behat_base {
             $this->getSession()->resizeWindow($width, 1000);
             if ($size === 'mobile') {
                 $this->getSession()->getDriver()->executeScript(
-                    'window.multipickerCaptureReady=false;'
+                    'window.coursefilesCaptureReady=false;'
                     . 'require(["theme_boost/drawers"],drawers=>'
-                    . '{drawers.closeAllDrawers();window.multipickerCaptureReady=true;});'
+                    . '{drawers.closeAllDrawers();window.coursefilesCaptureReady=true;});'
                 );
                 if (
                     !$this->getSession()->wait(
                         3000,
-                        'window.multipickerCaptureReady&&!document.querySelector(".drawer.show,.modal-backdrop")'
+                        'window.coursefilesCaptureReady&&!document.querySelector(".drawer.show,.modal-backdrop")'
                     )
                 ) {
                     throw new \Exception('The native drawers did not close before the mobile capture.');
                 }
             }
             $this->getSession()->getDriver()->executeScript('window.scrollTo(0,0);');
-            file_put_contents('/tmp/multipicker-admin-' . $name . '-' . $size . '.png', $this->getSession()->getScreenshot());
+            file_put_contents('/tmp/coursefiles-admin-' . $name . '-' . $size . '.png', $this->getSession()->getScreenshot());
         }
         $this->getSession()->resizeWindow(1366, 1000);
     }
@@ -590,13 +590,13 @@ class behat_local_multipicker extends behat_base {
     /**
      * Grant delegated profile management without granting site configuration.
      *
-     * @Given /^the MultiPicker teacher can manage site profiles$/
+     * @Given /^the CourseFiles teacher can manage site profiles$/
      */
     public function grant_profile_management(): void {
         global $DB;
         $user = $DB->get_record('user', ['username' => 'cbteacher'], '*', MUST_EXIST);
         $roleid = create_role('Profile manager', 'profilemanager', '');
-        assign_capability('local/multipicker:manageprofiles', CAP_ALLOW, $roleid, \context_system::instance()->id);
+        assign_capability('local/coursefiles:manageprofiles', CAP_ALLOW, $roleid, \context_system::instance()->id);
         role_assign($roleid, $user->id, \context_system::instance()->id);
         accesslib_clear_all_caches(true);
     }
@@ -604,11 +604,11 @@ class behat_local_multipicker extends behat_base {
     /**
      * Enter through the actual native Add files control and repository sidebar.
      *
-     * @When /^I open the native MultiPicker$/
+     * @When /^I open the native CourseFiles$/
      * @When /^I open the native repository "([^"]*)"$/
      * @param string $name Native repository label.
      */
-    public function open_native_picker(string $name = 'MultiPicker'): void {
+    public function open_native_picker(string $name = 'CourseFiles'): void {
         $this->getSession()->getDriver()->executeScript(
             'const add=document.querySelector(".filemanager .fp-btn-add a");'
             . 'if(!add){throw new Error("Native Add files action is unavailable");}add.click();'
@@ -618,7 +618,7 @@ class behat_local_multipicker extends behat_base {
             '[...document.querySelectorAll(".fp-repo-name")].some(node=>node.textContent.trim()===' . json_encode($name) . ')'
         );
         if (!$ready) {
-            throw new \Exception('The MultiPicker repository was not registered in the native picker.');
+            throw new \Exception('The CourseFiles repository was not registered in the native picker.');
         }
         $this->getSession()->getDriver()->executeScript(
             '[...document.querySelectorAll(".fp-repo-name")].find(node=>node.textContent.trim()===' . json_encode($name) . ')'
@@ -630,7 +630,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Open Tiny's native link browser in an existing activity description.
      *
-     * @When /^I open MultiPicker from the activity editor$/
+     * @When /^I open CourseFiles from the activity editor$/
      */
     public function open_editor_picker(): void {
         if (!$this->getSession()->wait(10000, '!!document.querySelector("button[data-mce-name=tiny_link_link]")')) {
@@ -646,10 +646,10 @@ class behat_local_multipicker extends behat_base {
         $this->getSession()->getDriver()->executeScript('document.querySelector(".openlinkbrowser").click();');
         $this->getSession()->wait(
             10000,
-            '[...document.querySelectorAll(".fp-repo-name")].some(node=>node.textContent.trim()==="MultiPicker")'
+            '[...document.querySelectorAll(".fp-repo-name")].some(node=>node.textContent.trim()==="CourseFiles")'
         );
         $this->getSession()->getDriver()->executeScript(
-            '[...document.querySelectorAll(".fp-repo-name")].find(node=>node.textContent.trim()==="MultiPicker")'
+            '[...document.querySelectorAll(".fp-repo-name")].find(node=>node.textContent.trim()==="CourseFiles")'
             . '.closest("a").click();'
         );
         $this->wait_for_browser();
@@ -658,29 +658,29 @@ class behat_local_multipicker extends behat_base {
     /**
      * Verify batch links in the actual editor before saving its native owning form.
      *
-     * @Then /^the activity editor should contain MultiPicker links "([^\"]*)"$/
+     * @Then /^the activity editor should contain CourseFiles links "([^\"]*)"$/
      * @param string $names Comma-separated filenames.
      */
     public function editor_has_links(string $names): void {
         $this->getSession()->getDriver()->executeScript(
-            'window.multipickerEditor=null;require(["editor_tiny/editor"],module=>'
-            . '{window.multipickerEditor=module.getInstanceForElementId("id_introeditor");});'
-            . 'window.multipickerReceipt=null;fetch(M.cfg.wwwroot+"/local/multipicker/selection/status.php?"'
-            . '+new URLSearchParams({scope:window.multipickerTestScope,sesskey:M.cfg.sesskey}))'
-            . '.then(response=>response.json()).then(result=>{window.multipickerReceipt=result;});'
+            'window.coursefilesEditor=null;require(["editor_tiny/editor"],module=>'
+            . '{window.coursefilesEditor=module.getInstanceForElementId("id_introeditor");});'
+            . 'window.coursefilesReceipt=null;fetch(M.cfg.wwwroot+"/local/coursefiles/selection/status.php?"'
+            . '+new URLSearchParams({scope:window.coursefilesTestScope,sesskey:M.cfg.sesskey}))'
+            . '.then(response=>response.json()).then(result=>{window.coursefilesReceipt=result;});'
         );
         foreach (array_map('trim', explode(',', $names)) as $name) {
             if (
                 !$this->getSession()->wait(
                     15000,
-                    'window.multipickerEditor&&[...window.multipickerEditor.getBody().querySelectorAll("a[href]")]'
+                    'window.coursefilesEditor&&[...window.coursefilesEditor.getBody().querySelectorAll("a[href]")]'
                     . '.some(link=>link.href.includes(' . json_encode($name) . '))'
                 )
             ) {
                 $receipt = $this->getSession()->getDriver()->evaluateScript(
-                    'JSON.stringify({ready:window.multipickerReceipt?.ready,links:window.multipickerReceipt?.links,'
-                    . 'files:window.multipickerReceipt?.files?.map(file=>file.name),'
-                    . 'error:window.multipickerReceipt?.error,message:window.multipickerReceipt?.message})'
+                    'JSON.stringify({ready:window.coursefilesReceipt?.ready,links:window.coursefilesReceipt?.links,'
+                    . 'files:window.coursefilesReceipt?.files?.map(file=>file.name),'
+                    . 'error:window.coursefilesReceipt?.error,message:window.coursefilesReceipt?.message})'
                 );
                 throw new \Exception('A reviewed file was not inserted into the native editor: ' . $name . '; ' . $receipt);
             }
@@ -690,19 +690,19 @@ class behat_local_multipicker extends behat_base {
     /**
      * Return from the review without changing the stored selection.
      *
-     * @When /^I return to MultiPicker selection$/
+     * @When /^I return to CourseFiles selection$/
      */
     public function back_to_selection(): void {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'window.multipickerPreviousDocument=doc;window.multipickerPreviousForm=doc.querySelector(".multi'
-                . 'picker-browser");doc.querySelector(".multipicker-back").click();'
+            . 'window.coursefilesPreviousDocument=doc;window.coursefilesPreviousForm=doc.querySelector(".course'
+                . 'files-browser");doc.querySelector(".coursefiles-back").click();'
         );
         $this->getSession()->wait(
             10000,
-            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-br'
-                . 'owser")!==window.multipickerPreviousForm'
+            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".coursefiles-br'
+                . 'owser")!==window.coursefilesPreviousForm'
         );
         $this->wait_for_browser();
     }
@@ -710,7 +710,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Check that a real owning activity supplies the initial source type.
      *
-     * @Then /^the MultiPicker module filter should be "([^\"]*)"$/
+     * @Then /^the CourseFiles module filter should be "([^\"]*)"$/
      * @param string $module Expected module value.
      */
     public function module_filter_is(string $module): void {
@@ -729,14 +729,14 @@ class behat_local_multipicker extends behat_base {
     /**
      * Change the rendered layout without navigating or losing checks.
      *
-     * @When /^I switch MultiPicker layout to "(grid|list|tree)"$/
+     * @When /^I switch CourseFiles layout to "(grid|list|tree)"$/
      * @param string $layout Requested layout.
      */
     public function switch_layout(string $layout): void {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'document.querySelector(".fp-object-container").contentDocument.querySelector('
-            . json_encode('[data-multipicker-layout="' . $layout . '"]') . ').click();'
+            . json_encode('[data-coursefiles-layout="' . $layout . '"]') . ').click();'
         );
         if (
             !$this->getSession()->wait(
@@ -751,7 +751,7 @@ class behat_local_multipicker extends behat_base {
 
     /**
      * Exercise one canonical selection through real cards, lazy tree leaves and list rows.
-     * @Then /^MultiPicker selections should stay consistent across all views$/
+     * @Then /^CourseFiles selections should stay consistent across all views$/
      */
     public function shared_view_selection(): void {
         $this->select_material('Published materials', 'CB2025');
@@ -760,10 +760,10 @@ class behat_local_multipicker extends behat_base {
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
             . 'const root=[...doc.querySelectorAll("[data-tree-folder]")].find(folder=>'
-            . 'folder.querySelector(".multipicker-origin").textContent.startsWith("CB2025"));'
-            . 'window.multipickerViewRoot=root;root.querySelector("[name=openfolder]").click();'
+            . 'folder.querySelector(".coursefiles-origin").textContent.startsWith("CB2025"));'
+            . 'window.coursefilesViewRoot=root;root.querySelector("[name=openfolder]").click();'
         );
-        if (!$this->getSession()->wait(10000, 'window.multipickerViewRoot.querySelector("[data-tree-entries]").dataset.loaded')) {
+        if (!$this->getSession()->wait(10000, 'window.coursefilesViewRoot.querySelector("[data-tree-entries]").dataset.loaded')) {
             throw new \Exception('The selected native tree folder did not expand.');
         }
         $this->deselect_source_file('lesson.txt');
@@ -771,9 +771,9 @@ class behat_local_multipicker extends behat_base {
         $this->switch_layout('list');
         $correct = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const root=window.multipickerViewRoot,check=root.querySelector("[data-multipicker-choice]");'
+            . 'const root=window.coursefilesViewRoot,check=root.querySelector("[data-coursefiles-choice]");'
             . 'return root.isConnected&&check.indeterminate&&!check.checked&&'
-            . '[...doc.querySelectorAll("[data-multipicker-course-toggle]")].every(heading=>'
+            . '[...doc.querySelectorAll("[data-coursefiles-course-toggle]")].every(heading=>'
             . 'heading.hidden&&heading.classList.contains("d-none")&&!heading.getClientRects().length);})()'
         );
         if (!$correct) {
@@ -789,47 +789,47 @@ class behat_local_multipicker extends behat_base {
 
     /**
      * Clear an in-flight search while changing layouts, preserving profile and actual selected files.
-     * @Then /^MultiPicker should clear pending filters without losing its view or selection$/
+     * @Then /^CourseFiles should clear pending filters without losing its view or selection$/
      */
     public function clear_pending_filters(): void {
         $this->select_material('Published materials', 'CB2025');
         $this->selected_file_count(2);
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument,form=doc.querySelector("form");'
-            . 'window.multipickerResetState={form,profile:form.elements.profileid.value,busy:false};'
+            . 'window.coursefilesResetState={form,profile:form.elements.profileid.value,busy:false};'
             . 'doc.defaultView.require(["core/fragment"],module=>{const fragment=module.default||module;'
             . 'const load=fragment.loadFragment.bind(fragment);fragment.loadFragment=(...args)=>'
             . 'new Promise((resolve,reject)=>setTimeout(()=>load(...args).then(resolve,reject),500));'
             . 'const input=form.elements.q;input.value="no-such-file";'
             . 'input.dispatchEvent(new Event("input",{bubbles:true}));setTimeout(()=>{'
-            . 'window.multipickerResetState.busy=form.getAttribute("aria-busy")==="true";'
-            . 'form.querySelector("[data-multipicker-layout=tree]").click();'
-            . 'form.querySelector("[data-multipicker-layout=list]").click();'
-            . 'form.querySelector("[data-multipicker-options]").open=true;'
-            . 'form.querySelector("[data-multipicker-clear-filters]").click();'
-            . 'window.multipickerResetState.choicesblocked=[...form.querySelectorAll("[data-multipicker-choice]")]'
+            . 'window.coursefilesResetState.busy=form.getAttribute("aria-busy")==="true";'
+            . 'form.querySelector("[data-coursefiles-layout=tree]").click();'
+            . 'form.querySelector("[data-coursefiles-layout=list]").click();'
+            . 'form.querySelector("[data-coursefiles-options]").open=true;'
+            . 'form.querySelector("[data-coursefiles-clear-filters]").click();'
+            . 'window.coursefilesResetState.choicesblocked=[...form.querySelectorAll("[data-coursefiles-choice]")]'
             . '.every(choice=>choice.disabled);},650);});'
         );
         if (
             !$this->getSession()->wait(
                 15000,
-                'window.multipickerResetState.busy&&window.multipickerResetState.form.elements.q.value===""'
-                . '&&window.multipickerResetState.choicesblocked'
-                . '&&window.multipickerResetState.form.querySelector("[data-multipicker-filter-count]").textContent.trim()===""'
-                . '&&window.multipickerResetState.form.getAttribute("aria-busy")!=="true"'
+                'window.coursefilesResetState.busy&&window.coursefilesResetState.form.elements.q.value===""'
+                . '&&window.coursefilesResetState.choicesblocked'
+                . '&&window.coursefilesResetState.form.querySelector("[data-coursefiles-filter-count]").textContent.trim()===""'
+                . '&&window.coursefilesResetState.form.getAttribute("aria-busy")!=="true"'
             )
         ) {
             throw new \Exception('Clearing the pending search did not apply unrestricted results.');
         }
         $correct = $this->getSession()->getDriver()->evaluateScript(
-            '(()=>{const state=window.multipickerResetState,form=state.form;'
+            '(()=>{const state=window.coursefilesResetState,form=state.form;'
             . 'return form.isConnected&&form.dataset.layout==="list"&&form.elements.layout.value==="list"'
             . '&&form.elements.profileid.value===state.profile'
-            . '&&form.querySelectorAll("[data-multipicker-layout].active").length===1'
-            . '&&form.querySelector("[data-multipicker-layout=list]").getAttribute("aria-pressed")==="true"'
-            . '&&form.querySelector("[data-multipicker-clear-filters]").disabled'
-            . '&&[...form.querySelectorAll("[data-multipicker-filter]:not([name=profileid])")].every(input=>input.value==="")'
-            . '&&[...form.querySelectorAll("[data-multipicker-course-toggle]")].every(heading=>'
+            . '&&form.querySelectorAll("[data-coursefiles-layout].active").length===1'
+            . '&&form.querySelector("[data-coursefiles-layout=list]").getAttribute("aria-pressed")==="true"'
+            . '&&form.querySelector("[data-coursefiles-clear-filters]").disabled'
+            . '&&[...form.querySelectorAll("[data-coursefiles-filter]:not([name=profileid])")].every(input=>input.value==="")'
+            . '&&[...form.querySelectorAll("[data-coursefiles-course-toggle]")].every(heading=>'
             . 'heading.hidden&&!heading.getClientRects().length);})()'
         );
         if (!$correct) {
@@ -842,7 +842,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Select one visible source card by title and course.
      *
-     * @When /^I select MultiPicker material "([^"]*)" from "([^"]*)"$/
+     * @When /^I select CourseFiles material "([^"]*)" from "([^"]*)"$/
      * @param string $title Visible file or folder title.
      * @param string $course Source shortname.
      */
@@ -851,9 +851,9 @@ class behat_local_multipicker extends behat_base {
         $script = 'const doc=document.querySelector(".fp-object-container").contentDocument;'
             . 'const card=[...doc.querySelectorAll(".card-body")].find(card=>'
             . 'card.querySelector("label").textContent.trim()===' . json_encode($title)
-            . '&&card.querySelector(".multipicker-origin").textContent.startsWith(' . json_encode($course) . '));'
+            . '&&card.querySelector(".coursefiles-origin").textContent.startsWith(' . json_encode($course) . '));'
             . 'if(!card){throw new Error("Source card unavailable");}'
-            . 'card.querySelector(".multipicker-origin").click();'
+            . 'card.querySelector(".coursefiles-origin").click();'
             . 'if(!card.querySelector("input[type=checkbox]").checked){throw new Error("Whole-card selection failed");}';
         $this->getSession()->getDriver()->executeScript($script);
     }
@@ -861,7 +861,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Press an embedded action using the real HTML form or native chooser completion.
      *
-     * @When /^I press MultiPicker action "([^"]*)"$/
+     * @When /^I press CourseFiles action "([^"]*)"$/
      * @param string $label Action text.
      */
     public function press_action(string $label): void {
@@ -876,18 +876,18 @@ class behat_local_multipicker extends behat_base {
         }
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'if(doc.querySelector("form [name=scope]")){window.multipickerTestScope=doc.querySelector("form '
+            . 'if(doc.querySelector("form [name=scope]")){window.coursefilesTestScope=doc.querySelector("form '
                 . '[name=scope]").value;}'
-            . 'window.multipickerPreviousDocument=doc;window.multipickerPreviousForm=doc.querySelector(".multi'
-                . 'picker-browser");const button=[...doc.querySelectorAll("button")]'
+            . 'window.coursefilesPreviousDocument=doc;window.coursefilesPreviousForm=doc.querySelector(".course'
+                . 'files-browser");const button=[...doc.querySelectorAll("button")]'
             . '.find(button=>button.textContent.trim()==='
             . json_encode($label) . ');if(!button){throw new Error("Action unavailable");}button.click();'
         );
         if (in_array($label, ['Search materials', 'Review selection'], true)) {
             $this->getSession()->wait(
                 10000,
-                'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-br'
-                . 'owser")!==window.multipickerPreviousForm'
+                'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".coursefiles-br'
+                . 'owser")!==window.coursefilesPreviousForm'
                 . '&&document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
             );
         }
@@ -902,17 +902,17 @@ class behat_local_multipicker extends behat_base {
     /**
      * Check the actual rendered review, including native source declarations.
      *
-     * @Then /^the MultiPicker review should include "([^"]*)"$/
+     * @Then /^the CourseFiles review should include "([^"]*)"$/
      * @param string $text Expected review text.
      */
     public function review_includes(string $text): void {
         $this->wait_for_browser();
         $found = $this->getSession()->wait(
             10000,
-            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-se'
+            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".coursefiles-se'
                 . 'lection-review")'
             . '&&(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'return doc.querySelector(".multipicker-selection-review").textContent.includes(' . json_encode($text) . ')'
+            . 'return doc.querySelector(".coursefiles-selection-review").textContent.includes(' . json_encode($text) . ')'
             . '||[...doc.querySelectorAll("input[name^=renames]")].some(input=>input.value.includes('
             . json_encode($text) . '));})()'
         );
@@ -924,7 +924,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Set a visible browser filter and retain the native HTML form submission.
      *
-     * @When /^I set MultiPicker filter "([^"]*)" to "([^"]*)"$/
+     * @When /^I set CourseFiles filter "([^"]*)" to "([^"]*)"$/
      * @param string $name Filter field name.
      * @param string $value Requested filter value.
      */
@@ -932,9 +932,9 @@ class behat_local_multipicker extends behat_base {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'window.multipickerPreviousDocument=doc;window.multipickerPreviousForm=doc.querySelector(".multi'
-                . 'picker-browser");'
-            . 'window.multipickerPreviousRefresh=doc.querySelector("[data-multipicker-results]").dataset.refresh;'
+            . 'window.coursefilesPreviousDocument=doc;window.coursefilesPreviousForm=doc.querySelector(".course'
+                . 'files-browser");'
+            . 'window.coursefilesPreviousRefresh=doc.querySelector("[data-coursefiles-results]").dataset.refresh;'
             . 'const field=doc.getElementsByName(' . json_encode($name) . ')[0];'
             . 'field.focus();field.value=' . json_encode($value) . ';field.dispatchEvent(new Event("input",{bubbles:true}));'
             . 'field.dispatchEvent(new Event("change",{bubbles:true}));'
@@ -942,8 +942,8 @@ class behat_local_multipicker extends behat_base {
         if (
             !$this->getSession()->wait(
                 10000,
-                'document.querySelector(".fp-object-container")?.contentDocument?.querySelector("[data-multipick'
-                . 'er-results]").dataset.refresh!==window.multipickerPreviousRefresh'
+                'document.querySelector(".fp-object-container")?.contentDocument?.querySelector("[data-course'
+                . 'files-results]").dataset.refresh!==window.coursefilesPreviousRefresh'
                 . '&&document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
             )
         ) {
@@ -956,7 +956,7 @@ class behat_local_multipicker extends behat_base {
         if ($name === 'q') {
             $retained = $this->getSession()->getDriver()->evaluateScript(
                 '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-                . 'return doc===window.multipickerPreviousDocument&&doc.activeElement?.name==="q";})()'
+                . 'return doc===window.coursefilesPreviousDocument&&doc.activeElement?.name==="q";})()'
             );
             if (!$retained) {
                 throw new \Exception('Automatic search reloaded the document or lost the search field focus.');
@@ -967,7 +967,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Count the visible file cards, independent of synthetic folder cards.
      *
-     * @Then /^I should see "([0-9]+)" MultiPicker file cards named "([^"]*)"$/
+     * @Then /^I should see "([0-9]+)" CourseFiles file cards named "([^"]*)"$/
      * @param int $count Expected matching visible file cards.
      * @param string $title File name.
      */
@@ -987,7 +987,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Verify hidden or filtered origins are absent from the rendered browser.
      *
-     * @Then /^the MultiPicker browser should not include "([^"]*)"$/
+     * @Then /^the CourseFiles browser should not include "([^"]*)"$/
      * @param string $text Excluded visible text.
      */
     public function browser_excludes(string $text): void {
@@ -995,7 +995,7 @@ class behat_local_multipicker extends behat_base {
         $found = $this->getSession()->wait(
             10000,
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'return !doc.querySelector(".multipicker-browser").textContent.includes(' . json_encode($text) . ')'
+            . 'return !doc.querySelector(".coursefiles-browser").textContent.includes(' . json_encode($text) . ')'
             . '&&![...doc.querySelectorAll("input[name^=renames]")].some(input=>input.value.includes('
             . json_encode($text) . '));})()'
         );
@@ -1007,7 +1007,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Deny activity settings while retaining the native Folder content permission.
      *
-     * @Given /^the MultiPicker teacher can only manage folder content$/
+     * @Given /^the CourseFiles teacher can only manage folder content$/
      */
     public function restrict_folder_teacher(): void {
         global $DB;
@@ -1025,7 +1025,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Remove a resulting file after its source card was filtered out.
      *
-     * @When /^I remove MultiPicker reviewed file "([^"]*)"$/
+     * @When /^I remove CourseFiles reviewed file "([^"]*)"$/
      * @param string $filename Reviewed destination name.
      */
     public function remove_reviewed_file(string $filename): void {
@@ -1033,14 +1033,14 @@ class behat_local_multipicker extends behat_base {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'window.multipickerPreviousForm=doc.querySelector(".multipicker-browser");'
+            . 'window.coursefilesPreviousForm=doc.querySelector(".coursefiles-browser");'
             . 'const input=[...doc.querySelectorAll("input[name^=renames]")].find(input=>input.value==='
-            . json_encode($filename) . ');input.closest(".multipicker-tree-file").querySelector("button[name=removeitem]").click();'
+            . json_encode($filename) . ');input.closest(".coursefiles-tree-file").querySelector("button[name=removeitem]").click();'
         );
         $this->getSession()->wait(
             10000,
-            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-br'
-                . 'owser")!==window.multipickerPreviousForm'
+            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".coursefiles-br'
+                . 'owser")!==window.coursefilesPreviousForm'
         );
         $this->wait_for_browser();
         $this->back_to_selection();
@@ -1050,7 +1050,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Navigate an actual source folder without changing its selection.
      *
-     * @When /^I open MultiPicker folder "([^"]*)" from "([^"]*)"$/
+     * @When /^I open CourseFiles folder "([^"]*)" from "([^"]*)"$/
      * @param string $name Folder label.
      * @param string $course Source shortname.
      */
@@ -1058,16 +1058,16 @@ class behat_local_multipicker extends behat_base {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'window.multipickerPreviousForm=doc.querySelector(".multipicker-browser");'
+            . 'window.coursefilesPreviousForm=doc.querySelector(".coursefiles-browser");'
             . 'const card=[...doc.querySelectorAll(".card-body")].find(card=>'
             . 'card.querySelector("label").textContent.trim()===' . json_encode($name)
-            . '&&card.querySelector(".multipicker-origin")?.textContent.startsWith(' . json_encode($course) . '));'
-            . 'card.querySelector(".multipicker-open").click();'
+            . '&&card.querySelector(".coursefiles-origin")?.textContent.startsWith(' . json_encode($course) . '));'
+            . 'card.querySelector(".coursefiles-open").click();'
         );
         $this->getSession()->wait(
             10000,
-            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-browser")'
-            . '!==window.multipickerPreviousForm'
+            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".coursefiles-browser")'
+            . '!==window.coursefilesPreviousForm'
         );
         $this->wait_for_browser();
     }
@@ -1075,7 +1075,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Deselect one real file after recursively selecting its enclosing folder.
      *
-     * @When /^I deselect MultiPicker file "([^"]*)"$/
+     * @When /^I deselect CourseFiles file "([^"]*)"$/
      * @param string $name Source file label.
      */
     public function deselect_source_file(string $name): void {
@@ -1093,7 +1093,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Count resolved files rather than source folder locators.
      *
-     * @Then /^MultiPicker should have "([0-9]+)" selected files$/
+     * @Then /^CourseFiles should have "([0-9]+)" selected files$/
      * @param int $count Expected resolved files.
      */
     public function selected_file_count(int $count): void {
@@ -1101,7 +1101,7 @@ class behat_local_multipicker extends behat_base {
             !$this->getSession()->wait(
                 10000,
                 'Number(document.querySelector(".fp-object-container")?.contentDocument'
-                . '?.querySelector("[data-multipicker-count]")?.textContent)===' . $count
+                . '?.querySelector("[data-coursefiles-count]")?.textContent)===' . $count
             )
         ) {
             throw new \Exception('The recursive file count is incorrect.');
@@ -1112,7 +1112,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Rename through the visible review input and rebuild server approval.
      *
-     * @When /^I rename MultiPicker reviewed file "([^"]*)" to "([^"]*)"$/
+     * @When /^I rename CourseFiles reviewed file "([^"]*)" to "([^"]*)"$/
      * @param string $previous Current destination filename.
      * @param string $name New destination filename.
      */
@@ -1120,29 +1120,29 @@ class behat_local_multipicker extends behat_base {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'window.multipickerPreviousForm=doc.querySelector(".multipicker-browser");'
+            . 'window.coursefilesPreviousForm=doc.querySelector(".coursefiles-browser");'
             . 'const input=[...doc.querySelectorAll("input[name^=renames]")].find(input=>input.value==='
-            . json_encode($previous) . ');input.closest(".multipicker-tree-file")'
-            . '.querySelector("[data-multipicker-rename]").click();'
+            . json_encode($previous) . ');input.closest(".coursefiles-tree-file")'
+            . '.querySelector("[data-coursefiles-rename]").click();'
         );
         if (
             !$this->getSession()->wait(
                 10000,
-                '!!document.querySelector(".fp-object-container").contentDocument.querySelector("[data-multipick'
-                . 'er-filename]")'
+                '!!document.querySelector(".fp-object-container").contentDocument.querySelector("[data-course'
+                . 'files-filename]")'
             )
         ) {
             throw new \Exception('The native rename modal did not open.');
         }
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const input=doc.querySelector("[data-multipicker-filename]");input.value=' . json_encode($name) . ';'
+            . 'const input=doc.querySelector("[data-coursefiles-filename]");input.value=' . json_encode($name) . ';'
             . 'input.closest(".modal").querySelector("[data-action=save]").click();'
         );
         $this->getSession()->wait(
             10000,
-            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-browser")'
-            . '!==window.multipickerPreviousForm'
+            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".coursefiles-browser")'
+            . '!==window.coursefilesPreviousForm'
         );
         $this->wait_for_browser();
     }
@@ -1151,19 +1151,19 @@ class behat_local_multipicker extends behat_base {
     /**
      * Use a real native instance name before rendering the owning activity.
      *
-     * @Given /^the native MultiPicker repository is named "([^"]*)"$/
+     * @Given /^the native CourseFiles repository is named "([^"]*)"$/
      * @param string $name Repository instance name.
      */
     public function name_repository(string $name): void {
         global $DB;
-        $typeid = $DB->get_field('repository', 'id', ['type' => 'multipicker'], MUST_EXIST);
+        $typeid = $DB->get_field('repository', 'id', ['type' => 'coursefiles'], MUST_EXIST);
         $DB->set_field('repository_instances', 'name', $name, ['typeid' => $typeid]);
     }
 
     /**
      * Check the same configured name on the native sidebar and embedded heading.
      *
-     * @Then /^the MultiPicker heading should be "([^"]*)"$/
+     * @Then /^the CourseFiles heading should be "([^"]*)"$/
      * @param string $name Configured name.
      */
     public function repository_heading(string $name): void {
@@ -1181,28 +1181,28 @@ class behat_local_multipicker extends behat_base {
     /**
      * Continue typing while a real Fragment response is intentionally delayed.
      *
-     * @When /^I filter MultiPicker while its results are loading$/
+     * @When /^I filter CourseFiles while its results are loading$/
      */
     public function filter_while_loading(): void {
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const frame=doc.defaultView;window.multipickerLiveFilter=null;'
+            . 'const frame=doc.defaultView;window.coursefilesLiveFilter=null;'
             . 'const height=document.querySelector(".file-picker").getBoundingClientRect().height;'
             . 'frame.require(["core/fragment"],module=>{const fragment=module.default||module;'
             . 'const load=fragment.loadFragment.bind(fragment);fragment.loadFragment=(...args)=>'
             . 'new Promise((resolve,reject)=>setTimeout(()=>load(...args).then(resolve,reject),500));'
             . 'const input=doc.querySelector("input[name=q]");input.focus();input.value="notes";'
             . 'input.dispatchEvent(new Event("input",{bubbles:true}));'
-            . 'setTimeout(()=>{window.multipickerLiveFilter={input,height,enabled:!input.disabled,'
+            . 'setTimeout(()=>{window.coursefilesLiveFilter={input,height,enabled:!input.disabled,'
             . 'focused:doc.activeElement===input,busy:doc.querySelector("form").getAttribute("aria-busy")==="true"};'
             . 'input.value="notes2025";input.dispatchEvent(new Event("input",{bubbles:true}));},650);});'
         );
         if (
             !$this->getSession()->wait(
                 15000,
-                'window.multipickerLiveFilter&&document.querySelector(".fp-object-container").contentDocument'
-                . '.querySelector(".multipicker-card-title")?.textContent.trim()==="notes2025.txt"'
+                'window.coursefilesLiveFilter&&document.querySelector(".fp-object-container").contentDocument'
+                . '.querySelector(".coursefiles-card-title")?.textContent.trim()==="notes2025.txt"'
             )
         ) {
             throw new \Exception('The latest filter text was not applied after the pending response.');
@@ -1210,7 +1210,7 @@ class behat_local_multipicker extends behat_base {
         $this->wait_for_browser();
         $valid = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'const state=window.multipickerLiveFilter;return state.enabled&&state.focused&&state.busy'
+            . 'const state=window.coursefilesLiveFilter;return state.enabled&&state.focused&&state.busy'
             . '&&doc.activeElement===state.input&&state.input.value==="notes2025"'
             . '&&Math.abs(document.querySelector(".file-picker").getBoundingClientRect().height-state.height)<=1;})()'
         );
@@ -1222,13 +1222,13 @@ class behat_local_multipicker extends behat_base {
     /**
      * Capture the actual embedded picker at desktop and mobile widths.
      *
-     * @Then /^I capture the MultiPicker browser$/
+     * @Then /^I capture the CourseFiles browser$/
      */
     public function capture_browser(): void {
         $this->wait_for_browser();
         $page = $this->getSession()->getDriver()->evaluateScript(
             'document.querySelector(".fp-object-container").contentDocument'
-            . '.querySelector(".multipicker-selection-review")?"review":"browser"'
+            . '.querySelector(".coursefiles-selection-review")?"review":"browser"'
         );
         foreach (['desktop' => 1366, 'mobile' => 480] as $size => $width) {
             $this->getSession()->resizeWindow($width, 900);
@@ -1243,7 +1243,7 @@ class behat_local_multipicker extends behat_base {
             $this->getSession()->getDriver()->executeScript(
                 'document.querySelector(".fp-object-container").contentDocument.defaultView.scrollTo(0,0);'
             );
-            file_put_contents('/tmp/multipicker-' . $page . '-' . $size . '.png', $this->getSession()->getScreenshot());
+            file_put_contents('/tmp/coursefiles-' . $page . '-' . $size . '.png', $this->getSession()->getScreenshot());
         }
         $this->getSession()->resizeWindow(1366, 1000);
     }
@@ -1255,23 +1255,23 @@ class behat_local_multipicker extends behat_base {
         $ready = $this->getSession()->wait(
             10000,
             'document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
-            . '&&document.querySelector(".fp-object-container").contentDocument.querySelector(".multipicker-br'
-                . 'owser")?.dataset.multipickerReady==="true"'
-            . '&&document.querySelector(".fp-object-container").contentDocument.querySelector(".multipicker-br'
+            . '&&document.querySelector(".fp-object-container").contentDocument.querySelector(".coursefiles-br'
+                . 'owser")?.dataset.coursefilesReady==="true"'
+            . '&&document.querySelector(".fp-object-container").contentDocument.querySelector(".coursefiles-br'
                 . 'owser")?.getAttribute("aria-busy")!=="true"'
         );
         if (!$ready) {
-            throw new \Exception('The native MultiPicker browser did not load.');
+            throw new \Exception('The native CourseFiles browser did not load.');
         }
     }
     /**
      * Wait for the serialized small-state response before checking saved decisions.
-     * @Then /^I wait for the MultiPicker migration selection to save$/
+     * @Then /^I wait for the CourseFiles migration selection to save$/
      */
     public function migration_selection_saved(): void {
         $this->spin(function () {
             return $this->getSession()->evaluateScript(
-                "(function() {const root = document.querySelector('[data-region=multipicker-migration]');"
+                "(function() {const root = document.querySelector('[data-region=coursefiles-migration]');"
                 . "return root && root.dataset.ready === 'true' && Number(root.dataset.pending || 0) === 0;})()"
             );
         }, null, 20);
@@ -1279,22 +1279,22 @@ class behat_local_multipicker extends behat_base {
 
     /**
      * Remember the real DOM node before a selection-only request.
-     * @When /^I remember the visible MultiPicker migration item$/
+     * @When /^I remember the visible CourseFiles migration item$/
      */
     public function remember_migration_item(): void {
         $this->getSession()->executeScript(
-            'window.multipickerRememberedItem = document.querySelector("[data-multipicker-operation]");'
+            'window.coursefilesRememberedItem = document.querySelector("[data-coursefiles-operation]");'
         );
     }
 
     /**
      * Selection-only responses must not replace the visible files.
-     * @Then /^the visible MultiPicker migration item should be preserved$/
+     * @Then /^the visible CourseFiles migration item should be preserved$/
      */
     public function migration_item_preserved(): void {
         if (
             !$this->getSession()->evaluateScript(
-                'window.multipickerRememberedItem === document.querySelector("[data-multipicker-operation]")'
+                'window.coursefilesRememberedItem === document.querySelector("[data-coursefiles-operation]")'
             )
         ) {
             throw new \Exception('Selecting a file replaced its visible DOM node.');
@@ -1303,11 +1303,11 @@ class behat_local_multipicker extends behat_base {
 
     /**
      * Migration bulk deletion is available only for an explicit current-page selection.
-     * @Then /^MultiPicker migration bulk actions should be "(hidden|visible)"$/
+     * @Then /^CourseFiles migration bulk actions should be "(hidden|visible)"$/
      * @param string $expected Expected visibility.
      */
     public function migration_bulk_actions(string $expected): void {
-        $control = $this->getSession()->getPage()->find('css', '[data-multipicker-migrations] [data-multipicker-bulk-actions]');
+        $control = $this->getSession()->getPage()->find('css', '[data-coursefiles-migrations] [data-coursefiles-bulk-actions]');
         if (!$control || $control->isVisible() !== ($expected === 'visible')) {
             throw new \Exception('Migration bulk actions do not follow the explicit selection.');
         }

@@ -17,12 +17,12 @@
 /**
  * Capture scope and layout selection before preview.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\form;
+namespace local_coursefiles\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -45,16 +45,16 @@ final class migration_form extends \moodleform {
             if (!$this->_customdata['dimensions']) {
                 continue;
             }
-            $form->addElement('header', $side . 'scope', get_string($side . 'courses', 'local_multipicker'));
+            $form->addElement('header', $side . 'scope', get_string($side . 'courses', 'local_coursefiles'));
             $form->setExpanded($side . 'scope', true);
             foreach ($this->_customdata['dimensions'] as $key => $label) {
                 $name = $side . 'filters[' . $key . ']';
                 $form->addElement('text', $name, $label, ['maxlength' => 255]);
                 $form->setType($name, PARAM_TEXT);
-                $form->addHelpButton($name, 'migrationfilter', 'local_multipicker');
+                $form->addHelpButton($name, 'migrationfilter', 'local_coursefiles');
             }
         }
-        $form->addElement('header', 'placementreview', get_string('migrationrules', 'local_multipicker'));
+        $form->addElement('header', 'placementreview', get_string('migrationrules', 'local_coursefiles'));
         $form->setExpanded('placementreview', true);
         $migration = $this->_customdata['migration'] ?? [];
         if (!$migration) {
@@ -80,26 +80,26 @@ final class migration_form extends \moodleform {
         $form->addElement(
             'textarea',
             'correspondencesjson',
-            get_string('foldercorrespondences', 'local_multipicker'),
+            get_string('foldercorrespondences', 'local_coursefiles'),
             ['rows' => 8, 'id' => 'id_correspondencesjson']
         );
         $form->setType('correspondencesjson', PARAM_RAW);
         $form->setDefault('correspondencesjson', json_encode($rows));
         $moduleoptions = [];
-        foreach (\local_multipicker\local\catalog\source_registry::module_names() as $module => $label) {
+        foreach (\local_coursefiles\local\catalog\source_registry::module_names() as $module => $label) {
             $moduleoptions[] = ['value' => $module, 'label' => $label];
         }
-        $columns = [['key' => 'sourcetype', 'label' => get_string('modulefilter', 'local_multipicker'),
+        $columns = [['key' => 'sourcetype', 'label' => get_string('modulefilter', 'local_coursefiles'),
             'type' => 'text', 'options' => $moduleoptions]];
         foreach (['source', 'target'] as $side) {
-            $columns[] = ['key' => $side . 'field', 'label' => get_string($side . 'folderfield', 'local_multipicker'),
+            $columns[] = ['key' => $side . 'field', 'label' => get_string($side . 'folderfield', 'local_coursefiles'),
                 'type' => 'text', 'options' => [['value' => 'name', 'label' => get_string('name')],
                 ['value' => 'idnumber', 'label' => get_string('idnumber')]]];
-            $columns[] = ['key' => $side . 'method', 'label' => get_string('matchmethod', 'local_multipicker'),
-                'type' => 'text', 'options' => [['value' => 'equals', 'label' => get_string('exactmatch', 'local_multipicker')],
-                ['value' => 'pattern', 'label' => get_string('regexmatch', 'local_multipicker')],
-                ['value' => 'template', 'label' => get_string('templatematch', 'local_multipicker')]]];
-            $columns[] = ['key' => $side . 'value', 'label' => get_string($side . 'foldervalue', 'local_multipicker'),
+            $columns[] = ['key' => $side . 'method', 'label' => get_string('matchmethod', 'local_coursefiles'),
+                'type' => 'text', 'options' => [['value' => 'equals', 'label' => get_string('exactmatch', 'local_coursefiles')],
+                ['value' => 'pattern', 'label' => get_string('regexmatch', 'local_coursefiles')],
+                ['value' => 'template', 'label' => get_string('templatematch', 'local_coursefiles')]]];
+            $columns[] = ['key' => $side . 'value', 'label' => get_string($side . 'foldervalue', 'local_coursefiles'),
                 'type' => 'text', 'maxlength' => 2048];
         }
         row_data::enhance($form, 'correspondencesjson', $columns, 20);
@@ -112,9 +112,9 @@ final class migration_form extends \moodleform {
         foreach ($choices as $name => $values) {
             $labels = [];
             foreach ($values as $key => $label) {
-                $labels[$key] = get_string($label, 'local_multipicker');
+                $labels[$key] = get_string($label, 'local_coursefiles');
             }
-            $form->addElement('select', $name, get_string($name, 'local_multipicker'), $labels);
+            $form->addElement('select', $name, get_string($name, 'local_coursefiles'), $labels);
         }
         $form->setDefault('sectionstrategy', $migration['section_match']['strategy'] ?? 'ordinal');
         $form->setDefault('duplicatepolicy', $migration['same_content_different_path'] ?? 'skip-and-report');
@@ -123,7 +123,7 @@ final class migration_form extends \moodleform {
         $form->addElement(
             'textarea',
             'sectionmapjson',
-            get_string('section_mapping', 'local_multipicker'),
+            get_string('section_mapping', 'local_coursefiles'),
             ['rows' => 4, 'id' => 'id_sectionmapjson']
         );
         $form->setType('sectionmapjson', PARAM_RAW);
@@ -133,14 +133,14 @@ final class migration_form extends \moodleform {
         }
         $form->setDefault('sectionmapjson', json_encode($sectionrows));
         row_data::enhance($form, 'sectionmapjson', [
-            ['key' => 'source', 'label' => get_string('sourcesectionid', 'local_multipicker'), 'type' => 'text'],
-            ['key' => 'target', 'label' => get_string('targetsectionid', 'local_multipicker'), 'type' => 'text'],
+            ['key' => 'source', 'label' => get_string('sourcesectionid', 'local_coursefiles'), 'type' => 'text'],
+            ['key' => 'target', 'label' => get_string('targetsectionid', 'local_coursefiles'), 'type' => 'text'],
         ], 200);
         $form->hideIf('sectionmapjson', 'sectionstrategy', 'neq', 'mapping');
-        $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_multipicker'));
+        $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_coursefiles'));
         $form->hideIf('layoutconfirmed', 'sectionstrategy', 'neq', 'ordinal');
         $buttons = [
-            $form->createElement('submit', 'submitbutton', get_string('createpreview', 'local_multipicker')),
+            $form->createElement('submit', 'submitbutton', get_string('createpreview', 'local_coursefiles')),
         ];
         $form->addGroup($buttons, 'buttons', '', [' '], false);
         $form->closeHeaderBefore('buttons');
@@ -148,7 +148,7 @@ final class migration_form extends \moodleform {
             ['correspondencesjson', 'sectionstrategy', 'duplicatepolicy', 'missingtarget',
             'conflictpolicy', 'sectionmapjson', 'layoutconfirmed'] as $name
         ) {
-            $form->addHelpButton($name, $name, 'local_multipicker');
+            $form->addHelpButton($name, $name, 'local_coursefiles');
         }
     }
 
@@ -162,18 +162,18 @@ final class migration_form extends \moodleform {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
         try {
-            \local_multipicker\local\migration\migration_rules::from_form($data);
+            \local_coursefiles\local\migration\migration_rules::from_form($data);
         } catch (\moodle_exception $exception) {
             $errors['correspondencesjson'] = $exception->getMessage();
         }
         if (($data['sectionstrategy'] ?? '') === 'ordinal' && empty($data['layoutconfirmed'])) {
-            $errors['layoutconfirmed'] = get_string('layoutrequired', 'local_multipicker');
+            $errors['layoutconfirmed'] = get_string('layoutrequired', 'local_coursefiles');
         }
         if (
             $this->_customdata['dimensions'] && empty(array_filter($data['sourcefilters'] ?? []))
             && empty(array_filter($data['targetfilters'] ?? []))
         ) {
-            $errors['correspondencesjson'] = get_string('migrationscoperequired', 'local_multipicker');
+            $errors['correspondencesjson'] = get_string('migrationscoperequired', 'local_coursefiles');
         }
         return $errors;
     }

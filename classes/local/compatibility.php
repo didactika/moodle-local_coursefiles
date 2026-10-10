@@ -15,30 +15,28 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Native browser fixture generator mapping.
+ * Small shared adapters for supported legacy runtimes.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace local_coursefiles\local;
 
 /**
- * Makes published multi-edition materials available to native browser scenarios.
+
+ * Keep PHP 8.0 support without installing global polyfills.
+
  */
-final class behat_local_multipicker_generator extends behat_generator_base {
+final class compatibility {
     /**
-     * Describe component fixtures available to Moodle's generic generator step.
+     * Check for consecutive integer keys starting at zero.
      *
-     * @return array Entities.
+     * @param array $value Input array.
+     * @return bool Consecutive integer keys starting at zero.
      */
-    protected function get_creatable_entities(): array {
-        return ['folder fixtures' => [
-            'singular' => 'folder fixture', 'datagenerator' => 'folder_fixture', 'required' => ['name'],
-        ], 'migration fixtures' => [
-            'singular' => 'migration fixture', 'datagenerator' => 'migration_fixture', 'required' => ['name'],
-        ], 'pagination fixtures' => [
-            'singular' => 'pagination fixture', 'datagenerator' => 'pagination_fixture', 'required' => ['name'],
-        ]];
+    public static function is_list(array $value): bool {
+        return array_keys($value) === array_keys(array_values($value));
     }
 }

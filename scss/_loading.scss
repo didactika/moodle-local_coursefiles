@@ -4,21 +4,21 @@
 
 /* Light result placeholders leave surrounding controls and dimensions intact. */
 
-.multipicker-loading {
+.coursefiles-loading {
     pointer-events: none;
 }
 
-.multipicker-skeleton {
+.coursefiles-skeleton {
     display: none;
 }
 
-.multipicker-loading > .multipicker-cards, .multipicker-loading > .multipicker-empty,
-.multipicker-loading > .multipicker-pagination {
+.coursefiles-loading > .coursefiles-cards, .coursefiles-loading > .coursefiles-empty,
+.coursefiles-loading > .coursefiles-pagination {
     display: none;
 }
 
-.multipicker-loading {
-    > .multipicker-skeleton {
+.coursefiles-loading {
+    > .coursefiles-skeleton {
         display: grid;
         height: 100%;
         align-content: start;
@@ -27,24 +27,24 @@
     }
 }
 
-.multipicker-skeleton {
+.coursefiles-skeleton {
     span {
-        border-radius: var(--multipicker-radius);
+        border-radius: var(--coursefiles-radius);
         min-height: 7rem;
-        background: color-mix(in srgb, var(--multipicker-border) 35%, var(--multipicker-surface));
-        animation: multipicker-pulse 1s ease-in-out infinite alternate;
+        background: color-mix(in srgb, var(--coursefiles-border) 35%, var(--coursefiles-surface));
+        animation: coursefiles-pulse 1s ease-in-out infinite alternate;
     }
 }
 
-.multipicker-browser {
+.coursefiles-browser {
     &[data-layout=list] {
-        .multipicker-skeleton {
+        .coursefiles-skeleton {
             grid-template-columns: 1fr;
         }
     }
 }
 
-@keyframes multipicker-pulse {
+@keyframes coursefiles-pulse {
     to {
         opacity: .45;
     }

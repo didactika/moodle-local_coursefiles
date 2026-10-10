@@ -1,7 +1,7 @@
 /**
  * Typed adapter for Moodle APIs without an equivalent native ESM module.
  *
- * @module local_multipicker/compat/templates
+ * @module local_coursefiles/compat/templates
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

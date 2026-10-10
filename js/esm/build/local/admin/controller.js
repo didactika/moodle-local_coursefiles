@@ -1,6 +1,6 @@
-import o from"@moodle/lms/local_multipicker/local/admin/selectors";import{createBulkActions as r,createHistoryActions as i}from"@moodle/lms/local_multipicker/local/admin/actions";import{registerBulk as c,registerHistory as n,registerPagination as s}from"@moodle/lms/local_multipicker/local/admin/listeners";/**
+import o from"@moodle/lms/local_coursefiles/local/admin/selectors";import{createBulkActions as r,createHistoryActions as i}from"@moodle/lms/local_coursefiles/local/admin/actions";import{registerBulk as c,registerHistory as n,registerPagination as s}from"@moodle/lms/local_coursefiles/local/admin/listeners";/**
  * admin controller.
- * @module local_multipicker/local/admin/controller
+ * @module local_coursefiles/local/admin/controller
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

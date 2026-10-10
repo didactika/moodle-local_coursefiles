@@ -17,19 +17,21 @@
 /**
  * Theme-overridable native presentation context.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\output;
+namespace local_coursefiles\output;
 
 /**
  * Carries plain data to a named component template.
  */
 final class view implements \renderable, \templatable {
-    /** @var array Named views and their organized component templates. */
+    /**
+     * @var array Named views and their organized component templates.
+     */
     private const TEMPLATES = [
         'navigation' => 'local/navigation/tabs',
         'migration_setup' => 'local/migration/setup',
@@ -41,9 +43,13 @@ final class view implements \renderable, \templatable {
         'log' => 'local/log/index',
         'selection_review' => 'local/selection/review',
     ];
-    /** @var string Approved template name. */
+    /**
+     * @var string Approved template name.
+     */
     private string $template;
-    /** @var array Presentation data. */
+    /**
+     * @var array Presentation data.
+     */
     private array $data;
 
     /**
@@ -54,7 +60,7 @@ final class view implements \renderable, \templatable {
      */
     public function __construct(string $template, array $data) {
         if (!isset(self::TEMPLATES[$template])) {
-            throw new \coding_exception('Unknown MultiPicker view');
+            throw new \coding_exception('Unknown CourseFiles view');
         }
         $this->template = self::TEMPLATES[$template];
         $this->data = $data;
@@ -66,7 +72,7 @@ final class view implements \renderable, \templatable {
      * @return string Component template.
      */
     public function template(): string {
-        return 'local_multipicker/' . $this->template;
+        return 'local_coursefiles/' . $this->template;
     }
 
     /**
@@ -82,9 +88,9 @@ final class view implements \renderable, \templatable {
             return $data;
         }
         if ($this->template === 'local/navigation/tabs') {
-            $root = \navigation_node::create(get_string('pluginname', 'local_multipicker'));
+            $root = \navigation_node::create(get_string('pluginname', 'local_coursefiles'));
             foreach ($this->data['tabs'] as $index => $tab) {
-                $node = $root->add($tab['label'], new \moodle_url($tab['url']), null, null, 'multipicker-' . $index);
+                $node = $root->add($tab['label'], new \moodle_url($tab['url']), null, null, 'coursefiles-' . $index);
                 if ($tab['active']) {
                     $node->make_active();
                 }

@@ -17,31 +17,31 @@
 /**
  * Administration authorization and bounded review tests.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_coursefiles;
 
-use local_multipicker\form\profile_form;
-use local_multipicker\local\profile\profiles;
-use local_multipicker\output\migration_report;
-use local_multipicker\output\navigation;
+use local_coursefiles\form\profile_form;
+use local_coursefiles\local\profile\profiles;
+use local_coursefiles\output\migration_report;
+use local_coursefiles\output\navigation;
 
 /**
  * Tests the real presentation contracts and permissions.
  *
- * @covers \local_multipicker\output\migration_report
- * @covers \local_multipicker\output\navigation
- * @covers \local_multipicker\form\profile_form
- * @covers \local_multipicker\output\profile_summary
+ * @covers \local_coursefiles\output\migration_report
+ * @covers \local_coursefiles\output\navigation
+ * @covers \local_coursefiles\form\profile_form
+ * @covers \local_coursefiles\output\profile_summary
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\migration_report::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\navigation::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\form\profile_form::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\output\profile_summary::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\output\migration_report::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\output\navigation::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\form\profile_form::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\output\profile_summary::class)]
 final class admin_layout_test extends \advanced_testcase {
     /**
      * A delegated profile manager sees only the permitted administration tab.
@@ -51,11 +51,11 @@ final class admin_layout_test extends \advanced_testcase {
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();
         $roleid = create_role('Profile manager', 'profilemanager', '');
-        assign_capability('local/multipicker:manageprofiles', CAP_ALLOW, $roleid, \context_system::instance()->id);
+        assign_capability('local/coursefiles:manageprofiles', CAP_ALLOW, $roleid, \context_system::instance()->id);
         role_assign($roleid, $user->id, \context_system::instance()->id);
         $this->setUser($user);
         $PAGE->set_context(\context_system::instance());
-        $PAGE->set_url('/local/multipicker/admin/profiles.php');
+        $PAGE->set_url('/local/coursefiles/admin/profiles.php');
         $tabs = navigation::site('profiles')->export_for_template($PAGE->get_renderer('core'));
         $this->assertCount(1, $tabs['tabs']);
         $this->assertTrue($tabs['tabs'][0]['active']);
@@ -71,13 +71,13 @@ final class admin_layout_test extends \advanced_testcase {
         global $CFG, $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $json = file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json');
+        $json = file_get_contents($CFG->dirroot . '/local/coursefiles/examples/institutional-profile.json');
         $document = profile_form::document(['configjson' => $json, 'profilename' => 'Preview only']);
         $this->assertSame('Preview only', $document['name']);
-        $this->assertSame(0, $DB->count_records('local_multipicker_revision'));
-        $summary = \local_multipicker\output\profile_summary::data($document, false);
-        $html = $GLOBALS['OUTPUT']->render_from_template('local_multipicker/local/profile/summary', $summary);
-        $this->assertStringNotContainsString(get_string('rulesinuse', 'local_multipicker'), $html);
+        $this->assertSame(0, $DB->count_records('local_coursefiles_revision'));
+        $summary = \local_coursefiles\output\profile_summary::data($document, false);
+        $html = $GLOBALS['OUTPUT']->render_from_template('local_coursefiles/local/profile/summary', $summary);
+        $this->assertStringNotContainsString(get_string('rulesinuse', 'local_coursefiles'), $html);
         $this->assertStringContainsString('Preview only', $html);
         $this->expectException(\moodle_exception::class);
         profile_form::document(['configjson' => 'null', 'profilename' => 'Invalid']);
@@ -90,11 +90,11 @@ final class admin_layout_test extends \advanced_testcase {
         global $CFG, $DB, $USER;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json'), true);
+        $config = json_decode(file_get_contents($CFG->dirroot . '/local/coursefiles/examples/institutional-profile.json'), true);
         $profileid = profiles::save(json_encode($config));
         [$profile, $revision] = profiles::load($profileid);
         $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026', 'issues' => []]);
-        $planid = $DB->insert_record('local_multipicker_plan', (object)[
+        $planid = $DB->insert_record('local_coursefiles_plan', (object)[
             'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
             'userid' => $USER->id, 'configjson' => $document, 'digest' => hash('sha256', $document),
             'state' => 'blocked', 'timecreated' => time(),
@@ -102,7 +102,7 @@ final class admin_layout_test extends \advanced_testcase {
         $source = $this->getDataGenerator()->create_course();
         $target = $this->getDataGenerator()->create_course();
         for ($index = 0; $index < 58; $index++) {
-            $DB->insert_record('local_multipicker_operation', (object)[
+            $DB->insert_record('local_coursefiles_operation', (object)[
                 'planid' => $planid, 'opkey' => hash('sha256', (string)$index), 'sourcehash' => sha1((string)$index),
                 'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
                 'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),
@@ -134,7 +134,7 @@ final class admin_layout_test extends \advanced_testcase {
         $this->assertSame('file57.txt', $search['groups'][0]['operations'][0]['filename']);
         $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026',
             'issues' => array_fill(0, 61, ['reason' => 'ambiguous_course_pair'])]);
-        $DB->update_record('local_multipicker_plan', (object)[
+        $DB->update_record('local_coursefiles_plan', (object)[
             'id' => $planid, 'configjson' => $document, 'digest' => hash('sha256', $document),
         ]);
         $firstissues = migration_report::data($planid);

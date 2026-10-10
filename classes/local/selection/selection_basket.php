@@ -17,15 +17,15 @@
 /**
  * Authorized names for persistent mixed selections.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\selection;
+namespace local_coursefiles\local\selection;
 
-use local_multipicker\local\catalog\material_source;
-use local_multipicker\output\display;
+use local_coursefiles\local\catalog\material_source;
+use local_coursefiles\output\display;
 
 /**
 
@@ -48,7 +48,7 @@ final class selection_basket {
         foreach ($items as $item) {
             $value = isset($item['pathnamehash']) ? 'file:' . $item['pathnamehash']
                 : 'folder:' . $item['cmid'] . ':' . base64_encode($item['filepath']);
-            $title = get_string('selectionunavailable', 'local_multipicker');
+            $title = get_string('selectionunavailable', 'local_coursefiles');
             try {
                 $hash = $item['pathnamehash'] ?? '';
                 if (!$hash) {
@@ -73,7 +73,7 @@ final class selection_basket {
                     . display::name($cm->name, \context_module::instance($cm->id)) . ' / '
                     . (isset($item['filepath']) ? s($item['filepath']) : s($file->get_filename()));
             } catch (\moodle_exception $exception) {
-                $title = get_string('selectionunavailable', 'local_multipicker');
+                $title = get_string('selectionunavailable', 'local_coursefiles');
             }
             $rows[] = ['value' => $value, 'title' => $title];
         }

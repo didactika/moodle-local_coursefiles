@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -28,10 +28,10 @@ defined('MOODLE_INTERNAL') || die();
 $callbacks = [
     [
         'hook' => \core\hook\output\before_http_headers::class,
-        'callback' => \local_multipicker\output\navigation::class . '::open_category',
+        'callback' => \local_coursefiles\output\navigation::class . '::open_category',
     ],
     [
         'hook' => \core\hook\after_config::class,
-        'callback' => \local_multipicker\local\selection\native_integration::class . '::register',
+        'callback' => \local_coursefiles\local\selection\native_integration::class . '::register',
     ],
 ];

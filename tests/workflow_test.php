@@ -17,41 +17,41 @@
 /**
  * Administration authorization and bounded review tests.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_coursefiles;
 
-use local_multipicker\local\catalog\indexer;
-use local_multipicker\local\maintenance\retention;
-use local_multipicker\local\migration\migration_executor;
-use local_multipicker\local\migration\migration_planner;
-use local_multipicker\local\migration\plan_selection;
-use local_multipicker\local\profile\profiles;
+use local_coursefiles\local\catalog\indexer;
+use local_coursefiles\local\maintenance\retention;
+use local_coursefiles\local\migration\migration_executor;
+use local_coursefiles\local\migration\migration_planner;
+use local_coursefiles\local\migration\plan_selection;
+use local_coursefiles\local\profile\profiles;
 
 /**
  * Exercises native destinations, history retention and profile lifecycle.
  *
- * @covers \local_multipicker\local\migration\migration_planner
- * @covers \local_multipicker\local\migration\plan_resolution
- * @covers \local_multipicker\local\migration\plan_history
- * @covers \local_multipicker\local\migration\plan_selection
- * @covers \local_multipicker\local\migration\target_binding
- * @covers \local_multipicker\local\migration\migration_executor
- * @covers \local_multipicker\local\maintenance\retention
- * @covers \local_multipicker\local\profile\profiles
+ * @covers \local_coursefiles\local\migration\migration_planner
+ * @covers \local_coursefiles\local\migration\plan_resolution
+ * @covers \local_coursefiles\local\migration\plan_history
+ * @covers \local_coursefiles\local\migration\plan_selection
+ * @covers \local_coursefiles\local\migration\target_binding
+ * @covers \local_coursefiles\local\migration\migration_executor
+ * @covers \local_coursefiles\local\maintenance\retention
+ * @covers \local_coursefiles\local\profile\profiles
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\migration_planner::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\plan_resolution::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\plan_history::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\plan_selection::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\target_binding::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\migration_executor::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\maintenance\retention::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\migration\migration_planner::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\migration\plan_resolution::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\migration\plan_history::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\migration\plan_selection::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\migration\target_binding::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\migration\migration_executor::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\maintenance\retention::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\profile\profiles::class)]
 final class workflow_test extends \advanced_testcase {
     /**
      * Migration source types reuse public providers and exclude private assignment submissions.
@@ -60,10 +60,10 @@ final class workflow_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Public activity migration']);
         foreach (['resource' => 'Published resource', 'assign' => 'Public assignment handouts'] as $type => $name) {
-            $config = \local_multipicker\local\migration\migration_rules::from_form([
+            $config = \local_coursefiles\local\migration\migration_rules::from_form([
                 'sectionstrategy' => 'ordinal',
                 'correspondencesjson' => json_encode([[
                     'sourcetype' => $type, 'sourcefield' => 'name', 'sourcemethod' => 'equals', 'sourcevalue' => $name,
@@ -72,11 +72,11 @@ final class workflow_test extends \advanced_testcase {
             ]);
             $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', ['migration' => $config]);
             $this->assertSame('reviewable', $plan->state);
-            $operations = $DB->get_records('local_multipicker_operation', ['planid' => $plan->id]);
+            $operations = $DB->get_records('local_coursefiles_operation', ['planid' => $plan->id]);
             $this->assertCount(1, $operations);
             $run = migration_executor::queue($plan->id, $plan->digest);
             $this->assertFalse(migration_executor::execute($run));
-            $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $run]));
+            $this->assertSame('completed', $DB->get_field('local_coursefiles_run', 'state', ['id' => $run]));
         }
         $context = \context_module::instance($fixture['targetcmid']);
         $files = get_file_storage()->get_area_files($context->id, 'mod_folder', 'content', 0, 'filename', false);
@@ -93,7 +93,7 @@ final class workflow_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Conflict review']);
         $options = ['migration' => ['section_match' => ['strategy' => 'ordinal'], 'missing_target' => 'block',
             'correspondences' => [
@@ -104,11 +104,11 @@ final class workflow_test extends \advanced_testcase {
             ]]];
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', $options);
         $this->assertSame('blocked', $plan->state);
-        $operations = $DB->get_records('local_multipicker_operation', ['planid' => $plan->id]);
+        $operations = $DB->get_records('local_coursefiles_operation', ['planid' => $plan->id]);
         $ids = array_keys($operations);
         plan_selection::save($plan->id, $plan->digest, $ids, [$ids[0]]);
-        $plan = $DB->get_record('local_multipicker_plan', ['id' => $plan->id]);
-        $next = \local_multipicker\local\migration\plan_resolution::apply(
+        $plan = $DB->get_record('local_coursefiles_plan', ['id' => $plan->id]);
+        $next = \local_coursefiles\local\migration\plan_resolution::apply(
             $plan->id,
             $plan->digest,
             'issue',
@@ -116,9 +116,9 @@ final class workflow_test extends \advanced_testcase {
             'folder:' . $fixture['targetcmid']
         );
         $this->assertNotSame((int)$plan->id, $next);
-        $this->assertSame($plan->configjson, $DB->get_field('local_multipicker_plan', 'configjson', ['id' => $plan->id]));
-        $this->assertSame('reviewable', $DB->get_field('local_multipicker_plan', 'state', ['id' => $next]));
-        $this->assertSame(1, $DB->count_records('local_multipicker_operation', ['planid' => $next, 'included' => 0]));
+        $this->assertSame($plan->configjson, $DB->get_field('local_coursefiles_plan', 'configjson', ['id' => $plan->id]));
+        $this->assertSame('reviewable', $DB->get_field('local_coursefiles_plan', 'state', ['id' => $next]));
+        $this->assertSame(1, $DB->count_records('local_coursefiles_operation', ['planid' => $next, 'included' => 0]));
         $state = plan_selection::state($next, []);
         $this->assertTrue($state['cancontinue']);
         $this->assertSame(1, $state['included']);
@@ -132,7 +132,7 @@ final class workflow_test extends \advanced_testcase {
         global $DB, $CFG;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Create resolved destination']);
         $options = ['migration' => ['source_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Published materials'],
             'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Missing destination'],
@@ -140,7 +140,7 @@ final class workflow_test extends \advanced_testcase {
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', $options);
         $target = get_coursemodule_from_id('folder', $fixture['targetcmid']);
         $count = $DB->count_records('folder', ['course' => $target->course]);
-        $next = \local_multipicker\local\migration\plan_resolution::apply(
+        $next = \local_coursefiles\local\migration\plan_resolution::apply(
             $plan->id,
             $plan->digest,
             'issue',
@@ -148,7 +148,7 @@ final class workflow_test extends \advanced_testcase {
             'create:' . $target->section
         );
         $this->assertSame($count, $DB->count_records('folder', ['course' => $target->course]));
-        $plan = $DB->get_record('local_multipicker_plan', ['id' => $next]);
+        $plan = $DB->get_record('local_coursefiles_plan', ['id' => $next]);
         $this->assertSame('reviewable', $plan->state);
         $CFG->maintenance_enabled = false;
         $run = migration_executor::queue($next, $plan->digest);
@@ -156,7 +156,7 @@ final class workflow_test extends \advanced_testcase {
         while ($more) {
             $more = migration_executor::execute($run);
         }
-        $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $run]));
+        $this->assertSame('completed', $DB->get_field('local_coursefiles_run', 'state', ['id' => $run]));
         $this->assertSame($count + 1, $DB->count_records('folder', ['course' => $target->course]));
         $this->assertFalse((bool)$CFG->maintenance_enabled);
     }
@@ -168,7 +168,7 @@ final class workflow_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Whole review']);
         $source = get_fast_modinfo($DB->get_field('course', 'id', ['shortname' => 'CB2025']))->get_instances_of('folder');
         $cm = reset($source);
@@ -178,7 +178,7 @@ final class workflow_test extends \advanced_testcase {
                 'author' => 'Original teacher', 'license' => 'cc'], 'Unique lesson ' . $i);
         }
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
-        $ops = $DB->get_records('local_multipicker_operation', ['planid' => $plan->id], 'id', '*', 0, 10);
+        $ops = $DB->get_records('local_coursefiles_operation', ['planid' => $plan->id], 'id', '*', 0, 10);
         plan_selection::save($plan->id, $plan->digest, array_keys($ops), [], 'none');
         $state = plan_selection::state($plan->id, array_keys($ops));
         $this->assertSame(57, $state['total']);
@@ -192,15 +192,15 @@ final class workflow_test extends \advanced_testcase {
         $other = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         migration_executor::queue($plan->id, $state['digest']);
         try {
-            \local_multipicker\local\migration\plan_history::delete_many([$other->id, $plan->id]);
+            \local_coursefiles\local\migration\plan_history::delete_many([$other->id, $plan->id]);
             $this->fail('A queued plan must protect the entire deletion');
         } catch (\moodle_exception $exception) {
             $this->assertSame('migrationinuse', $exception->errorcode);
         }
-        $this->assertTrue($DB->record_exists('local_multipicker_plan', ['id' => $other->id]));
-        $this->assertTrue($DB->record_exists('local_multipicker_plan', ['id' => $plan->id]));
-        \local_multipicker\local\migration\plan_history::delete_many([$other->id]);
-        $this->assertFalse($DB->record_exists('local_multipicker_plan', ['id' => $other->id]));
+        $this->assertTrue($DB->record_exists('local_coursefiles_plan', ['id' => $other->id]));
+        $this->assertTrue($DB->record_exists('local_coursefiles_plan', ['id' => $plan->id]));
+        \local_coursefiles\local\migration\plan_history::delete_many([$other->id]);
+        $this->assertFalse($DB->record_exists('local_coursefiles_plan', ['id' => $other->id]));
     }
 
 
@@ -211,7 +211,7 @@ final class workflow_test extends \advanced_testcase {
         global $DB, $CFG;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Available site']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         $file = get_file_storage()->create_file_from_string([
@@ -222,7 +222,7 @@ final class workflow_test extends \advanced_testcase {
         $CFG->maintenance_enabled = false;
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $this->assertFalse(migration_executor::execute($runid));
-        $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
+        $this->assertSame('completed', $DB->get_field('local_coursefiles_run', 'state', ['id' => $runid]));
         $saved = get_file_storage()->get_file_by_hash($file->get_pathnamehash());
         $this->assertSame('New material from the teacher', $saved->get_content());
         $this->assertSame('Destination teacher', $saved->get_author());
@@ -245,7 +245,7 @@ final class workflow_test extends \advanced_testcase {
             'coursepattern' => '~^(?<group>.+)$~', 'familytemplate' => '${group}', 'filtersjson' => '[]',
             'guidedsettings' => 1, 'publicationmode' => 'source-access-only', 'sourcesdefined' => 1,
             'displaytemplate' => ''];
-        $config = \local_multipicker\form\profile_form::document($data);
+        $config = \local_coursefiles\form\profile_form::document($data);
         $this->assertSame([], $config['relationship']['filters']);
         $this->assertSame([], $config['publication']['allowed_sources']);
         $this->assertArrayNotHasKey('migration', $config);
@@ -255,10 +255,10 @@ final class workflow_test extends \advanced_testcase {
             $filters['filter' . $i] = ['capture' => 'group', 'label' => 'Filter ' . $i, 'optional' => false];
         }
         $config['relationship']['filters'] = $filters;
-        $this->assertCount(9, (new \local_multipicker\local\profile\profile_config($config))->filter_definitions());
+        $this->assertCount(9, (new \local_coursefiles\local\profile\profile_config($config))->filter_definitions());
         $config['relationship']['filters']['tenth'] = ['capture' => 'group', 'label' => 'Too many'];
         $this->expectException(\moodle_exception::class);
-        new \local_multipicker\local\profile\profile_config($config);
+        new \local_coursefiles\local\profile\profile_config($config);
     }
 
     /**
@@ -268,7 +268,7 @@ final class workflow_test extends \advanced_testcase {
         global $DB, $CFG;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Native migration']);
         $target = $DB->get_record('course', ['shortname' => 'CB2026'], '*', MUST_EXIST);
         $options = ['migration' => ['section_match' => ['strategy' => 'ordinal'], 'missing_target' => 'create',
@@ -286,16 +286,16 @@ final class workflow_test extends \advanced_testcase {
         indexer::refresh($target->id);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
         $this->assertSame('reviewable', $plan->state);
-        $this->assertSame(1, $DB->count_records('local_multipicker_target', ['planid' => $plan->id]));
-        $this->assertSame(1, $DB->count_records('local_multipicker_operation', ['planid' => $plan->id, 'decision' => 'overwrite']));
+        $this->assertSame(1, $DB->count_records('local_coursefiles_target', ['planid' => $plan->id]));
+        $this->assertSame(1, $DB->count_records('local_coursefiles_operation', ['planid' => $plan->id, 'decision' => 'overwrite']));
         $CFG->maintenance_enabled = false;
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $more = migration_executor::execute($runid);
         while ($more) {
             $more = migration_executor::execute($runid);
         }
-        $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
-        $created = $DB->get_record('local_multipicker_target', ['planid' => $plan->id]);
+        $this->assertSame('completed', $DB->get_field('local_coursefiles_run', 'state', ['id' => $runid]));
+        $created = $DB->get_record('local_coursefiles_target', ['planid' => $plan->id]);
         $this->assertGreaterThan(0, (int)$created->cmid);
         $this->assertCount(2, get_file_storage()->get_area_files(
             \context_module::instance($created->cmid)->id,
@@ -315,10 +315,10 @@ final class workflow_test extends \advanced_testcase {
         )->get_author());
         $second = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
         $this->assertSame(4, $DB->count_records(
-            'local_multipicker_operation',
+            'local_coursefiles_operation',
             ['planid' => $second->id, 'decision' => 'skip_identical']
         ));
-        $this->assertSame(0, $DB->count_records('local_multipicker_target', ['planid' => $second->id]));
+        $this->assertSame(0, $DB->count_records('local_coursefiles_target', ['planid' => $second->id]));
         $CFG->maintenance_enabled = false;
     }
 
@@ -330,7 +330,7 @@ final class workflow_test extends \advanced_testcase {
         global $DB, $CFG;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Stale creation']);
         $options = ['migration' => ['section_match' => ['strategy' => 'ordinal'], 'missing_target' => 'create',
             'correspondences' => [[
@@ -338,15 +338,15 @@ final class workflow_test extends \advanced_testcase {
                 'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Never created'],
             ]]], 'filters' => ['source' => ['edition' => '2025'], 'target' => ['edition' => '2026']]];
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
-        foreach ($DB->get_records('local_multipicker_operation', ['planid' => $plan->id]) as $operation) {
+        foreach ($DB->get_records('local_coursefiles_operation', ['planid' => $plan->id]) as $operation) {
             get_file_storage()->get_file_by_hash($operation->sourcehash)->delete();
         }
         $CFG->maintenance_enabled = false;
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $this->assertFalse(migration_executor::execute($runid));
-        $this->assertSame('partial', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
+        $this->assertSame('partial', $DB->get_field('local_coursefiles_run', 'state', ['id' => $runid]));
         $this->assertFalse($DB->record_exists('folder', ['course' => $fixture['targetcourse'], 'name' => 'Never created']));
-        $this->assertSame(0, (int)$DB->get_field('local_multipicker_target', 'cmid', ['planid' => $plan->id]));
+        $this->assertSame(0, (int)$DB->get_field('local_coursefiles_target', 'cmid', ['planid' => $plan->id]));
         $CFG->maintenance_enabled = false;
     }
 
@@ -357,7 +357,7 @@ final class workflow_test extends \advanced_testcase {
         global $DB, $CFG;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Identical content']);
         $options = ['migration' => ['section_match' => ['strategy' => 'ordinal'], 'identical_content' => 'skip',
             'correspondences' => [
@@ -377,13 +377,13 @@ final class workflow_test extends \advanced_testcase {
         $this->assertSame('sourcefoldermissing', $document['issues'][0]['reason']);
         $this->assertFalse($document['issues'][0]['blocking']);
         $this->assertSame(1, $DB->count_records(
-            'local_multipicker_operation',
+            'local_coursefiles_operation',
             ['planid' => $plan->id, 'decision' => 'skip_content']
         ));
         $CFG->maintenance_enabled = false;
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $this->assertFalse(migration_executor::execute($runid));
-        $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
+        $this->assertSame('completed', $DB->get_field('local_coursefiles_run', 'state', ['id' => $runid]));
         $this->assertSame('Destination teacher', get_file_storage()->get_file_by_hash($file->get_pathnamehash())->get_author());
         $CFG->maintenance_enabled = false;
     }
@@ -395,7 +395,7 @@ final class workflow_test extends \advanced_testcase {
         global $CFG;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Disabled approval']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         profiles::change_state([$fixture['profileid']], 'disable');
@@ -412,14 +412,14 @@ final class workflow_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Separate source folders']);
         $source = $DB->get_record('course', ['shortname' => 'CB2025']);
         $folder = $this->getDataGenerator()->create_module('folder', ['course' => $source->id, 'name' => 'Secondary materials']);
         get_file_storage()->create_file_from_string(['contextid' => \context_module::instance($folder->cmid)->id,
             'component' => 'mod_folder', 'filearea' => 'content', 'itemid' => 0, 'filepath' => '/',
             'filename' => 'secondary.txt', 'author' => 'Original teacher', 'license' => 'cc'], 'secondary');
-        \local_multipicker\local\catalog\material_source::publish($fixture['profileid'], $folder->cmid, false);
+        \local_coursefiles\local\catalog\material_source::publish($fixture['profileid'], $folder->cmid, false);
         indexer::refresh($source->id);
         $options = ['migration' => ['section_match' => ['strategy' => 'ordinal'], 'correspondences' => []],
             'filters' => ['source' => ['edition' => '2025'], 'target' => ['edition' => '2026']]];
@@ -430,7 +430,7 @@ final class workflow_test extends \advanced_testcase {
             ];
         }
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
-        $data = \local_multipicker\output\migration_report::data($plan->id);
+        $data = \local_coursefiles\output\migration_report::data($plan->id);
         $this->assertCount(2, $data['groups']);
         $this->assertCount(2, $data['courses'][0]['folders']);
         $this->assertNotSame($data['groups'][0]['groupcmid'], $data['groups'][1]['groupcmid']);
@@ -444,7 +444,7 @@ final class workflow_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Group migration']);
         $source = $DB->get_record('course', ['shortname' => 'CB2025']);
         $folders = get_fast_modinfo($source)->get_instances_of('folder');
@@ -464,8 +464,8 @@ final class workflow_test extends \advanced_testcase {
             'group',
             ['courseid' => (int)$source->id, 'cmid' => (int)$folder->id, 'included' => 0]
         );
-        $this->assertSame(0, $DB->count_records('local_multipicker_operation', ['planid' => $plan->id, 'included' => 1]));
-        $changed = $DB->get_record('local_multipicker_plan', ['id' => $plan->id]);
+        $this->assertSame(0, $DB->count_records('local_coursefiles_operation', ['planid' => $plan->id, 'included' => 1]));
+        $changed = $DB->get_record('local_coursefiles_plan', ['id' => $plan->id]);
         $this->assertNotSame($plan->digest, $changed->digest);
     }
 
@@ -476,23 +476,23 @@ final class workflow_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Retention migration']);
         $expired = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         $active = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         $now = time();
-        $DB->set_field('local_multipicker_plan', 'timecreated', $now - 400 * DAYSECS);
-        $DB->insert_record('local_multipicker_run', (object)['planid' => $active->id, 'userid' => get_admin()->id,
+        $DB->set_field('local_coursefiles_plan', 'timecreated', $now - 400 * DAYSECS);
+        $DB->insert_record('local_coursefiles_run', (object)['planid' => $active->id, 'userid' => get_admin()->id,
             'state' => 'queued', 'cancelled' => 0, 'timecreated' => $now - 400 * DAYSECS,
             'timemodified' => $now - 400 * DAYSECS]);
-        $DB->set_field('local_multipicker_log', 'timecreated', $now - 400 * DAYSECS);
+        $DB->set_field('local_coursefiles_log', 'timecreated', $now - 400 * DAYSECS);
         $counts = retention::clean($now);
         $this->assertSame(1, $counts['plans']);
         $this->assertGreaterThan(0, $counts['logs']);
-        $this->assertFalse($DB->record_exists('local_multipicker_plan', ['id' => $expired->id]));
-        $this->assertTrue($DB->record_exists('local_multipicker_plan', ['id' => $active->id]));
-        set_config('migrationretentiondays', 0, 'local_multipicker');
-        $DB->set_field('local_multipicker_run', 'state', 'completed', ['planid' => $active->id]);
+        $this->assertFalse($DB->record_exists('local_coursefiles_plan', ['id' => $expired->id]));
+        $this->assertTrue($DB->record_exists('local_coursefiles_plan', ['id' => $active->id]));
+        set_config('migrationretentiondays', 0, 'local_coursefiles');
+        $DB->set_field('local_coursefiles_run', 'state', 'completed', ['planid' => $active->id]);
         $this->assertSame(0, retention::clean($now)['plans']);
     }
 
@@ -503,16 +503,16 @@ final class workflow_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_coursefiles')
             ->create_migration_fixture(['name' => 'Removed profile']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         profiles::change_state([$fixture['profileid']], 'disable');
-        $this->assertSame(0, (int)$DB->get_field('local_multipicker', 'enabled', ['id' => $fixture['profileid']]));
+        $this->assertSame(0, (int)$DB->get_field('local_coursefiles', 'enabled', ['id' => $fixture['profileid']]));
         profiles::change_state([$fixture['profileid']], 'enable');
         profiles::change_state([$fixture['profileid']], 'delete');
-        $this->assertSame(1, (int)$DB->get_field('local_multipicker', 'deleted', ['id' => $fixture['profileid']]));
-        $this->assertTrue($DB->record_exists('local_multipicker_revision', ['id' => $plan->revisionid]));
-        $this->assertTrue($DB->record_exists('local_multipicker_plan', ['id' => $plan->id]));
+        $this->assertSame(1, (int)$DB->get_field('local_coursefiles', 'deleted', ['id' => $fixture['profileid']]));
+        $this->assertTrue($DB->record_exists('local_coursefiles_revision', ['id' => $plan->revisionid]));
+        $this->assertTrue($DB->record_exists('local_coursefiles_plan', ['id' => $plan->id]));
         $this->expectException(\dml_missing_record_exception::class);
         profiles::load($fixture['profileid']);
     }

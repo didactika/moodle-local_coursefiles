@@ -17,49 +17,49 @@
 /**
  * Owning native form scope integration checks.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_coursefiles;
 
-use local_multipicker\fixture\scoped_form;
-use local_multipicker\form\scoped_filemanager;
-use local_multipicker\local\catalog\material_source;
-use local_multipicker\local\profile\profiles;
-use local_multipicker\local\selection\draft_scope;
+use local_coursefiles\fixture\scoped_form;
+use local_coursefiles\form\scoped_filemanager;
+use local_coursefiles\local\catalog\material_source;
+use local_coursefiles\local\profile\profiles;
+use local_coursefiles\local\selection\draft_scope;
 
 /**
  * Tests actual owning form options, session authority and native draft rendering.
- * @covers \local_multipicker\form\scoped_filemanager
- * @covers \local_multipicker\local\catalog\material_source
- * @covers \local_multipicker\local\profile\profiles
- * @covers \local_multipicker\local\selection\draft_scope
- * @covers \local_multipicker\local\selection\destination_content
- * @covers \local_multipicker\local\selection\browser_controller
- * @covers \local_multipicker\local\selection\browser_listing
- * @covers ::local_multipicker_output_fragment_browser_tree
+ * @covers \local_coursefiles\form\scoped_filemanager
+ * @covers \local_coursefiles\local\catalog\material_source
+ * @covers \local_coursefiles\local\profile\profiles
+ * @covers \local_coursefiles\local\selection\draft_scope
+ * @covers \local_coursefiles\local\selection\destination_content
+ * @covers \local_coursefiles\local\selection\browser_controller
+ * @covers \local_coursefiles\local\selection\browser_listing
+ * @covers ::local_coursefiles_output_fragment_browser_tree
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\form\scoped_filemanager::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\material_source::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\draft_scope::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\destination_content::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\browser_controller::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\browser_listing::class)]
-#[\PHPUnit\Framework\Attributes\CoversFunction('local_multipicker_output_fragment_browser_tree')]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\form\scoped_filemanager::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\catalog\material_source::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\profile\profiles::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\selection\draft_scope::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\selection\destination_content::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\selection\browser_controller::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\selection\browser_listing::class)]
+#[\PHPUnit\Framework\Attributes\CoversFunction('local_coursefiles_output_fragment_browser_tree')]
 final class draft_scope_test extends \advanced_testcase {
     /**
      * Clearing restrictions must retain the actor's chosen content, profile and owning destination.
      */
     public function test_clear_filters_preserves_native_selection_and_profile(): void {
         [$form, $profileid, $source, $target, $context] = $this->fixture();
-        \local_multipicker\local\catalog\indexer::refresh($source->course);
-        \local_multipicker\local\catalog\indexer::refresh($target->course);
+        \local_coursefiles\local\catalog\indexer::refresh($source->course);
+        \local_coursefiles\local\catalog\indexer::refresh($target->course);
         $token = $form->control()->open_scope($context);
-        $controller = \local_multipicker\local\selection\browser_controller::class;
+        $controller = \local_coursefiles\local\selection\browser_controller::class;
         $selected = $controller::data($token, $controller::input(['profileid' => $profileid, 'selectall' => true]));
         $items = array_column($selected['data']['selecteditems'], 'value');
         $filtered = $controller::data($token, $controller::input(['profileid' => $profileid, 'items' => $items,
@@ -84,8 +84,8 @@ final class draft_scope_test extends \advanced_testcase {
     public function test_existing_draft_content_is_hidden_and_not_selected_with_its_folder(): void {
         global $USER;
         [$form, $profileid, $source, $target, $context] = $this->fixture();
-        \local_multipicker\local\catalog\indexer::refresh($source->course);
-        \local_multipicker\local\catalog\indexer::refresh($target->course);
+        \local_coursefiles\local\catalog\indexer::refresh($source->course);
+        \local_coursefiles\local\catalog\indexer::refresh($target->course);
         $draftid = (int)$form->control()->getValue();
         $fs = get_file_storage();
         $original = $fs->get_file(
@@ -100,21 +100,21 @@ final class draft_scope_test extends \advanced_testcase {
             'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid,
             'filepath' => '/renamed/', 'filename' => 'already-used.txt', 'author' => 'Changed native author'], $original);
         $token = $form->control()->open_scope($context);
-        $data = \local_multipicker\local\selection\browser_controller::data($token);
+        $data = \local_coursefiles\local\selection\browser_controller::data($token);
         $root = array_values(array_filter($data['data']['cards'], static fn($card) => $card['isfolder']))[0];
         $this->assertSame('0 / 1 selected', $root['selectionlabel']);
-        $result = \local_multipicker\local\selection\browser_controller::data(
+        $result = \local_coursefiles\local\selection\browser_controller::data(
             $token,
-            \local_multipicker\local\selection\browser_controller::input(['profileid' => $profileid, 'selectall' => true])
+            \local_coursefiles\local\selection\browser_controller::input(['profileid' => $profileid, 'selectall' => true])
         );
         $this->assertSame(1, $result['data']['count']);
         $this->assertNotContains(['value' => 'file:' . $original->get_pathnamehash()], $result['data']['selecteditems']);
-        $assets = \local_multipicker\local\catalog\catalog::search($target->course, $profileid, [], '', 1, $draftid);
+        $assets = \local_coursefiles\local\catalog\catalog::search($target->course, $profileid, [], '', 1, $draftid);
         $this->assertCount(1, $assets['assets']);
         $this->assertSame('second.txt', $assets['assets'][0]['occurrences'][0]['filename']);
         $this->assertSame('', $assets['next']);
         $existing->delete();
-        $assets = \local_multipicker\local\catalog\catalog::search($target->course, $profileid, [], '', 50, $draftid);
+        $assets = \local_coursefiles\local\catalog\catalog::search($target->course, $profileid, [], '', 50, $draftid);
         $this->assertCount(2, $assets['assets']);
     }
 
@@ -123,8 +123,8 @@ final class draft_scope_test extends \advanced_testcase {
      */
     public function test_destination_exclusion_is_actor_scoped(): void {
         [$form, $profileid, $source, $target] = $this->fixture();
-        \local_multipicker\local\catalog\indexer::refresh($source->course);
-        \local_multipicker\local\catalog\indexer::refresh($target->course);
+        \local_coursefiles\local\catalog\indexer::refresh($source->course);
+        \local_coursefiles\local\catalog\indexer::refresh($target->course);
         $actor = $this->getDataGenerator()->create_user();
         $file = get_file_storage()->get_file(
             \context_module::instance($source->cmid)->id,
@@ -136,7 +136,7 @@ final class draft_scope_test extends \advanced_testcase {
         );
         get_file_storage()->create_file_from_storedfile(['contextid' => \context_user::instance($actor->id)->id,
             'component' => 'user', 'filearea' => 'draft', 'itemid' => (int)$form->control()->getValue()], $file);
-        $assets = \local_multipicker\local\catalog\catalog::search(
+        $assets = \local_coursefiles\local\catalog\catalog::search(
             $target->course,
             $profileid,
             [],
@@ -153,24 +153,24 @@ final class draft_scope_test extends \advanced_testcase {
     public function test_tree_branches_load_files_without_changing_browser_navigation(): void {
         global $CFG;
         [$form, , $source, , $context] = $this->fixture();
-        require_once($CFG->dirroot . '/local/multipicker/lib.php');
-        \local_multipicker\local\catalog\indexer::refresh($source->course);
-        \local_multipicker\local\catalog\indexer::refresh($context->get_course_context()->instanceid);
+        require_once($CFG->dirroot . '/local/coursefiles/lib.php');
+        \local_coursefiles\local\catalog\indexer::refresh($source->course);
+        \local_coursefiles\local\catalog\indexer::refresh($context->get_course_context()->instanceid);
         $token = $form->control()->open_scope($context);
-        \local_multipicker\local\selection\browser_controller::data($token);
+        \local_coursefiles\local\selection\browser_controller::data($token);
         $args = ['context' => $context, 'scope' => $token, 'folder' => 'folder:' . $source->cmid . ':' . base64_encode('/')];
-        $html = \local_multipicker_output_fragment_browser_tree($args);
+        $html = \local_coursefiles_output_fragment_browser_tree($args);
         $this->assertStringContainsString('first.txt', $html);
         $this->assertStringNotContainsString('second.txt', $html);
         $args['folder'] = 'folder:' . $source->cmid . ':' . base64_encode('/notes/');
-        $html = \local_multipicker_output_fragment_browser_tree($args);
+        $html = \local_coursefiles_output_fragment_browser_tree($args);
         $this->assertStringContainsString('second.txt', $html);
         $view = draft_scope::describe($token, sesskey())['view'];
         $this->assertSame('', $view['folder']);
         $this->assertSame('', $view['after']);
         $args['folder'] = 'folder:' . $context->instanceid . ':' . base64_encode('/');
         try {
-            \local_multipicker_output_fragment_browser_tree($args);
+            \local_coursefiles_output_fragment_browser_tree($args);
             $this->fail('A folder outside the issued source roots was accepted.');
         } catch (\moodle_exception $exception) {
             $this->assertSame('formscopeunavailable', $exception->errorcode);
@@ -193,20 +193,20 @@ final class draft_scope_test extends \advanced_testcase {
         $fs->create_file_from_string(['contextid' => \context_module::instance($source->cmid)->id, 'component' => 'mod_folder',
             'filearea' => 'content', 'itemid' => 0, 'filepath' => '/', 'filename' => 'additional.txt',
             'author' => 'Original teacher', 'license' => 'cc'], 'Additional source');
-        \local_multipicker\local\catalog\indexer::refresh($source->course);
+        \local_coursefiles\local\catalog\indexer::refresh($source->course);
         $token = $form->control()->open_scope($context);
         $state = ['profileid' => $profileid, 'selected' => [], 'roots' => [], 'renames' => [], 'layout' => 'grid',
             'filters' => ['q' => '', 'edition' => '', 'shortname' => '', 'module' => 'folder', 'mimetype' => ''],
             'folder' => '', 'after' => '', 'history' => []];
         draft_scope::remember_view($token, $state, sesskey());
-        $data = \local_multipicker\local\selection\browser_controller::data(
+        $data = \local_coursefiles\local\selection\browser_controller::data(
             $token,
-            \local_multipicker\local\selection\browser_controller::input([
+            \local_coursefiles\local\selection\browser_controller::input([
                 'profileid' => $profileid, 'toggleitem' => 'folder:' . $source->cmid . ':' . base64_encode('/'),
                 'module' => 'folder',
             ])
         );
-        $this->assertStringContainsString(get_string('selectionfull', 'local_multipicker'), $data['message']);
+        $this->assertStringContainsString(get_string('selectionfull', 'local_coursefiles'), $data['message']);
         $this->assertSame(0, $data['data']['count']);
         $this->assertSame([], draft_scope::describe($token, sesskey())['view']['selected']);
     }
@@ -228,7 +228,7 @@ final class draft_scope_test extends \advanced_testcase {
         $token = $form->control()->open_scope($context);
         draft_scope::select_destination($token, $path, sesskey());
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invalidselection', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('invalidselection', 'local_coursefiles'));
         draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
     }
 
@@ -250,7 +250,7 @@ final class draft_scope_test extends \advanced_testcase {
         $token = $control->open_scope($context);
         $this->assertSame(['/' => '/'], draft_scope::destinations($token, sesskey()));
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('batchlimit', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('batchlimit', 'local_coursefiles'));
         draft_scope::select_destination($token, '/chosen/', sesskey());
     }
 
@@ -269,7 +269,7 @@ final class draft_scope_test extends \advanced_testcase {
         );
         $token = $form->control()->open_scope($context);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invaliddraft', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursefiles'));
         draft_scope::select_destination($token, '/foreign/', sesskey());
     }
 
@@ -291,7 +291,7 @@ final class draft_scope_test extends \advanced_testcase {
         $review = draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
         $directory->delete();
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invaliddraft', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursefiles'));
         draft_scope::apply($token, $review['digest'], sesskey());
     }
 
@@ -327,7 +327,7 @@ final class draft_scope_test extends \advanced_testcase {
         $items = [['cmid' => $source->cmid, 'filepath' => '/']];
         $review = draft_scope::review($token, $profileid, $items, sesskey());
         $this->assertSame(3, $review['filecount']);
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_coursefiles_author'));
         draft_scope::apply($token, $review['digest'], sesskey());
         $draftid = (int)$control->getValue();
         $files = get_file_storage()->get_area_files(
@@ -351,7 +351,7 @@ final class draft_scope_test extends \advanced_testcase {
         $this->assertStringContainsString('filemanager', $html);
         $this->assertSame($draftid, (int)$control->getValue());
         $this->assertSame($draftid, (int)$refreshed->control()->getValue());
-        $this->assertSame(2, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(2, $DB->count_records('local_coursefiles_author'));
         $this->assertCount(1, get_file_storage()->get_area_files($context->id, 'mod_folder', 'content', 0, 'id', false));
         file_save_draft_area_files($draftid, $context->id, 'mod_folder', 'content', 0, ['subdirs' => true]);
         $this->assertCount(3, get_file_storage()->get_area_files($context->id, 'mod_folder', 'content', 0, 'id', false));
@@ -361,7 +361,7 @@ final class draft_scope_test extends \advanced_testcase {
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchconflict', $exception->errorcode);
         }
-        $this->assertSame(2, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(2, $DB->count_records('local_coursefiles_author'));
     }
 
     /**
@@ -384,11 +384,11 @@ final class draft_scope_test extends \advanced_testcase {
         $token = $form->control()->open_scope($context);
         $actor = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($actor->id, $target->course, 'editingteacher');
-        $scopes = $SESSION->local_multipicker_drafts;
+        $scopes = $SESSION->local_coursefiles_drafts;
         $this->setUser($actor);
-        $SESSION->local_multipicker_drafts = $scopes;
+        $SESSION->local_coursefiles_drafts = $scopes;
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursefiles'));
         draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
     }
 
@@ -399,9 +399,9 @@ final class draft_scope_test extends \advanced_testcase {
         global $SESSION;
         [$form, $profileid, $source, , $context] = $this->fixture();
         $token = $form->control()->open_scope($context);
-        $SESSION->local_multipicker_drafts[$token]['expires'] = time() - 1;
+        $SESSION->local_coursefiles_drafts[$token]['expires'] = time() - 1;
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursefiles'));
         draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
     }
 
@@ -441,7 +441,7 @@ final class draft_scope_test extends \advanced_testcase {
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchconflict', $exception->errorcode);
         }
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_coursefiles_author'));
     }
 
     /**
@@ -461,7 +461,7 @@ final class draft_scope_test extends \advanced_testcase {
             false
         ));
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursefiles'));
         draft_scope::review($token, $profileid, [['cmid' => $source->cmid, 'filepath' => '/']], sesskey());
     }
 
@@ -472,7 +472,7 @@ final class draft_scope_test extends \advanced_testcase {
         [$form, , , , $context] = $this->fixture();
         $form->control()->freeze();
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('formscopeunavailable', 'local_coursefiles'));
         $form->control()->open_scope($context);
     }
 
@@ -521,7 +521,7 @@ final class draft_scope_test extends \advanced_testcase {
         get_file_storage()->create_directory(\context_user::instance($actor->id)->id, 'user', 'draft', $draftid, '/');
         $form->control()->setValue($draftid);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invaliddraft', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('invaliddraft', 'local_coursefiles'));
         $form->control()->open_scope($context);
     }
 
@@ -538,9 +538,9 @@ final class draft_scope_test extends \advanced_testcase {
             $token = $control->open_scope($context);
             $firsttoken = $firsttoken ?: $token;
         }
-        $this->assertCount(draft_scope::MAX_SCOPES, $SESSION->local_multipicker_drafts);
-        $this->assertArrayNotHasKey($firsttoken, $SESSION->local_multipicker_drafts);
-        $this->assertArrayHasKey($token, $SESSION->local_multipicker_drafts);
+        $this->assertCount(draft_scope::MAX_SCOPES, $SESSION->local_coursefiles_drafts);
+        $this->assertArrayNotHasKey($firsttoken, $SESSION->local_coursefiles_drafts);
+        $this->assertArrayHasKey($token, $SESSION->local_coursefiles_drafts);
     }
 
     /**
@@ -554,8 +554,8 @@ final class draft_scope_test extends \advanced_testcase {
         $this->setAdminUser();
         require_once($CFG->libdir . '/formslib.php');
         require_once(__DIR__ . '/fixtures/scoped_form.php');
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json'), true);
+        set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
+        $config = json_decode(file_get_contents($CFG->dirroot . '/local/coursefiles/examples/institutional-profile.json'), true);
         $config['publication']['mode'] = 'explicit-family-publication';
         $profileid = profiles::save(json_encode($config));
         $uuid = '550e8400-e29b-41d4-a716-446655440000';

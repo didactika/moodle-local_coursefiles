@@ -17,21 +17,21 @@
 /**
  * Existing installation upgrade tests.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_coursefiles;
 
 /**
  * Confirms that schema and permission changes preserve existing records.
- * @covers ::xmldb_local_multipicker_upgrade
- * @covers \local_multipicker\local\upgrade\legacy_import
+ * @covers ::xmldb_local_coursefiles_upgrade
+ * @covers \local_coursefiles\local\upgrade\legacy_import
  */
-#[\PHPUnit\Framework\Attributes\CoversFunction('xmldb_local_multipicker_upgrade')]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\upgrade\legacy_import::class)]
+#[\PHPUnit\Framework\Attributes\CoversFunction('xmldb_local_coursefiles_upgrade')]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_coursefiles\local\upgrade\legacy_import::class)]
 final class upgrade_test extends \advanced_testcase {
     /**
      * Retired registrations are removed while current schedules and queued work survive.
@@ -39,15 +39,15 @@ final class upgrade_test extends \advanced_testcase {
     public function test_legacy_tasks_are_repaired_without_changing_current_schedules(): void {
         global $DB;
         $this->resetAfterTest();
-        $current = $DB->get_record('task_scheduled', ['classname' => '\local_multipicker\task\reconcile_catalog'], '*', MUST_EXIST);
+        $current = $DB->get_record('task_scheduled', ['classname' => '\local_coursefiles\task\reconcile_catalog'], '*', MUST_EXIST);
         $legacy = clone $current;
         unset($legacy->id);
         $legacy->classname = '\local_coursebridge\task\reconcile_catalog';
         $legacy->component = 'local_coursebridge';
         $legacy->disabled = 1;
         $id = $DB->insert_record('task_scheduled', $legacy);
-        \local_multipicker\task\refresh_profile::queue(123, 456);
-        $task = $DB->get_record('task_adhoc', ['component' => 'local_multipicker'], '*', MUST_EXIST);
+        \local_coursefiles\task\refresh_profile::queue(123, 456);
+        $task = $DB->get_record('task_adhoc', ['component' => 'local_coursefiles'], '*', MUST_EXIST);
         unset($task->id);
         $task->classname = '\local_coursebridge\task\refresh_profile';
         $task->component = 'local_coursebridge';
@@ -55,15 +55,15 @@ final class upgrade_test extends \advanced_testcase {
             $task->identityhash = null;
         }
         $queuedid = $DB->insert_record('task_adhoc', $task);
-        \local_multipicker\local\upgrade\legacy_import::repair_tasks();
+        \local_coursefiles\local\upgrade\legacy_import::repair_tasks();
         $this->assertFalse($DB->record_exists('task_scheduled', ['id' => $id]));
         $this->assertEquals($current, $DB->get_record('task_scheduled', ['id' => $current->id]));
         $queued = $DB->get_record('task_adhoc', ['id' => $queuedid]);
-        $this->assertSame('local_multipicker', $queued->component);
-        $this->assertSame('\local_multipicker\task\refresh_profile', $queued->classname);
+        $this->assertSame('local_coursefiles', $queued->component);
+        $this->assertSame('\local_coursefiles\task\refresh_profile', $queued->classname);
         $this->assertSame($task->customdata, $queued->customdata);
         // Running the upgrade again is safe and does not change native scheduling settings.
-        \local_multipicker\local\upgrade\legacy_import::repair_tasks();
+        \local_coursefiles\local\upgrade\legacy_import::repair_tasks();
         $this->assertEquals($current, $DB->get_record('task_scheduled', ['id' => $current->id]));
     }
 
@@ -75,7 +75,7 @@ final class upgrade_test extends \advanced_testcase {
         $file = new \xmldb_file(__DIR__ . '/../db/install.xml');
         $this->assertTrue($file->loadXMLStructure());
         $structure = $file->getStructure();
-        $field = $structure->getTable('local_multipicker_attribution')->getField('parentuuid');
+        $field = $structure->getTable('local_coursefiles_author')->getField('parentuuid');
         $this->assertNull($field->getDefault());
         $this->assertTrue($field->getNotNull());
     }
@@ -92,17 +92,17 @@ final class upgrade_test extends \advanced_testcase {
         $parentuuid = \core\uuid::generate();
         $ids = [];
         foreach (['' => $parentuuid, $parentuuid => \core\uuid::generate()] as $parent => $uuid) {
-            $ids[] = $DB->insert_record('local_multipicker_attribution', (object)[
+            $ids[] = $DB->insert_record('local_coursefiles_author', (object)[
                 'uuid' => $uuid, 'parentuuid' => $parent, 'sourcehash' => str_repeat('a', 40),
                 'contenthash' => str_repeat('b', 40), 'author' => 'Original author', 'license' => 'cc',
                 'locked' => 0, 'userid' => 2, 'timecreated' => 1700000000,
             ]);
         }
-        $before = $DB->get_records_list('local_multipicker_attribution', 'id', $ids, 'id');
-        set_config('version', 2026100801, 'local_multipicker');
-        $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100801));
-        $this->assertEquals($before, $DB->get_records_list('local_multipicker_attribution', 'id', $ids, 'id'));
-        $this->assertSame('2026101004', get_config('local_multipicker', 'version'));
+        $before = $DB->get_records_list('local_coursefiles_author', 'id', $ids, 'id');
+        set_config('version', 2026100801, 'local_coursefiles');
+        $this->assertTrue(\xmldb_local_coursefiles_upgrade(2026100801));
+        $this->assertEquals($before, $DB->get_records_list('local_coursefiles_author', 'id', $ids, 'id'));
+        $this->assertSame('2026101101', get_config('local_coursefiles', 'version'));
     }
 
     /**
@@ -114,21 +114,21 @@ final class upgrade_test extends \advanced_testcase {
         require_once($CFG->libdir . '/upgradelib.php');
         require_once(__DIR__ . '/../db/upgrade.php');
         $dbman = $DB->get_manager();
-        $legacy = new \xmldb_table('local_multipicker_audit');
+        $legacy = new \xmldb_table('local_coursefiles_audit');
         $legacy->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
         $legacy->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
         $dbman->create_table($legacy);
-        set_config('version', 2026100800, 'local_multipicker');
+        set_config('version', 2026100800, 'local_coursefiles');
         try {
             try {
-                \xmldb_local_multipicker_upgrade(2026100800);
+                \xmldb_local_coursefiles_upgrade(2026100800);
                 $this->fail('Conflicting history tables must stop the upgrade.');
             } catch (\coding_exception $exception) {
-                $this->assertStringContainsString('Both MultiPicker history tables exist', $exception->getMessage());
+                $this->assertStringContainsString('Both CourseFiles history tables exist', $exception->getMessage());
             }
             $this->assertTrue($dbman->table_exists($legacy));
-            $this->assertTrue($dbman->table_exists('local_multipicker_log'));
-            $this->assertSame('2026100800', get_config('local_multipicker', 'version'));
+            $this->assertTrue($dbman->table_exists('local_coursefiles_log'));
+            $this->assertSame('2026100800', get_config('local_coursefiles', 'version'));
         } finally {
             $dbman->drop_table($legacy);
         }
@@ -144,10 +144,10 @@ final class upgrade_test extends \advanced_testcase {
         require_once($CFG->libdir . '/upgradelib.php');
         require_once(__DIR__ . '/../db/upgrade.php');
         $dbman = $DB->get_manager();
-        $table = new \xmldb_table('local_multipicker_log');
+        $table = new \xmldb_table('local_coursefiles_log');
         $record = (object)['userid' => 2, 'action' => 'migration_batch', 'entityuuid' => 'existing-reference',
             'details' => '{"state":"completed"}', 'timecreated' => 1700000000];
-        $record->id = $DB->insert_record('local_multipicker_log', $record);
+        $record->id = $DB->insert_record('local_coursefiles_log', $record);
         foreach (
             [
             new \xmldb_index('actionid', XMLDB_INDEX_NOTUNIQUE, ['action', 'id']),
@@ -156,12 +156,12 @@ final class upgrade_test extends \advanced_testcase {
         ) {
             $dbman->drop_index($table, $index);
         }
-        $dbman->rename_table($table, 'local_multipicker_audit');
-        set_config('version', 2026100800, 'local_multipicker');
+        $dbman->rename_table($table, 'local_coursefiles_audit');
+        set_config('version', 2026100800, 'local_coursefiles');
         try {
-            $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100800));
-            $this->assertEquals($record, $DB->get_record('local_multipicker_log', ['id' => $record->id], '*', MUST_EXIST));
-            $this->assertFalse($dbman->table_exists('local_multipicker_audit'));
+            $this->assertTrue(\xmldb_local_coursefiles_upgrade(2026100800));
+            $this->assertEquals($record, $DB->get_record('local_coursefiles_log', ['id' => $record->id], '*', MUST_EXIST));
+            $this->assertFalse($dbman->table_exists('local_coursefiles_audit'));
             $this->assertTrue($dbman->index_exists(
                 $table,
                 new \xmldb_index('actionid', XMLDB_INDEX_NOTUNIQUE, ['action', 'id'])
@@ -170,11 +170,11 @@ final class upgrade_test extends \advanced_testcase {
                 $table,
                 new \xmldb_index('entityid', XMLDB_INDEX_NOTUNIQUE, ['entityuuid', 'id'])
             ));
-            $this->assertSame('2026101004', get_config('local_multipicker', 'version'));
-            $this->assertTrue(\xmldb_local_multipicker_upgrade(2026101004));
+            $this->assertSame('2026101101', get_config('local_coursefiles', 'version'));
+            $this->assertTrue(\xmldb_local_coursefiles_upgrade(2026101101));
         } finally {
-            if ($dbman->table_exists('local_multipicker_audit') && !$dbman->table_exists($table)) {
-                $dbman->rename_table(new \xmldb_table('local_multipicker_audit'), 'local_multipicker_log');
+            if ($dbman->table_exists('local_coursefiles_audit') && !$dbman->table_exists($table)) {
+                $dbman->rename_table(new \xmldb_table('local_coursefiles_audit'), 'local_coursefiles_log');
             }
         }
     }
@@ -187,10 +187,10 @@ final class upgrade_test extends \advanced_testcase {
         $this->resetAfterTest();
         require_once($CFG->libdir . '/upgradelib.php');
         require_once(__DIR__ . '/../db/upgrade.php');
-        set_config('version', 2026100800, 'local_multipicker');
-        $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100800));
-        $this->assertSame('2026101004', get_config('local_multipicker', 'version'));
-        $this->assertTrue($DB->get_manager()->table_exists('local_multipicker_log'));
+        set_config('version', 2026100800, 'local_coursefiles');
+        $this->assertTrue(\xmldb_local_coursefiles_upgrade(2026100800));
+        $this->assertSame('2026101101', get_config('local_coursefiles', 'version'));
+        $this->assertTrue($DB->get_manager()->table_exists('local_coursefiles_log'));
     }
 
     /**
@@ -200,8 +200,8 @@ final class upgrade_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $system = \context_system::instance();
-        $old = 'local/multipicker:viewaudit';
-        $new = 'local/multipicker:viewlog';
+        $old = 'local/coursefiles:viewaudit';
+        $new = 'local/coursefiles:viewlog';
         $definition = $DB->get_record('capabilities', ['name' => $new], '*', MUST_EXIST);
         $DB->delete_records('role_capabilities', ['capability' => $new]);
         $DB->delete_records('capabilities', ['name' => $new]);
@@ -212,7 +212,7 @@ final class upgrade_test extends \advanced_testcase {
         $prohibited = $this->getDataGenerator()->create_role();
         assign_capability($old, CAP_ALLOW, $allowed, $system->id);
         assign_capability($old, CAP_PROHIBIT, $prohibited, $system->id);
-        update_capabilities('local_multipicker');
+        update_capabilities('local_coursefiles');
         $this->assertSame(CAP_ALLOW, (int)$DB->get_field(
             'role_capabilities',
             'permission',

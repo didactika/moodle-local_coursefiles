@@ -17,13 +17,13 @@
 /**
  * Shared native presentation labels and options.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\output;
+namespace local_coursefiles\output;
 
 /**
  * Provides plain localized choices and outcomes without reading business data.
@@ -73,7 +73,7 @@ final class display {
      */
     public static function filetypes(): array {
         return [
-            '' => get_string('alltypes', 'local_multipicker'),
+            '' => get_string('alltypes', 'local_coursefiles'),
             'application/pdf' => 'PDF',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'Word (.docx)',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'Excel (.xlsx)',
@@ -82,7 +82,7 @@ final class display {
             'image/png' => 'PNG',
             'video/mp4' => 'MP4',
             'application/zip' => 'ZIP',
-            'text/plain' => get_string('plaintext', 'local_multipicker'),
+            'text/plain' => get_string('plaintext', 'local_coursefiles'),
         ];
     }
 
@@ -94,8 +94,8 @@ final class display {
      */
     public static function outcome(string $value): string {
         $key = 'outcome_' . $value;
-        return get_string_manager()->string_exists($key, 'local_multipicker')
-            ? get_string($key, 'local_multipicker') : get_string('operationfailed', 'local_multipicker');
+        return get_string_manager()->string_exists($key, 'local_coursefiles')
+            ? get_string($key, 'local_coursefiles') : get_string('operationfailed', 'local_coursefiles');
     }
 
     /**
@@ -105,7 +105,7 @@ final class display {
      * @return string User-facing explanation.
      */
     public static function reason(string $value): string {
-        return get_string_manager()->string_exists($value, 'local_multipicker')
-            ? get_string($value, 'local_multipicker') : get_string('operationfailed', 'local_multipicker');
+        return get_string_manager()->string_exists($value, 'local_coursefiles')
+            ? get_string($value, 'local_coursefiles') : get_string('operationfailed', 'local_coursefiles');
     }
 }

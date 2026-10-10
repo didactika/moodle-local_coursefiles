@@ -17,12 +17,12 @@
 /**
  * Bounded accountable migration task.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\task;
+namespace local_coursefiles\task;
 
 /**
  * Requeues only bounded pending work under the original acting user.
@@ -33,11 +33,11 @@ final class execute_migration extends \core\task\adhoc_task {
      */
     public function execute(): void {
         global $DB;
-        if (!$DB->record_exists('local_multipicker_run', ['id' => $this->get_custom_data()->runid])) {
+        if (!$DB->record_exists('local_coursefiles_run', ['id' => $this->get_custom_data()->runid])) {
             return;
         }
         $runid = (int)$this->get_custom_data()->runid;
-        if (\local_multipicker\local\migration\migration_executor::execute($runid)) {
+        if (\local_coursefiles\local\migration\migration_executor::execute($runid)) {
             $next = new self();
             $next->set_userid($this->get_userid());
             $next->set_custom_data(['runid' => $runid]);

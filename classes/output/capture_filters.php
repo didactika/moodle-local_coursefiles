@@ -17,14 +17,14 @@
 /**
  * Dynamic native picker controls from profile capture definitions.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\output;
+namespace local_coursefiles\output;
 
-use local_multipicker\local\profile\profiles;
+use local_coursefiles\local\profile\profiles;
 
 /**
 

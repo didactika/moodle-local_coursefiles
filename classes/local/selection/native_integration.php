@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * CourseFiles native material import integration.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\selection;
+namespace local_coursefiles\local\selection;
 
 /**
  * Load the native field extension only on supported owning controller routes.
@@ -32,12 +32,12 @@ final class native_integration {
     /**
      * Keep unrelated requests and form factories on their normal core implementation.
      *
-     * @param \core\hook\after_config $hook Bootstrap hook.
+     * @param \core\hook\after_config|null $hook Bootstrap hook; null on legacy callback cores.
      */
-    public static function register(\core\hook\after_config $hook): void {
+    public static function register(?\core\hook\after_config $hook = null): void {
         global $SCRIPT;
         if (in_array($SCRIPT, ['/mod/folder/edit.php', '/course/modedit.php'], true)) {
-            \local_multipicker\form\native_filemanager::register_native($hook);
+            \local_coursefiles\form\native_filemanager::register_native($hook);
         }
     }
 }

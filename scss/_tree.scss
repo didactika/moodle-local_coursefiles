@@ -4,11 +4,11 @@
 
 /* The same authorized material nodes become a collapsible course tree. */
 
-.multipicker-browser-tree-group, .multipicker-tree-entries {
+.coursefiles-browser-tree-group, .coursefiles-tree-entries {
     display: contents;
 }
 
-.multipicker-browser {
+.coursefiles-browser {
     &-folder {
         display: contents;
     }
@@ -16,41 +16,41 @@
         display: none;
     }
     &[data-layout=tree] {
-        .multipicker-browser-folder {
+        .coursefiles-browser-folder {
             display: block;
         }
-        .multipicker-browser-children:not([hidden]) {
+        .coursefiles-browser-children:not([hidden]) {
             display: block;
             margin-inline-start: 1rem;
             padding-inline-start: .75rem;
-            border-inline-start: 1px solid var(--multipicker-border);
+            border-inline-start: 1px solid var(--coursefiles-border);
         }
-        .multipicker-open[aria-expanded=true] .icon {
+        .coursefiles-open[aria-expanded=true] .icon {
             transform: rotate(90deg);
         }
     }
 }
 
-.multipicker-tree {
+.coursefiles-tree {
     &-placeholder span {
         display: block;
         height: 3rem;
         margin-block: .35rem;
-        border-radius: var(--multipicker-radius);
-        background: color-mix(in srgb, var(--multipicker-primary) 4%, var(--multipicker-surface));
+        border-radius: var(--coursefiles-radius);
+        background: color-mix(in srgb, var(--coursefiles-primary) 4%, var(--coursefiles-surface));
     }
 }
 
-.multipicker-browser {
+.coursefiles-browser {
     &[data-layout=tree] {
-        .multipicker-cards {
+        .coursefiles-cards {
             display: block;
         }
-        .multipicker-browser-tree-group {
+        .coursefiles-browser-tree-group {
             display: block;
             margin-bottom: .5rem;
         }
-        .multipicker-course-heading {
+        .coursefiles-course-heading {
             display: flex;
             align-items: center;
             gap: .5rem;
@@ -61,61 +61,61 @@
     }
 }
 
-.multipicker-course-heading[aria-expanded=true] .multipicker-disclosure-icon .icon {
+.coursefiles-course-heading[aria-expanded=true] .coursefiles-disclosure-icon .icon {
     transform: rotate(90deg);
 }
 
-.multipicker-browser {
+.coursefiles-browser {
     &[data-layout=tree] {
-        .multipicker-tree-entries {
+        .coursefiles-tree-entries {
             display: block;
             padding-inline-start: 1rem;
-            border-inline-start: 1px solid var(--multipicker-border);
+            border-inline-start: 1px solid var(--coursefiles-border);
         }
-        .multipicker-card {
+        .coursefiles-card {
             margin-bottom: .15rem;
             border-color: transparent;
             box-shadow: none;
         }
-        .multipicker-card .card-body {
+        .coursefiles-card .card-body {
             align-items: center !important;
         }
-        .multipicker-card input {
+        .coursefiles-card input {
             order: 0;
             margin-top: 0;
         }
-        .multipicker-open {
+        .coursefiles-open {
             order: 1;
         }
-        .multipicker-card-content {
+        .coursefiles-card-content {
             order: 2;
             grid-template-columns: auto minmax(0, 1fr) auto;
             grid-template-rows: auto;
             align-items: center;
             gap: .5rem;
         }
-        .multipicker-card-kind {
+        .coursefiles-card-kind {
             margin-bottom: 0 !important;
         }
-        .multipicker-card-kind .multipicker-chip {
+        .coursefiles-card-kind .coursefiles-chip {
             display: none;
         }
-        .multipicker-card-title {
+        .coursefiles-card-title {
             margin-bottom: 0;
         }
-        .multipicker-card-meta {
+        .coursefiles-card-meta {
             border-top: 0 !important;
             margin-top: 0 !important;
             padding-top: 0 !important;
             min-height: 0;
         }
-        .multipicker-browser-tree-group[data-collapsed=true] > .multipicker-tree-entries {
+        .coursefiles-browser-tree-group[data-collapsed=true] > .coursefiles-tree-entries {
             display: none;
         }
-        .multipicker-origin {
+        .coursefiles-origin {
             display: none;
         }
-        .multipicker-skeleton {
+        .coursefiles-skeleton {
             grid-template-columns: 1fr;
         }
     }

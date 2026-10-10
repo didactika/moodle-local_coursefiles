@@ -1,7 +1,7 @@
 /**
  * Typed layout contract shared with the native browser event adapter.
  *
- * @module local_multipicker/layout
+ * @module local_coursefiles/layout
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

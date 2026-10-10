@@ -17,12 +17,12 @@
 /**
  * Canonical byte selection across overlapping public activity occurrences.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\selection;
+namespace local_coursefiles\local\selection;
 
 /**
  * Keep one chosen source occurrence per native content hash with a bounded lookup.

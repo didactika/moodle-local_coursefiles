@@ -17,22 +17,24 @@
 /**
  * Bounded file and recursive folder selection.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\selection;
+namespace local_coursefiles\local\selection;
 
-use local_multipicker\local\catalog\material_source;
-use local_multipicker\local\profile\profiles;
+use local_coursefiles\local\catalog\material_source;
+use local_coursefiles\local\profile\profiles;
 
 /**
  * Expands bounded native occurrences without relying on catalog cache freshness.
  */
 final class material_selection {
-    /** @var int Synchronous batch bound, including selected folder contents. */
+    /**
+     * @var int Synchronous batch bound, including selected folder contents.
+     */
     public const MAX_FILES = 200;
 
     /**
@@ -47,14 +49,14 @@ final class material_selection {
     public static function resolve(int $courseid, int $profileid, array $items, int $draftid = 0): array {
         global $DB;
         if (!$items || count($items) > self::MAX_FILES) {
-            throw new \moodle_exception('invalidselection', 'local_multipicker');
+            throw new \moodle_exception('invalidselection', 'local_coursefiles');
         }
         $files = [];
         $profiledata = profiles::load($profileid);
         $scope = [];
         foreach ($items as $item) {
             if (!is_array($item)) {
-                throw new \moodle_exception('invalidselection', 'local_multipicker');
+                throw new \moodle_exception('invalidselection', 'local_coursefiles');
             }
             if (isset($item['pathnamehash'])) {
                 [$file] = material_source::resolve((string)$item['pathnamehash'], $courseid, $profileid, $profiledata, $scope);
@@ -82,17 +84,17 @@ final class material_selection {
                     continue;
                 }
                 if (!$candidates || count($candidates) > self::MAX_FILES) {
-                    throw new \moodle_exception('invalidselection', 'local_multipicker');
+                    throw new \moodle_exception('invalidselection', 'local_coursefiles');
                 }
                 foreach ($candidates as $candidate) {
                     [$file] = material_source::resolve($candidate->pathnamehash, $courseid, $profileid, $profiledata, $scope);
                     $files[$file->get_pathnamehash()] = $file;
                 }
             } else {
-                throw new \moodle_exception('invalidselection', 'local_multipicker');
+                throw new \moodle_exception('invalidselection', 'local_coursefiles');
             }
             if (count($files) > self::MAX_FILES) {
-                throw new \moodle_exception('invalidselection', 'local_multipicker');
+                throw new \moodle_exception('invalidselection', 'local_coursefiles');
             }
         }
         return destination_content::filter($files, $draftid);
@@ -108,7 +110,7 @@ final class material_selection {
      */
     public static function map_paths(array $files, array $items, string $mode): array {
         if (!in_array($mode, ['paths', 'folder', 'contents'], true)) {
-            throw new \moodle_exception('invalidselection', 'local_multipicker');
+            throw new \moodle_exception('invalidselection', 'local_coursefiles');
         }
         $folders = array_values(array_filter($items, static fn($item) => isset($item['cmid'])));
         usort($folders, static fn($left, $right) => strlen($left['filepath']) <=> strlen($right['filepath']));
@@ -133,7 +135,7 @@ final class material_selection {
                         $name = basename(rtrim($folder['filepath'], '/'));
                     }
                     if ($name === '' || $name === '.' || $name === '..') {
-                        throw new \moodle_exception('invalidselection', 'local_multipicker');
+                        throw new \moodle_exception('invalidselection', 'local_coursefiles');
                     }
                     $relative = '/' . $name . $relative;
                 }
@@ -156,7 +158,7 @@ final class material_selection {
                 || clean_param($path, PARAM_PATH) !== $path
                 || preg_match('~(?:^|/)\.\.?(/|$)|//~', $path)
         ) {
-            throw new \moodle_exception('invalidselection', 'local_multipicker');
+            throw new \moodle_exception('invalidselection', 'local_coursefiles');
         }
         return $path;
     }

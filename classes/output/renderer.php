@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Theme-overridable MultiPicker renderer.
+ * Theme-overridable CourseFiles renderer.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\output;
+namespace local_coursefiles\output;
 
 /**
  * Delegates presentation to component templates and the active Moodle theme.

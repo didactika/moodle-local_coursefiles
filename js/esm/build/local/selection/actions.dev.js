@@ -3,18 +3,18 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_multipicker/local/selection/actions
+ * @module local_coursefiles/local/selection/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Selectors from "@moodle/lms/local_multipicker/local/selection/selectors";
-import { formControl } from "@moodle/lms/local_multipicker/local/dom";
-import { eventElement } from "@moodle/lms/local_multipicker/local/listeners";
+import Selectors from "@moodle/lms/local_coursefiles/local/selection/selectors";
+import { formControl } from "@moodle/lms/local_coursefiles/local/dom";
+import { eventElement } from "@moodle/lms/local_coursefiles/local/listeners";
 import { getString } from "@moodle/lms/core/stringUtils";
-import { loadFragment } from "@moodle/lms/local_multipicker/local/repository";
-import Templates from "@moodle/lms/local_multipicker/compat/templates";
-import Notification from "@moodle/lms/local_multipicker/compat/notification";
+import { loadFragment } from "@moodle/lms/local_coursefiles/local/repository";
+import Templates from "@moodle/lms/local_coursefiles/compat/templates";
+import Notification from "@moodle/lms/local_coursefiles/compat/notification";
 const createActions = /* @__PURE__ */ __name((form) => {
   let timer;
   let submitting = false;
@@ -26,7 +26,7 @@ const createActions = /* @__PURE__ */ __name((form) => {
     form.dataset.layout = layout;
     formControl(form, "layout").value = layout;
     form.querySelectorAll(Selectors.layouts).forEach((button) => {
-      const active = button.dataset.multipickerLayout === layout;
+      const active = button.dataset.coursefilesLayout === layout;
       button.setAttribute("aria-pressed", String(active));
       button.classList.toggle("active", active);
     });
@@ -38,7 +38,7 @@ const createActions = /* @__PURE__ */ __name((form) => {
         heading.closest(Selectors.browserTreeGroup).dataset.collapsed = "false";
       }
     });
-    form.dispatchEvent(new CustomEvent("multipicker:layoutchanged", { detail: { layout } }));
+    form.dispatchEvent(new CustomEvent("coursefiles:layoutchanged", { detail: { layout } }));
   }, "syncLayout");
   const filters = form.querySelector(Selectors.filterMenu);
   const outsideClick = /* @__PURE__ */ __name((event) => {
@@ -78,7 +78,7 @@ const createActions = /* @__PURE__ */ __name((form) => {
       input.indeterminate = input.dataset.partial === "1";
     });
     form.querySelectorAll(Selectors.card).forEach((card) => {
-      card.classList.toggle("multipicker-selected", card.querySelector(Selectors.checkbox).checked);
+      card.classList.toggle("coursefiles-selected", card.querySelector(Selectors.checkbox).checked);
     });
     form.querySelector(Selectors.clearFilters).disabled = ![...form.querySelectorAll(
       Selectors.restrictions
@@ -108,14 +108,14 @@ const createActions = /* @__PURE__ */ __name((form) => {
     }
     form.setAttribute("aria-busy", "true");
     if (!toggleitem) {
-      form.querySelector(Selectors.results).classList.add("multipicker-loading");
+      form.querySelector(Selectors.results).classList.add("coursefiles-loading");
     }
     const actions = [...form.querySelectorAll(Selectors.pendingActions)];
     actions.forEach((button) => {
-      button.dataset.multipickerDisabled = String(button.disabled);
+      button.dataset.coursefilesDisabled = String(button.disabled);
       button.disabled = true;
     });
-    getString("filterloading", "local_multipicker").then((text) => {
+    getString("filterloading", "local_coursefiles").then((text) => {
       form.querySelector(Selectors.loading).textContent = text;
       return text;
     }).catch(() => {
@@ -185,9 +185,9 @@ const createActions = /* @__PURE__ */ __name((form) => {
       loading = false;
       if (form.isConnected) {
         form.removeAttribute("aria-busy");
-        form.querySelector(Selectors.results).classList.remove("multipicker-loading");
+        form.querySelector(Selectors.results).classList.remove("coursefiles-loading");
         actions.forEach((button) => {
-          button.disabled = button.dataset.multipickerDisabled === "true";
+          button.disabled = button.dataset.coursefilesDisabled === "true";
         });
         form.querySelector(Selectors.loading).textContent = "";
         update();
@@ -222,7 +222,7 @@ const createActions = /* @__PURE__ */ __name((form) => {
     button.disabled = true;
     entries.setAttribute("aria-busy", "true");
     const skeleton = document.createElement("div");
-    skeleton.className = "multipicker-tree-placeholder";
+    skeleton.className = "coursefiles-tree-placeholder";
     skeleton.innerHTML = "<span></span><span></span>";
     entries.append(skeleton);
     try {
@@ -290,7 +290,7 @@ const createActions = /* @__PURE__ */ __name((form) => {
   const selectionChange = /* @__PURE__ */ __name((event) => {
     changes++;
     if (eventElement(event).matches(Selectors.choice)) {
-      eventElement(event).closest(Selectors.card).classList.toggle("multipicker-selected", eventElement(event).checked);
+      eventElement(event).closest(Selectors.card).classList.toggle("coursefiles-selected", eventElement(event).checked);
       apply(eventElement(event).value);
       return;
     }
@@ -324,7 +324,7 @@ const createActions = /* @__PURE__ */ __name((form) => {
     }
     submitting = true;
     form.setAttribute("aria-busy", "true");
-    getString("filterloading", "local_multipicker").then((text) => {
+    getString("filterloading", "local_coursefiles").then((text) => {
       form.querySelector(Selectors.loading).textContent = text;
       return text;
     }).catch(() => {
@@ -333,7 +333,7 @@ const createActions = /* @__PURE__ */ __name((form) => {
   const changeLayout = /* @__PURE__ */ __name((event) => {
     const button = eventElement(event).closest(Selectors.layouts);
     if (button) {
-      syncLayout(button.dataset.multipickerLayout);
+      syncLayout(button.dataset.coursefilesLayout);
     }
   }, "changeLayout");
   update();

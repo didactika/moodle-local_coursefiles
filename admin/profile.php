@@ -17,7 +17,7 @@
 /**
  * Profile editor and unsaved rule preview.
  *
- * @package local_multipicker
+ * @package local_coursefiles
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,29 +26,29 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use local_multipicker\form\profile_form;
-use local_multipicker\output\navigation;
-use local_multipicker\output\profile_summary;
-use local_multipicker\output\view;
+use local_coursefiles\form\profile_form;
+use local_coursefiles\output\navigation;
+use local_coursefiles\output\profile_summary;
+use local_coursefiles\output\view;
 
 $profileid = optional_param('profileid', 0, PARAM_INT);
 admin_externalpage_setup(
-    'local_multipicker_profiles',
+    'local_coursefiles_profiles',
     '',
     ['profileid' => $profileid],
-    new moodle_url('/local/multipicker/admin/profile.php', ['profileid' => $profileid])
+    new moodle_url('/local/coursefiles/admin/profile.php', ['profileid' => $profileid])
 );
 if ($profileid) {
-    $profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
-    $revision = $DB->get_record('local_multipicker_revision', ['id' => $profile->activeid], '*', MUST_EXIST);
+    $profile = $DB->get_record('local_coursefiles', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
+    $revision = $DB->get_record('local_coursefiles_revision', ['id' => $profile->activeid], '*', MUST_EXIST);
     $config = json_decode($revision->configjson, true);
 } else {
     $config = [];
 }
-$definitions = $config ? (new \local_multipicker\local\profile\profile_config($config))->filter_definitions() : [];
+$definitions = $config ? (new \local_coursefiles\local\profile\profile_config($config))->filter_definitions() : [];
 $form = new profile_form(null, ['profileid' => $profileid, 'config' => $config, 'filtercount' => max(2, count($definitions)),
     'sources' => $config['publication']['allowed_sources'] ?? []]);
-$listurl = new moodle_url('/local/multipicker/admin/profiles.php');
+$listurl = new moodle_url('/local/coursefiles/admin/profiles.php');
 if ($form->is_cancelled()) {
     redirect($listurl);
 }
@@ -58,10 +58,10 @@ if ($data = $form->get_data()) {
     if (!empty($data->previewrules)) {
         $summary = profile_summary::data($config, false);
     } else {
-        \local_multipicker\local\profile\profiles::save(json_encode($config), $profileid);
+        \local_coursefiles\local\profile\profiles::save(json_encode($config), $profileid);
         redirect(
             $listurl,
-            get_string('revisionactivated', 'local_multipicker'),
+            get_string('revisionactivated', 'local_coursefiles'),
             null,
             \core\output\notification::NOTIFY_SUCCESS
         );
@@ -80,20 +80,20 @@ if (!$form->is_submitted()) {
         $defaults['filteroptional'][] = !empty($definition['optional']);
         $defaults['filterkey'][] = $key;
     }
-    $form->set_data($defaults + ($config ? \local_multipicker\local\profile\guided_config::defaults($config)
+    $form->set_data($defaults + ($config ? \local_coursefiles\local\profile\guided_config::defaults($config)
         : ['displaytemplate' => '', 'pairdimensions' => '', 'categoryids' => []]));
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
-$renderer = $PAGE->get_renderer('local_multipicker');
+echo $OUTPUT->heading(get_string('pluginname', 'local_coursefiles'));
+$renderer = $PAGE->get_renderer('local_coursefiles');
 echo $renderer->render(navigation::site('profiles'));
-echo $OUTPUT->heading(get_string($profileid ? 'profileeditor' : 'newprofile', 'local_multipicker'), 3);
+echo $OUTPUT->heading(get_string($profileid ? 'profileeditor' : 'newprofile', 'local_coursefiles'), 3);
 if ($summary !== null) {
-    echo $OUTPUT->notification(get_string('unsavedpreview', 'local_multipicker'), 'info');
+    echo $OUTPUT->notification(get_string('unsavedpreview', 'local_coursefiles'), 'info');
     echo $renderer->render(new view('profile_summary', $summary));
 }
-echo html_writer::start_div('multipicker-admin multipicker-panel');
+echo html_writer::start_div('coursefiles-admin coursefiles-panel');
 $form->display();
 echo html_writer::end_div();
 echo $OUTPUT->footer();
