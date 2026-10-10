@@ -48,6 +48,8 @@
             <div><label for="mpdestination" class="small">{{#str}}batchdestination, local_multipicker{{/str}}</label> {{{destinationhelp}}}<select name="destination" id="mpdestination" class="custom-select custom-select-sm">{{#destinations}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/destinations}}</select></div>
             <div><label for="mpmode" class="small">{{#str}}copymode, local_multipicker{{/str}}</label> {{{modehelp}}}<select name="mode" id="mpmode" class="custom-select custom-select-sm">{{#modes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modes}}</select></div>
 
+            </div><div class="d-flex justify-content-end border-top mt-2 pt-2">
+                <button name="clearfilters" value="1" class="btn btn-sm btn-outline-secondary" data-multipicker-clear-filters {{^filtercount}}disabled{{/filtercount}}>{{#pix}}i/reload, core{{/pix}} {{#str}}clearfilters, local_multipicker{{/str}}</button>
             </div></div>
         </details>
     </div>
@@ -66,7 +68,7 @@
     {{#infolder}}<div class="multipicker-toolbar mb-2 d-flex align-items-center justify-content-between flex-wrap my-2"><button name="openfolder" value="{{parent}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</button><span class="small text-muted text-break">{{{location}}}</span></div>{{/infolder}}
     <div class="multipicker-results" data-multipicker-results><div class="multipicker-skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div class="multipicker-cards">
         {{#treegroups}}<div class="multipicker-browser-tree-group" data-collapsed="false">
-            <button type="button" class="btn btn-sm btn-link multipicker-course-heading" data-multipicker-course-toggle aria-expanded="true"><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}i/course, core{{/pix}} <strong class="text-break">{{{name}}}</strong></button>
+            <button type="button" class="btn btn-sm btn-link multipicker-course-heading{{^treelayout}} d-none{{/treelayout}}" data-multipicker-course-toggle {{^treelayout}}hidden{{/treelayout}} aria-expanded="true"><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}i/course, core{{/pix}} <strong class="text-break">{{{name}}}</strong></button>
             <div class="multipicker-tree-entries">{{#cards}}{{> local_multipicker/local/selection/card}}{{/cards}}</div>
         </div>{{/treegroups}}
 

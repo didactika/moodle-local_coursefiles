@@ -136,7 +136,6 @@ body.multipicker-embedded, .multipicker-embedded #page,
     display: block; height: 3rem; margin-block: .35rem; border-radius: var(--multipicker-radius);
     background: color-mix(in srgb, var(--multipicker-primary) 4%, var(--multipicker-surface));
 }
-.multipicker-browser:not([data-layout=tree]) .multipicker-course-heading { display: none; }
 .multipicker-browser[data-layout=tree] .multipicker-cards { display: block; }
 .multipicker-browser[data-layout=tree] .multipicker-browser-tree-group { display: block; margin-bottom: .5rem; }
 .multipicker-browser[data-layout=tree] .multipicker-course-heading {

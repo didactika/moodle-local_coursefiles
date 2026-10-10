@@ -2,6 +2,8 @@
 
 ## [4.5.0] - 2026-10-10
 
+- Explicitly hide course tree headings in Cards/List, synchronize view state across pending result loads, and clear all search restrictions without losing selected content.
+
 - English-only source language strings; detailed documentation and UML moved to the central services workspace.
 
 - Stable Moodle 4.5 distribution with Didactika copyright, author metadata and GPLv3 LICENSE.

@@ -100,7 +100,7 @@ final class upgrade_test extends \advanced_testcase {
         set_config('version', 2026100801, 'local_multipicker');
         $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100801));
         $this->assertEquals($before, $DB->get_records_list('local_multipicker_attribution', 'id', $ids, 'id'));
-        $this->assertSame('2026101002', get_config('local_multipicker', 'version'));
+        $this->assertSame('2026101003', get_config('local_multipicker', 'version'));
     }
 
     /**
@@ -168,8 +168,8 @@ final class upgrade_test extends \advanced_testcase {
                 $table,
                 new \xmldb_index('entityid', XMLDB_INDEX_NOTUNIQUE, ['entityuuid', 'id'])
             ));
-            $this->assertSame('2026101002', get_config('local_multipicker', 'version'));
-            $this->assertTrue(\xmldb_local_multipicker_upgrade(2026101002));
+            $this->assertSame('2026101003', get_config('local_multipicker', 'version'));
+            $this->assertTrue(\xmldb_local_multipicker_upgrade(2026101003));
         } finally {
             if ($dbman->table_exists('local_multipicker_audit') && !$dbman->table_exists($table)) {
                 $dbman->rename_table(new \xmldb_table('local_multipicker_audit'), 'local_multipicker_log');
@@ -187,7 +187,7 @@ final class upgrade_test extends \advanced_testcase {
         require_once(__DIR__ . '/../db/upgrade.php');
         set_config('version', 2026100800, 'local_multipicker');
         $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100800));
-        $this->assertSame('2026101002', get_config('local_multipicker', 'version'));
+        $this->assertSame('2026101003', get_config('local_multipicker', 'version'));
         $this->assertTrue($DB->get_manager()->table_exists('local_multipicker_log'));
     }
 
