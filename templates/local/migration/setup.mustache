@@ -2,41 +2,41 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_coursefiles/local/migration/setup
+    @template local_filebank/local/migration/setup
     Profile choice, exact rule summary and bounded recent-preview list.
     Example context (json): {"profiles":[],"hasprofiles":false,"recent":[],"hasrecent":false}
 }}
-<section class="coursefiles-admin" data-region="coursefiles-migration-setup">
-    {{#chooseprofile}}<div class="coursefiles-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{listurl}}" class="btn btn-sm btn-outline-secondary coursefiles-back">{{#pix}}t/left, core{{/pix}}{{#str}}back, core{{/str}}</a></div>{{/chooseprofile}}
-    {{#choosescope}}<div class="coursefiles-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{scopebackurl}}" class="btn btn-sm btn-outline-secondary coursefiles-back">{{#pix}}t/left, core{{/pix}}{{#str}}back, core{{/str}}</a></div>{{/choosescope}}
-    <h2>{{#str}}migrations, local_coursefiles{{/str}}</h2>
-    <p class="text-muted">{{#str}}migrationintro, local_coursefiles{{/str}}</p>
-    <ol class="coursefiles-steps mb-4" aria-label="{{#str}}migrationsteps, local_coursefiles{{/str}}">
-        <li {{#chooseprofile}}aria-current="step"{{/chooseprofile}}><span class="coursefiles-step-number">1</span>{{#str}}migrationstep_profile, local_coursefiles{{/str}}</li>
-        <li {{#choosescope}}aria-current="step"{{/choosescope}}><span class="coursefiles-step-number">2</span>{{#str}}migrationstep_scope, local_coursefiles{{/str}}</li>
-        <li><span class="coursefiles-step-number">3</span>{{#str}}migrationstep_review, local_coursefiles{{/str}}</li>
-        <li><span class="coursefiles-step-number">4</span>{{#str}}migrationstep_execute, local_coursefiles{{/str}}</li>
+<section class="filebank-admin" data-region="filebank-migration-setup">
+    {{#chooseprofile}}<div class="filebank-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{listurl}}" class="btn btn-sm btn-outline-secondary filebank-back">{{#pix}}t/left, core{{/pix}}{{#str}}back, core{{/str}}</a></div>{{/chooseprofile}}
+    {{#choosescope}}<div class="filebank-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{scopebackurl}}" class="btn btn-sm btn-outline-secondary filebank-back">{{#pix}}t/left, core{{/pix}}{{#str}}back, core{{/str}}</a></div>{{/choosescope}}
+    <h2>{{#str}}migrations, local_filebank{{/str}}</h2>
+    <p class="text-muted">{{#str}}migrationintro, local_filebank{{/str}}</p>
+    <ol class="filebank-steps mb-4" aria-label="{{#str}}migrationsteps, local_filebank{{/str}}">
+        <li {{#chooseprofile}}aria-current="step"{{/chooseprofile}}><span class="filebank-step-number">1</span>{{#str}}migrationstep_profile, local_filebank{{/str}}</li>
+        <li {{#choosescope}}aria-current="step"{{/choosescope}}><span class="filebank-step-number">2</span>{{#str}}migrationstep_scope, local_filebank{{/str}}</li>
+        <li><span class="filebank-step-number">3</span>{{#str}}migrationstep_review, local_filebank{{/str}}</li>
+        <li><span class="filebank-step-number">4</span>{{#str}}migrationstep_execute, local_filebank{{/str}}</li>
     </ol>
 
     {{#hasprofiles}}
-    {{#chooseprofile}}<div class="coursefiles-panel"><p class="text-muted">{{#str}}migrationprofilehelp, local_coursefiles{{/str}}</p>
+    {{#chooseprofile}}<div class="filebank-panel"><p class="text-muted">{{#str}}migrationprofilehelp, local_filebank{{/str}}</p>
     <form method="get" action="{{actionurl}}" class="mb-4">
         <input type="hidden" name="step" value="scope">
-        <label for="cb-migration-profile">{{#str}}profile, local_coursefiles{{/str}} </label> {{{profilehelp}}}
+        <label for="cb-migration-profile">{{#str}}profile, local_filebank{{/str}} </label> {{{profilehelp}}}
         <div class="row"><div class="col-md-8 mb-2">
             <select class="form-select form-select-sm" name="profileid" id="cb-migration-profile">{{#profiles}}
                 <option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>
             {{/profiles}}</select>
-        </div></div><div class="coursefiles-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top">
+        </div></div><div class="filebank-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top">
 
-            <button class="btn btn-outline-secondary" type="submit">{{#str}}continuescope, local_coursefiles{{/str}}</button>
+            <button class="btn btn-outline-secondary" type="submit">{{#str}}continuescope, local_filebank{{/str}}</button>
         </div>
     </form></div>{{/chooseprofile}}
     {{#choosescope}}
-    <p class="text-muted">{{#str}}migrationscopehelp, local_coursefiles{{/str}}</p>
+    <p class="text-muted">{{#str}}migrationscopehelp, local_filebank{{/str}}</p>
 
     {{/choosescope}}
     {{/hasprofiles}}
-    {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_coursefiles{{/str}}</div>{{/hasprofiles}}
+    {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_filebank{{/str}}</div>{{/hasprofiles}}
 
 </section>

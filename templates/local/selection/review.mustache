@@ -2,26 +2,26 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_coursefiles/local/selection/review
+    @template local_filebank/local/selection/review
     Reviewed resulting files with editable destination names.
     Example context (json): {"backurl":"#","count":2,"nodes":[],"approved":false}
 }}
-<main class="coursefiles-browser coursefiles-selection-review p-3">
-    <div class="coursefiles-heading d-flex align-items-center justify-content-between flex-wrap mb-2">
-        <a href="{{backurl}}" class="btn btn-sm btn-outline-secondary coursefiles-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a>
-        <h2 class="h6 mb-0">{{#str}}batchreview, local_coursefiles{{/str}}</h2>
+<main class="filebank-browser filebank-selection-review p-3">
+    <div class="filebank-heading d-flex align-items-center justify-content-between flex-wrap mb-2">
+        <a href="{{backurl}}" class="btn btn-sm btn-outline-secondary filebank-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a>
+        <h2 class="h6 mb-0">{{#str}}batchreview, local_filebank{{/str}}</h2>
         <span class="small text-muted">{{count}} {{#str}}files, core{{/str}}</span>
     </div>
     {{#renameerror}}<div class="alert alert-danger" role="alert">{{renameerror}}</div>{{/renameerror}}
     {{#error}}<div class="alert alert-danger" role="alert">{{error}}</div>{{/error}}
     {{^error}}
-    <form method="post" action="{{action}}" class="coursefiles-review-form" id="coursefiles-review-form">
+    <form method="post" action="{{action}}" class="filebank-review-form" id="filebank-review-form">
         <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="scope" value="{{scope}}">
-        <div class="coursefiles-results"><ul class="coursefiles-tree coursefiles-tree-root">{{#nodes}}{{> local_coursefiles/local/selection/review_node}}{{/nodes}}</ul></div>
+        <div class="filebank-results"><ul class="filebank-tree filebank-tree-root">{{#nodes}}{{> local_filebank/local/selection/review_node}}{{/nodes}}</ul></div>
     </form>
-    <div class="coursefiles-footer d-flex align-items-center justify-content-between flex-wrap mt-2 pt-2 pb-1 border-top">
-        {{#approved}}<button type="button" data-coursefiles-confirm disabled class="btn btn-sm btn-primary">{{#str}}importselection, local_coursefiles{{/str}}</button>{{/approved}}
-        <span data-coursefiles-status role="status" class="small text-muted"></span>
-        <button name="removeselected" value="1" form="coursefiles-review-form" data-coursefiles-remove-selected hidden disabled class="btn btn-sm btn-outline-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_coursefiles{{/str}}</button>
+    <div class="filebank-footer d-flex align-items-center justify-content-between flex-wrap mt-2 pt-2 pb-1 border-top">
+        {{#approved}}<button type="button" data-filebank-confirm disabled class="btn btn-sm btn-primary">{{#str}}importselection, local_filebank{{/str}}</button>{{/approved}}
+        <span data-filebank-status role="status" class="small text-muted"></span>
+        <button name="removeselected" value="1" form="filebank-review-form" data-filebank-remove-selected hidden disabled class="btn btn-sm btn-outline-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_filebank{{/str}}</button>
     </div>{{/error}}
 </main>

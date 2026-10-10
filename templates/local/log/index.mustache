@@ -2,34 +2,34 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_coursefiles/local/log/index
+    @template local_filebank/local/log/index
     Filtered site action log. Record values are escaped; details are not displayed.
-    Example context (json): {"formurl":"/local/coursefiles/admin/log.php","records":[],"hasrecords":false}
+    Example context (json): {"formurl":"/local/filebank/admin/log.php","records":[],"hasrecords":false}
 }}
-<section class="coursefiles-admin coursefiles-log mb-4">
-    <h2>{{#str}}log, local_coursefiles{{/str}}</h2>
-    <p class="text-muted">{{#str}}logintro, local_coursefiles{{/str}}</p>
-    <div class="d-flex justify-content-end mb-3"><details class="coursefiles-filter-popover"><summary class="btn btn-sm btn-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}</summary><form method="get" action="{{formurl}}" class="coursefiles-filter-menu">
+<section class="filebank-admin filebank-log mb-4">
+    <h2>{{#str}}log, local_filebank{{/str}}</h2>
+    <p class="text-muted">{{#str}}logintro, local_filebank{{/str}}</p>
+    <div class="d-flex justify-content-end mb-3"><details class="filebank-filter-popover"><summary class="btn btn-sm btn-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}</summary><form method="get" action="{{formurl}}" class="filebank-filter-menu">
         <div class="row">
             <div class="col-12 mb-3">
-                <input type="hidden" name="perpage" value="{{perpage}}"><label for="coursefiles-log-action" class="small">{{#str}}logaction, local_coursefiles{{/str}} </label> {{{filterhelp}}}
-                <select id="coursefiles-log-action" name="action" class="form-select form-select-sm">
-                    <option value="">{{#str}}logallactions, local_coursefiles{{/str}}</option>
+                <input type="hidden" name="perpage" value="{{perpage}}"><label for="filebank-log-action" class="small">{{#str}}logaction, local_filebank{{/str}} </label> {{{filterhelp}}}
+                <select id="filebank-log-action" name="action" class="form-select form-select-sm">
+                    <option value="">{{#str}}logallactions, local_filebank{{/str}}</option>
                     {{#options}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/options}}
                 </select>
             </div>
             <div class="col-12 mb-3">
-                <label for="coursefiles-log-reference" class="small">{{#str}}logreference, local_coursefiles{{/str}} </label> {{{filterhelp}}}
-                <input id="coursefiles-log-reference" name="entityuuid" value="{{entityuuid}}" maxlength="36" class="form-control form-control-sm">
+                <label for="filebank-log-reference" class="small">{{#str}}logreference, local_filebank{{/str}} </label> {{{filterhelp}}}
+                <input id="filebank-log-reference" name="entityuuid" value="{{entityuuid}}" maxlength="36" class="form-control form-control-sm">
             </div>
-            <div class="col-12 mb-3"><label for="coursefiles-log-from" class="small">{{#str}}logfrom, local_coursefiles{{/str}} </label> {{{filterhelp}}}<input id="coursefiles-log-from" type="date" name="from" value="{{from}}" class="form-control form-control-sm"></div>
-            <div class="col-12 mb-3"><label for="coursefiles-log-until" class="small">{{#str}}loguntil, local_coursefiles{{/str}} </label> {{{filterhelp}}}<input id="coursefiles-log-until" type="date" name="until" value="{{until}}" class="form-control form-control-sm"></div>
+            <div class="col-12 mb-3"><label for="filebank-log-from" class="small">{{#str}}logfrom, local_filebank{{/str}} </label> {{{filterhelp}}}<input id="filebank-log-from" type="date" name="from" value="{{from}}" class="form-control form-control-sm"></div>
+            <div class="col-12 mb-3"><label for="filebank-log-until" class="small">{{#str}}loguntil, local_filebank{{/str}} </label> {{{filterhelp}}}<input id="filebank-log-until" type="date" name="until" value="{{until}}" class="form-control form-control-sm"></div>
         </div>
         <button class="btn btn-sm btn-primary" type="submit">{{#str}}filter{{/str}}</button>
         <a class="btn btn-sm btn-link" href="{{clearurl}}">{{#str}}clear, core{{/str}}</a>
     </form></details></div>
-    {{#hasrecords}}<div class="table-responsive"><table class="table table-hover table-sm"><thead><tr><th>{{#str}}date, core{{/str}}</th><th>{{#str}}logaction, local_coursefiles{{/str}}</th><th>{{#str}}user, core{{/str}}</th><th>{{#str}}logreference, local_coursefiles{{/str}}</th></tr></thead><tbody>{{#records}}<tr><td class="text-nowrap">{{date}}</td><td>{{action}}</td><td>{{user}}</td><td class="small text-break">{{reference}}</td></tr>{{/records}}</tbody></table></div>{{/hasrecords}}
-    {{^hasrecords}}<p>{{#str}}logempty, local_coursefiles{{/str}}</p>{{/hasrecords}}
+    {{#hasrecords}}<div class="table-responsive"><table class="table table-hover table-sm"><thead><tr><th>{{#str}}date, core{{/str}}</th><th>{{#str}}logaction, local_filebank{{/str}}</th><th>{{#str}}user, core{{/str}}</th><th>{{#str}}logreference, local_filebank{{/str}}</th></tr></thead><tbody>{{#records}}<tr><td class="text-nowrap">{{date}}</td><td>{{action}}</td><td>{{user}}</td><td class="small text-break">{{reference}}</td></tr>{{/records}}</tbody></table></div>{{/hasrecords}}
+    {{^hasrecords}}<p>{{#str}}logempty, local_filebank{{/str}}</p>{{/hasrecords}}
     {{{pagination}}}
 </section>
 

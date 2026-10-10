@@ -2,21 +2,21 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_coursefiles/local/selection/card
+    @template local_filebank/local/selection/card
     One authorized material node shared by grid, list and course tree layouts.
     Example context (json): {"title":"Notes","isfolder":false,"value":"file:hash","id":"material"}
 }}
-{{#isfolder}}<div class="coursefiles-browser-folder" data-tree-folder="{{value}}">{{/isfolder}}
-<div class="card coursefiles-card {{#checked}}coursefiles-selected{{/checked}}">
+{{#isfolder}}<div class="filebank-browser-folder" data-tree-folder="{{value}}">{{/isfolder}}
+<div class="card filebank-card {{#checked}}filebank-selected{{/checked}}">
             <div class="card-body d-flex align-items-start p-2">
-                <input type="checkbox" id="{{id}}" name="choices[]" data-coursefiles-choice value="{{value}}" data-contenthash="{{contenthash}}" data-partial="{{partial}}" {{#checked}}checked{{/checked}}>
-                <div class="coursefiles-card-content">
-                    <div class="coursefiles-card-kind d-flex align-items-center mb-1">{{#isfolder}}{{#pix}}f/folder, core{{/pix}}{{/isfolder}}{{^isfolder}}{{#pix}}{{icon}}, core{{/pix}}{{/isfolder}} <span class="coursefiles-chip">{{#isfolder}}{{#str}}folder, core{{/str}}{{/isfolder}}{{^isfolder}}{{#str}}file, core{{/str}}{{/isfolder}}</span></div>
-                    <label for="{{id}}" class="coursefiles-card-title" title="{{plaintitle}}">{{{title}}}</label>
-                    <div class="coursefiles-origin text-break">{{#showorigin}}{{{origin}}}{{/showorigin}}</div>
-                    <div class="coursefiles-card-meta d-flex flex-wrap mt-2 pt-2 border-top">{{#isfolder}}<span class="coursefiles-chip">{{selectionlabel}}</span>{{/isfolder}}{{^isfolder}}<span class="text-muted text-break">{{details}}</span>{{/isfolder}}</div>
+                <input type="checkbox" id="{{id}}" name="choices[]" data-filebank-choice value="{{value}}" data-contenthash="{{contenthash}}" data-partial="{{partial}}" {{#checked}}checked{{/checked}}>
+                <div class="filebank-card-content">
+                    <div class="filebank-card-kind d-flex align-items-center mb-1">{{#isfolder}}{{#pix}}f/folder, core{{/pix}}{{/isfolder}}{{^isfolder}}{{#pix}}{{icon}}, core{{/pix}}{{/isfolder}} <span class="filebank-chip">{{#isfolder}}{{#str}}folder, core{{/str}}{{/isfolder}}{{^isfolder}}{{#str}}file, core{{/str}}{{/isfolder}}</span></div>
+                    <label for="{{id}}" class="filebank-card-title" title="{{plaintitle}}">{{{title}}}</label>
+                    <div class="filebank-origin text-break">{{#showorigin}}{{{origin}}}{{/showorigin}}</div>
+                    <div class="filebank-card-meta d-flex flex-wrap mt-2 pt-2 border-top">{{#isfolder}}<span class="filebank-chip">{{selectionlabel}}</span>{{/isfolder}}{{^isfolder}}<span class="text-muted text-break">{{details}}</span>{{/isfolder}}</div>
                 </div>
-                {{#isfolder}}<button name="openfolder" value="{{open}}" class="btn btn-outline-secondary coursefiles-open" aria-expanded="false" title="{{#str}}openfolder, local_coursefiles{{/str}}">{{#pix}}t/right, core{{/pix}}<span class="coursefiles-visually-hidden">{{#str}}openfolder, local_coursefiles{{/str}}</span></button>{{/isfolder}}
+                {{#isfolder}}<button name="openfolder" value="{{open}}" class="btn btn-outline-secondary filebank-open" aria-expanded="false" title="{{#str}}openfolder, local_filebank{{/str}}">{{#pix}}t/right, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}openfolder, local_filebank{{/str}}</span></button>{{/isfolder}}
             </div>
         </div>
-{{#isfolder}}<div class="coursefiles-browser-children" data-tree-entries hidden></div></div>{{/isfolder}}
+{{#isfolder}}<div class="filebank-browser-children" data-tree-entries hidden></div></div>{{/isfolder}}

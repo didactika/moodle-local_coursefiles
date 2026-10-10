@@ -628,20 +628,25 @@ class behat_local_filebank extends behat_base {
     }
 
     /**
-     * Open Tiny's native link browser in an existing activity description.
+     * Open the native Tiny or Atto link browser in an existing activity description.
      *
      * @When /^I open FileBank from the activity editor$/
      */
     public function open_editor_picker(): void {
-        if (!$this->getSession()->wait(10000, '!!document.querySelector("button[data-mce-name=tiny_link_link]")')) {
-            throw new \Exception('The native Tiny editor did not initialize.');
+        if (
+            !$this->getSession()->wait(
+                10000,
+                '!!document.querySelector("button[data-mce-name=tiny_link_link],button.atto_link_button")'
+            )
+        ) {
+            throw new \Exception('The native editor did not initialize.');
         }
         $this->getSession()->getDriver()->executeScript(
-            'const button=document.querySelector("button[data-mce-name=tiny_link_link]");'
-            . 'if(!button){throw new Error("Native Tiny Link toolbar action unavailable");}button.click();'
+            'const button=document.querySelector("button[data-mce-name=tiny_link_link],button.atto_link_button");'
+            . 'if(!button){throw new Error("Native Link toolbar action unavailable");}button.click();'
         );
         if (!$this->getSession()->wait(10000, '!!document.querySelector(".openlinkbrowser")')) {
-            throw new \Exception('The native Tiny link browser did not open.');
+            throw new \Exception('The native link browser did not open.');
         }
         $this->getSession()->getDriver()->executeScript('document.querySelector(".openlinkbrowser").click();');
         $this->getSession()->wait(
@@ -663,8 +668,9 @@ class behat_local_filebank extends behat_base {
      */
     public function editor_has_links(string $names): void {
         $this->getSession()->getDriver()->executeScript(
-            'window.filebankEditor=null;require(["editor_tiny/editor"],module=>'
-            . '{window.filebankEditor=module.getInstanceForElementId("id_introeditor");});'
+            'window.filebankEditor=null;const editable=document.getElementById("id_introeditoreditable");'
+            . 'if(editable){window.filebankEditor={getBody:()=>editable};}else{require(["editor_tiny/editor"],module=>'
+            . '{window.filebankEditor=module.getInstanceForElementId("id_introeditor");});}'
             . 'window.filebankReceipt=null;fetch(M.cfg.wwwroot+"/local/filebank/selection/status.php?"'
             . '+new URLSearchParams({scope:window.filebankTestScope,sesskey:M.cfg.sesskey}))'
             . '.then(response=>response.json()).then(result=>{window.filebankReceipt=result;});'
