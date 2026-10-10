@@ -13,9 +13,10 @@ Bundle -> Bundle : Validate complete bundle
 alt every document valid
   Form -> Bundle : import(json)
   Bundle -> DB : Begin transaction
-  loop each configuration
+  loop each profile
     Bundle -> Profiles : save(json) with new identity
-    Profiles -> DB : Activate validated revision / log
+    Profiles -> DB : Create independent profile / log
+    Bundle -> DB : Restore versions / dates / current version
   end
   Bundle -> DB : Commit all profiles
   Bundle --> Form : New profile IDs

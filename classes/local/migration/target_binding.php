@@ -64,7 +64,7 @@ final class target_binding {
      */
     public static function resolve(int $planid, string $key, array $definition): array {
         global $CFG, $DB;
-        if (empty($CFG->maintenance_enabled) || !hash_equals($key, hash('sha256', json_encode($definition)))) {
+        if (!hash_equals($key, hash('sha256', json_encode($definition)))) {
             throw new \moodle_exception('planstale', 'local_multipicker');
         }
         $binding = $DB->get_record('local_multipicker_target', ['planid' => $planid, 'targetkey' => $key], '*', MUST_EXIST);

@@ -263,11 +263,12 @@ final class migration_planner {
         $blockedissues = array_filter($issues, static fn($issue) => $issue['blocking'] ?? true);
         $blockedfiles = array_filter($operations, static fn($operation) => str_starts_with($operation['decision'], 'blocked_'));
         $blocked = $blockedissues || $blockedfiles;
+        $haswork = array_filter($operations, static fn($op) => in_array($op['decision'], ['copy', 'overwrite'], true));
         $transaction = $DB->start_delegated_transaction();
         $planid = $DB->insert_record('local_multipicker_plan', (object)[
             'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
             'userid' => $USER->id, 'configjson' => $json, 'digest' => hash('sha256', $json),
-            'state' => $blocked ? 'blocked' : 'reviewable', 'timecreated' => time(),
+            'state' => $blocked ? 'blocked' : ($haswork ? 'reviewable' : 'cancelled'), 'timecreated' => time(),
         ]);
         foreach ($creations as $key => $definition) {
             $DB->insert_record('local_multipicker_target', (object)['planid' => $planid, 'targetkey' => $key,

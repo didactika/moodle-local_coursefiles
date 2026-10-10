@@ -31,6 +31,7 @@ use core_privacy\local\request\writer;
 
 /**
  * Checks actual actor records, native files and approved context boundaries.
+ * @covers \local_multipicker\privacy\provider
  */
 final class provider_test extends \core_privacy\tests\provider_testcase {
     /**

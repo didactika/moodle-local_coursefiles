@@ -4,7 +4,7 @@
 |---|---|
 | Primary actor | Administrator |
 | Goal | Apply reviewed additive copies into existing folders. |
-| Preconditions | The plan is reviewable and its digest matches; execution rights, maintenance mode and exclusive administrative editing are in effect. |
+| Preconditions | The plan is reviewable and its digest matches; the actor has execution rights and confirms the reviewed destinations. The site remains available. |
 | Result | The attempt reports completed, partial or blocked state; source and unrelated destination files remain. |
 
 ## Step-by-step conversation
@@ -18,7 +18,7 @@
 | 1 | Administrator | Executes the reviewed digest. |
 | 2 | migration_executor | Queues a run under the acting user's identity. |
 | 3 | execute_migration / migration_executor | Processes at most 25 operations per slice under destination locks. |
-| 4 | migration_executor / folder_destination | Revalidates the active revision, live access and snapshots; copies through native folder save or skips identical content. |
+| 4 | migration_executor / folder_destination | Revalidates the active revision, live access and snapshots; copies each path through the File API or skips identical content. |
 | 5 | migration_executor | Records outcomes, provenance and run state; continues pending work. |
 
 ## Alternative outcomes

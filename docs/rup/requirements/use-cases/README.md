@@ -15,5 +15,6 @@ Every supported goal has a step-by-step conversation, alternatives and a design 
 | UC10 | [Select files and folders together](uc10-select-materials.md) | Teacher |
 | UC11 | [Export selected or all profiles](uc11-export-profiles.md) | Profile manager |
 | UC12 | [Import portable profiles](uc12-import-profiles.md) | Profile manager |
+| UC13 | [Compare and restore versions](uc13-profile-history.md) | Profile manager |
 
 [Actor views](../README.md) · [Analysis](../../analysis/README.md) · [Design](../../design/README.md).

@@ -61,6 +61,8 @@ final class profiles {
             if ($profile->deleted) {
                 throw new \moodle_exception('invalidprofile', 'local_multipicker');
             }
+            $previousid = (int)$profile->activeid;
+            $previous = $previousid ? $DB->get_record('local_multipicker_revision', ['id' => $previousid]) : false;
             $number = 1 + (int)$DB->get_field_sql(
                 'SELECT MAX(revision) FROM {local_multipicker_revision} WHERE profileid = ?',
                 [$profileid]
@@ -72,6 +74,24 @@ final class profiles {
             ]);
             $profile->name = $config['name'] ?? $profile->name;
             $DB->update_record('local_multipicker', $profile);
+            if ($previous) {
+                $oldconfig = json_decode($previous->configjson, true);
+                if (
+                    $oldconfig['relationship'] === $config['relationship']
+                        && ($oldconfig['scope'] ?? []) === ($config['scope'] ?? [])
+                ) {
+                    // Reuse matching metadata for presentation/publication edits; access is still checked live.
+                    foreach (['local_multipicker_course', 'local_multipicker_value'] as $table) {
+                        $DB->set_field(
+                            $table,
+                            'revisionid',
+                            $profile->activeid,
+                            ['profileid' => $profileid, 'revisionid' => $previousid]
+                        );
+                    }
+                }
+            }
+            \local_multipicker\task\refresh_profile::queue($profileid, (int)$profile->activeid);
             $transaction->allow_commit();
             log::record('profile_activated', $profile->uuid, ['revision' => $number]);
             return $profileid;
@@ -116,6 +136,9 @@ final class profiles {
                 $profile->enabled = $action === 'enable' ? 1 : 0;
                 $profile->deleted = $action === 'delete' ? 1 : 0;
                 $DB->update_record('local_multipicker', $profile);
+                if ($action === 'enable') {
+                    \local_multipicker\task\refresh_profile::queue((int)$profile->id, (int)$profile->activeid);
+                }
                 log::record('profile_state_changed', $profile->uuid, ['action' => $action]);
             }
             $transaction->allow_commit();

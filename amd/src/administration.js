@@ -70,6 +70,13 @@ export const init = () => {
             if (exportButton) {
                 exportButton.disabled = count === 0;
             }
+            const bulk = form.querySelector('[data-multipicker-bulk-actions]');
+            if (bulk) {
+                bulk.hidden = count === 0;
+                bulk.querySelectorAll('button').forEach(button => {
+                    button.disabled = count === 0;
+                });
+            }
         };
         all.addEventListener('change', () => {
             checks.forEach(check => {

@@ -54,6 +54,7 @@ final class browser_listing {
                         $roots[$card['value']] = true;
                     }
                 }
+                selection_limits::require_capacity($scope, array_keys($selected));
                 if (count($selected) > material_selection::MAX_FILES || count($roots) > material_selection::MAX_FILES) {
                     throw new \moodle_exception('batchlimit', 'local_multipicker');
                 }
@@ -157,7 +158,10 @@ final class browser_listing {
             ?: strnatcasecmp($left['title'], $right['title']));
         $selecteditems = array_map(static fn($value) => ['value' => $value], $state['selected']);
         $retained = array_values(array_filter($selecteditems, static fn($item) => !isset($cards[$item['value']])));
+        $capacity = selection_limits::capacity($scope);
         foreach ($cards as &$card) {
+            $card['plaintitle'] = strip_tags(html_entity_decode($card['title'], ENT_QUOTES, 'UTF-8'));
+            $card['selectionfull'] = count($state['selected']) >= $capacity;
             if ($card['isfolder']) {
                 global $DB;
                 $selector = selection_options::parse([$card['value']])[0];

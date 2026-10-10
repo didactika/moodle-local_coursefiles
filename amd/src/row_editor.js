@@ -16,7 +16,7 @@
 /**
  * Accessible selection controls for native administration forms.
  *
- * @module local_multipicker/administration
+ * @module local_multipicker/row_editor
  * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,15 +29,14 @@ import Notification from 'core/notification';
  * Enhance a native textarea with bounded, editable form rows.
  *
  * @param {string} id Native field ID.
- * @param {Array} columns Server-issued column contracts.
- * @param {number} maximum Row limit enforced again by PHP.
  */
-export const init = async(id, columns, maximum) => {
+export const init = async id => {
     const field = document.getElementById(id);
     if (!field || field.dataset.multipickerRows) {
         return;
     }
     try {
+        const {columns, maximum} = JSON.parse(field.dataset.multipickerSchema);
         const values = JSON.parse(field.value || '[]');
         if (!Array.isArray(values) || values.length > maximum) {
             return;
@@ -74,7 +73,7 @@ export const init = async(id, columns, maximum) => {
                         input.checked = Boolean(value[column.key]);
                     } else {
                         input.maxLength = column.maxlength || 2048;
-                        input.required = true;
+                        // PHP validates completed rows; new blank rows must not block native cancellation.
                         if (['key', 'capture'].includes(column.key)) {
                             input.pattern = '[A-Za-z][A-Za-z0-9_]{0,63}';
                         }

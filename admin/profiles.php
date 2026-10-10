@@ -94,6 +94,7 @@ foreach (
     }
     $data['profiles'][] = [
         'grouping' => $config['relationship']['family_key'], 'filters' => implode(' · ', $labels),
+        'historyurl' => (new moodle_url('/local/multipicker/admin/profile_history.php', ['profileid' => $profile->id]))->out(false),
         'id' => $profile->id,
         'name' => \local_multipicker\output\display::name($profile->name),
         'url' => (new moodle_url('/local/multipicker/admin/profile.php', ['profileid' => $profile->id]))->out(false),

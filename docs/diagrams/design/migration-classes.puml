@@ -20,7 +20,7 @@ class migration_executor {
   + cancel(runid)
 }
 class folder_destination {
-  + copy(source, targetcmid, overwrite)
+  + copy(source, targetcmid, overwrite, expected)
 }
 class target_binding {
   + descriptor(...)
@@ -36,5 +36,5 @@ migration_executor --> folder_destination
 migration_planner -[hidden]right-> migration_executor
 placement -[hidden]right-> copy_decision
 copy_decision -[hidden]right-> folder_destination
-note bottom of folder_destination : Native reviewed save under an exclusive maintenance window.
+note bottom of folder_destination : Additive File API transaction after destination revalidation.
 @enduml

@@ -151,7 +151,7 @@ final class profile_config {
                 throw new \moodle_exception('invalidprofile', 'local_multipicker');
             }
         }
-        if (count($this->filter_definitions()) > 12) {
+        if (count($this->filter_definitions()) > 9) {
             throw new \moodle_exception('invalidprofile', 'local_multipicker');
         }
     }

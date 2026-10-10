@@ -15,7 +15,7 @@
     <form method="post" action="{{action}}" class="multipicker-review-form">
         <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="scope" value="{{scope}}">
         <div class="multipicker-results"><ul class="multipicker-tree multipicker-tree-root">{{#nodes}}{{> local_multipicker/local/selection/review_node}}{{/nodes}}</ul></div>
-        <div class="multipicker-toolbar"><button class="btn btn-sm btn-outline-secondary" data-multipicker-save-review>{{#str}}savechanges, core{{/str}}</button><button name="removeselected" value="1" class="btn btn-sm btn-outline-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_multipicker{{/str}}</button></div>
+        <div class="multipicker-toolbar"><button name="removeselected" value="1" class="btn btn-sm btn-outline-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_multipicker{{/str}}</button></div>
     </form>
     <div class="multipicker-footer">
         {{#approved}}<button type="button" data-multipicker-confirm disabled class="btn btn-sm btn-primary">{{#str}}importselection, local_multipicker{{/str}}</button>{{/approved}}

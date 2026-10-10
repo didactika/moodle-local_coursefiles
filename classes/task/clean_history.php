@@ -41,6 +41,7 @@ final class clean_history extends \core\task\scheduled_task {
      */
     public function execute(): void {
         $counts = \local_multipicker\local\maintenance\retention::clean();
-        mtrace('MultiPicker: removed ' . $counts['logs'] . ' logs and ' . $counts['plans'] . ' expired plans.');
+        mtrace('MultiPicker: removed ' . $counts['logs'] . ' logs and ' . $counts['plans']
+            . ' expired plans and ' . $counts['versions'] . ' profile versions.');
     }
 }

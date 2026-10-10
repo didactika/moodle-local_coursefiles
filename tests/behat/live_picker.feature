@@ -14,6 +14,7 @@ Feature: Stable native selection with the configured repository name
 
   Scenario: Configured name and whole-result selection use the native picker
     Then the MultiPicker heading should be "Course library"
+    And MultiPicker cards and filters should keep a compact aligned layout
     When I press MultiPicker action "Select all"
     Then MultiPicker should have "4" selected files
     When I press MultiPicker action "Clear selection"
@@ -22,4 +23,14 @@ Feature: Stable native selection with the configured repository name
   Scenario: Typing remains active and the modal does not resize while results reload
     When I filter MultiPicker while its results are loading
     Then I should see "1" MultiPicker file cards named "notes2025.txt"
+    And I capture the MultiPicker browser
+
+  Scenario: Folder selection preserves cards and the current results scroll
+    When I select a MultiPicker card without rebuilding its results
+    Then MultiPicker should have "2" selected files
+
+  Scenario: Review rows select files and retain native import approval
+    When I press MultiPicker action "Select all"
+    And I press MultiPicker action "Review selection"
+    Then the MultiPicker review should use compact selectable rows
     And I capture the MultiPicker browser

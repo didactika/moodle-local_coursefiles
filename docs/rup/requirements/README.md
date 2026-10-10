@@ -10,4 +10,6 @@ Requirements diagrams identify user goals. Shared authorization checks are const
 
 ![Publication and policy goals](../../diagrams/requirements/policy-use-cases.svg)
 
+![Profile configuration and history](../../diagrams/requirements/profile-use-cases.svg)
+
 The [individual catalogue](use-cases/README.md) contains each step-by-step conversation and its sequence. Persistent states are documented separately in [behavior](../behavior/README.md).

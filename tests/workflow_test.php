@@ -42,6 +42,63 @@ use local_multipicker\local\profile\profiles;
  */
 final class workflow_test extends \advanced_testcase {
     /**
+     * A teacher can add unrelated material after review while the site stays available.
+     */
+    public function test_live_migration_keeps_files_added_after_review(): void {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+            ->create_migration_fixture(['name' => 'Available site']);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $file = get_file_storage()->create_file_from_string([
+            'contextid' => \context_module::instance($fixture['targetcmid'])->id,
+            'component' => 'mod_folder', 'filearea' => 'content', 'itemid' => 0, 'filepath' => '/',
+            'filename' => 'added-after-review.txt', 'author' => 'Destination teacher', 'license' => 'cc',
+        ], 'New material from the teacher');
+        $CFG->maintenance_enabled = false;
+        $runid = migration_executor::queue($plan->id, $plan->digest);
+        $this->assertFalse(migration_executor::execute($runid));
+        $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
+        $saved = get_file_storage()->get_file_by_hash($file->get_pathnamehash());
+        $this->assertSame('New material from the teacher', $saved->get_content());
+        $this->assertSame('Destination teacher', $saved->get_author());
+        $this->assertSame(4, count(get_file_storage()->get_area_files(
+            $saved->get_contextid(),
+            'mod_folder',
+            'content',
+            0,
+            'id',
+            false
+        )));
+    }
+
+    /**
+     * A blank guided form builds its own validated document; no example is inherited.
+     */
+    public function test_new_guided_profile_and_nine_filter_limit(): void {
+        $this->resetAfterTest();
+        $data = ['editmode' => 'guided', 'profilename' => 'New profile', 'coursefield' => 'shortname',
+            'coursepattern' => '~^(?<group>.+)$~', 'familytemplate' => '${group}', 'filtersjson' => '[]',
+            'guidedsettings' => 1, 'publicationmode' => 'source-access-only', 'sourcesdefined' => 1,
+            'displaytemplate' => ''];
+        $config = \local_multipicker\form\profile_form::document($data);
+        $this->assertSame([], $config['relationship']['filters']);
+        $this->assertSame([], $config['publication']['allowed_sources']);
+        $this->assertArrayNotHasKey('migration', $config);
+        $this->assertArrayNotHasKey('display_label', $config['relationship']);
+        $filters = [];
+        for ($i = 0; $i < 9; $i++) {
+            $filters['filter' . $i] = ['capture' => 'group', 'label' => 'Filter ' . $i, 'optional' => false];
+        }
+        $config['relationship']['filters'] = $filters;
+        $this->assertCount(9, (new \local_multipicker\local\profile\profile_config($config))->filter_definitions());
+        $config['relationship']['filters']['tenth'] = ['capture' => 'group', 'label' => 'Too many'];
+        $this->expectException(\moodle_exception::class);
+        new \local_multipicker\local\profile\profile_config($config);
+    }
+
+    /**
      * Several reviewed correspondences create only the missing destinations and remain idempotent.
      */
     public function test_native_creation_overwrite_and_identical_skip(): void {
@@ -68,10 +125,11 @@ final class workflow_test extends \advanced_testcase {
         $this->assertSame('reviewable', $plan->state);
         $this->assertSame(1, $DB->count_records('local_multipicker_target', ['planid' => $plan->id]));
         $this->assertSame(1, $DB->count_records('local_multipicker_operation', ['planid' => $plan->id, 'decision' => 'overwrite']));
-        $CFG->maintenance_enabled = true;
+        $CFG->maintenance_enabled = false;
         $runid = migration_executor::queue($plan->id, $plan->digest);
-        while (migration_executor::execute($runid)) {
-            // Process the same native slices as the scheduled executor.
+        $more = migration_executor::execute($runid);
+        while ($more) {
+            $more = migration_executor::execute($runid);
         }
         $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
         $created = $DB->get_record('local_multipicker_target', ['planid' => $plan->id]);
@@ -120,7 +178,7 @@ final class workflow_test extends \advanced_testcase {
         foreach ($DB->get_records('local_multipicker_operation', ['planid' => $plan->id]) as $operation) {
             get_file_storage()->get_file_by_hash($operation->sourcehash)->delete();
         }
-        $CFG->maintenance_enabled = true;
+        $CFG->maintenance_enabled = false;
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $this->assertFalse(migration_executor::execute($runid));
         $this->assertSame('partial', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
@@ -159,7 +217,7 @@ final class workflow_test extends \advanced_testcase {
             'local_multipicker_operation',
             ['planid' => $plan->id, 'decision' => 'skip_content']
         ));
-        $CFG->maintenance_enabled = true;
+        $CFG->maintenance_enabled = false;
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $this->assertFalse(migration_executor::execute($runid));
         $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $runid]));
@@ -178,7 +236,7 @@ final class workflow_test extends \advanced_testcase {
             ->create_migration_fixture(['name' => 'Disabled approval']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         profiles::change_state([$fixture['profileid']], 'disable');
-        $CFG->maintenance_enabled = true;
+        $CFG->maintenance_enabled = false;
         $this->expectException(\dml_missing_record_exception::class);
         migration_executor::queue($plan->id, $plan->digest);
     }

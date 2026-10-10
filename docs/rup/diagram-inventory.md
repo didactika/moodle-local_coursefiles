@@ -63,3 +63,5 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 | design/sequences/editor-selection.puml | [Source](../diagrams/design/sequences/editor-selection.puml) | [SVG](../diagrams/design/sequences/editor-selection.svg) |
 
 [History retention sequence](../diagrams/design/sequences/history-retention.svg).
+
+[Profile administration](../diagrams/requirements/profile-use-cases.svg) · [Profile history conversation](../diagrams/requirements/use-case-details/uc13-profile-history.svg) · [Profile history sequence](../diagrams/design/sequences/profile-history.svg).

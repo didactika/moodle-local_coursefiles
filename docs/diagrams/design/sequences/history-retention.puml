@@ -4,6 +4,7 @@ title Hourly bounded history expiration
 participant clean_history as Task
 participant retention as Cleanup
 participant "Moodle plan lock" as Lock
+participant profile_history as Versions
 database "Plugin history" as DB
 Task -> Cleanup : clean(now)
 Cleanup -> DB : Delete up to 1000 expired logs
@@ -18,6 +19,10 @@ loop Each candidate
   end
   Cleanup -> Lock : Release
 end
-Cleanup --> Task : Deleted record counts
+Cleanup -> Versions : clean(now)
+Versions -> DB : Select up to 100 expired unreferenced versions
+Versions -> DB : Recheck under profile lock / remove obsolete metadata
+Cleanup --> Task : Deleted log / plan / version counts
 note over Cleanup, DB : Native files and author history are retained.
+note over Versions, DB : Current and migration-referenced versions remain.
 @enduml

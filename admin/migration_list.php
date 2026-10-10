@@ -24,6 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+if (data_submitted()) {
+    require_sesskey();
+    \local_multipicker\local\migration\plan_history::delete(required_param('deleteplan', PARAM_INT));
+    redirect($PAGE->url, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
+}
 $page = max(0, optional_param('page', 0, PARAM_INT));
 $search = optional_param('q', '', PARAM_TEXT);
 $state = optional_param('state', '', PARAM_ALPHA);
@@ -47,7 +52,7 @@ $from = ' FROM {local_multipicker_plan} p JOIN {local_multipicker} f ON f.id = p
 $total = $DB->count_records_sql('SELECT COUNT(1)' . $from, $params);
 $page = min($page, max(0, (int)ceil($total / 25) - 1));
 $data = ['records' => [], 'search' => $search, 'states' => [],
-    'formurl' => $PAGE->url->out(false), 'newurl' => (new moodle_url($PAGE->url, ['new' => 1]))->out(false),
+    'sesskey' => sesskey(), 'formurl' => $PAGE->url->out(false), 'newurl' => (new moodle_url($PAGE->url, ['new' => 1]))->out(false),
     'pagination' => $OUTPUT->paging_bar(
         $total,
         $page,
@@ -59,16 +64,21 @@ foreach ($states as $value) {
         'label' => \local_multipicker\output\display::outcome($value)];
 }
 foreach (
-    $DB->get_records_sql('SELECT p.id, p.uuid, p.timecreated, f.name, COALESCE(r.state, p.state) AS status'
+    $DB->get_records_sql('SELECT p.id, p.profileid, p.uuid, p.timecreated, f.name, COALESCE(r.state, p.state) AS status'
     . $from . ' ORDER BY p.id DESC', $params, $page * 25, 25) as $plan
 ) {
     $data['records'][] = ['name' => \local_multipicker\output\display::name($plan->name),
+        'id' => $plan->id, 'candelete' => !in_array($plan->status, ['queued', 'running'], true),
         'reference' => $plan->id, 'date' => userdate($plan->timecreated),
         'status' => \local_multipicker\output\display::outcome($plan->status),
+        'editurl' => $plan->status === 'blocked' ? (new moodle_url('/local/multipicker/admin/migration.php', [
+            'fromplan' => $plan->id, 'profileid' => $plan->profileid, 'step' => 'scope',
+        ]))->out(false) : '',
         'url' => (new moodle_url('/local/multipicker/admin/migration_review.php', ['planid' => $plan->id,
             'step' => in_array($plan->status, ['queued', 'running', 'partial', 'completed', 'cancelled'], true)
                 ? 'execute' : '']))->out(false)];
 }
+$data['hasactions'] = (bool)array_filter($data['records'], static fn($row) => $row['editurl'] || $row['candelete']);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
 echo $PAGE->get_renderer('local_multipicker')->render(\local_multipicker\output\navigation::site('migration'));

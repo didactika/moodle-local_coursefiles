@@ -7,22 +7,28 @@
 <section class="multipicker-admin multipicker-profiles mb-4">
     <h2>{{#str}}profiles, local_multipicker{{/str}}</h2>
     <p class="text-muted">{{#str}}profilesintro, local_multipicker{{/str}}</p>
-    <div class="d-flex flex-wrap mb-3">
-        <a class="btn btn-primary multipicker-gap-end mb-2" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_multipicker{{/str}}</a>
-        <a class="btn btn-outline-secondary mb-2" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_multipicker{{/str}}</a>
-    </div>
     <form method="get" action="{{actionurl}}" class="mb-3"><div class="input-group input-group-sm multipicker-table-search"><input type="search" name="q" value="{{search}}" class="form-control" aria-label="{{#str}}search, core{{/str}}"><button class="btn btn-outline-secondary">{{#pix}}a/search, core{{/pix}}</button></div></form>
     <form method="post" action="{{actionurl}}" data-multipicker-profiles>
     <input type="hidden" name="sesskey" value="{{sesskey}}">
+    <div class="multipicker-toolbar mb-3">
+        <div class="multipicker-actionbar">
+            <a class="btn btn-sm btn-primary" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_multipicker{{/str}}</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_multipicker{{/str}}</a>
+            {{#hasprofiles}}<button name="action" value="exportall" class="btn btn-sm btn-outline-secondary">{{#pix}}i/export, core{{/pix}}{{#str}}exportallprofiles, local_multipicker{{/str}}</button>{{/hasprofiles}}
+        </div>
+    </div>
     {{#hasprofiles}}<div class="d-flex align-items-center flex-wrap multipicker-actionbar mb-3">
         <label class="mb-0 multipicker-gap-end-lg"><input type="checkbox" data-multipicker-selectall> {{#str}}selectall{{/str}}</label>
-        <button name="action" value="export" class="btn btn-sm btn-outline-primary multipicker-gap-end">{{#str}}exportselectedprofiles, local_multipicker{{/str}}</button>
-        <button name="action" value="exportall" class="btn btn-sm btn-link">{{#str}}exportallprofiles, local_multipicker{{/str}}</button>
+        <span class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}" data-multipicker-bulk-actions hidden>
+        <button name="action" value="export" class="btn btn-sm btn-outline-secondary" disabled title="{{#str}}exportselectedprofiles, local_multipicker{{/str}}" aria-label="{{#str}}exportselectedprofiles, local_multipicker{{/str}}">{{#pix}}i/export, core{{/pix}}</button>
+        <button name="action" value="enable" class="btn btn-sm btn-outline-secondary" disabled title="{{#str}}enableselected, local_multipicker{{/str}}" aria-label="{{#str}}enableselected, local_multipicker{{/str}}">{{#pix}}t/check, core{{/pix}}</button>
+        <button name="action" value="disable" class="btn btn-sm btn-outline-secondary" disabled title="{{#str}}disableselected, local_multipicker{{/str}}" aria-label="{{#str}}disableselected, local_multipicker{{/str}}">{{#pix}}t/hide, core{{/pix}}</button>
+        <button name="action" value="delete" class="btn btn-sm btn-outline-danger" disabled title="{{#str}}deleteselected, local_multipicker{{/str}}" aria-label="{{#str}}deleteselected, local_multipicker{{/str}}">{{#pix}}t/delete, core{{/pix}}</button>
+        </span>
     </div>{{/hasprofiles}}
     <div class="table-responsive"><table class="table table-hover"><thead><tr><th></th><th>{{#str}}name, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}revision, local_multipicker{{/str}}</th><th>{{#str}}lastmodified, core{{/str}}</th><th class="text-end">{{#str}}actions, core{{/str}}</th></tr></thead><tbody>{{#profiles}}
-        <tr><td><input type="checkbox" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_multipicker{{/str}}"></td><td><a href="{{url}}">{{{name}}}</a><div class="small text-muted text-break">{{grouping}}</div><div class="small">{{{filters}}}</div></td><td><span class="multipicker-chip">{{status}}</span></td><td>{{revision}}</td><td>{{date}}</td><td class="text-end text-nowrap"><a class="btn btn-sm btn-link" href="{{url}}" aria-label="{{#str}}edit, core{{/str}}">{{#pix}}t/edit, core{{/pix}}</a><button class="btn btn-sm btn-link" name="rowaction" value="{{#enabled}}disable{{/enabled}}{{^enabled}}enable{{/enabled}}:{{id}}" aria-label="{{#enabled}}{{#str}}disable, core{{/str}}{{/enabled}}{{^enabled}}{{#str}}enable, core{{/str}}{{/enabled}}">{{#enabled}}{{#pix}}t/hide, core{{/pix}}{{/enabled}}{{^enabled}}{{#pix}}t/show, core{{/pix}}{{/enabled}}</button><button class="btn btn-sm btn-link text-danger" name="rowaction" value="delete:{{id}}" aria-label="{{#str}}delete, core{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></td></tr>
+        <tr><td><input type="checkbox" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_multipicker{{/str}}"></td><td><a href="{{url}}">{{{name}}}</a><div class="small text-muted text-break">{{grouping}}</div><div class="small">{{{filters}}}</div></td><td><span class="multipicker-chip">{{status}}</span></td><td><a href="{{historyurl}}" title="{{#str}}versionhistory, local_multipicker{{/str}}">{{revision}}</a></td><td>{{date}}</td><td class="text-end text-nowrap"><div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}"><a class="btn btn-sm btn-outline-secondary" href="{{url}}" aria-label="{{#str}}edit, core{{/str}}">{{#pix}}t/edit, core{{/pix}}</a><button class="btn btn-sm btn-outline-secondary" name="rowaction" value="{{#enabled}}disable{{/enabled}}{{^enabled}}enable{{/enabled}}:{{id}}" aria-label="{{#enabled}}{{#str}}disable, core{{/str}}{{/enabled}}{{^enabled}}{{#str}}enable, core{{/str}}{{/enabled}}">{{#enabled}}{{#pix}}t/hide, core{{/pix}}{{/enabled}}{{^enabled}}{{#pix}}t/show, core{{/pix}}{{/enabled}}</button><button class="btn btn-sm btn-outline-danger" name="rowaction" value="delete:{{id}}" aria-label="{{#str}}delete, core{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div></td></tr>
     {{/profiles}}</tbody></table></div>
     {{^hasprofiles}}<p>{{#str}}noprofile, local_multipicker{{/str}}</p>{{/hasprofiles}}
-    {{#hasprofiles}}<div class="multipicker-actionbar mt-3"><button name="action" value="enable" class="btn btn-sm btn-outline-secondary">{{#str}}enableselected, local_multipicker{{/str}}</button><button name="action" value="disable" class="btn btn-sm btn-outline-secondary">{{#str}}disableselected, local_multipicker{{/str}}</button><button name="action" value="delete" class="btn btn-sm btn-outline-danger">{{#str}}deleteselected, local_multipicker{{/str}}</button></div>{{/hasprofiles}}
     </form><div class="mt-3">{{{pagination}}}</div>
 </section>

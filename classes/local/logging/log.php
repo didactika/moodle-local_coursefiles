@@ -35,7 +35,8 @@ final class log {
     public static function actions(): array {
         return ['profile_state_changed', 'profile_activated', 'site_policy_changed', 'course_policy_changed',
             'publication_granted', 'publication_revoked',
-            'migration_previewed', 'migration_selection_changed', 'migration_queued', 'migration_blocked', 'migration_batch'];
+            'migration_previewed', 'migration_selection_changed', 'migration_queued', 'migration_blocked', 'migration_batch',
+            'migration_deleted', 'migration_empty_cancelled'];
     }
 
     /**

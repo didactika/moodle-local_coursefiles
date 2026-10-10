@@ -30,6 +30,9 @@ use local_multipicker\local\profile\profiles;
 
 /**
  * Exercises real core drafts and current source permissions.
+ * @covers \local_multipicker\local\selection\draft_import
+ * @covers \local_multipicker\local\selection\material_selection
+ * @covers \local_multipicker\local\profile\profiles
  */
 final class draft_import_test extends \advanced_testcase {
     /** @var array Authoritative fixture form options. */

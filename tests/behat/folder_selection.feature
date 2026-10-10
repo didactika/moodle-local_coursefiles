@@ -1,4 +1,4 @@
-@local @local_multipicker @javascript
+@local @local_multipicker @multipicker_folder @javascript
 Feature: Import mixed materials inside the native folder picker
   As a destination course teacher
   I need a visual batch selection that preserves native saving and cancellation

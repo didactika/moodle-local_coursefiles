@@ -8,7 +8,7 @@ participant target_binding as Target
 participant folder_destination as Folder
 database "Run / operations / provenance" as DB
 Administrator -> Executor : queue(planid, digest)
-Executor -> Core : Plan/profile lock, maintenance and actor task
+Executor -> Core : Plan/profile lock and actor task
 Core -> Executor : execute(runid)
 loop At most 25 included pending files
   Executor -> Core : Destination lock
@@ -20,8 +20,8 @@ loop At most 25 included pending files
   end
   Executor -> Executor : Check current target path and bytes
   alt Copy or explicitly approved overwrite
-    Executor -> Folder : copy(source, target, overwrite)
-    Folder -> Core : Native draft and folder update
+    Executor -> Folder : copy(source, target, overwrite, expected)
+    Folder -> Core : Per-file native transaction and folder event
     Folder --> Executor : Verified stored file
   else Identical / stale / forbidden
     Executor -> Executor : Skip or block

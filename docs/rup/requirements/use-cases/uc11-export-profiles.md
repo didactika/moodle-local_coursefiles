@@ -1,13 +1,13 @@
 # UC11 - Export selected or all profiles
 
-The profile manager requires `local/multipicker:manageprofiles`. Export is read-only and contains active rule documents, without database identities, material files or historical records.
+The profile manager requires `local/multipicker:manageprofiles`. Export is read-only and contains the current configuration and all retained versions, without database identities, material files or migration records.
 
 ![Export conversation](../../../diagrams/requirements/use-case-details/uc11-export-profiles.svg)
 
-1. Open Profiles and select table rows or Select this page.
+1. Open Profiles and select table rows or Select all.
 2. Choose Export selected, or Export all profiles regardless of the current selection.
 3. The controller checks the native session key; `profile_bundle::export` checks capability and selected IDs.
-4. Active configurations are packaged as a versioned JSON bundle and downloaded.
+4. Retained configurations, version numbers, dates, enabled state and current-version selection are packaged as a version 2 JSON bundle and downloaded.
 
 An empty explicit selection or an unknown selected profile is refused. No profile revision changes. Review site-specific category IDs and section mappings before importing elsewhere.
 

@@ -12,7 +12,7 @@
         <li {{#executionstep}}aria-current="step"{{/executionstep}}><span class="multipicker-step-number">4</span>{{#str}}migrationstep_execute, local_multipicker{{/str}}</li>
     </ol>
     {{#sourceedition}}<p class="h5">{{sourceedition}} → {{targetedition}}</p>{{/sourceedition}}
-    <div class="multipicker-toolbar"><a class="btn btn-sm btn-outline-secondary" href="{{newplanurl}}">{{#pix}}t/edit, core{{/pix}}{{#str}}changescope, local_multipicker{{/str}}</a></div>
+    <div class="multipicker-toolbar"><a class="btn btn-sm btn-outline-secondary" href="{{newplanurl}}">{{#pix}}t/edit, core{{/pix}}{{#str}}changescope, local_multipicker{{/str}}</a>{{#reviewstep}}{{#canexecute}}<a href="{{executionurl}}" class="btn btn-primary btn-sm">{{#str}}continueexecution, local_multipicker{{/str}}{{#pix}}t/right, core{{/pix}}</a>{{/canexecute}}{{/reviewstep}}</div>
     <p><span class="multipicker-chip">{{planstate}}</span> <span class="small text-muted">{{includedlabel}}</span></p>
     <div class="row mb-3">{{#metrics}}
         <div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body">
@@ -24,6 +24,7 @@
         <div class="mt-3">{{#summary}}{{> local_multipicker/local/profile/summary}}{{/summary}}</div>
         <p class="small text-muted text-break">{{#str}}planreference, local_multipicker{{/str}}: {{uuid}}</p>
     </details>
+    {{#emptycancelled}}<div class="alert alert-info">{{#str}}emptymigration, local_multipicker{{/str}}</div>{{/emptycancelled}}
     {{#blocked}}<div class="alert alert-warning">{{#str}}blockedpreviewhelp, local_multipicker{{/str}}</div>{{/blocked}}
     {{#hasissues}}<div class="alert alert-warning">
         <h3 class="h5">{{#str}}reviewissues, local_multipicker{{/str}}</h3>
@@ -53,8 +54,11 @@
         <input type="hidden" name="issuepage" value="{{issuepage}}">
         {{#selectioneditable}}<div class="multipicker-panel d-flex flex-wrap align-items-center">
             <label class="mb-0 multipicker-gap-end-lg"><input type="checkbox" data-multipicker-selectall> {{#str}}selectpage, local_multipicker{{/str}}</label>
-            <button name="action" value="all" class="btn btn-sm btn-outline-primary multipicker-gap-end">{{#str}}includeall, local_multipicker{{/str}}</button>
-            <button name="action" value="none" class="btn btn-sm btn-link">{{#str}}excludeall, local_multipicker{{/str}}</button>
+            <div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}">
+            <button name="action" value="all" class="btn btn-sm btn-outline-secondary" title="{{#str}}includeall, local_multipicker{{/str}}" aria-label="{{#str}}includeall, local_multipicker{{/str}}">{{#pix}}i/checked, core{{/pix}}</button>
+            <button name="action" value="none" class="btn btn-sm btn-outline-secondary" title="{{#str}}excludeall, local_multipicker{{/str}}" aria-label="{{#str}}excludeall, local_multipicker{{/str}}">{{#pix}}i/unchecked, core{{/pix}}</button>
+            <button name="action" value="selection" class="btn btn-sm btn-primary" title="{{#str}}saveselection, local_multipicker{{/str}}" aria-label="{{#str}}saveselection, local_multipicker{{/str}}">{{#pix}}e/save, core{{/pix}}</button>
+            </div>
         </div>{{/selectioneditable}}
     {{#courses}}<details open class="multipicker-migration-group mb-3" data-multipicker-group>
         <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span><span class="text-break">{{#sourcecoursehtml}}{{{sourcecoursehtml}}}{{/sourcecoursehtml}}{{^sourcecoursehtml}}{{sourcecourse}}{{/sourcecoursehtml}} → {{#targetcoursehtml}}{{{targetcoursehtml}}}{{/targetcoursehtml}}{{^targetcoursehtml}}{{targetcourse}}{{/targetcoursehtml}}</span>{{#selectioneditable}}<input type="checkbox" data-multipicker-course="{{groupcourseid}}" data-total="{{coursetotal}}" data-included="{{courseincluded}}" aria-label="{{#str}}selectcourse, local_multipicker{{/str}}" {{#coursechecked}}checked{{/coursechecked}} data-partial="{{coursepartial}}">{{/selectioneditable}}</summary>
@@ -71,14 +75,12 @@
             </div></div>
         </li>{{/operations}}</ul>
     </details>{{/folders}}</details>{{/courses}}
-    {{#selectioneditable}}<button name="action" value="selection" class="btn btn-primary mb-3">{{#str}}saveselection, local_multipicker{{/str}}</button>{{/selectioneditable}}
     </form>
     {{^hasoperations}}<p class="alert alert-info">{{#str}}nofilteredoperations, local_multipicker{{/str}}</p>{{/hasoperations}}
     <nav class="mb-4" aria-label="{{#str}}pagination, local_multipicker{{/str}}">
         {{#previousurl}}<a class="btn btn-outline-secondary" href="{{previousurl}}">{{#str}}previous, core{{/str}}</a>{{/previousurl}}
         {{#nexturl}}<a class="btn btn-outline-secondary" href="{{nexturl}}">{{#str}}next, core{{/str}}</a>{{/nexturl}}
     </nav>
-    {{#canexecute}}<a href="{{executionurl}}" class="btn btn-primary mb-4">{{#str}}continueexecution, local_multipicker{{/str}}{{#pix}}t/right, core{{/pix}}</a>{{/canexecute}}
     {{/reviewstep}}
     {{#executionstep}}<a href="{{reviewurl}}" class="btn btn-sm btn-outline-secondary mb-3">{{#pix}}t/left, core{{/pix}}{{#str}}backtoreview, local_multipicker{{/str}}</a>
     {{#hasruns}}<section class="mb-4" aria-label="{{#str}}planprogress, local_multipicker{{/str}}">
@@ -98,13 +100,12 @@
     {{#canexecute}}<div class="card mb-4"><div class="card-body">
         <h3 class="h5">4. {{#str}}migrationstep_execute, local_multipicker{{/str}}</h3>
         <p>{{#str}}reviewbeforeexecute, local_multipicker{{/str}}</p>
-        {{^maintenance}}<p class="alert alert-info">{{#str}}maintenancepreviewhelp, local_multipicker{{/str}}</p>{{/maintenance}}
         <form method="post" action="{{actionurl}}">
             <input type="hidden" name="sesskey" value="{{sesskey}}">
             <input type="hidden" name="digest" value="{{digest}}">
             <label class="d-block mb-3"><input type="checkbox" name="confirmed" value="1" required>
                 {{#str}}confirmmigration, local_multipicker{{/str}}</label>
-            <button class="btn btn-primary" name="action" value="execute" type="submit" {{^maintenance}}disabled{{/maintenance}}>{{#str}}execute, local_multipicker{{/str}}</button>
+            <button class="btn btn-primary" name="action" value="execute" type="submit">{{#str}}execute, local_multipicker{{/str}}</button>
         </form>
     </div></div>{{/canexecute}}
     {{/executionstep}}

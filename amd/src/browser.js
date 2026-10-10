@@ -94,7 +94,10 @@ export const complete = file => {
     if (button && supported) {
         button.disabled = false;
     }
-    document.querySelector('.multipicker-review-form')?.addEventListener('input', () => {
+    document.querySelector('.multipicker-review-form')?.addEventListener('input', event => {
+        if (event.target.matches('input[name="removefiles[]"]')) {
+            return;
+        }
         if (button) {
             button.disabled = true;
         }
@@ -132,13 +135,29 @@ export const selection = () => {
     let loading = false;
     let changes = 0;
     form.dataset.profileid = form.elements.profileid.value;
+    const filters = form.querySelector('.multipicker-filter-popover');
+    document.addEventListener('click', event => {
+        if (!filters.contains(event.target)) {
+            filters.open = false;
+        }
+    });
+    form.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && filters.open) {
+            filters.open = false;
+            filters.querySelector('summary').focus();
+        }
+    });
     form.querySelector('[data-multipicker-search]').hidden = true;
     const review = form.querySelector('[data-multipicker-review]');
     const update = () => {
         const count = new Set([...form.querySelectorAll('input[name="items[]"]')]
             .filter(input => input.type === 'hidden' || input.checked).map(input => input.value)).size;
         form.querySelector('[data-multipicker-count]').textContent = count;
-        review.disabled = !count || loading;
+        review.disabled = !count || loading || count > Number(form.dataset.selectioncapacity);
+        form.querySelectorAll('[data-multipicker-choice]').forEach(input => {
+            input.disabled = !input.checked && input.dataset.partial !== '1'
+                && count >= Number(form.dataset.selectioncapacity);
+        });
         form.querySelectorAll('[data-multipicker-choice]').forEach(input => {
             input.indeterminate = input.dataset.partial === '1';
         });
@@ -154,7 +173,7 @@ export const selection = () => {
         loading = true;
         const version = changes;
         let retry = false;
-        const raw = {items: [], captures: {}, toggleitem, refresh: true};
+        const raw = {items: [], captures: {}, toggleitem, refresh: !toggleitem};
         for (const [name, value] of new FormData(form)) {
             if (name === 'items[]') {
                 raw.items.push(value);
@@ -165,7 +184,9 @@ export const selection = () => {
             }
         }
         form.setAttribute('aria-busy', 'true');
-        form.querySelector('[data-multipicker-results]').classList.add('multipicker-loading');
+        if (!toggleitem) {
+            form.querySelector('[data-multipicker-results]').classList.add('multipicker-loading');
+        }
         const actions = [...form.querySelectorAll('button[name], [data-multipicker-choice]')];
         actions.forEach(button => {
             button.dataset.multipickerDisabled = String(button.disabled);
@@ -187,9 +208,26 @@ export const selection = () => {
             }
             const response = new DOMParser().parseFromString(html, 'text/html');
             const next = response.querySelector('form.multipicker-browser');
+            form.dataset.selectioncapacity = next.dataset.selectioncapacity;
             const results = form.querySelector('[data-multipicker-results]');
             const position = results.scrollTop;
-            if (changes === version) {
+            if (toggleitem) {
+                const choices = new Map([...next.querySelectorAll('[data-multipicker-choice]')]
+                    .map(choice => [choice.value, choice]));
+                results.querySelectorAll('[data-multipicker-choice]').forEach(choice => {
+                    const updated = choices.get(choice.value);
+                    if (updated) {
+                        choice.checked = updated.checked;
+                        choice.dataset.partial = updated.dataset.partial;
+                        const badge = choice.closest('.multipicker-card').querySelector('.multipicker-card-meta .multipicker-chip');
+                        const nextBadge = updated.closest('.multipicker-card')
+                            .querySelector('.multipicker-card-meta .multipicker-chip');
+                        if (badge && nextBadge) {
+                            badge.textContent = nextBadge.textContent;
+                        }
+                    }
+                });
+            } else if (changes === version) {
                 await Templates.replaceNodeContents(results, next.querySelector('[data-multipicker-results]').innerHTML, '');
             }
             results.scrollTop = position;
@@ -207,9 +245,6 @@ export const selection = () => {
             if (profileChanged) {
                 const filterbar = form.querySelector('.multipicker-filterbar');
                 await Templates.replaceNodeContents(filterbar, next.querySelector('.multipicker-filterbar').innerHTML, '');
-                const options = form.querySelector('[data-multipicker-options] .multipicker-filterbar');
-                await Templates.replaceNodeContents(options,
-                    next.querySelector('[data-multipicker-options] .multipicker-filterbar').innerHTML, '');
                 form.dataset.profileid = String(raw.profileid);
             } else {
                 next.querySelectorAll('datalist').forEach(list => {

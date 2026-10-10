@@ -9,7 +9,7 @@ rectangle "Migration history\nPaged status table" as Migration
 rectangle "Reports: material reuse\nAction / reference / date filters" as Log
 rectangle "Guided profile form\nAdvanced JSON retained" as Editor
 rectangle "Paged review\nSearch / persistent inclusions" as Review
-rectangle "Execution screen\nConfirm / maintenance / progress" as Execute
+rectangle "Execution screen\nConfirm / background / progress" as Execute
 Tabs --> Settings
 Tabs --> Profiles
 Tabs --> Migration

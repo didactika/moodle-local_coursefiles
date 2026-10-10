@@ -31,6 +31,10 @@ final class execute_migration extends \core\task\adhoc_task {
      * Execute one slice.
      */
     public function execute(): void {
+        global $DB;
+        if (!$DB->record_exists('local_multipicker_run', ['id' => $this->get_custom_data()->runid])) {
+            return;
+        }
         $runid = (int)$this->get_custom_data()->runid;
         if (\local_multipicker\local\migration\migration_executor::execute($runid)) {
             $next = new self();
