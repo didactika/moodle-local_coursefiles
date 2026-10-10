@@ -32,8 +32,46 @@ use local_multipicker\local\selection\draft_scope;
 
 /**
  * Tests actual owning form options, session authority and native draft rendering.
+ * @covers \local_multipicker\form\scoped_filemanager
+ * @covers \local_multipicker\local\catalog\material_source
+ * @covers \local_multipicker\local\profile\profiles
+ * @covers \local_multipicker\local\selection\draft_scope
  */
 final class draft_scope_test extends \advanced_testcase {
+    /**
+     * A folder exceeding the actual field capacity cannot change the stored selection.
+     */
+    public function test_recursive_selection_refuses_native_capacity_before_review(): void {
+        global $USER;
+        [$form, $profileid, $source, , $context] = $this->fixture();
+        $draftid = (int)$form->control()->getValue();
+        $fs = get_file_storage();
+        for ($i = 0; $i < 2; $i++) {
+            $fs->create_file_from_string(['contextid' => \context_user::instance($USER->id)->id,
+                'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid, 'filepath' => '/',
+                'filename' => 'existing-' . $i . '.txt'], 'Existing draft ' . $i);
+        }
+        $fs->create_file_from_string(['contextid' => \context_module::instance($source->cmid)->id, 'component' => 'mod_folder',
+            'filearea' => 'content', 'itemid' => 0, 'filepath' => '/', 'filename' => 'additional.txt',
+            'author' => 'Original teacher', 'license' => 'cc'], 'Additional source');
+        \local_multipicker\local\catalog\indexer::refresh($source->course);
+        $token = $form->control()->open_scope($context);
+        $state = ['profileid' => $profileid, 'selected' => [], 'roots' => [], 'renames' => [], 'layout' => 'grid',
+            'filters' => ['q' => '', 'edition' => '', 'shortname' => '', 'module' => 'folder', 'mimetype' => ''],
+            'folder' => '', 'after' => '', 'history' => []];
+        draft_scope::remember_view($token, $state, sesskey());
+        $data = \local_multipicker\local\selection\browser_controller::data(
+            $token,
+            \local_multipicker\local\selection\browser_controller::input([
+                'profileid' => $profileid, 'toggleitem' => 'folder:' . $source->cmid . ':' . base64_encode('/'),
+                'module' => 'folder',
+            ])
+        );
+        $this->assertStringContainsString(get_string('selectionfull', 'local_multipicker'), $data['message']);
+        $this->assertSame(0, $data['data']['count']);
+        $this->assertSame([], draft_scope::describe($token, sesskey())['view']['selected']);
+    }
+
     /**
      * Prefixing source directories cannot exceed the native filepath column length.
      */

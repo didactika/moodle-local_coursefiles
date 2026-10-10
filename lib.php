@@ -69,18 +69,78 @@ function local_multipicker_output_fragment_browser(array $args): string {
     if (!is_array($raw)) {
         throw new moodle_exception('invalidselection', 'local_multipicker');
     }
-    // Fragments update filters only. Review and transfer use their separate native flows.
-    foreach (['review', 'clear', 'selectpage', 'openfolder', 'previouspage', 'next', 'removeitem'] as $action) {
+    // Fragments refresh filters and canonical checkbox selections. Review and transfer use their separate native flows.
+    foreach (['review', 'clear', 'selectpage', 'selectall', 'openfolder', 'previouspage', 'next', 'removeitem'] as $action) {
         unset($raw[$action]);
     }
-    $raw['search'] = true;
+    $raw['search'] = false;
+    // Checkbox changes retain the server-owned folder, cursor and pagination history.
+    $raw['refresh'] = empty($raw['toggleitem']);
     $input = \local_multipicker\local\selection\browser_controller::input($raw);
     $result = \local_multipicker\local\selection\browser_controller::data($token, $input);
-    $PAGE->requires->js_call_amd('local_multipicker/browser', 'selection');
     return html_writer::div(
         $result['message']
         . $OUTPUT->render_from_template('local_multipicker/local/selection/browser', $result['data']),
         '',
         ['data-multipicker-panel' => '']
     );
+}
+
+/**
+ * Save a bounded review change and render its current canonical state.
+ * @param array $args Core-validated system context and serialized request.
+ * @return string Themeable review fragment.
+ */
+function local_multipicker_output_fragment_migration(array $args): string {
+    global $OUTPUT;
+    require_capability('local/multipicker:planmigration', context_system::instance());
+    if (
+        $args['context']->id !== context_system::instance()->id || !is_string($args['state'] ?? null)
+        || strlen($args['state']) > 131072
+    ) {
+        throw new invalid_parameter_exception('Invalid migration request');
+    }
+    try {
+        $state = json_decode($args['state'], true, 8, JSON_THROW_ON_ERROR);
+    } catch (JsonException $exception) {
+        throw new invalid_parameter_exception('Invalid migration document');
+    }
+    if (!is_array($state) || !confirm_sesskey($state['sesskey'] ?? '')) {
+        throw new moodle_exception('invalidsesskey');
+    }
+    $planid = clean_param($state['planid'] ?? 0, PARAM_INT);
+    $action = $state['action'] ?? 'view';
+    if ($action === 'resolve') {
+        $planid = \local_multipicker\local\migration\plan_resolution::apply(
+            $planid,
+            clean_param($state['digest'] ?? '', PARAM_ALPHANUM),
+            clean_param($state['kind'] ?? '', PARAM_ALPHA),
+            clean_param($state['id'] ?? -1, PARAM_INT),
+            clean_param($state['choice'] ?? '', PARAM_RAW_TRIMMED)
+        );
+    } else if (in_array($action, ['page', 'group', 'all', 'none'], true)) {
+        \local_multipicker\local\migration\plan_selection::save(
+            $planid,
+            clean_param($state['digest'] ?? '', PARAM_ALPHANUM),
+            $state['visible'] ?? [],
+            $state['included'] ?? [],
+            $action,
+            ['courseid' => (int)($state['courseid'] ?? 0), 'cmid' => (int)($state['cmid'] ?? 0),
+            'included' => (int)($state['groupincluded'] ?? 0)]
+        );
+        $result = \local_multipicker\local\migration\plan_selection::state($planid, $state['visible'] ?? []);
+        return html_writer::div('', '', ['data-multipicker-selection-state' => json_encode($result)]);
+    } else if ($action !== 'view') {
+        throw new invalid_parameter_exception('Unknown migration action');
+    }
+    $data = \local_multipicker\output\migration_report::data(
+        $planid,
+        clean_param($state['decision'] ?? '', PARAM_ALPHA),
+        (int)($state['page'] ?? 0),
+        clean_param($state['q'] ?? '', PARAM_TEXT),
+        false,
+        (int)($state['issuepage'] ?? 0),
+        (int)($state['perpage'] ?? 50)
+    );
+    return $OUTPUT->render_from_template('local_multipicker/local/migration/report', $data);
 }

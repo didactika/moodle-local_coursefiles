@@ -32,3 +32,4 @@ Deploy both plugin versions together. The repository plugin requires local_multi
 
 See [validation evidence](07-validation-and-decisions.md) and the [installed schema](05-data-model.md).
 
+Version 2026101000 adds the revision timecreated/id index without changing existing configuration or native materials. Migration deletion records migration_deleted after removing only the inactive plan metadata. Version cleanup preserves current and migration-referenced configurations.

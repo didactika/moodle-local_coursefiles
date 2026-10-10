@@ -55,3 +55,9 @@ The post-install hooks adopt legacy tables, settings, role overrides and reposit
 [Public source provider classes](../../diagrams/design/public-source-providers.svg) separate core/community public-area adapters from the registry and live authorization.
 
 ![Native Tiny Link completion](../../diagrams/design/sequences/editor-selection.svg)
+
+[History retention sequence](../../diagrams/design/sequences/history-retention.svg).
+
+The [profile version history](../../25-profile-version-history.md) keeps one profile identity while comparing and restoring its retained configurations.
+
+![Profile comparison and restoration](../../diagrams/design/sequences/profile-history.svg)

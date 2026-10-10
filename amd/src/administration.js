@@ -14,82 +14,82 @@
 // along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Accessible selection controls for native administration forms.
- *
+ * Native list selection, confirmation and shared pagination controls.
  * @module local_multipicker/administration
  * @copyright 2026 MultiPicker contributors
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+import Notification from 'core/notification';
+import {getStrings} from 'core/str';
 
 /**
- * Keep select-all synchronized with the checkboxes on the rendered page only.
+ * Bind native bulk forms; live migration review has its own serialized adapter.
  */
 export const init = () => {
-    document.querySelectorAll('[data-multipicker-profiles], [data-multipicker-migration-selection]').forEach(form => {
-        const all = form.querySelector('[data-multipicker-selectall]');
-        const checks = [...form.querySelectorAll('input[name="profiles[]"], input[name="included[]"]')];
-        if (!all) {
+    document.querySelectorAll('[data-multipicker-profiles],[data-multipicker-migrations]').forEach(form => {
+        if (form.dataset.ready) {
             return;
         }
+        form.dataset.ready = 'true';
+        const all = form.querySelector('[data-multipicker-selectall]');
+        const checks = [...form.querySelectorAll('input[name="profiles[]"],input[name="plans[]"]')];
         const update = () => {
             const count = checks.filter(check => check.checked).length;
-            all.checked = checks.length > 0 && count === checks.length;
-            all.indeterminate = count > 0 && count < checks.length;
-            const exportButton = form.querySelector('button[value=export]');
-            if (exportButton) {
-                exportButton.disabled = count === 0;
+            if (all) {
+                all.checked = checks.length > 0 && count === checks.length;
+                all.indeterminate = count > 0 && count < checks.length;
+            }
+            const bulk = form.querySelector('[data-multipicker-bulk-actions]');
+            if (bulk) {
+                bulk.hidden = count === 0;
+                bulk.querySelectorAll('button').forEach(button => {
+                    button.disabled = count === 0;
+                });
             }
         };
-        all.addEventListener('change', () => {
+        all?.addEventListener('change', () => {
             checks.forEach(check => {
                 check.checked = all.checked;
             });
             update();
         });
         checks.forEach(check => check.addEventListener('change', update));
-        if (form.hasAttribute('data-multipicker-migration-selection')) {
-            let dirty = false;
-            form.addEventListener('change', () => {
-                dirty = true;
-            });
-            const saveAndNavigate = url => {
-                for (const [name, value] of Object.entries({
-                    navigate: '1', nextpage: url.searchParams.get('page') || '0', nextq: url.searchParams.get('q') || '',
-                    nextdecision: url.searchParams.get('decision') || '', nextstep: url.searchParams.get('step') || '',
-                    nextissuepage: url.searchParams.get('issuepage') || '0',
-                })) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = name;
-                    input.value = value;
-                    form.append(input);
-                }
-                form.requestSubmit(form.querySelector('button[value=selection]'));
-            };
-            const section = form.closest('.multipicker-migration');
-            // The native submit buttons named action shadow the form's action property.
-            const current = new URL(form.getAttribute('action'), document.baseURI);
-            section.querySelectorAll('a[href]').forEach(link => {
-                link.addEventListener('click', event => {
-                    const url = new URL(link.href);
-                    if (dirty && url.pathname === current.pathname
-                            && url.searchParams.get('planid') === current.searchParams.get('planid')) {
-                        event.preventDefault();
-                        saveAndNavigate(url);
-                    }
+        form.addEventListener('submit', async event => {
+            const button = event.submitter;
+            const destructive = button && (button.value === 'delete' || button.name === 'deleteplan'
+                || button.value.startsWith('delete:'));
+            if (!destructive || form.dataset.confirmed) {
+                delete form.dataset.confirmed;
+                return;
+            }
+            event.preventDefault();
+            try {
+                const keys = ['confirm', form.hasAttribute('data-multipicker-migrations')
+                    ? 'migrationdeleteconfirm' : 'profilestateconfirm', 'delete', 'cancel'];
+                const [title, message, yes, no] = await getStrings(keys.map(key => ({
+                    key, component: key.endsWith('confirm') && key !== 'confirm' ? 'local_multipicker' : 'core',
+                })));
+                Notification.confirm(title, message, yes, no, () => {
+                    form.dataset.confirmed = 'true';
+                    form.requestSubmit(button);
                 });
-            });
-            const search = section.querySelector('form[method=get]');
-            search?.addEventListener('submit', event => {
-                if (dirty) {
-                    event.preventDefault();
-                    const url = new URL(current);
-                    url.searchParams.set('q', new FormData(search).get('q'));
-                    url.searchParams.set('issuepage', new FormData(search).get('issuepage'));
-                    saveAndNavigate(url);
-                }
-            });
-        }
+            } catch (error) {
+                Notification.exception(error);
+            }
+        });
         update();
     });
+    if (!document.body.dataset.multipickerPagination) {
+        document.body.dataset.multipickerPagination = 'true';
+        document.addEventListener('change', event => {
+            const select = event.target.closest('[data-multipicker-pagesize]');
+            if (!select || select.closest('[data-region=multipicker-migration]')) {
+                return;
+            }
+            const url = new URL(select.dataset.url, document.baseURI);
+            url.searchParams.set('perpage', select.value);
+            url.searchParams.set(select.dataset.pageparameter, '0');
+            window.location.assign(url);
+        });
+    }
 };

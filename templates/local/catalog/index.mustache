@@ -31,7 +31,7 @@
     {{/hasprofiles}}
     {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_multipicker{{/str}}</div>{{/hasprofiles}}
     {{#canrefresh}}
-    <details class="mb-4"><summary>{{#str}}catalogmaintenance, local_multipicker{{/str}}</summary>
+    <details class="mb-4"><summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}catalogmaintenance, local_multipicker{{/str}}</summary>
     <div class="card mb-4">
         <div class="card-body">
             <h3 class="h5">{{#str}}catalogmaintenance, local_multipicker{{/str}}</h3>
@@ -47,7 +47,7 @@
     </details>
     {{/canrefresh}}
     {{#publicationenabled}}<details class="mb-4">
-        <summary>{{#str}}publicationtitle, local_multipicker{{/str}}</summary>
+        <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}publicationtitle, local_multipicker{{/str}}</summary>
         {{> local_multipicker/local/catalog/publication}}
     </details>{{/publicationenabled}}
 </section>

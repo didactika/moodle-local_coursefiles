@@ -30,6 +30,9 @@ use local_multipicker\local\profile\profiles;
 
 /**
  * Exercises real core drafts and current source permissions.
+ * @covers \local_multipicker\local\selection\draft_import
+ * @covers \local_multipicker\local\selection\material_selection
+ * @covers \local_multipicker\local\profile\profiles
  */
 final class draft_import_test extends \advanced_testcase {
     /** @var array Authoritative fixture form options. */
@@ -305,6 +308,51 @@ final class draft_import_test extends \advanced_testcase {
         $this->assertSame(3, $review['filecount']);
         $this->assertFalse($review['blocked']);
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
+    }
+
+    /**
+     * Destination renames are reviewed, constrained and bound to approval.
+     */
+    public function test_reviewed_rename_preserves_author_and_rejects_changed_approval(): void {
+        global $USER;
+        [$profileid, $target, , $files, $draftid] = $this->fixture();
+        $items = [['pathnamehash' => $files[0]->get_pathnamehash()]];
+        $options = ['renames' => [$files[0]->get_pathnamehash() => 'renamed.txt']];
+        $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS, '/', 'paths', $options);
+        $this->assertSame('renamed.txt', $review['operations'][0]['filename']);
+        draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest'], '/', 'paths', $options);
+        $saved = get_file_storage()->get_file(
+            \context_user::instance($USER->id)->id,
+            'user',
+            'draft',
+            $draftid,
+            '/',
+            'renamed.txt'
+        );
+        $this->assertSame($files[0]->get_author(), $saved->get_author());
+        $this->assertSame($files[0]->get_content(), $saved->get_content());
+        $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS, '/', 'paths', $options);
+        $options['renames'][$files[0]->get_pathnamehash()] = 'different.txt';
+        $this->expectException(\moodle_exception::class);
+        draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest'], '/', 'paths', $options);
+    }
+
+    /**
+     * A renamed extension cannot bypass the native control's accepted types.
+     */
+    public function test_rename_cannot_bypass_accepted_types(): void {
+        [$profileid, $target, , $files, $draftid] = $this->fixture();
+        $this->expectException(\moodle_exception::class);
+        draft_import::review(
+            $target->id,
+            $profileid,
+            $draftid,
+            [['pathnamehash' => $files[0]->get_pathnamehash()]],
+            array_replace(self::LIMITS, ['accepted_types' => ['.txt']]),
+            '/',
+            'paths',
+            ['renames' => [$files[0]->get_pathnamehash() => 'not-allowed.exe']]
+        );
     }
 
     /**

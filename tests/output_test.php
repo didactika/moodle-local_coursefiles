@@ -29,6 +29,8 @@ use local_multipicker\output\view;
 
 /**
  * Exercises actual templates through Moodle's renderer.
+ * @covers \local_multipicker\output\display
+ * @covers \local_multipicker\output\view
  */
 final class output_test extends \advanced_testcase {
     /**
@@ -47,7 +49,7 @@ final class output_test extends \advanced_testcase {
         $dom = new \DOMDocument();
         @$dom->loadHTML($html);
         $xpath = new \DOMXPath($dom);
-        foreach ($xpath->query('//input | //select') as $control) {
+        foreach ($xpath->query('//input[not(@type="hidden")] | //select') as $control) {
             $this->assertSame(1, $xpath->query('//label[@for="' . $control->getAttribute('id') . '"]')->length);
             $this->assertFalse($control->hasAttribute('onfocus'));
         }
@@ -119,13 +121,15 @@ final class output_test extends \advanced_testcase {
     public function test_migration_report_uses_readable_decisions(): void {
         $renderer = $this->renderer();
         $html = $renderer->render(new view('migration_report', [
-            'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025', 'targetedition' => '2026', 'reviewstep' => true,
-            'hasoperations' => true, 'groups' => [[
-                'sourcecourse' => 'BIO101-2025', 'targetcourse' => 'BIO101-2026',
-                'targetsection' => 'Week 1', 'targetfolder' => 'Class materials', 'operations' => [[
+            'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025',
+            'targetedition' => '2026', 'reviewstep' => true,
+            'hasoperations' => true, 'courses' => [[
+                'sourcecoursehtml' => display::name('BIO101-2025'), 'targetcoursehtml' => display::name('BIO101-2026'),
+                'folders' => [['targetsectionhtml' => display::name('Week 1'),
+                'targetfolderhtml' => display::name('Class materials'), 'operations' => [[
                 'filename' => 'lesson.pdf', 'filepath' => '/week1/', 'author' => 'Original author', 'license' => 'cc',
                 'decisionlabel' => display::outcome('skip_content'), 'statelabel' => display::outcome('pending'),
-                ]],
+                ]]]],
             ]],
         ]));
         $this->assertStringContainsString('BIO101-2026', $html);

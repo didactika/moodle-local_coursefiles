@@ -13,12 +13,12 @@
             <input type="hidden" name="sesskey" value="{{sesskey}}">
             <input type="hidden" name="courseid" value="{{courseid}}">
             <input type="hidden" name="profileid" value="{{profileid}}">
-            <label for="cb-publication-module">{{#str}}publicationmodule, local_multipicker{{/str}}</label>
-            <select class="form-control mb-3" name="cmid" id="cb-publication-module">{{#publicationmodules}}
+            <label for="cb-publication-module">{{#str}}publicationmodule, local_multipicker{{/str}} {{{publicationhelp}}}</label>
+            <select class="custom-select custom-select-sm mb-3" name="cmid" id="cb-publication-module">{{#publicationmodules}}
                 <option value="{{value}}">{{{label}}}</option>
             {{/publicationmodules}}</select>
-            <button class="btn btn-primary mb-2" name="action" value="publish" type="submit">{{#str}}publish, local_multipicker{{/str}}</button>
-            <button class="btn btn-outline-secondary mb-2" name="action" value="revoke" type="submit">{{#str}}revoke, local_multipicker{{/str}}</button>
+            <div class="multipicker-page-actions"><button class="btn btn-primary" name="action" value="publish" type="submit">{{#str}}publish, local_multipicker{{/str}}</button>
+            <button class="btn btn-outline-warning" name="action" value="revoke" type="submit">{{#str}}revoke, local_multipicker{{/str}}</button></div>
         </form>
         {{/haspublicationmodules}}
         {{^haspublicationmodules}}<p>{{#str}}nopublicationmodules, local_multipicker{{/str}}</p>{{/haspublicationmodules}}

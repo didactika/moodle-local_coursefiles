@@ -1,7 +1,7 @@
 @startuml
 !include ../../_style.puml
 skinparam maxMessageSize 200
-title Bounded existing-folder batch
+title Bounded reviewed-folder batch
 participant "execute_migration task" as Task
 participant migration_executor as Executor
 participant "Source / author policy" as Policy
@@ -12,8 +12,8 @@ Executor -> DB : Load reviewed plan / at most 25 pending items
 loop each item under destination lock
   Executor -> Policy : Revalidate live source and policy
   Executor -> Folder : copy(source, targetcmid) if needed
-  Folder -> Policy : Check source and target locks before draft creation
-  Folder -> Folder : Prepare draft with ID = 0\nretain existing nested files
+  Folder -> Policy : Check source and target author policy
+  Folder -> Folder : Recheck reviewed destination path\ncopy this file in a transaction
   Folder --> Executor : Verified file / existing identical
   Executor -> DB : Store outcome and provenance
 end

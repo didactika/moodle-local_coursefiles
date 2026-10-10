@@ -97,7 +97,8 @@ final class admin_layout_test extends \advanced_testcase {
                 'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
                 'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),
                 'snapshot' => json_encode(['sourcecourse' => $source->id,
-                    'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/', 'author' => 'Original', 'license' => 'cc'],
+                    'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/',
+                        'author' => 'Original', 'license' => 'cc'],
                     'target' => ['courseid' => $target->id, 'name' => 'Materials', 'sectionname' => 'Topic', 'sectionnum' => 1]]),
             ]);
         }

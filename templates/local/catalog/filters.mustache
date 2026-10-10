@@ -9,35 +9,35 @@
         {{^multipleprofiles}}<input type="hidden" name="profileid" value="{{profileid}}">{{/multipleprofiles}}
         <div class="row">
             <div class="col-md-8 mb-3">
-                <label for="cb-query">{{#str}}filenamefilter, local_multipicker{{/str}}</label>
+                <label for="cb-query">{{#str}}filenamefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
                 <input type="search" class="form-control" name="q" id="cb-query" value="{{filters.q}}">
             </div>
             <div class="col-md-4 mb-3">
-                <label for="cb-edition">{{#str}}editionfilter, local_multipicker{{/str}}</label>
+                <label for="cb-edition">{{#str}}editionfilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
                 <input class="form-control" name="edition" id="cb-edition" value="{{filters.edition}}">
             </div>
         </div>
         <details class="mb-3" {{#advancedfilters}}open{{/advancedfilters}}>
-            <summary>{{#str}}morefilters, local_multipicker{{/str}}</summary>
+            <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}morefilters, local_multipicker{{/str}}</summary>
             <div class="row mt-3">
                 {{#multipleprofiles}}<div class="col-md-6 mb-3">
-                    <label for="cb-profile">{{#str}}profile, local_multipicker{{/str}}</label>
+                    <label for="cb-profile">{{#str}}profile, local_multipicker{{/str}} {{{filterhelp}}}</label>
                     <select class="form-control" name="profileid" id="cb-profile">{{#profiles}}
                         <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                     {{/profiles}}</select>
                 </div>{{/multipleprofiles}}
                 <div class="col-md-6 mb-3">
-                    <label for="cb-course">{{#str}}shortnamecourse, core{{/str}}</label>
+                    <label for="cb-course">{{#str}}shortnamecourse, core{{/str}} {{{filterhelp}}}</label>
                     <input class="form-control" name="shortname" id="cb-course" value="{{filters.shortname}}">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="cb-module">{{#str}}modulefilter, local_multipicker{{/str}}</label>
+                    <label for="cb-module">{{#str}}modulefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
                     <select class="form-control" name="module" id="cb-module">{{#modules}}
                         <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                     {{/modules}}</select>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="cb-filetype">{{#str}}filetypefilter, local_multipicker{{/str}}</label>
+                    <label for="cb-filetype">{{#str}}filetypefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
                     <select class="form-control" name="mimetype" id="cb-filetype">{{#filetypes}}
                         <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                     {{/filetypes}}</select>

@@ -2,23 +2,34 @@
 !include ../../_style.puml
 title Process - configure, select, review and execute
 start
-:Step 1: choose an enabled profile;
-:Step 2: choose edition or configured capture;
-:Enter source and destination values;
-:Review folder / section matching;
-:Prepare all matching operations;
-:Step 3: search and review pages of 50 files;
-:Include all or save page-specific exclusions;
-:Update review digest and log selection;
-if (Included blockers or unresolved placement issues?) then (yes)
-  :Exclude conflicting files or create a corrected preview;
-  stop
+:Open paginated migration history;
+:New migration: choose an enabled profile;
+if (Profile has capture filters?) then (yes)
+  :Set source and destination capture values;
 else (no)
+  :Use folder correspondences within matched courses;
+endif
+:Edit folder correspondence rows;
+:Choose missing-target and overwrite behavior;
+:Review section matching;
+:Prepare all matching operations;
+repeat
+:Step 3: search bounded 10/25/50 file and issue pages;
+:Include all or select courses / folders / files;
+:Save automatically; update checks and approval digest;
+if (Included blockers or unresolved placement issues?) then (yes)
+  :Choose existing folder, proposed creation, overwrite or exclusion;
+  :Retain old review and saved file exclusions;
+endif
+repeat while (Included blockers remain?) is (yes)
+if (Included copy work remains?) then (yes)
   :Step 4: confirm the whole included set;
-  :Require maintenance and execution permission;
+  :Require confirmation and execution permission;
   :Validate digest under the shared plan lock;
   :Queue every included operation;
   :Freeze selection and show progress / cancellation;
-  stop
+else (no)
+  :Cancel empty plan automatically;
 endif
+stop
 @enduml

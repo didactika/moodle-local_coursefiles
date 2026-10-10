@@ -1,26 +1,33 @@
 @startuml
 !include ../../_style.puml
-title UC06 — Execute a reviewed migration
+title UC06 - Execute a reviewed migration
 actor Administrator
-participant "Migration report" as UI
 participant migration_executor as Executor
-participant "Moodle task / lock" as Tasks
+participant "Moodle task / locks" as Core
+participant target_binding as Target
 participant folder_destination as Folder
-database "Run / operation / provenance" as DB
-Administrator -> UI : Execute reviewed digest
-UI -> Executor : queue(planid, digest)
-Executor -> Tasks : Actor-bound task
-Tasks -> Executor : execute(runid)
-Executor -> DB : Plan revision / pending operations
-loop at most 25 operations
-  Executor -> Executor : Lock / live access / snapshot checks
-  alt copy allowed
-    Executor -> Folder : copy(source, targetcmid)
-    Folder --> Executor : Verified native save
-  else identical / stale / forbidden
+database "Run / operations / provenance" as DB
+Administrator -> Executor : queue(planid, digest)
+Executor -> Core : Plan/profile lock and actor task
+Core -> Executor : execute(runid)
+loop At most 25 included pending files
+  Executor -> Core : Destination lock
+  Executor -> Executor : Live source, identity and policy checks
+  alt Reviewed missing destination
+    Executor -> Target : resolve reviewed target key
+    Target -> Core : add_moduleinfo or reuse created binding
+    Target --> Executor : Verified native folder snapshot
+  end
+  Executor -> Executor : Check current target path and bytes
+  alt Copy or explicitly approved overwrite
+    Executor -> Folder : copy(source, target, overwrite, expected)
+    Folder -> Core : Per-file native transaction and folder event
+    Folder --> Executor : Verified stored file
+  else Identical / stale / forbidden
     Executor -> Executor : Skip or block
   end
-  Executor -> DB : Outcome / provenance
+  Executor -> DB : Outcome / original declarations
+  Executor -> Core : Release locks
 end
-Executor --> Tasks : More pending work or final state
+Executor --> Core : Next slice or final state
 @enduml

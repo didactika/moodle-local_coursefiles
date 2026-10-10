@@ -5,7 +5,7 @@ start
 :Create immutable preview and digest;
 if (Reviewable?) then (yes)
   :Administrator reviews exact decisions;
-  :Check execution rights and maintenance;
+  :Check execution rights and reviewed digest;
   :Queue accountable run;
   :Revalidate active revision and live snapshots;
   :Process bounded operations under destination locks;

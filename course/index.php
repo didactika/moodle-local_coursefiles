@@ -72,6 +72,8 @@ foreach ($profiles as $profile) {
     $options[$profile->id] = $profile->name;
 }
 $data = [
+    'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_multipicker'),
+    'publicationhelp' => $OUTPUT->help_icon('publicationmodule', 'local_multipicker'),
     'actionurl' => $PAGE->url->out(false), 'courseid' => $courseid, 'profileid' => $profileid,
     'sesskey' => sesskey(), 'profiles' => display::options($options, (string)$profileid),
     'hasprofiles' => (bool)$profiles, 'filters' => $filters, 'reseturl' => $reseturl->out(false),

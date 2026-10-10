@@ -37,12 +37,9 @@ final class course_scope {
      */
     public static function choices(profile_config $rules): array {
         $choices = [];
-        if (isset($rules->get_config()['relationship']['edition'])) {
-            $choices['edition'] = get_string('edition', 'local_multipicker');
-        }
         foreach ($rules->filter_definitions() as $key => $definition) {
             if (!isset($choices[$key])) {
-                $choices[$key] = format_string($definition['label'], true, ['context' => \context_system::instance()]);
+                $choices[$key] = \local_multipicker\output\display::label($definition['label']);
             }
         }
         return $choices;

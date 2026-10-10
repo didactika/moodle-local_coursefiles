@@ -29,6 +29,8 @@ use local_multipicker\privacy\provider;
 
 /**
  * Exercises actual stored actions rather than synthetic UI counts.
+ * @covers \local_multipicker\local\logging\log
+ * @covers \local_multipicker\privacy\provider
  */
 final class log_test extends \advanced_testcase {
     /**

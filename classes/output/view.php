@@ -75,6 +75,22 @@ final class view implements \renderable, \templatable {
      * @return array Plain data.
      */
     public function export_for_template(\renderer_base $output): array {
+        if ($this->template === 'local/migration/report' && !isset($this->data['courses'])) {
+            $data = $this->data;
+            $data['courses'] = array_map(static fn($group) => $group + ['folders' => [$group]], $data['groups'] ?? []);
+            return $data;
+        }
+        if ($this->template === 'local/navigation/tabs') {
+            $root = \navigation_node::create(get_string('pluginname', 'local_multipicker'));
+            foreach ($this->data['tabs'] as $index => $tab) {
+                $node = $root->add($tab['label'], new \moodle_url($tab['url']), null, null, 'multipicker-' . $index);
+                if ($tab['active']) {
+                    $node->make_active();
+                }
+            }
+            $menu = new \core\navigation\output\more_menu($root, 'nav-tabs');
+            return $this->data + ['menu' => $menu->export_for_template($output)];
+        }
         return $this->data;
     }
 }

@@ -24,7 +24,7 @@ Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migrat
 
 ![Migration design classes](diagrams/design/migration-classes.svg)
 
-`migration_planner` resolves course pairs and placements, snapshots each decision and stores the preview digest. `placement` matches sections/modules; `copy_decision` distinguishes byte equality from attribution equality. `migration_executor` revalidates intent under destination locks; `folder_destination` stages native draft content and calls the folder update contract.
+`migration_planner` resolves course pairs and placements, snapshots each decision and stores the preview digest. `placement` matches sections/modules; `copy_decision` distinguishes byte equality from attribution equality. `migration_executor` revalidates intent under destination locks; `folder_destination` rechecks each destination path and writes through the File API without replacing the entire file area.
 
 ![Author policy classes](diagrams/design/authorship-classes.svg)
 
@@ -43,6 +43,8 @@ Services are grouped under `classes/local/catalog`, `profile`, `policy`, `migrat
 Moodle File Storage owns binaries, drafts and native course usages. Identical bytes share native content storage; independent usages retain their native records. MultiPicker adds no binary pool or stored asset table.
 
 The occurrence index is reconstructible. Refresh replaces one course's cached records in a transaction under a lock. Module/course events enqueue refresh work; reconciliation visits up to 100 courses per invocation. Active profile revisions exclude stale membership.
+
+Profile activation also queues revision-bound `task/refresh_profile` work. Each slice examines up to 25 courses, refreshing matches and previously indexed courses before queuing its successor. Obsolete revision tasks exit without rebuilding. Unchanged relationship/scope rules allow membership and capture metadata to move to the new revision immediately; publication and source permissions remain live checks. Changing identity rules deliberately requires fresh metadata, with a pending-update message in an otherwise empty picker.
 
 ![Index refresh](diagrams/design/sequences/index-refresh.svg)
 

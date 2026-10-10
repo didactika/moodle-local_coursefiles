@@ -84,5 +84,71 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
         }
         upgrade_plugin_savepoint(true, 2026100903, 'local', 'multipicker');
     }
+    if ($oldversion < 2026100904) {
+        $file = new xmldb_file(__DIR__ . '/install.xml');
+        if (!$file->loadXMLStructure()) {
+            throw new coding_exception('Unable to load the MultiPicker XMLDB schema.');
+        }
+        $targettable = $file->getStructure()->getTable('local_multipicker_target');
+        if (!$dbman->table_exists($targettable)) {
+            $dbman->create_table($targettable);
+        }
+        $table = new xmldb_table('local_multipicker');
+        $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'enabled');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $table = new xmldb_table('local_multipicker_operation');
+        foreach (['sourcecourseid', 'targetcourseid', 'sourcecmid'] as $name) {
+            $field = new xmldb_field($name, XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+        $records = $DB->get_recordset_select('local_multipicker_operation', 'sourcecourseid = 0');
+        foreach ($records as $operation) {
+            $snapshot = json_decode($operation->snapshot, true);
+            $operation->sourcecourseid = $snapshot['sourcecourse'] ?? 0;
+            $operation->targetcourseid = $snapshot['target']['courseid'] ?? 0;
+            $contextid = $DB->get_field('files', 'contextid', ['pathnamehash' => $operation->sourcehash]) ?: 0;
+            $context = $contextid ? context::instance_by_id($contextid, IGNORE_MISSING) : null;
+            $operation->sourcecmid = $context && $context->contextlevel === CONTEXT_MODULE ? $context->instanceid : 0;
+            $DB->update_record('local_multipicker_operation', $operation);
+        }
+        $records->close();
+        foreach (
+            [
+            'local_multipicker_plan' => ['timecreated-id', ['timecreated', 'id']],
+            'local_multipicker_run' => ['planid-state-time', ['planid', 'state', 'timemodified']],
+            'local_multipicker_operation' => ['planid-course-folder', ['planid', 'sourcecourseid', 'sourcecmid']],
+            ] as $name => [$indexname, $fields]
+        ) {
+            $table = new xmldb_table($name);
+            $index = new xmldb_index($indexname, XMLDB_INDEX_NOTUNIQUE, $fields);
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026100904, 'local', 'multipicker');
+    }
+    if ($oldversion < 2026100905) {
+        $file = new xmldb_file(__DIR__ . '/install.xml');
+        if (!$file->loadXMLStructure()) {
+            throw new coding_exception('Unable to load the MultiPicker XMLDB schema.');
+        }
+        $table = $file->getStructure()->getTable('local_multipicker_target');
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        upgrade_plugin_savepoint(true, 2026100905, 'local', 'multipicker');
+    }
+    if ($oldversion < 2026101000) {
+        $table = new xmldb_table('local_multipicker_revision');
+        $index = new xmldb_index('timecreated-id', XMLDB_INDEX_NOTUNIQUE, ['timecreated', 'id']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2026101000, 'local', 'multipicker');
+    }
     return true;
 }

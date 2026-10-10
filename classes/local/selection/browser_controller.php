@@ -50,16 +50,17 @@ final class browser_controller {
         $captures = $raw['captures'] ?? [];
         if (
             !is_array($items) || count($items) > material_selection::MAX_FILES || !is_array($captures)
-                || count($captures) > 12 || array_filter($items, static fn($item) => !is_string($item))
+                || count($captures) > 9 || array_filter($items, static fn($item) => !is_string($item))
                 || array_filter($captures, static fn($value) => !is_string($value) || strlen($value) > 255)
         ) {
             throw new \moodle_exception('invalidselection', 'local_multipicker');
         }
         $input['items'] = clean_param_array($items, PARAM_RAW);
         $input['captures'] = clean_param_array($captures, PARAM_TEXT);
+        $input['toggleitem'] = clean_param($raw['toggleitem'] ?? '', PARAM_RAW);
         $input['removeitem'] = clean_param($raw['removeitem'] ?? '', PARAM_RAW);
         $input['destination'] = material_selection::path($raw['destination'] ?? '/');
-        foreach (['search', 'clear', 'selectpage', 'review'] as $name) {
+        foreach (['search', 'refresh', 'clear', 'selectpage', 'selectall', 'review'] as $name) {
             $input[$name] = clean_param($raw[$name] ?? false, PARAM_BOOL);
         }
         foreach (['openfolder', 'previouspage', 'next'] as $name) {
@@ -85,12 +86,28 @@ final class browser_controller {
         $state = $scope['view'] ?? ['profileid' => (int)array_key_first($profiles), 'selected' => [],
             'filters' => ['q' => '', 'edition' => '', 'shortname' => '', 'module' => $scope['module'] ?? '', 'mimetype' => ''],
             'folder' => '', 'after' => '', 'history' => []];
+        $state['roots'] = $state['roots'] ?? [];
+        $state['renames'] = $state['renames'] ?? [];
         $state['history'] = $state['history'] ?? [];
         $state['layout'] = $state['layout'] ?? 'grid';
         $capturecontrols = [];
         $message = '';
+        $originalstate = $state;
 
         try {
+            if (array_filter($state['selected'], static fn($value) => str_starts_with($value, 'folder:'))) {
+                $state['roots'] = array_values(array_unique(array_merge($state['roots'], array_values(array_filter(
+                    $state['selected'],
+                    static fn($value) => str_starts_with($value, 'folder:')
+                )))));
+                $files = material_selection::resolve(
+                    $scope['courseid'],
+                    $state['profileid'],
+                    selection_options::parse($state['selected'])
+                );
+                $state['selected'] = array_map(static fn($hash) => 'file:' . $hash, array_keys($files));
+                draft_scope::remember_view($token, $state, sesskey());
+            }
             if ($input !== null) {
                 $state['selected'] = array_values(array_unique($input['items']));
                 selection_options::parse($state['selected']);
@@ -100,6 +117,8 @@ final class browser_controller {
                 }
                 if ($profileid !== (int)$state['profileid']) {
                     $state['selected'] = [];
+                    $state['roots'] = [];
+                    $state['renames'] = [];
                     $state['folder'] = '';
                     $state['after'] = '';
                     $state['history'] = [];
@@ -119,19 +138,54 @@ final class browser_controller {
                 }
                 if (!empty($input['clear'])) {
                     $state['selected'] = [];
+                    $state['roots'] = [];
+                    $state['renames'] = [];
+                }
+                if ($input['toggleitem'] !== '') {
+                    $values = [$input['toggleitem']];
+                    $files = material_selection::resolve($scope['courseid'], $profileid, selection_options::parse($values));
+                    $values = array_map(static fn($hash) => 'file:' . $hash, array_keys($files));
+                    if (!array_diff($values, $state['selected'])) {
+                        $state['selected'] = array_values(array_diff($state['selected'], $values));
+                    } else {
+                        $state['selected'] = array_values(array_unique(array_merge($state['selected'], $values)));
+                        if (str_starts_with($input['toggleitem'], 'folder:')) {
+                            $state['roots'][] = $input['toggleitem'];
+                            $state['roots'] = array_values(array_unique($state['roots']));
+                        }
+                    }
+                    if (count($state['selected']) > material_selection::MAX_FILES) {
+                        throw new \moodle_exception('batchlimit', 'local_multipicker');
+                    }
+                }
+                if (!empty($input['selectall'])) {
+                    $selection = browser_listing::select_all($scope, $state);
+                    $state['selected'] = $selection['selected'];
+                    $state['roots'] = $selection['roots'];
                 }
                 if (!empty($input['selectpage'])) {
                     $current = browser_listing::page($scope, $state);
                     $state['selected'] = array_values(array_unique(array_merge(
                         $state['selected'],
-                        array_column($current['cards'], 'value')
+                        array_map(static fn($hash) => 'file:' . $hash, array_keys(material_selection::resolve(
+                            $scope['courseid'],
+                            $profileid,
+                            selection_options::parse(array_column($current['cards'], 'value'))
+                        )))
                     )));
                     selection_options::parse($state['selected']);
+                    $state['roots'] = array_values(array_unique(array_merge($state['roots'], array_column(
+                        array_filter($current['cards'], static fn($card) => $card['isfolder']),
+                        'value'
+                    ))));
                 }
                 if (!empty($input['search'])) {
                     $state['after'] = '';
                     $state['history'] = [];
                     $state['folder'] = '';
+                } else if (!empty($input['refresh'])) {
+                    $state['after'] = '';
+                    $state['history'] = [];
                 } else if (array_key_exists('openfolder', $input)) {
                     $state['folder'] = $input['openfolder'];
                     $state['after'] = '';
@@ -143,6 +197,13 @@ final class browser_controller {
                     $state['history'] = array_slice($state['history'], -32);
                     $state['after'] = $input['next'];
                 }
+                $selectedhashes = array_fill_keys(array_map(
+                    static fn($value) => substr($value, 5),
+                    $state['selected']
+                ), true);
+                $state['roots'] = array_slice($state['roots'], -material_selection::MAX_FILES);
+                $state['renames'] = array_intersect_key($state['renames'], $selectedhashes);
+                selection_limits::require_capacity($scope, $state['selected']);
                 draft_scope::select_destination($token, $input['destination'], sesskey());
                 draft_scope::select_mode($token, $input['mode'], sesskey());
                 draft_scope::remember_view($token, $state, sesskey());
@@ -158,13 +219,30 @@ final class browser_controller {
                 $listing['suggestions']
             );
             $listing['previouspage'] = (bool)$state['history'];
+            $catalogpending = false;
+            if (empty($listing['cards']) && isset($profiles[$state['profileid']])) {
+                [$profile, , $rules] = \local_multipicker\local\profile\profiles::load((int)$state['profileid']);
+                $catalogpending = !$DB->record_exists(
+                    'local_multipicker_course',
+                    ['courseid' => $course->id, 'revisionid' => $profile->activeid]
+                ) && $rules->resolve($course) !== null;
+            }
         } catch (\moodle_exception $exception) {
+            $state = $originalstate;
+            $catalogpending = false;
             $message = $OUTPUT->notification(display::reason($exception->errorcode), 'error');
-            $listing = ['cards' => [], 'retained' => array_map(static fn($value) => ['value' => $value], $state['selected']),
+            $listing = ['cards' => [], 'selecteditems' => array_map(static fn($value) => ['value' => $value], $state['selected']),
+                'retained' => array_map(static fn($value) => ['value' => $value], $state['selected']),
                 'next' => '', 'parent' => '', 'infolder' => false, 'count' => count($state['selected'])];
+            if ($exception->errorcode === 'selectionfull') {
+                $listing = browser_listing::page($scope, $state);
+            }
         }
         return ['review' => false, 'message' => $message, 'data' => $listing + [
+        'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_multipicker'),
+        'catalogpending' => $catalogpending, 'selectioncapacity' => selection_limits::capacity($scope),
         'contextid' => $scope['contextid'],
+        'repositoryname' => display::name($scope['repositoryname'] ?? get_string('pluginname', 'local_multipicker')),
         'layout' => $state['layout'],
         'listlayout' => $state['layout'] === 'list',
         'action' => (new \moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false),

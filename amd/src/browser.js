@@ -47,6 +47,12 @@ export const presentation = () => {
         return;
     }
     picker.classList.add('multipicker-native-host');
+    document.body.classList.add('multipicker-embedded');
+    const surface = picker.querySelector('.fp-content');
+    const background = window.parent.getComputedStyle(surface).backgroundColor;
+    if (background !== 'rgba(0, 0, 0, 0)') {
+        document.body.style.setProperty('--multipicker-host-background', background);
+    }
     const repositories = picker.querySelector('.fp-repo-area');
     const active = repositories?.querySelector('.fp-repo.active');
     const revealRepository = () => {
@@ -69,7 +75,9 @@ export const presentation = () => {
     });
     hostObserver.observe(picker, {childList: true, subtree: true});
     window.addEventListener('pagehide', () => {
-        picker.classList.remove('multipicker-native-host');
+        if (!object.isConnected) {
+            picker.classList.remove('multipicker-native-host');
+        }
         hostObserver.disconnect();
         window.parent.removeEventListener('resize', revealRepository);
     }, {once: true});
@@ -86,6 +94,14 @@ export const complete = file => {
     if (button && supported) {
         button.disabled = false;
     }
+    document.querySelector('.multipicker-review-form')?.addEventListener('input', event => {
+        if (event.target.matches('input[name="removefiles[]"]')) {
+            return;
+        }
+        if (button) {
+            button.disabled = true;
+        }
+    });
     button?.addEventListener('click', () => {
         if (!supported) {
             return;
@@ -118,18 +134,38 @@ export const selection = () => {
     let submitting = false;
     let loading = false;
     let changes = 0;
+    form.dataset.profileid = form.elements.profileid.value;
+    const filters = form.querySelector('.multipicker-filter-popover');
+    document.addEventListener('click', event => {
+        if (!filters.contains(event.target)) {
+            filters.open = false;
+        }
+    });
+    form.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && filters.open) {
+            filters.open = false;
+            filters.querySelector('summary').focus();
+        }
+    });
     form.querySelector('[data-multipicker-search]').hidden = true;
     const review = form.querySelector('[data-multipicker-review]');
     const update = () => {
         const count = new Set([...form.querySelectorAll('input[name="items[]"]')]
             .filter(input => input.type === 'hidden' || input.checked).map(input => input.value)).size;
         form.querySelector('[data-multipicker-count]').textContent = count;
-        review.disabled = !count || loading;
+        review.disabled = !count || loading || count > Number(form.dataset.selectioncapacity);
+        form.querySelectorAll('[data-multipicker-choice]').forEach(input => {
+            input.disabled = !input.checked && input.dataset.partial !== '1'
+                && count >= Number(form.dataset.selectioncapacity);
+        });
+        form.querySelectorAll('[data-multipicker-choice]').forEach(input => {
+            input.indeterminate = input.dataset.partial === '1';
+        });
         form.querySelectorAll('.multipicker-card').forEach(card => {
             card.classList.toggle('multipicker-selected', card.querySelector('input[type=checkbox]').checked);
         });
     };
-    const apply = async() => {
+    const apply = async(toggleitem = '') => {
         clearTimeout(timer);
         if (submitting || loading || !form.isConnected) {
             return;
@@ -137,7 +173,7 @@ export const selection = () => {
         loading = true;
         const version = changes;
         let retry = false;
-        const raw = {items: [], captures: {}};
+        const raw = {items: [], captures: {}, toggleitem, refresh: !toggleitem};
         for (const [name, value] of new FormData(form)) {
             if (name === 'items[]') {
                 raw.items.push(value);
@@ -148,7 +184,10 @@ export const selection = () => {
             }
         }
         form.setAttribute('aria-busy', 'true');
-        const actions = [...form.querySelectorAll('button[name]')].filter(button => button.name !== 'search');
+        if (!toggleitem) {
+            form.querySelector('[data-multipicker-results]').classList.add('multipicker-loading');
+        }
+        const actions = [...form.querySelectorAll('button[name], [data-multipicker-choice]')];
         actions.forEach(button => {
             button.dataset.multipickerDisabled = String(button.disabled);
             button.disabled = true;
@@ -158,42 +197,81 @@ export const selection = () => {
             return text;
         }).catch(() => {});
         try {
-            const {html, js} = await new Promise((resolve, reject) => {
+            const {html} = await new Promise((resolve, reject) => {
                 Fragment.loadFragment('local_multipicker', 'browser', Number(form.dataset.contextid), {
                     scope: raw.scope, state: JSON.stringify(raw),
                 }).then((html, js) => resolve({html, js}), reject);
             });
-            if (changes !== version) {
+            if (changes !== version && !toggleitem) {
                 retry = true;
                 return;
             }
-            const active = document.activeElement;
-            const focus = active?.name ? {
-                name: active.name, start: active.selectionStart, end: active.selectionEnd,
-            } : null;
-            const position = {x: window.scrollX, y: window.scrollY};
-            Templates.replaceNode(form.closest('[data-multipicker-panel]'), html, js);
-            const field = focus && document.getElementsByName(focus.name)[0];
-            if (field) {
-                field.focus({preventScroll: true});
-                if (typeof focus.start === 'number' && field.setSelectionRange) {
-                    field.setSelectionRange(focus.start, focus.end);
-                }
+            const response = new DOMParser().parseFromString(html, 'text/html');
+            const next = response.querySelector('form.multipicker-browser');
+            form.dataset.selectioncapacity = next.dataset.selectioncapacity;
+            const results = form.querySelector('[data-multipicker-results]');
+            const position = results.scrollTop;
+            if (toggleitem) {
+                const choices = new Map([...next.querySelectorAll('[data-multipicker-choice]')]
+                    .map(choice => [choice.value, choice]));
+                results.querySelectorAll('[data-multipicker-choice]').forEach(choice => {
+                    const updated = choices.get(choice.value);
+                    if (updated) {
+                        choice.checked = updated.checked;
+                        choice.dataset.partial = updated.dataset.partial;
+                        const badge = choice.closest('.multipicker-card').querySelector('.multipicker-card-meta .multipicker-chip');
+                        const nextBadge = updated.closest('.multipicker-card')
+                            .querySelector('.multipicker-card-meta .multipicker-chip');
+                        if (badge && nextBadge) {
+                            badge.textContent = nextBadge.textContent;
+                        }
+                    }
+                });
+            } else if (changes === version) {
+                await Templates.replaceNodeContents(results, next.querySelector('[data-multipicker-results]').innerHTML, '');
             }
-            window.scrollTo(position.x, position.y);
+            results.scrollTop = position;
+            // Keep active inputs, caret and native select menus in their original DOM nodes.
+            form.querySelectorAll('input[name="items[]"]').forEach(input => input.remove());
+            next.querySelectorAll('input[name="items[]"]').forEach(input => form.prepend(input));
+            form.querySelector('[data-multipicker-count]').textContent =
+                next.querySelector('[data-multipicker-count]').textContent;
+            if (changes !== version) {
+                retry = true;
+                toggleitem = '';
+            }
+            const profileChanged = form.dataset.profileid !== String(raw.profileid)
+                && form.elements.profileid.value === String(raw.profileid);
+            if (profileChanged) {
+                const filterbar = form.querySelector('.multipicker-filterbar');
+                await Templates.replaceNodeContents(filterbar, next.querySelector('.multipicker-filterbar').innerHTML, '');
+                form.dataset.profileid = String(raw.profileid);
+            } else {
+                next.querySelectorAll('datalist').forEach(list => {
+                    const current = form.querySelector('#' + list.id);
+                    if (current) {
+                        current.replaceChildren(...list.children);
+                    }
+                });
+            }
+            const panel = form.closest('[data-multipicker-panel]');
+            panel.querySelectorAll(':scope > .alert').forEach(alert => alert.remove());
+            response.querySelectorAll('[data-multipicker-panel] > .alert').forEach(alert => panel.prepend(alert));
+            results.dataset.refresh = String(Number(results.dataset.refresh || 0) + 1);
         } catch (error) {
             Notification.exception(error);
         } finally {
             loading = false;
             if (form.isConnected) {
                 form.removeAttribute('aria-busy');
+                form.querySelector('[data-multipicker-results]').classList.remove('multipicker-loading');
                 actions.forEach(button => {
                     button.disabled = button.dataset.multipickerDisabled === 'true';
                 });
                 form.querySelector('[data-multipicker-loading]').textContent = '';
                 update();
                 if (retry) {
-                    apply();
+                    timer = setTimeout(() => apply(toggleitem), 250);
                 }
             }
         }
@@ -218,12 +296,15 @@ export const selection = () => {
         changes++;
         if (event.target.matches('input[data-multipicker-filter]')) {
             clearTimeout(timer);
-            timer = setTimeout(apply, 500);
+            timer = setTimeout(() => apply(), 500);
         }
     });
     form.addEventListener('change', event => {
         changes++;
         update();
+        if (event.target.matches('[data-multipicker-choice]')) {
+            apply(event.target.value);
+        }
         if (event.target.matches('select[data-multipicker-filter]')) {
             clearTimeout(timer);
             apply();

@@ -1,38 +1,35 @@
 # Administration and review screens
 
-MultiPicker opens through **Site administration → Plugins → Local plugins → MultiPicker**. Settings, Profiles, Migrations and Log share permission-aware tabs. A delegated profile manager has an authorized entry without site configuration access. The Log is also registered under **Site administration → Reports → MultiPicker material reuse**. Every route checks its own capability.
+Open Site administration > Plugins > Local plugins > MultiPicker. Settings, Profiles, Migrations and Log use native, permission-aware secondary navigation. Each route checks its capability. Delegated profile managers have an entry without site settings access. Log also appears under Site administration > Reports > MultiPicker material reuse.
 
 ![Administration pages](diagrams/design/administration-pages.svg)
 
 ## Settings and profiles
 
-The native settings form controls authorship, course overrides and missing authors. Strict defaults are preserved. Profile cards show status and revision; creating/editing opens a separate native form. Guided mode edits the course field/expression, family/display templates, optional edition capture, matching dimensions, category scope, public sources, publication policy, source/destination folder predicates, section matching and duplicate handling. Capture filters use repeatable capture/label/optional controls.
+The native settings form controls author policy, course overrides, missing-author handling and independent log, migration and profile-version retention limits. Zero disables the corresponding limit. Core help icons explain fields and repeatable row columns.
 
-Guided mode starts from the **server-loaded revision**, preserves advanced settings without a form control and does not require a JSON document. Advanced mode retains the complete JSON schema, including multiple parsers and explicit section maps. A saved section map is preserved by guided edits; mapping entries are edited in advanced mode. Preview validates unsaved rules without activating a revision. Saving activates a new validated revision. Cancel discards unsaved form data.
+Profiles use a searchable table with grouping, capture labels, state and modification date. The name opens the editor. Native grouped icons open version history, edit, enable/disable or delete the row. Bulk export/state/delete icons appear only for an explicit selection. Export all and Import profiles are separate footer actions. Profile deletion removes the profile from normal use while retaining referenced history; active migrations protect profile changes.
 
-Select several cards or Select all to **Export selected**, or use **Export all profiles**. Exports contain active configurations only, without native course files, logs, database IDs or provenance. Import accepts an exported JSON bundle or a single JSON profile through Moodle's native upload control. All documents are validated before any write. Each imported profile has a new identity; existing profiles are never overwritten. Check category IDs, explicit mappings and publication rules for the destination site. Import accepts at most 500 documents and 1 MB. This workflow does not parse YAML.
+The guided editor uses aligned native fields and an editable filter table with at most nine definitions. Advanced rules replace the guided grouping sections. There is no separate edition section or migration folder configuration. See [profile configuration](04-configurable-rules.md).
 
-The complete conversations and design sequences are documented in [UC11: export](rup/requirements/use-cases/uc11-export-profiles.md) and [UC12: import](rup/requirements/use-cases/uc12-import-profiles.md).
+Import accepts an exported JSON bundle or a single profile through the native upload control. The limits are 500 profiles, 5,000 historical versions and 16 MB. Validation completes before any profile is imported; existing profiles are not overwritten. Export includes retained versions. [Version history](25-profile-version-history.md) compares configurations field by field and restores an earlier configuration as a new current version of the same profile.
 
-## Four-step migration wizard
+## Migration workflow
 
-1. **Choose profile:** select the course grouping and folder rules.
-2. **Source and destination:** choose edition or a named capture filter (such as cohort or semester), enter distinct source/destination values and confirm ordinal section layout if applicable. Matching still requires one source and one destination within each family and remaining configured dimensions.
-3. **Review:** prepare every matching operation, then display only 50 per page. Search course names, folders or filenames and filter by decision. Include/exclude checkboxes affect the rendered page only; Save selection preserves other pages. Include every file and Exclude every file apply to the entire plan regardless of the current search. A configuration change creates a new preview.
-4. **Execute:** open a separate wizard screen with whole-selection counts, confirmation, maintenance requirement, progress and cancellation. Files remain unchanged until authorized execution is queued.
+The Migrations tab opens a filtered history table. Native grouped actions inspect a record, edit blocked configuration or delete inactive history. Row checkboxes reveal the bulk delete icon. Queued/running records are protected; bulk deletion validates all selected records atomically and retains copied native material and original attribution. Source/destination scope, date and status distinguish entries without an internal Plan reference column.
 
-![Migration review flow](diagrams/behavior/processes/administration-migration.svg)
+New migration opens a wizard: choose profile, configure source/destination and folder correspondences, review, then confirm execution. Capture labels come from the profile; a profile without filters omits both filter sections. Folder correspondences belong to this migration and have a responsive editable row table. Existing-section mapping and explicit creation/overwrite choices are described in [migration behavior](06-migrations.md).
 
-Operation snapshots/decisions remain immutable. Selection changes update the review digest and are recorded in the log; stale approvals are refused. Selection locks after any run has been created. Excluding a blocked file can remove that file's block, but unresolved course/placement issues still block the plan. Execution queues **all included operations across every page**, never only the visible search results. Excluded files are not processed or counted in execution progress. Empty selections cannot queue a run. Native source/destination permissions, author policy, duplicate checks, maintenance and live revalidation remain enforced.
+Review groups courses, folders and files into collapsible sections. Their checkboxes save automatically through authenticated core Fragment responses. Course/folder selection includes their full contents; Select all covers the entire plan, including other pages. A selection update changes only checks, group counts, approval and continuation state. File nodes and scrolling remain in place. Search and pagination do not change the queued set.
 
-New plans store a compact specification and streamed operation fingerprint rather than duplicating every snapshot in JSON. Stored operations carry their inclusion state. Queueing shares the plan lock with selection changes and validates the reviewed fingerprints. A second active run is refused.
+Placement conflicts offer an existing destination folder, creation inside an existing section or exclusion. Same-path content conflicts offer overwrite or the file-exclusion checkbox. Resolving a conflict prepares a new plan and preserves the previous review and saved exclusions. No native destination is created until execution. Hidden/restricted sources do not generate destination conflicts; missing sources are reported without creating empty folders.
 
-Course and placement issues have their own pages of 50 entries, independent of the file pages. Their complete set remains in the stored plan and blocks execution even when the current issue page does not display a particular problem.
+Continue to execution is always rendered and stays disabled during saving, failed saves, unresolved blockers or an empty copy set. A ready plan requires separate execution confirmation. Execution revalidates the complete included set, reports bounded-batch progress and supports cancellation without enabling site maintenance.
 
-## Logs and presentation
+![Configure, review and execute](diagrams/behavior/processes/administration-migration.svg)
 
-The report uses a compact action timeline with action/user/date labels and an expandable reference. Action/reference/date filters retain the descending-ID cursor on older pages. Date bounds use the reader's timezone, including the whole selected end date. Raw structured details remain undisplayed.
+## Pagination, filters and actions
 
-Shared component CSS uses theme variables, compact cards, pill labels and coloured disclosure chevrons. Native form controls, labels, fieldsets, validation and accessibility behavior remain owned by Moodle. JavaScript enhances Select all and saves changed migration page checkboxes before searching, paging, filtering or continuing to execution. Without JavaScript, use Save selection before navigation. Manual checkboxes and whole-plan actions remain usable without it. Templates remain overrideable under `local/navigation`, `local/profile`, `local/migration`, `local/catalog` and `local/log`.
+Profiles, profile history, migrations, Log, review files and review issues share bounded 10/25/50 sizes, a result range, page count and native Previous/Next icon groups. Review files and issues use independent page parameters. Changing page size retains filters and returns the affected page to its start. Filters on migrations and Log use a bounded top-right popover with their own Apply/Reset controls.
 
-References: [Moodle Forms API](https://moodledev.io/docs/5.3/apis/subsystems/form), [native form uploads](https://moodledev.io/docs/5.0/apis/subsystems/form/usage/files).
+Page actions sit below their content; Back is at the left of the footer. Row actions stay together in a native button group. Bulk actions are hidden until selected and use translated titles and accessible labels. Inspection, history/export, editing, activation/deactivation and deletion use meaningful native outline colours and core icons. Footers remain in document flow and do not cover form controls. The grouping follows Didactika ServiceManager while leaving core controls and theme presentation intact.

@@ -28,10 +28,10 @@ namespace local_multipicker\local\profile;
  */
 final class profile_bundle {
     /** @var int Maximum uploaded bundle size. */
-    public const MAX_BYTES = 1048576;
+    public const MAX_BYTES = 16777216;
 
     /**
-     * Export the active configuration of selected profiles, or all profiles.
+     * Export selected profiles and their retained configuration versions.
      *
      * @param array $ids Explicit IDs.
      * @param bool $all Export every profile.
@@ -45,25 +45,36 @@ final class profile_bundle {
             throw new \moodle_exception('selectprofiles', 'local_multipicker');
         }
         $params = [];
-        $where = '';
+        $where = ' WHERE p.deleted = 0';
         if (!$all) {
             [$condition, $params] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
-            $where = ' WHERE p.id ' . $condition;
+            $where .= ' AND p.id ' . $condition;
         }
-        $records = $DB->get_recordset_sql('SELECT p.id, r.configjson FROM {local_multipicker} p
+        $records = $DB->get_recordset_sql('SELECT p.id, p.activeid, p.enabled, r.configjson FROM {local_multipicker} p
             JOIN {local_multipicker_revision} r ON r.id = p.activeid' . $where . ' ORDER BY p.name, p.id', $params);
         $documents = [];
         foreach ($records as $record) {
-            $documents[] = json_decode($record->configjson, true);
+            $versions = [];
+            $active = 0;
+            foreach ($DB->get_records('local_multipicker_revision', ['profileid' => $record->id], 'revision') as $version) {
+                $versions[] = ['version' => (int)$version->revision, 'created' => (int)$version->timecreated,
+                    'config' => json_decode($version->configjson, true)];
+                if ($version->id == $record->activeid) {
+                    $active = (int)$version->revision;
+                }
+            }
+            $documents[] = ['active' => $active, 'enabled' => (bool)$record->enabled, 'versions' => $versions];
         }
         $records->close();
         if (!$all && count($documents) !== count($ids)) {
             throw new \moodle_exception('invalidprofile', 'local_multipicker');
         }
-        return json_encode(
-            ['format' => 'multipicker-profiles', 'version' => 1, 'profiles' => $documents],
+        $json = json_encode(
+            ['format' => 'multipicker-profiles', 'version' => 2, 'profiles' => $documents],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
         );
+        self::documents($json);
+        return $json;
     }
 
     /**
@@ -85,7 +96,7 @@ final class profile_bundle {
             throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
         }
         if (isset($document['format'])) {
-            if ($document['format'] !== 'multipicker-profiles' || ($document['version'] ?? null) !== 1) {
+            if ($document['format'] !== 'multipicker-profiles' || !in_array($document['version'] ?? null, [1, 2], true)) {
                 throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
             }
             $documents = $document['profiles'] ?? [];
@@ -94,6 +105,46 @@ final class profile_bundle {
         }
         if (!is_array($documents) || !array_is_list($documents) || !$documents || count($documents) > 500) {
             throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
+        }
+        if (($document['version'] ?? 1) === 2 && isset($document['format'])) {
+            $configs = [];
+            $total = 0;
+            foreach ($documents as $entry) {
+                if (
+                    !is_array($entry) || !is_int($entry['active'] ?? null) || !is_bool($entry['enabled'] ?? null)
+                        || !is_array($entry['versions'] ?? null) || !array_is_list($entry['versions']) || !$entry['versions']
+                ) {
+                    throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
+                }
+                $last = 0;
+                $active = null;
+                foreach ($entry['versions'] as $version) {
+                    if (
+                        !is_array($version) || !is_int($version['version'] ?? null) || $version['version'] <= $last
+                            || $version['version'] >= 2147483647
+                            || !is_int($version['created'] ?? null) || $version['created'] < 0
+                            || !is_array($version['config'] ?? null) || ++$total > 5000
+                    ) {
+                        throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
+                    }
+                    if (
+                        !is_string($version['config']['name'] ?? null) || trim($version['config']['name']) === ''
+                            || \core_text::strlen($version['config']['name']) > 255
+                    ) {
+                        throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
+                    }
+                    new profile_config($version['config']);
+                    $last = $version['version'];
+                    if ($last === $entry['active']) {
+                        $active = $version['config'];
+                    }
+                }
+                if ($active === null) {
+                    throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
+                }
+                $configs[] = $active;
+            }
+            $documents = $configs;
         }
         foreach ($documents as $config) {
             if (
@@ -114,13 +165,39 @@ final class profile_bundle {
      * @return array New profile IDs.
      */
     public static function import(string $json): array {
-        global $DB;
+        global $DB, $USER;
         require_capability('local/multipicker:manageprofiles', \context_system::instance());
         $documents = self::documents($json);
         $transaction = $DB->start_delegated_transaction();
         $ids = [];
+        $bundle = json_decode($json, true);
         foreach ($documents as $config) {
-            $ids[] = profiles::save(json_encode($config));
+            $id = profiles::save(json_encode($config));
+            $ids[] = $id;
+            if (($bundle['format'] ?? '') === 'multipicker-profiles' && ($bundle['version'] ?? 1) === 2) {
+                $entry = $bundle['profiles'][count($ids) - 1];
+                $initial = $DB->get_field('local_multipicker', 'activeid', ['id' => $id]);
+                $activeid = 0;
+                foreach ($entry['versions'] as $version) {
+                    $canonical = json_encode($version['config'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    $versionid = $DB->insert_record('local_multipicker_revision', (object)[
+                        'profileid' => $id, 'revision' => $version['version'] + 1, 'configjson' => $canonical,
+                        'digest' => hash('sha256', $canonical), 'userid' => $USER->id,
+                        'timecreated' => $version['created'],
+                    ]);
+                    if ($version['version'] === $entry['active']) {
+                        $activeid = $versionid;
+                    }
+                }
+                $DB->update_record('local_multipicker', (object)[
+                    'id' => $id, 'activeid' => $activeid, 'enabled' => $entry['enabled'],
+                ]);
+                $DB->delete_records('local_multipicker_revision', ['id' => $initial]);
+                foreach ($DB->get_records('local_multipicker_revision', ['profileid' => $id], 'revision') as $version) {
+                    $DB->set_field('local_multipicker_revision', 'revision', $version->revision - 1, ['id' => $version->id]);
+                }
+                \local_multipicker\task\refresh_profile::queue($id, $activeid);
+            }
         }
         $transaction->allow_commit();
         return $ids;

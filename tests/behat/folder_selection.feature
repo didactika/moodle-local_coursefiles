@@ -1,4 +1,4 @@
-@local @local_multipicker @javascript
+@local @local_multipicker @multipicker_folder @javascript
 Feature: Import mixed materials inside the native folder picker
   As a destination course teacher
   I need a visual batch selection that preserves native saving and cancellation
@@ -52,7 +52,7 @@ Feature: Import mixed materials inside the native folder picker
     When I select MultiPicker material "Published materials" from "CB2024"
     And I select MultiPicker material "Published materials" from "CB2025"
     And I set MultiPicker filter "q" to "resource"
-    And I remove MultiPicker selected material from "CB2024"
+    And I remove MultiPicker reviewed file "notes2024.txt"
     And I press MultiPicker action "Review selection"
     Then the MultiPicker review should include "notes2025.txt"
     And the MultiPicker browser should not include "notes2024.txt"
@@ -81,3 +81,27 @@ Feature: Import mixed materials inside the native folder picker
     When I press MultiPicker action "Import reviewed materials"
     And I press "Save changes"
     Then I should see "handout.txt"
+
+  Scenario: Recursive selection can exclude a child and retain the enclosing folder paths
+    When I select MultiPicker material "Published materials" from "CB2025"
+    Then MultiPicker should have "2" selected files
+    When I open MultiPicker folder "Published materials" from "CB2025"
+    And I deselect MultiPicker file "lesson.txt"
+    Then MultiPicker should have "1" selected files
+    When I press MultiPicker action "Review selection"
+    Then the MultiPicker review should include "notes2025.txt"
+    And the MultiPicker browser should not include "lesson.txt"
+    When I press MultiPicker action "Import reviewed materials"
+    And I press "Save changes"
+    Then I should see "notes2025.txt"
+    And I should not see "lesson.txt"
+
+  Scenario: Rename a reviewed file before importing into the native folder
+    When I select MultiPicker material "Published materials" from "CB2025"
+    And I press MultiPicker action "Review selection"
+    And I rename MultiPicker reviewed file "lesson.txt" to "renamed-lesson.txt"
+    Then the MultiPicker review should include "renamed-lesson.txt"
+    When I press MultiPicker action "Import reviewed materials"
+    And I press "Save changes"
+    Then I should see "renamed-lesson.txt"
+    And "//a[normalize-space()='lesson.txt']" "xpath_element" should not exist

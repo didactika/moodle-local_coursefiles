@@ -31,6 +31,10 @@ use local_multipicker\local\selection\selection_options;
 
 /**
  * Exercises native controls, browser selections and restricted folder editing.
+ * @covers \local_multipicker\local\catalog\indexer
+ * @covers \local_multipicker\local\catalog\material_source
+ * @covers \local_multipicker\local\profile\profiles
+ * @covers \local_multipicker\local\selection\selection_options
  */
 final class module_form_test extends \advanced_testcase {
     /**

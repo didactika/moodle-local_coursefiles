@@ -10,14 +10,17 @@ participant "Repository transfer" as Transfer
 database "Native draft / provenance" as Files
 Teacher -> Form : Open existing or new activity
 Form -> Scope : Bind actual field, draft, context and limits
-Teacher -> Form : Add files; select MultiPicker
+Teacher -> Form : Add files; select configured repository
 Form -> Browser : Embed scoped HTML chooser
-Teacher -> Browser : Filter / browse / check materials
+Teacher -> Browser : Filter / browse / select all or check materials
 Browser -> Scope : Authenticated Fragment request
-Scope --> Browser : Authorized page; retained selection
+Scope --> Browser : Authorized results; canonical checks / folder counts
+note right of Browser : Filters retain focus and width.\nCheckboxes patch existing cards.\nFolder / cursor / scroll remain.
 Teacher -> Browser : Review selection
 Browser -> Scope : Expand and recheck selected sources
-Scope --> Browser : Separate tree review and approval
+Scope --> Browser : Resulting tree / readable filenames / approval
+Teacher -> Browser : Pencil opens native rename modal; remove files
+Browser -> Scope : Rebuild reviewed digest
 Teacher -> Browser : Import reviewed materials
 Browser -> Transfer : Documented native chooser callback
 Transfer -> Scope : Revalidate digest and destination

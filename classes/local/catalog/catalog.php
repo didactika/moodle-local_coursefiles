@@ -170,7 +170,8 @@ final class catalog {
                 }
                 $assets[$key]['occurrences'][] = [
                     'pathnamehash' => $file->get_pathnamehash(), 'filename' => $file->get_filename(),
-                    'filepath' => $file->get_filepath(), 'filearea' => $file->get_filearea(), 'author' => $file->get_author(), 'license' => $file->get_license(),
+                    'filepath' => $file->get_filepath(), 'filearea' => $file->get_filearea(),
+                    'author' => $file->get_author(), 'license' => $file->get_license(),
                     'courseid' => $cm->course, 'shortname' => $course->shortname, 'edition' => $sourceidentity['edition'],
                     'captures' => $sourceidentity['filters'],
                     'cmid' => $cm->id, 'module' => $cm->modname, 'modulename' => $cm->name, 'sectionid' => $cm->section,

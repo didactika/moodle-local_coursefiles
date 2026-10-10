@@ -1,0 +1,19 @@
+@startuml
+!include ../_style.puml
+title Profile administration
+left to right direction
+actor "Profile manager" as Manager
+rectangle "One profile and its configurations" {
+  usecase "UC03 Save grouping rules" as Save
+  usecase "UC11 Export retained versions" as Export
+  usecase "UC12 Import portable history" as Import
+  usecase "UC13 Compare / restore versions" as History
+}
+Manager --> Save
+Manager --> Export
+Manager --> Import
+Manager --> History
+Save -[hidden]down-> Export
+Export -[hidden]down-> Import
+Import -[hidden]down-> History
+@enduml
