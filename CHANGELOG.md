@@ -2,6 +2,7 @@
 
 ## [5.3.0] - 2026-10-10
 
+- Keep profile-defined search filters after all common controls and copy options so changing collections preserves their positions.
 - Message Broker-style frontend feature structure: controllers, scoped actions, listeners, selectors and authenticated backend repository access.
 - Nested SCSS component sources with generated flat CSS, shared responsive declarations and a CI freshness check.
 - All custom frontend behavior moved to strict TypeScript ESM; six thin AMD entry shims and typed core adapters preserve native picker/editor contracts.
