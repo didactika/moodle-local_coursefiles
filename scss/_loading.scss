@@ -1,0 +1,52 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* Light result placeholders leave surrounding controls and dimensions intact. */
+
+.multipicker-loading {
+    pointer-events: none;
+}
+
+.multipicker-skeleton {
+    display: none;
+}
+
+.multipicker-loading > .multipicker-cards, .multipicker-loading > .multipicker-empty,
+.multipicker-loading > .multipicker-pagination {
+    display: none;
+}
+
+.multipicker-loading {
+    > .multipicker-skeleton {
+        display: grid;
+        height: 100%;
+        align-content: start;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .5rem;
+    }
+}
+
+.multipicker-skeleton {
+    span {
+        border-radius: var(--multipicker-radius);
+        min-height: 7rem;
+        background: color-mix(in srgb, var(--multipicker-border) 35%, var(--multipicker-surface));
+        animation: multipicker-pulse 1s ease-in-out infinite alternate;
+    }
+}
+
+.multipicker-browser {
+    &[data-layout=list] {
+        .multipicker-skeleton {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+@keyframes multipicker-pulse {
+    to {
+        opacity: .45;
+    }
+}
+

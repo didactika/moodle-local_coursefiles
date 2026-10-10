@@ -13,3 +13,7 @@ Check PHP syntax, Moodle coding standards, XMLDB validation, template escaping a
 Theme changes use the documented component template names and stable region classes. Preserve field names, server-side capability checks, escaping and native form contracts.
 
 Document behavior together with its code and current limitations. Workspace development instructions are in the root AGENTS.md; planning and unimplemented specifications are not package documentation. License: GPL v3 or later.
+
+Frontend features separate controller initialization, scoped actions, listeners, selectors and backend repository access. Preserve native entry exports and the same PHP/session contracts on both lines. Moodle 5.3 uses strict TypeScript ESM and native React; keep those sources and generated assets off the 4.5 distribution.
+
+Edit styles.scss and scss/ component sources, then run `node tools/build-styles.mjs /path/to/moodle`. CI checks generated CSS using `--check`. The 5.3 pipeline also generates core aliases, checks all plugin sources with `npx tsc --project public/local/multipicker/tsconfig.json`, and runs the native ESM build.

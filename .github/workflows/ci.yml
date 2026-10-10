@@ -208,8 +208,13 @@ jobs:
         if: ${{ !cancelled() && matrix.moodle-branch == 'MOODLE_503_STABLE' }}
         working-directory: moodle
         run: |
-          npx tsc --noEmit --jsx react-jsx --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck public/local/multipicker/js/esm/src/layout.ts public/local/multipicker/js/esm/src/ViewSelector.tsx
+          npx grunt jsconfig
+          npx tsc --project public/local/multipicker/tsconfig.json
           npx grunt esm
+
+      - name: Check generated component styles
+        if: ${{ !cancelled() }}
+        run: node plugin/tools/build-styles.mjs moodle --check
 
       - name: PHPUnit tests
         if: ${{ !cancelled() }}

@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_multipicker';
-$plugin->version = 2026101003;
+$plugin->version = 2026101004;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '4.5.0';

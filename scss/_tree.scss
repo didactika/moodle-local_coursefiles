@@ -1,0 +1,123 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* The same authorized material nodes become a collapsible course tree. */
+
+.multipicker-browser-tree-group, .multipicker-tree-entries {
+    display: contents;
+}
+
+.multipicker-browser {
+    &-folder {
+        display: contents;
+    }
+    &-children {
+        display: none;
+    }
+    &[data-layout=tree] {
+        .multipicker-browser-folder {
+            display: block;
+        }
+        .multipicker-browser-children:not([hidden]) {
+            display: block;
+            margin-inline-start: 1rem;
+            padding-inline-start: .75rem;
+            border-inline-start: 1px solid var(--multipicker-border);
+        }
+        .multipicker-open[aria-expanded=true] .icon {
+            transform: rotate(90deg);
+        }
+    }
+}
+
+.multipicker-tree {
+    &-placeholder span {
+        display: block;
+        height: 3rem;
+        margin-block: .35rem;
+        border-radius: var(--multipicker-radius);
+        background: color-mix(in srgb, var(--multipicker-primary) 4%, var(--multipicker-surface));
+    }
+}
+
+.multipicker-browser {
+    &[data-layout=tree] {
+        .multipicker-cards {
+            display: block;
+        }
+        .multipicker-browser-tree-group {
+            display: block;
+            margin-bottom: .5rem;
+        }
+        .multipicker-course-heading {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .35rem 0;
+            color: inherit;
+            text-align: start;
+        }
+    }
+}
+
+.multipicker-course-heading[aria-expanded=true] .multipicker-disclosure-icon .icon {
+    transform: rotate(90deg);
+}
+
+.multipicker-browser {
+    &[data-layout=tree] {
+        .multipicker-tree-entries {
+            display: block;
+            padding-inline-start: 1rem;
+            border-inline-start: 1px solid var(--multipicker-border);
+        }
+        .multipicker-card {
+            margin-bottom: .15rem;
+            border-color: transparent;
+            box-shadow: none;
+        }
+        .multipicker-card .card-body {
+            align-items: center !important;
+        }
+        .multipicker-card input {
+            order: 0;
+            margin-top: 0;
+        }
+        .multipicker-open {
+            order: 1;
+        }
+        .multipicker-card-content {
+            order: 2;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            grid-template-rows: auto;
+            align-items: center;
+            gap: .5rem;
+        }
+        .multipicker-card-kind {
+            margin-bottom: 0 !important;
+        }
+        .multipicker-card-kind .multipicker-chip {
+            display: none;
+        }
+        .multipicker-card-title {
+            margin-bottom: 0;
+        }
+        .multipicker-card-meta {
+            border-top: 0 !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            min-height: 0;
+        }
+        .multipicker-browser-tree-group[data-collapsed=true] > .multipicker-tree-entries {
+            display: none;
+        }
+        .multipicker-origin {
+            display: none;
+        }
+        .multipicker-skeleton {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+

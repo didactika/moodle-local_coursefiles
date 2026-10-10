@@ -1,20 +1,8 @@
 // This file is part of Moodle - https://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// Moodle is free software under the GNU General Public License, version 3 or later.
 
 /**
- * Rename reviewed files through Moodle's native save/cancel modal.
+ * Initialize the feature actions and event listeners.
  *
  * @module local_multipicker/local/review/controller
  * @copyright 2026 Didactika.org
@@ -22,83 +10,18 @@
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_multipicker/local/selectors';
-import {listen} from 'local_multipicker/local/listeners';
-import ModalSaveCancel from 'core/modal_save_cancel';
-import ModalEvents from 'core/modal_events';
-import {getString} from 'core/str';
-import Templates from 'core/templates';
-import Notification from 'core/notification';
+import Selectors from 'local_multipicker/local/review/selectors';
+import {createActions} from 'local_multipicker/local/review/actions';
+import {registerListeners} from 'local_multipicker/local/review/listeners';
 
 /**
- * Bind pencil actions without making every filename an editable field.
+ * Enhance the native server-rendered view.
  */
 export const init = () => {
     const form = document.querySelector(Selectors.reviewForm);
     if (!form) {
         return;
     }
-    const update = () => {
-        const selected = [...form.querySelectorAll(Selectors.removeFiles)].filter(check => check.checked);
-        form.querySelectorAll(Selectors.reviewFolder).forEach(check => {
-            const descendants = [...check.closest(Selectors.details).querySelectorAll(Selectors.removeFiles)];
-            const count = descendants.filter(file => file.checked).length;
-            check.checked = count > 0 && count === descendants.length;
-            check.indeterminate = count > 0 && count < descendants.length;
-        });
-        const remove = document.querySelector(Selectors.removeSelected);
-        remove.hidden = selected.length === 0;
-        remove.disabled = selected.length === 0;
-    };
-    listen(form, 'change', event => {
-        const folder = event.target.closest(Selectors.reviewFolder);
-        if (folder) {
-            folder.closest(Selectors.details).querySelectorAll(Selectors.removeFiles).forEach(check => {
-                check.checked = folder.checked;
-            });
-        }
-        update();
-    });
-    listen(form, 'click', event => {
-        const row = event.target.closest(Selectors.reviewFile);
-        if (!row || event.target.closest(Selectors.buttonAInputLabel)) {
-            return;
-        }
-        const check = row.querySelector(Selectors.inputtypecheckbox);
-        check.checked = !check.checked;
-        check.dispatchEvent(new Event('change', {bubbles: true}));
-    });
-    listen(form, 'click', async event => {
-        const button = event.target.closest(Selectors.rename);
-        if (!button || button.disabled) {
-            return;
-        }
-        button.disabled = true;
-        try {
-            const name = button.closest(Selectors.reviewFile).querySelector(Selectors.inputnamerenames);
-            const title = await getString('renamefile', 'local_multipicker');
-            const {html, js} = await Templates.renderForPromise('local_multipicker/local/selection/rename', {
-                name: name.value, label: title,
-            });
-            const modal = await ModalSaveCancel.create({title, body: html, show: true, removeOnClose: true});
-            modal.setTemplateJS(js);
-            modal.getRoot().on(ModalEvents.save, event => {
-                const input = modal.getBody()[0].querySelector(Selectors.filename);
-                if (!input.reportValidity()) {
-                    event.preventDefault();
-                    return;
-                }
-                name.value = input.value;
-                form.requestSubmit();
-            });
-            modal.getRoot().on(ModalEvents.hidden, () => {
-                button.disabled = false;
-                button.focus({preventScroll: true});
-            });
-        } catch (error) {
-            button.disabled = false;
-            Notification.exception(error);
-        }
-    });
-    update();
+    const actions = createActions(form);
+    registerListeners(form, actions);
 };

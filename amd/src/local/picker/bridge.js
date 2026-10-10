@@ -24,10 +24,6 @@
 
 import Selectors from 'local_multipicker/local/selectors';
 import {listen} from 'local_multipicker/local/listeners';
-import {getString} from 'core/str';
-import Fragment from 'core/fragment';
-import Templates from 'core/templates';
-import Notification from 'core/notification';
 
 let hostObject;
 let hostObserver;
@@ -98,7 +94,7 @@ export const complete = file => {
         button.disabled = false;
     }
     document.querySelector(Selectors.reviewForm)?.addEventListener('input', event => {
-        if (event.target.matches(Selectors.inputnameremovefilesReviewFolder)) {
+        if (event.target.matches(Selectors.reviewChecks)) {
             return;
         }
         if (button) {
@@ -115,7 +111,7 @@ export const complete = file => {
             window.parent.require(['local_multipicker/editor_import'], bridge => bridge.watch(file.scope, file.editorid));
         }
         window.parent.M.core_filepicker.select_file(file);
-        const confirmation = window.parent.document.querySelector(Selectors.filePickerFpSelectFpSelectConfirm);
+        const confirmation = window.parent.document.querySelector(Selectors.nativeConfirmation);
         if (confirmation) {
             confirmation.click();
         } else {

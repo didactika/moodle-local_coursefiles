@@ -2,6 +2,10 @@
 
 ## [4.5.0] - 2026-10-10
 
+- Message Broker-style frontend feature structure: controllers, scoped actions, listeners, selectors and authenticated backend repository access.
+- Nested SCSS component sources with generated flat CSS, shared responsive declarations and a CI freshness check.
+
+
 - Explicitly hide course tree headings in Cards/List, synchronize view state across pending result loads, and clear all search restrictions without losing selected content.
 
 - English-only source language strings; detailed documentation and UML moved to the central services workspace.

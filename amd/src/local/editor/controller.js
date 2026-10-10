@@ -22,8 +22,8 @@
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_multipicker/local/selectors';
-import Config from 'core/config';
+import {appendLinks} from 'local_multipicker/local/editor/actions';
+import {getImportStatus} from 'local_multipicker/local/repository';
 import {getInstanceForElementId} from 'editor_tiny/editor';
 import Notification from 'core/notification';
 import {getString} from 'core/str';
@@ -38,12 +38,10 @@ export const watch = async(scope, editorid) => {
     const until = Date.now() + 20000;
     try {
         while (Date.now() < until) {
-            const response = await fetch(`${Config.wwwroot}/local/multipicker/selection/status.php?`
-                + new URLSearchParams({scope, sesskey: Config.sesskey}), {credentials: 'same-origin'});
-            if (!response.ok) {
+            const result = await getImportStatus(scope);
+            if (!result) {
                 return;
             }
-            const result = await response.json();
             if (result.ready) {
                 if (!result.links || result.files.length < 2) {
                     return;
@@ -53,25 +51,7 @@ export const watch = async(scope, editorid) => {
                     Notification.alert('', await getString('editorimportfailed', 'local_multipicker'));
                     return;
                 }
-                // Await the core callback, so it retains its selected text, focus and first-link behavior.
-                const linked = new Set([...editor.getBody().querySelectorAll(Selectors.ahref)].map(link => link.href));
-                if (result.files.some(file => linked.has(file.url))) {
-                    const list = document.createElement('ul');
-                    result.files.filter(file => !linked.has(file.url)).forEach(file => {
-                        const item = document.createElement('li');
-                        const anchor = document.createElement('a');
-                        anchor.href = file.url;
-                        anchor.textContent = file.name;
-                        item.append(anchor);
-                        list.append(item);
-                    });
-                    if (list.children.length) {
-                        editor.undoManager.transact(() => {
-                            editor.selection.collapse(false);
-                            editor.insertContent(list.outerHTML);
-                            editor.save();
-                        });
-                    }
+                if (appendLinks(editor, result)) {
                     return;
                 }
             }
