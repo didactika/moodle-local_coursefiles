@@ -38,15 +38,43 @@ if (data_submitted()) {
     redirect($url, get_string('versionrestored', 'local_multipicker'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 $page = max(0, optional_param('page', 0, PARAM_INT));
+$perpage = \local_multipicker\output\pagination::size();
 $total = $DB->count_records('local_multipicker_revision', ['profileid' => $profileid]);
-$page = min($page, max(0, (int)ceil($total / 25) - 1));
-$records = $DB->get_records('local_multipicker_revision', ['profileid' => $profileid], 'revision DESC', '*', $page * 25, 25);
+$page = \local_multipicker\output\pagination::clamp($total, $page, $perpage);
+$records = $DB->get_records(
+    'local_multipicker_revision',
+    ['profileid' => $profileid],
+    'revision DESC',
+    '*',
+    $page * $perpage,
+    $perpage
+);
 $left = optional_param('left', 0, PARAM_INT);
 $right = optional_param('right', (int)$profile->activeid, PARAM_INT);
 $data = ['name' => display::name($profile->name), 'profileid' => $profileid, 'action' => $url->out(false),
     'sesskey' => sesskey(), 'versions' => [], 'choices' => [], 'rows' => [],
     'backurl' => (new moodle_url('/local/multipicker/admin/profile.php', ['profileid' => $profileid]))->out(false),
-    'pagination' => $OUTPUT->paging_bar($total, $page, 25, $url)];
+    'historyhelp' => $OUTPUT->help_icon('versionhistory', 'local_multipicker'),
+    'pagination' => \local_multipicker\output\pagination::render(
+        $total,
+        $page,
+        $perpage,
+        new moodle_url($url, ['left' => optional_param('left', 0, PARAM_INT),
+        'right' => optional_param(
+            'right',
+            (int)$profile->activeid,
+            PARAM_INT
+        )])
+    )];
+if (optional_param('changesonly', false, PARAM_BOOL)) {
+    $data['pagination'] = \local_multipicker\output\pagination::render(
+        $total,
+        $page,
+        $perpage,
+        new moodle_url($url, ['left' => $left, 'right' => $right, 'changesonly' => 1])
+    );
+}
+$PAGE->requires->js_call_amd('local_multipicker/administration', 'init');
 $choices = $records;
 foreach (array_unique([$profile->activeid, $left, $right]) as $id) {
     if ($id) {

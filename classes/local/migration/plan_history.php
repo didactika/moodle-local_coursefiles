@@ -27,40 +27,61 @@ namespace local_multipicker\local\migration;
  */
 final class plan_history {
     /**
+     * Remove a reviewed, bounded selection atomically with respect to all selected queues.
+     * @param array $ids Explicit plan IDs.
+     */
+    public static function delete_many(array $ids): void {
+        global $DB;
+        require_capability('local/multipicker:planmigration', \context_system::instance());
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        sort($ids);
+        if (!$ids || count($ids) > 50 || min($ids) < 1) {
+            throw new \invalid_parameter_exception('Invalid migration selection');
+        }
+        $locks = [];
+        try {
+            foreach ($ids as $id) {
+                $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('plan:' . $id, 10);
+                if (!$lock) {
+                    throw new \moodle_exception('lockfailed', 'local_multipicker');
+                }
+                $locks[] = $lock;
+                if (
+                    $DB->record_exists_select(
+                        'local_multipicker_run',
+                        'planid = ? AND (state = ? OR state = ?)',
+                        [$id, 'queued', 'running']
+                    )
+                ) {
+                    throw new \moodle_exception('migrationinuse', 'local_multipicker');
+                }
+                $DB->get_record('local_multipicker_plan', ['id' => $id], '*', MUST_EXIST);
+            }
+            $transaction = $DB->start_delegated_transaction();
+            foreach ($ids as $id) {
+                $plan = $DB->get_record('local_multipicker_plan', ['id' => $id], '*', MUST_EXIST);
+                foreach (
+                    ['local_multipicker_target', 'local_multipicker_operation', 'local_multipicker_run',
+                    'local_multipicker_plan'] as $table
+                ) {
+                    $DB->delete_records($table, [$table === 'local_multipicker_plan' ? 'id' : 'planid' => $id]);
+                }
+                \local_multipicker\local\logging\log::record('migration_deleted', $plan->uuid, []);
+            }
+            $transaction->allow_commit();
+        } finally {
+            foreach (array_reverse($locks) as $lock) {
+                $lock->release();
+            }
+        }
+    }
+
+    /**
      * Delete an inactive plan under the same lock used to queue execution.
      * @param int $planid Stored plan.
      */
     public static function delete(int $planid): void {
-        global $DB;
-        require_capability('local/multipicker:planmigration', \context_system::instance());
-        $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('plan:' . $planid, 10);
-        if (!$lock) {
-            throw new \moodle_exception('lockfailed', 'local_multipicker');
-        }
-        try {
-            $transaction = $DB->start_delegated_transaction();
-            $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
-            if (
-                $DB->record_exists_select(
-                    'local_multipicker_run',
-                    'planid = ? AND (state = ? OR state = ?)',
-                    [$planid, 'queued', 'running']
-                )
-            ) {
-                throw new \moodle_exception('migrationinuse', 'local_multipicker');
-            }
-            foreach (
-                [
-                'local_multipicker_target', 'local_multipicker_operation', 'local_multipicker_run', 'local_multipicker_plan',
-                ] as $table
-            ) {
-                $DB->delete_records($table, [$table === 'local_multipicker_plan' ? 'id' : 'planid' => $planid]);
-            }
-            \local_multipicker\local\logging\log::record('migration_deleted', $plan->uuid, []);
-            $transaction->allow_commit();
-        } finally {
-            $lock->release();
-        }
+        self::delete_many([$planid]);
     }
 
     /**

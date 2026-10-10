@@ -36,7 +36,7 @@ final class log {
         return ['profile_state_changed', 'profile_activated', 'site_policy_changed', 'course_policy_changed',
             'publication_granted', 'publication_revoked',
             'migration_previewed', 'migration_selection_changed', 'migration_queued', 'migration_blocked', 'migration_batch',
-            'migration_deleted', 'migration_empty_cancelled'];
+            'migration_deleted', 'migration_empty_cancelled', 'migration_conflict_resolved'];
     }
 
     /**
@@ -48,6 +48,7 @@ final class log {
      * @param int $limit Page size, bounded to 100.
      * @param int $from Inclusive timestamp lower bound.
      * @param int $until Exclusive timestamp upper bound.
+     * @param int $page Zero-based page within the filtered records.
      * @return array Records and the next cursor.
      */
     public static function page(
@@ -56,7 +57,8 @@ final class log {
         int $before = 0,
         int $limit = 50,
         int $from = 0,
-        int $until = 0
+        int $until = 0,
+        int $page = 0
     ): array {
         global $DB;
         require_capability('local/multipicker:viewlog', \context_system::instance());
@@ -81,18 +83,21 @@ final class log {
             $where[] = 'timecreated < :untildate';
             $params['untildate'] = $until;
         }
+        $total = $DB->count_records_select('local_multipicker_log', implode(' AND ', $where), $params);
+        $page = \local_multipicker\output\pagination::clamp($total, $page, $limit);
         $records = array_values($DB->get_records_select(
             'local_multipicker_log',
             implode(' AND ', $where),
             $params,
             'id DESC',
             '*',
-            0,
+            $page * $limit,
             $limit + 1
         ));
         $hasnext = count($records) > $limit;
         $records = array_slice($records, 0, $limit);
-        return ['records' => $records, 'nextbefore' => $hasnext ? (int)end($records)->id : 0];
+        return ['records' => $records, 'nextbefore' => $hasnext ? (int)end($records)->id : 0,
+            'total' => $total, 'page' => $page];
     }
 
     /**

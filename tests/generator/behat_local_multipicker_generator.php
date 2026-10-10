@@ -36,6 +36,8 @@ final class behat_local_multipicker_generator extends behat_generator_base {
             'singular' => 'folder fixture', 'datagenerator' => 'folder_fixture', 'required' => ['name'],
         ], 'migration fixtures' => [
             'singular' => 'migration fixture', 'datagenerator' => 'migration_fixture', 'required' => ['name'],
+        ], 'pagination fixtures' => [
+            'singular' => 'pagination fixture', 'datagenerator' => 'pagination_fixture', 'required' => ['name'],
         ]];
     }
 }

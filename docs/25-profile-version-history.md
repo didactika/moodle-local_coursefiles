@@ -1,6 +1,6 @@
 # Profile version history
 
-A profile has one UUID and one current configuration. Saving retains earlier configurations under that same profile; versions are not separate profiles. The Current version link in the profile table and Version history action in the editor open a paginated history of 25 versions per page.
+A profile has one UUID and one current configuration. Saving retains earlier configurations under that same profile; versions are not separate profiles. The history icon in the profile row and Version history action in the editor footer open a bounded history with 10/25/50 page sizes.
 
 ![Profile history](diagrams/design/sequences/profile-history.svg)
 

@@ -46,6 +46,7 @@ export const init = async id => {
         ]);
         const {html, js} = await Templates.renderForPromise('local_multipicker/local/form/rows', {columns, add});
         const wrapper = document.createElement('div');
+        wrapper.className = 'multipicker-row-fields';
         field.after(wrapper);
         await Templates.replaceNodeContents(wrapper, html, js);
         const body = wrapper.querySelector('tbody');
@@ -62,6 +63,13 @@ export const init = async id => {
             const row = document.createElement('tr');
             for (const column of columns) {
                 const cell = row.insertCell();
+                const label = document.createElement('span');
+                label.className = 'multipicker-row-label text-muted';
+                label.textContent = column.label;
+                const help = document.createElement('span');
+                help.innerHTML = column.help || '';
+                label.append(help);
+                cell.append(label);
                 const input = document.createElement(column.options ? 'select' : 'input');
                 input.dataset.field = column.key;
                 input.setAttribute('aria-label', column.label);
@@ -88,6 +96,7 @@ export const init = async id => {
                 cell.append(input);
             }
             const cell = row.insertCell();
+            cell.className = 'multipicker-row-remove';
             const {html, js} = await Templates.renderForPromise('local_multipicker/local/form/remove_row', {remove});
             await Templates.replaceNodeContents(cell, html, js);
             cell.querySelector('button').addEventListener('click', () => {

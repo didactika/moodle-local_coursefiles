@@ -30,7 +30,7 @@ If a source folder is missing, the review reports it without creating a source o
 | Changed source, identity, placement or policy after review | Block stale operation |
 | Unsupported strict author protection | Block native copy |
 
-All matches are prepared together, but only fifty file operations and fifty placement issues are rendered per page. Search and decision filters do not limit the queued set. Collapsible course and folder groups have checkboxes that affect their entire group across every page. Individual exclusions survive searching and navigation. Whole-plan Include/Exclude actions apply to every operation. Saving selection changes the approval digest; a stale digest cannot queue work.
+All matches are prepared together, but file and issue pages render at most fifty records, with shared 10/25/50 sizes. Search and decision filters do not limit the queued set. Collapsible course and folder groups have checkboxes that affect their entire group across every page. Individual exclusions survive searching and navigation. The Select all checkbox includes or excludes every operation. Automatic saving changes the approval digest; a stale digest cannot queue work.
 
 New migration forms skip byte-identical files even when their existing declaration differs, preserving that declaration. Legacy strict-attribution plans retain their original decisions. Overwriting captures the previous and incoming declarations in history and changes only the explicitly reviewed destination path.
 
@@ -50,10 +50,22 @@ Folder writes use per-path File API transactions and the native folder_updated e
 
 Cancellation takes effect at an operation boundary. Remaining pending operations can resume under the same reviewed plan; completed effects remain. Individual failures are logged and unaffected files continue. Automatic rollback of completed course writes is unsupported. [Retention](23-history-and-retention.md) removes old plans and attempts without deleting course files or original attribution.
 
-Blocked history entries expose a native Edit icon. Editing reloads the reviewed scope, correspondences and conflict options into a new configuration; submitting creates a new immutable plan and leaves the original record available in history. Ordinary entries use their reference/name links without a redundant View column.
+Blocked history entries expose a native Edit icon. Editing reloads the reviewed scope, correspondences and conflict options into a new configuration; submitting creates a new immutable plan and leaves the original record available in history. Ordinary entries use clickable names and grouped native inspection/deletion icons without an internal reference column.
 
 Destination locks serialize MultiPicker writers. Per-file transactions recheck the expected existing path immediately before replacement. Unrelated files added by a teacher after review remain present. Native editors retain Moodle's ordinary concurrent-edit behavior; MultiPicker does not claim to lock editors opened before a migration.
 
 A prepared plan with no included copy or overwrite operations is automatically cancelled. This includes an empty source result and a selection containing only identical-file skips. It creates no background run and does not create an empty destination folder. Before its first run, including actual work can make the plan reviewable again. Unresolved blockers still take priority.
 
 Inactive migrations can be deleted from the history table. The capability- and session-key-checked action shares the execution lock, refuses queued or running attempts, and deletes target bindings, operations, run records and the plan. Previously copied native files and original-author records remain unchanged. Deletion is logged.
+
+## Automatic selection and conflict resolution
+
+Review checkboxes save automatically through Moodle core Fragment. Course and folder controls apply to all their operations; Select all applies to the complete plan, including other pages and files outside the current search. A selection response contains only checked IDs, group counts, the new approval digest and continuation state. Existing file nodes, disclosure state and scrolling remain in place. The unenhanced POST form remains available when JavaScript is unavailable.
+
+Continue to execution is always rendered. It is disabled while a change is pending, after a failed save, when no copy remains, or while included blockers remain. Execution still requires a separate confirmation and revalidates the complete included set on the server.
+
+Placement conflicts offer an existing destination folder, creation inside an existing destination section, or explicit exclusion. File-content conflicts offer overwrite or exclusion through the file checkbox. Resolution creates a new plan under the original selection/queue lock, retains the previous review and preserves exclusions by source occurrence and destination course. It never creates a native folder during review. Duplicate creation names remain blocked; existing folders must be chosen explicitly. Missing sources are reported without creating empty sources, and hidden or restricted source placements do not generate destination conflicts.
+
+History has grouped native View, Edit and Delete icons, a current-page multiselect and a destructive bulk action shown only when selected. Bulk deletion locks every selected plan, validates the complete selection before deleting, and refuses queued/running work atomically. Native course files and attribution are retained.
+
+Profiles, profile history, migrations, review files, review issues and Log share range/page summaries, Previous/Next icons and 10/25/50 page sizes. Review file and issue pages remain independent; rendering is bounded while preparation and queueing cover every matching included operation.

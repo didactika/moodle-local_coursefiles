@@ -29,6 +29,89 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
  */
 class behat_local_multipicker extends behat_base {
     /**
+     * Exercise real editable rows, serialization and native form bounds at both widths.
+     *
+     * @Then /^the MultiPicker correspondence rows should fit narrow screens$/
+     */
+    public function responsive_correspondence_rows(): void {
+        $this->getSession()->getDriver()->executeScript(
+            'const field=document.getElementById("id_correspondencesjson");'
+            . 'window.multipickerOriginalRows=field.value;'
+            . 'field.nextElementSibling.querySelector("[data-multipicker-addrow]").click();'
+        );
+        if (!$this->getSession()->wait(5000, 'document.querySelectorAll("[data-field=targetvalue]").length===2')) {
+            throw new \Exception('A second native correspondence row was not added.');
+        }
+        $this->getSession()->getDriver()->executeScript(
+            'const input=document.querySelectorAll("[data-field=targetvalue]")[1];input.value="Temporary destination";'
+            . 'input.dispatchEvent(new Event("input",{bubbles:true}));'
+        );
+        foreach ([1366, 480] as $width) {
+            $this->getSession()->resizeWindow($width, 1000);
+            if ($width === 480) {
+                $this->getSession()->getDriver()->executeScript(
+                    'window.multipickerRowsReady=false;require(["theme_boost/drawers"],drawers=>'
+                    . '{drawers.closeAllDrawers();window.multipickerRowsReady=true;});'
+                );
+                if (!$this->getSession()->wait(3000, 'window.multipickerRowsReady&&!document.querySelector(".drawer.show")')) {
+                    throw new \Exception('The native drawer did not close before checking correspondence fields.');
+                }
+            }
+            $result = $this->getSession()->getDriver()->evaluateScript(
+                '(()=>{const field=document.getElementById("id_correspondencesjson"),wrapper=field.nextElementSibling;'
+                . 'const editor=wrapper.querySelector(".multipicker-row-editor"),bounds=editor.getBoundingClientRect();'
+                . 'editor.scrollIntoView({block:"center"});'
+                . 'const controls=[...editor.querySelectorAll("input,select,button")];'
+                . 'const fits=controls.every(control=>{const rect=control.getBoundingClientRect();'
+                . 'return rect.width>0&&rect.left>=bounds.left-1&&rect.right<=bounds.right+1;});'
+                . 'const aligned=[...editor.querySelectorAll("tbody tr")].every(row=>{'
+                . 'if(getComputedStyle(row).display!=="grid"||getComputedStyle(row).gridTemplateColumns.split(" ").length!==2)'
+                . '{return true;}const fields=[...row.querySelectorAll("[data-field]")];'
+                . 'return fields.every((input,index)=>index%2===1||'
+                . 'Math.abs(input.getBoundingClientRect().bottom-fields[index+1].getBoundingClientRect().bottom)<2);});'
+                . 'return JSON.stringify({fits,aligned,'
+                . 'page:document.documentElement.scrollWidth-document.documentElement.clientWidth,'
+                . 'overflow:editor.scrollWidth-editor.clientWidth,width:innerWidth,'
+                . 'saved:JSON.parse(field.value)[1].targetvalue});})()'
+            );
+            $result = json_decode($result, true);
+            if (
+                !$result['fits'] || !$result['aligned'] || $result['page'] > 1 || $result['overflow'] > 1
+                || $result['saved'] !== 'Temporary destination'
+            ) {
+                throw new \Exception('Native correspondence controls overflow or lose edits: ' . json_encode($result));
+            }
+            file_put_contents('/tmp/multipicker-correspondences-' . $width . '.png', $this->getSession()->getScreenshot());
+        }
+        $this->getSession()->getDriver()->executeScript(
+            'const field=document.getElementById("id_correspondencesjson");'
+            . 'field.nextElementSibling.querySelectorAll("tbody tr")[1].querySelector("button").click();'
+            . 'if(field.value!==window.multipickerOriginalRows){throw new Error("Original correspondences changed.");}'
+        );
+        $this->getSession()->resizeWindow(1366, 1000);
+    }
+
+    /**
+     * Keep the native Back button at the leading edge without theme-specific placement.
+     *
+     * @Then /^the MultiPicker history Back action should stay on the left$/
+     */
+    public function history_back_on_left(): void {
+        foreach ([1366, 480] as $width) {
+            $this->getSession()->resizeWindow($width, 1000);
+            $correct = $this->getSession()->getDriver()->evaluateScript(
+                '(()=>{const back=document.querySelector(".multipicker-admin .multipicker-back");'
+                . 'return Math.abs(back.getBoundingClientRect().left-back.parentElement.getBoundingClientRect().left)<2'
+                . '&&back.classList.contains("btn-outline-secondary")&&!!back.querySelector(".icon");})()'
+            );
+            if (!$correct) {
+                throw new \Exception('Profile history Back does not follow the shared native leading-edge action.');
+            }
+        }
+        $this->getSession()->resizeWindow(1366, 1000);
+    }
+
+    /**
      * Open the oldest retained configuration without assuming generated database IDs.
      * @When /^I compare the oldest MultiPicker profile version$/
      */
@@ -842,6 +925,54 @@ class behat_local_multipicker extends behat_base {
         );
         if (!$ready) {
             throw new \Exception('The native MultiPicker browser did not load.');
+        }
+    }
+    /**
+     * Wait for the serialized small-state response before checking saved decisions.
+     * @Then /^I wait for the MultiPicker migration selection to save$/
+     */
+    public function migration_selection_saved(): void {
+        $this->spin(function () {
+            return $this->getSession()->evaluateScript(
+                "(function() {const root = document.querySelector('[data-region=multipicker-migration]');"
+                . "return root && root.dataset.ready === 'true' && Number(root.dataset.pending || 0) === 0;})()"
+            );
+        }, null, 20);
+    }
+
+    /**
+     * Remember the real DOM node before a selection-only request.
+     * @When /^I remember the visible MultiPicker migration item$/
+     */
+    public function remember_migration_item(): void {
+        $this->getSession()->executeScript(
+            'window.multipickerRememberedItem = document.querySelector("[data-multipicker-operation]");'
+        );
+    }
+
+    /**
+     * Selection-only responses must not replace the visible files.
+     * @Then /^the visible MultiPicker migration item should be preserved$/
+     */
+    public function migration_item_preserved(): void {
+        if (
+            !$this->getSession()->evaluateScript(
+                'window.multipickerRememberedItem === document.querySelector("[data-multipicker-operation]")'
+            )
+        ) {
+            throw new \Exception('Selecting a file replaced its visible DOM node.');
+        }
+    }
+
+    /**
+     * Migration bulk deletion is available only for an explicit current-page selection.
+     * @Then /^MultiPicker migration bulk actions should be "(hidden|visible)"$/
+     * @param string $expected Expected visibility.
+     */
+    public function migration_bulk_actions(string $expected): void {
+        $control = $this->getSession()->getPage()->find('css', '[data-multipicker-migrations] [data-multipicker-bulk-actions]');
+        if (!$control || $control->isVisible() !== ($expected === 'visible')) {
+            throw new \Exception('Migration bulk actions do not follow the explicit selection.');
         }
     }
 }

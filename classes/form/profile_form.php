@@ -125,7 +125,18 @@ final class profile_form extends \moodleform {
         $buttons[] = $form->createElement('submit', 'saveprofile', get_string('saveprofile', 'local_multipicker'));
         $buttons[] = $form->createElement('submit', 'previewrules', get_string('previewrules', 'local_multipicker'));
         $buttons[] = $form->createElement('cancel');
-        $form->insertElementBefore($form->createElement('group', 'buttons', '', $buttons, [' '], false), 'profilename');
+        if (!empty($this->_customdata['profileid'])) {
+            $buttons[] = $form->createElement('static', 'profilehistory', '', \html_writer::link(
+                new \moodle_url(
+                    '/local/multipicker/admin/profile_history.php',
+                    ['profileid' => $this->_customdata['profileid']]
+                ),
+                get_string('versionhistory', 'local_multipicker'),
+                ['class' => 'btn btn-sm btn-outline-info']
+            ));
+        }
+        $form->addGroup($buttons, 'buttons', '', [' '], false);
+        $form->closeHeaderBefore('buttons');
         foreach (
             ['profilename', 'editmode', 'coursefield', 'coursepattern', 'familytemplate', 'displaytemplate',
             'pairdimensions', 'categoryids', 'filtersjson', 'publicationmode', 'configjson'] as $name

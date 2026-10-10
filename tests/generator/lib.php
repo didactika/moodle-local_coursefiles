@@ -31,6 +31,42 @@ use local_multipicker\local\catalog\material_source;
  */
 final class local_multipicker_generator extends component_generator_base {
     /**
+     * Create more than one native page for administration and whole-plan selection.
+     * @param array $record Named fixture.
+     * @return array Fixture identifiers.
+     */
+    public function create_pagination_fixture(array $record): array {
+        global $DB, $USER;
+        $fixture = $this->create_migration_fixture($record);
+        $previoususer = $USER;
+        $this->set_user(get_admin());
+        try {
+            $courseid = $DB->get_field('course', 'id', ['shortname' => 'CB2025'], MUST_EXIST);
+            $folders = get_fast_modinfo($courseid)->get_instances_of('folder');
+            $folder = reset($folders);
+            for ($i = 0; $i < 60; $i++) {
+                $this->create_file($folder->id, 'mod_folder', 'paged-' . $i . '.txt', 'Unique paged material ' . $i);
+            }
+            indexer::refresh($courseid);
+            [, , $rules] = profiles::load($fixture['profileid']);
+            $config = $rules->get_config();
+            for ($i = 1; $i <= 26; $i++) {
+                profiles::save(json_encode($config), $fixture['profileid']);
+                $document = $config;
+                $document['name'] = sprintf('Paged profile %02d', $i);
+                $id = profiles::save(json_encode($document));
+                profiles::change_state([$id], 'disable');
+            }
+            for ($i = 0; $i < 26; $i++) {
+                \local_multipicker\local\migration\migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+            }
+            return $fixture;
+        } finally {
+            $this->set_user($previoususer);
+        }
+    }
+
+    /**
      * Create exact source/destination placement for the administration workflow.
      *
      * @param array $record Fixture name.

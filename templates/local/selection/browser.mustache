@@ -14,7 +14,7 @@
     </div>
     {{#locked}}<div class="alert alert-warning" role="status">{{#str}}browserlocked, local_multipicker{{/str}}</div>{{/locked}}
     <div class="multipicker-toolbar multipicker-browser-filters">
-        <div class="multipicker-search"><label for="mpq" class="small">{{#str}}filenamefilter, local_multipicker{{/str}}</label>
+        <div class="multipicker-search"><label for="mpq" class="small">{{#str}}filenamefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
             <div class="input-group input-group-sm"><span class="input-group-text">{{#pix}}a/search, core{{/pix}}</span>
                 <input type="search" name="q" id="mpq" value="{{filters.q}}" class="form-control form-control-sm" data-multipicker-filter autocomplete="off">
             </div>
@@ -23,27 +23,27 @@
         <details class="multipicker-filter-popover" data-multipicker-options>
             <summary class="btn btn-sm btn-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}</summary>
             <div class="multipicker-filter-menu"><div class="multipicker-filterbar">
-        <div><label for="mpmodule" class="small">{{#str}}modulefilter, local_multipicker{{/str}}</label>
+        <div><label for="mpmodule" class="small">{{#str}}modulefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
             <select name="module" id="mpmodule" class="custom-select custom-select-sm" data-multipicker-filter>{{#modules}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modules}}</select>
         </div>
-        <div><label for="mptype" class="small">{{#str}}filetypefilter, local_multipicker{{/str}}</label>
+        <div><label for="mptype" class="small">{{#str}}filetypefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
             <select name="mimetype" id="mptype" class="custom-select custom-select-sm" data-multipicker-filter>{{#types}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/types}}</select>
         </div>
-        {{#capturefilters}}<div><label for="{{id}}" class="small">{{{label}}}</label>
+        {{#capturefilters}}<div><label for="{{id}}" class="small">{{{label}}} {{{filterhelp}}}</label>
             <input type="text" name="captures[{{key}}]" id="{{id}}" value="{{value}}" class="form-control form-control-sm" maxlength="255" list="{{id}}-values" data-multipicker-filter autocomplete="off">
             <datalist id="{{id}}-values">{{#suggestions}}<option value="{{value}}"></option>{{/suggestions}}</datalist>
         </div>{{/capturefilters}}
 
-            {{#morecapturefilters}}<div><label for="{{id}}" class="small">{{{label}}}</label>
+            {{#morecapturefilters}}<div><label for="{{id}}" class="small">{{{label}}} {{{filterhelp}}}</label>
                 <input type="text" name="captures[{{key}}]" id="{{id}}" value="{{value}}" class="form-control form-control-sm" maxlength="255" list="{{id}}-values" data-multipicker-filter autocomplete="off">
                 <datalist id="{{id}}-values">{{#suggestions}}<option value="{{value}}"></option>{{/suggestions}}</datalist>
             </div>{{/morecapturefilters}}
-            {{#multipleprofiles}}<div><label for="mpprofile" class="small">{{#str}}browserprofile, local_multipicker{{/str}}</label>
+            {{#multipleprofiles}}<div><label for="mpprofile" class="small">{{#str}}browserprofile, local_multipicker{{/str}} {{{filterhelp}}}</label>
                 <select name="profileid" id="mpprofile" class="custom-select custom-select-sm" data-multipicker-filter>{{#profiles}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/profiles}}</select>
             </div>{{/multipleprofiles}}
-            <div><label for="mpshortname" class="small">{{#str}}shortnamefilter, local_multipicker{{/str}}</label><input type="text" name="shortname" id="mpshortname" value="{{filters.shortname}}" class="form-control form-control-sm" data-multipicker-filter></div>
-            <div><label for="mpdestination" class="small">{{#str}}batchdestination, local_multipicker{{/str}}</label><select name="destination" id="mpdestination" class="custom-select custom-select-sm">{{#destinations}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/destinations}}</select></div>
-            <div><label for="mpmode" class="small">{{#str}}copymode, local_multipicker{{/str}}</label><select name="mode" id="mpmode" class="custom-select custom-select-sm">{{#modes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modes}}</select></div>
+            <div><label for="mpshortname" class="small">{{#str}}shortnamefilter, local_multipicker{{/str}} {{{filterhelp}}}</label><input type="text" name="shortname" id="mpshortname" value="{{filters.shortname}}" class="form-control form-control-sm" data-multipicker-filter></div>
+            <div><label for="mpdestination" class="small">{{#str}}batchdestination, local_multipicker{{/str}} {{{filterhelp}}}</label><select name="destination" id="mpdestination" class="custom-select custom-select-sm">{{#destinations}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/destinations}}</select></div>
+            <div><label for="mpmode" class="small">{{#str}}copymode, local_multipicker{{/str}} {{{filterhelp}}}</label><select name="mode" id="mpmode" class="custom-select custom-select-sm">{{#modes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modes}}</select></div>
 
             </div></div>
         </details>

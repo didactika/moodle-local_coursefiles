@@ -35,7 +35,17 @@ admin_externalpage_setup('local_multipicker_migration', '', ['planid' => $planid
 if (data_submitted()) {
     require_sesskey();
     $action = required_param('action', PARAM_ALPHA);
-    if ($action === 'group') {
+    if ($action === 'resolve') {
+        $planid = \local_multipicker\local\migration\plan_resolution::apply(
+            $planid,
+            required_param('digest', PARAM_ALPHANUM),
+            required_param('kind', PARAM_ALPHA),
+            required_param('id', PARAM_INT),
+            required_param('choice', PARAM_RAW_TRIMMED)
+        );
+        $url->param('planid', $planid);
+        $message = get_string('changessaved');
+    } else if ($action === 'group') {
         \local_multipicker\local\migration\plan_selection::save(
             $planid,
             required_param('digest', PARAM_ALPHANUM),
@@ -86,9 +96,11 @@ $data = migration_report::data(
     optional_param('page', 0, PARAM_INT),
     optional_param('q', '', PARAM_TEXT),
     optional_param('step', '', PARAM_ALPHA) === 'execute',
-    optional_param('issuepage', 0, PARAM_INT)
+    optional_param('issuepage', 0, PARAM_INT),
+    \local_multipicker\output\pagination::size(50)
 );
 $PAGE->requires->js_call_amd('local_multipicker/administration', 'init');
+$PAGE->requires->js_call_amd('local_multipicker/migration_review', 'init');
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
 $renderer = $PAGE->get_renderer('local_multipicker');

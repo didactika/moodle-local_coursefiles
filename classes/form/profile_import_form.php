@@ -43,6 +43,7 @@ final class profile_import_form extends \moodleform {
             ['accepted_types' => ['.json'], 'maxbytes' => \local_multipicker\local\profile\profile_bundle::MAX_BYTES]
         );
         $form->addRule('bundle', null, 'required');
+        $form->addHelpButton('bundle', 'bundle', 'local_multipicker');
         $this->add_action_buttons(true, get_string('importprofiles', 'local_multipicker'));
     }
 

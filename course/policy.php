@@ -45,6 +45,7 @@ if (data_submitted()) {
 }
 $locked = author_policy::locked($courseid);
 $data = [
+    'policyhelp' => $OUTPUT->help_icon('author_policy', 'local_multipicker'),
     'actionurl' => $PAGE->url->out(false), 'sesskey' => sesskey(), 'courseid' => $courseid,
     'locked' => $locked,
     'effectivelabel' => get_string($locked ? 'preserve_locked' : 'editable_with_provenance', 'local_multipicker'),

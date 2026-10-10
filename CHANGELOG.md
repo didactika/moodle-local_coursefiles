@@ -1,5 +1,8 @@
 # Changelog
 
+- Native help throughout forms, bottom page-action groups, shared bounded pagination, automatic review selection and in-place conflict resolution with persistent Continue.
+- Coloured row and conditional bulk icons; atomic inactive-migration deletion without removing course files.
+
 ## [Unreleased]
 
 - Native multi-file selection, configurable course profiles and reviewed background migrations.
@@ -9,3 +12,4 @@
 - Profile version comparison/restoration and version-preserving export/import, with bounded retention.
 - Automatically cancelled empty migrations and deletion of inactive migration history.
 - Bounded picker filters, native selection capacity, aligned two-line cards and compact selectable review rows.
+- Responsive editable correspondence/filter rows and consistent native Back actions on the left.

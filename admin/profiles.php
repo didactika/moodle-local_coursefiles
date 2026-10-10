@@ -56,6 +56,7 @@ if (data_submitted()) {
     send_file($json, 'multipicker-profiles.json', 0, 0, true, true, 'application/json');
 }
 $page = max(0, optional_param('page', 0, PARAM_INT));
+$perpage = \local_multipicker\output\pagination::size();
 $search = optional_param('q', '', PARAM_TEXT);
 $profileid = optional_param('profileid', 0, PARAM_INT);
 if ($profileid) {
@@ -63,7 +64,8 @@ if ($profileid) {
 }
 $data = ['profiles' => [], 'newprofileurl' => (new moodle_url('/local/multipicker/admin/profile.php'))->out(false),
     'importurl' => (new moodle_url('/local/multipicker/admin/profile_import.php'))->out(false),
-    'actionurl' => $PAGE->url->out(false), 'search' => $search, 'sesskey' => sesskey()];
+    'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_multipicker'),
+    'actionurl' => $PAGE->url->out(false), 'search' => $search, 'sesskey' => sesskey(), 'perpage' => $perpage];
 $condition = 'p.deleted = 0';
 $params = [];
 if ($search !== '') {
@@ -71,11 +73,11 @@ if ($search !== '') {
     $params['search'] = '%' . $DB->sql_like_escape($search) . '%';
 }
 $total = $DB->count_records_sql('SELECT COUNT(1) FROM {local_multipicker} p WHERE ' . $condition, $params);
-$page = min($page, max(0, (int)ceil($total / 25) - 1));
-$data['pagination'] = $OUTPUT->paging_bar(
+$page = \local_multipicker\output\pagination::clamp($total, $page, $perpage);
+$data['pagination'] = \local_multipicker\output\pagination::render(
     $total,
     $page,
-    25,
+    $perpage,
     new moodle_url('/local/multipicker/admin/profiles.php', ['q' => $search])
 );
 foreach (
@@ -83,8 +85,8 @@ foreach (
         'SELECT p.*, r.revision, r.timecreated, r.configjson FROM {local_multipicker} p
        LEFT JOIN {local_multipicker_revision} r ON r.id = p.activeid WHERE ' . $condition . ' ORDER BY p.name, p.id',
         $params,
-        $page * 25,
-        25
+        $page * $perpage,
+        $perpage
     ) as $profile
 ) {
     $config = json_decode($profile->configjson, true);
