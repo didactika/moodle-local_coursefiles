@@ -1,12 +1,12 @@
 {{!
     @template local_multipicker/local/navigation/tabs
-    Permission-filtered links between full pages, without JavaScript panels.
-    Example context (json): {"tabs":[{"label":"Settings","url":"#","active":true}]}
+    Core/theme-owned navigation markup and overflow handling.
+    Example context (json): {
+        "menu": {
+            "nodecollection": {"children": []}
+        }
+    }
 }}
-<nav class="mb-4" data-region="multipicker-navigation" aria-label="{{#str}}pluginname, local_multipicker{{/str}}">
-    <ul class="nav nav-tabs flex-wrap">
-        {{#tabs}}<li class="nav-item">
-            <a class="nav-link {{#active}}active{{/active}}" href="{{url}}" {{#active}}aria-current="page"{{/active}}>{{label}}</a>
-        </li>{{/tabs}}
-    </ul>
-</nav>
+<div class="mb-3 secondary-navigation" data-region="multipicker-navigation">
+    {{#menu}}{{> core/secondarymoremenu}}{{/menu}}
+</div>

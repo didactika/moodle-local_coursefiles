@@ -24,6 +24,10 @@
 defined('MOODLE_INTERNAL') || die();
 $tasks = [
     [
+        'classname' => '\local_multipicker\task\clean_history',
+        'blocking' => 0, 'minute' => 'R', 'hour' => '*', 'day' => '*', 'month' => '*', 'dayofweek' => '*',
+    ],
+    [
         'classname' => '\local_multipicker\task\reconcile_catalog',
         'blocking' => 0, 'minute' => '*/5', 'hour' => '*', 'day' => '*', 'month' => '*', 'dayofweek' => '*',
     ],

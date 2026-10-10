@@ -1,21 +1,29 @@
 @startuml
 !include ../../_style.puml
-title Course and existing-folder matching
+title Course and folder matching
 start
-:Resolve family, edition and pair dimensions;
+:Resolve family and capture filters;
 if (Unique source / target pair?) then (yes)
-  :Match source folder predicate;
-  :Resolve reviewed destination section;
-  if (Exactly one target folder?) then (yes)
-    :Compare path, bytes and attribution;
-    :Store copy / skip / blocker decision;
-    stop
+  :Match each source folder correspondence;
+  if (Source exists?) then (yes)
+    :Resolve reviewed destination section;
+    if (Exactly one target folder?) then (yes)
+      :Use existing native target;
+    else (no)
+      if (Missing and explicit creation allowed?) then (yes)
+        :Store concrete creation descriptor;
+      else (no)
+        :Record placement blocker;
+        stop
+      endif
+    endif
+    :Compare path and bytes;
+    :Store copy / skip / overwrite / blocker;
   else (no)
-    :Record placement blocker;
-    stop
+    :Report missing source without creating it;
   endif
 else (no)
-  :Record pair blocker;
-  stop
+  :Record ambiguous pair blocker;
 endif
+stop
 @enduml

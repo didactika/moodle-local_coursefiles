@@ -43,6 +43,7 @@ final class draft_import {
      * @param array $limits Owning form's authoritative options.
      * @param string $basepath Current draft destination directory.
      * @param string $mode Folder placement mode.
+     * @param array $options Reviewed mapping roots and destination filenames.
      * @return array Decisions, resulting file count/size and eligibility.
      */
     public static function review(
@@ -52,7 +53,8 @@ final class draft_import {
         array $items,
         array $limits,
         string $basepath = '/',
-        string $mode = 'paths'
+        string $mode = 'paths',
+        array $options = []
     ): array {
         global $USER;
         destination_access::require($courseid);
@@ -77,14 +79,23 @@ final class draft_import {
             $bytes += $file->get_filesize();
         }
         [, $revision, $rules] = profiles::load($profileid);
-        $skipcontent = ($rules->get_config()['migration']['same_content_different_path'] ?? '') === 'skip-and-report';
+        $contentpolicy = $rules->get_config()['migration']['same_content_different_path'] ?? 'skip-and-report';
+        $skipcontent = $contentpolicy === 'skip-and-report';
         $operations = [];
         $blocked = false;
         $files = material_selection::resolve($courseid, $profileid, $items);
         if (count($files) > ($limits['selectionlimit'] ?? material_selection::MAX_FILES)) {
             throw new \moodle_exception('batchlimit', 'local_multipicker');
         }
-        $mapping = material_selection::map_paths($files, $items, $mode);
+        $mapping = material_selection::map_paths(
+            $files,
+            array_merge($items, selection_options::parse($options['roots'] ?? [])),
+            $mode
+        );
+        $renames = $options['renames'] ?? [];
+        if (!is_array($renames) || count($renames) > material_selection::MAX_FILES || array_diff_key($renames, $files)) {
+            throw new \moodle_exception('invalidselection', 'local_multipicker');
+        }
         foreach ($files as $hash => $file) {
             [$file, $cm] = material_source::resolve($hash, $courseid, $profileid);
             author_policy::require_native_copy($file, (int)$cm->course, $courseid);
@@ -93,7 +104,12 @@ final class draft_import {
             if (\core_text::strlen($path) > 255) {
                 throw new \moodle_exception('invalidselection', 'local_multipicker');
             }
-            $key = $path . $file->get_filename();
+            $filename = $renames[$hash] ?? $file->get_filename();
+            if (!is_string($filename)) {
+                throw new \moodle_exception('invalidselection', 'local_multipicker');
+            }
+            $filename = selection_options::filename($filename);
+            $key = $path . $filename;
             $decision = copy_decision::classify($source, $paths[$key] ?? null);
             if ($decision === 'copy' && $skipcontent) {
                 foreach ($content[$file->get_contenthash()] ?? [] as $existing) {
@@ -109,7 +125,8 @@ final class draft_import {
             }
             if (
                 !in_array('*', $limits['accepted_types'], true)
-                    && !file_extension_in_typegroup($file->get_filename(), $limits['accepted_types'], true)
+                    && (!file_extension_in_typegroup($filename, $limits['accepted_types'], true)
+                        || !file_extension_in_typegroup($file->get_filename(), $limits['accepted_types'], true))
             ) {
                 throw new \moodle_exception('batchlimit', 'local_multipicker');
             }
@@ -123,7 +140,7 @@ final class draft_import {
                 $content[$file->get_contenthash()][] = $source;
             }
             $blocked = $blocked || str_starts_with($decision, 'blocked_');
-            $operations[] = ['pathnamehash' => $hash, 'filepath' => $path, 'filename' => $file->get_filename(),
+            $operations[] = ['pathnamehash' => $hash, 'filepath' => $path, 'filename' => $filename,
                 'decision' => $decision, 'snapshot' => $source];
         }
         if (
@@ -150,6 +167,7 @@ final class draft_import {
      * @param string $digest Previously approved review digest.
      * @param string $basepath Destination directory.
      * @param string $mode Folder placement mode.
+     * @param array $options Reviewed mapping roots and destination filenames.
      * @return array Applied review.
      */
     public static function apply(
@@ -160,7 +178,8 @@ final class draft_import {
         array $limits,
         string $digest,
         string $basepath = '/',
-        string $mode = 'paths'
+        string $mode = 'paths',
+        array $options = []
     ): array {
         global $DB, $USER;
         $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')
@@ -170,7 +189,7 @@ final class draft_import {
         }
         try {
             $transaction = $DB->start_delegated_transaction();
-            $review = self::review($courseid, $profileid, $draftid, $items, $limits, $basepath, $mode);
+            $review = self::review($courseid, $profileid, $draftid, $items, $limits, $basepath, $mode, $options);
             if ($review['blocked'] || !hash_equals($review['digest'], $digest)) {
                 throw new \moodle_exception('batchconflict', 'local_multipicker');
             }
@@ -188,7 +207,7 @@ final class draft_import {
                 $uuid = $DB->get_field('local_multipicker_attribution', 'uuid', ['id' => $attributionid], MUST_EXIST);
                 get_file_storage()->create_file_from_storedfile([
                     'contextid' => $context->id, 'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid,
-                    'filepath' => $operation['filepath'], 'filename' => $file->get_filename(), 'userid' => $USER->id,
+                    'filepath' => $operation['filepath'], 'filename' => $operation['filename'], 'userid' => $USER->id,
                     'author' => $file->get_author(), 'license' => $file->get_license(),
                     // A source activity's main-file choice must not replace the destination's choice.
                     'sortorder' => 0,

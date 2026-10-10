@@ -2,7 +2,7 @@
 !include ../../_style.puml
 title UC05 — Preview a configured migration: conversation
 top to bottom direction
-state "1. Choose profile / capture dimension\nSource and destination values\nAdministrator" as S1
+state "1. Choose profile / capture filters\nValues and folder correspondences\nAdministrator" as S1
 state "2. Resolve course / folder pairs\nmigration_planner / placement" as S2
 state "3. Compare content / attribution\ncopy_decision / author_policy" as S3
 state "4. Store intent and digest\nmigration_planner" as S4

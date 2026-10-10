@@ -1,0 +1,8 @@
+{{!
+    @template local_multipicker/local/selection/rename
+    Native save/cancel modal filename field.
+    Example context (json): {"name":"lesson.pdf","label":"Rename file"}
+}}
+<label class="w-100">{{label}}
+    <input type="text" class="form-control mt-2" value="{{name}}" data-multipicker-filename required maxlength="255" autofocus>
+</label>

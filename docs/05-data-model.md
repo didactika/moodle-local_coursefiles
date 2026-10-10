@@ -18,7 +18,7 @@ The installable schema is [db/install.xml](../db/install.xml). XMLDB foreign-key
 
 | Table | Purpose and identity |
 |---|---|
-| `local_multipicker` | Relationship profile; unique UUID and active revision pointer |
+| `local_multipicker` | Relationship profile; unique UUID, active revision pointer and deleted flag |
 | `local_multipicker_revision` | Immutable JSON rules; unique profile/revision; SHA-256 document digest |
 | `local_multipicker_course` | Rebuildable membership; unique profile/course; active revision, family key/hash, nullable edition and pair dimensions |
 | `local_multipicker_value` | Rebuildable capture values; unique profile/course/key; revision/key/value index for exact filtering |
@@ -29,6 +29,7 @@ The installable schema is [db/install.xml](../db/install.xml). XMLDB foreign-key
 | `local_multipicker_origin` | Verified destination locator to an attribution record; unique pathnamehash |
 | `local_multipicker_plan` | Compact preview specification, operation/selection fingerprints, review digest, profile/revision, actor and state |
 | `local_multipicker_operation` | Unique plan/operation key; native source locator, destination module, immutable snapshots/decision, persistent included flag, execution state and structured result |
+| `local_multipicker_target` | Unique plan/target key; approved folder definition, created native module and binding snapshot |
 | `local_multipicker_run` | Accountable bounded attempt, cancellation flag and outcome |
 | `local_multipicker_log` | Scoped actions and outcomes; actor identity removable through Privacy API |
 
@@ -42,7 +43,7 @@ A material asset is the virtual key `contenthash + filesize`. Moodle already com
 
 1. Storage deduplication is native Moodle content-addressed storage.
 2. Search groups identical permitted filtered content once, retaining the authorized origins.
-3. Migration compares destination path, bytes and attribution. Same bytes with a different author/license are a conflict, not permission to overwrite metadata. Cross-path duplicates are reported/skipped according to the implemented policy.
+3. Migration compares destination path, bytes and attribution. New migration configurations skip identical bytes while retaining the destination declaration; legacy strict-attribution plans retain their decisions. Different bytes at the same path require explicit reviewed overwrite permission. Cross-path duplicates follow the migration choice.
 
 ![Attribution records](diagrams/design/attribution-data-model.svg)
 
@@ -61,3 +62,5 @@ Unique pathnamehash prevents multiple entries for a native occurrence. Membershi
 Course refresh replaces only that course's cache inside a transaction; event delivery gaps are repaired by periodic reconciliation. Current source eligibility wins over a stale row. Durable attribution/plans do not reference the cache by foreign key. Privacy API exports actor-linked governance records and removes actor links; it does not delete other users' native course files.
 
 Version 2026100903 adds the operation `included` flag (default 1) and plan/included/state index. Existing plans retain every operation selected on upgrade; historical decisions and results are preserved.
+
+Version 2026100905 includes the target binding table, operation sourcecourseid/targetcourseid/sourcecmid fields and group indexes, the profile deleted flag, and retention indexes on plan timecreated/id and run planid/state/timemodified. Existing snapshot data backfills operation group fields; reviewed source/target snapshots remain immutable. See [retention](23-history-and-retention.md).

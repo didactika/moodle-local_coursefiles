@@ -11,7 +11,8 @@
         <li {{#reviewstep}}aria-current="step"{{/reviewstep}}><span class="multipicker-step-number">3</span><a href="{{reviewurl}}">{{#str}}migrationstep_review, local_multipicker{{/str}}</a></li>
         <li {{#executionstep}}aria-current="step"{{/executionstep}}><span class="multipicker-step-number">4</span>{{#str}}migrationstep_execute, local_multipicker{{/str}}</li>
     </ol>
-    <p class="h5">{{sourceedition}} → {{targetedition}}</p>
+    {{#sourceedition}}<p class="h5">{{sourceedition}} → {{targetedition}}</p>{{/sourceedition}}
+    <div class="multipicker-toolbar"><a class="btn btn-sm btn-outline-secondary" href="{{newplanurl}}">{{#pix}}t/edit, core{{/pix}}{{#str}}changescope, local_multipicker{{/str}}</a></div>
     <p><span class="multipicker-chip">{{planstate}}</span> <span class="small text-muted">{{includedlabel}}</span></p>
     <div class="row mb-3">{{#metrics}}
         <div class="col-md-4 mb-3"><div class="card h-100"><div class="card-body">
@@ -19,7 +20,7 @@
         </div></div></div>
     {{/metrics}}</div>
     <details class="mb-4">
-        <summary>{{#str}}reviewedrules, local_multipicker{{/str}}</summary>
+        <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}reviewedrules, local_multipicker{{/str}}</summary>
         <div class="mt-3">{{#summary}}{{> local_multipicker/local/profile/summary}}{{/summary}}</div>
         <p class="small text-muted text-break">{{#str}}planreference, local_multipicker{{/str}}: {{uuid}}</p>
     </details>
@@ -55,12 +56,13 @@
             <button name="action" value="all" class="btn btn-sm btn-outline-primary multipicker-gap-end">{{#str}}includeall, local_multipicker{{/str}}</button>
             <button name="action" value="none" class="btn btn-sm btn-link">{{#str}}excludeall, local_multipicker{{/str}}</button>
         </div>{{/selectioneditable}}
-    {{#groups}}<div class="card mb-4"><div class="card-body">
-        <h3 class="h5 text-break">{{#sourcecoursehtml}}{{{sourcecoursehtml}}}{{/sourcecoursehtml}}{{^sourcecoursehtml}}{{sourcecourse}}{{/sourcecoursehtml}} → {{#targetcoursehtml}}{{{targetcoursehtml}}}{{/targetcoursehtml}}{{^targetcoursehtml}}{{targetcourse}}{{/targetcoursehtml}}</h3>
+    {{#courses}}<details open class="multipicker-migration-group mb-3" data-multipicker-group>
+        <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span><span class="text-break">{{#sourcecoursehtml}}{{{sourcecoursehtml}}}{{/sourcecoursehtml}}{{^sourcecoursehtml}}{{sourcecourse}}{{/sourcecoursehtml}} → {{#targetcoursehtml}}{{{targetcoursehtml}}}{{/targetcoursehtml}}{{^targetcoursehtml}}{{targetcourse}}{{/targetcoursehtml}}</span>{{#selectioneditable}}<input type="checkbox" data-multipicker-course="{{groupcourseid}}" data-total="{{coursetotal}}" data-included="{{courseincluded}}" aria-label="{{#str}}selectcourse, local_multipicker{{/str}}" {{#coursechecked}}checked{{/coursechecked}} data-partial="{{coursepartial}}">{{/selectioneditable}}</summary>
+        {{#folders}}<details open class="multipicker-migration-folder mt-2"><summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span><span>{{#sourcefolderhtml}}{{{sourcefolderhtml}}} → {{/sourcefolderhtml}}{{{targetfolderhtml}}}</span>{{#selectioneditable}}<input type="checkbox" data-multipicker-folder="{{groupcmid}}" data-total="{{grouptotal}}" data-included="{{groupincluded}}" data-course="{{groupcourseid}}" aria-label="{{#str}}selectfolder, local_multipicker{{/str}}" {{#groupchecked}}checked{{/groupchecked}} data-partial="{{grouppartial}}">{{/selectioneditable}}</summary>
         <p class="text-muted text-break">{{#targetsectionhtml}}{{{targetsectionhtml}}}{{/targetsectionhtml}}{{^targetsectionhtml}}{{targetsection}}{{/targetsectionhtml}} / {{#targetfolderhtml}}{{{targetfolderhtml}}}{{/targetfolderhtml}}{{^targetfolderhtml}}{{targetfolder}}{{/targetfolderhtml}}</p>
         <ul class="list-group list-group-flush">{{#operations}}<li class="list-group-item px-0">
             <div class="row"><div class="col-md-7">
-                {{#selectioneditable}}<input type="hidden" name="visible[]" value="{{id}}"><input type="checkbox" name="included[]" value="{{id}}" {{#included}}checked{{/included}} aria-label="{{filename}}">{{/selectioneditable}}
+                {{#selectioneditable}}<input type="hidden" name="visible[]" value="{{id}}"><input type="checkbox" name="included[]" value="{{id}}" data-source-course="{{sourcecourseid}}" data-source-folder="{{sourcecmid}}" {{#included}}checked{{/included}} aria-label="{{filename}}">{{/selectioneditable}}
                 <strong class="text-break">{{filename}}</strong>{{^included}} <span class="multipicker-chip">{{#str}}excluded, local_multipicker{{/str}}</span>{{/included}}<div class="small text-muted text-break">{{filepath}}</div>
                 <div class="small text-break">{{author}} · {{license}}</div>
             </div><div class="col-md-5 mt-2 mt-md-0">
@@ -68,7 +70,7 @@
                 {{#resultlabel}}<div class="small">{{resultlabel}}</div>{{/resultlabel}}
             </div></div>
         </li>{{/operations}}</ul>
-    </div></div>{{/groups}}
+    </details>{{/folders}}</details>{{/courses}}
     {{#selectioneditable}}<button name="action" value="selection" class="btn btn-primary mb-3">{{#str}}saveselection, local_multipicker{{/str}}</button>{{/selectioneditable}}
     </form>
     {{^hasoperations}}<p class="alert alert-info">{{#str}}nofilteredoperations, local_multipicker{{/str}}</p>{{/hasoperations}}
@@ -76,9 +78,9 @@
         {{#previousurl}}<a class="btn btn-outline-secondary" href="{{previousurl}}">{{#str}}previous, core{{/str}}</a>{{/previousurl}}
         {{#nexturl}}<a class="btn btn-outline-secondary" href="{{nexturl}}">{{#str}}next, core{{/str}}</a>{{/nexturl}}
     </nav>
-    {{#canexecute}}<a href="{{executionurl}}" class="btn btn-primary mb-4">{{#str}}continueexecution, local_multipicker{{/str}}{{#pix}}forward, local_multipicker{{/pix}}</a>{{/canexecute}}
+    {{#canexecute}}<a href="{{executionurl}}" class="btn btn-primary mb-4">{{#str}}continueexecution, local_multipicker{{/str}}{{#pix}}t/right, core{{/pix}}</a>{{/canexecute}}
     {{/reviewstep}}
-    {{#executionstep}}<a href="{{reviewurl}}" class="btn btn-sm btn-outline-secondary mb-3">{{#pix}}back, local_multipicker{{/pix}}{{#str}}backtoreview, local_multipicker{{/str}}</a>
+    {{#executionstep}}<a href="{{reviewurl}}" class="btn btn-sm btn-outline-secondary mb-3">{{#pix}}t/left, core{{/pix}}{{#str}}backtoreview, local_multipicker{{/str}}</a>
     {{#hasruns}}<section class="mb-4" aria-label="{{#str}}planprogress, local_multipicker{{/str}}">
         <h3 class="h5">{{#str}}planprogress, local_multipicker{{/str}}</h3>
         <p>{{planprogress}}</p>
@@ -106,5 +108,5 @@
         </form>
     </div></div>{{/canexecute}}
     {{/executionstep}}
-    <a class="btn btn-sm btn-outline-secondary mb-4" href="{{newplanurl}}">{{#str}}changescope, local_multipicker{{/str}}</a>
+
 </section>

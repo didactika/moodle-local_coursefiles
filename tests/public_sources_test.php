@@ -66,6 +66,74 @@ final class public_sources_test extends \advanced_testcase {
         $this->assertStringNotContainsString('data-multipicker-confirm', $html);
     }
 
+
+    /**
+     * Select all includes authorized results beyond the first fifty-card page.
+     */
+    public function test_select_all_includes_other_result_pages(): void {
+        global $DB;
+        $fixture = $this->fixture();
+        [$token] = $this->scope($fixture);
+        $source = $DB->get_record('course', ['shortname' => 'CB2025']);
+        $folders = get_fast_modinfo($source)->get_instances_of('folder');
+        $folder = reset($folders);
+        for ($index = 0; $index < 61; $index++) {
+            $this->file($folder, 'content', 'batch-match-' . $index . '.txt');
+        }
+        indexer::refresh($source->id);
+        $result = \local_multipicker\local\selection\browser_controller::data(
+            $token,
+            \local_multipicker\local\selection\browser_controller::input([
+                'profileid' => $fixture['profileid'], 'q' => 'batch-match-', 'selectall' => true,
+            ])
+        );
+        $this->assertSame('', $result['message']);
+        $this->assertSame(61, $result['data']['count']);
+        $this->assertCount(50, $result['data']['cards']);
+        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+        $this->assertCount(61, $scope['view']['selected']);
+    }
+
+    /**
+     * Toggling descendants and refreshing filters keep the current source directory.
+     */
+    public function test_fragment_keeps_folder_and_recursive_selection(): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/local/multipicker/lib.php');
+        $fixture = $this->fixture();
+        [$token, $context] = $this->scope($fixture);
+        $source = $DB->get_record('course', ['shortname' => 'CB2025']);
+        $folders = get_fast_modinfo($source)->get_instances_of('folder');
+        $folder = reset($folders);
+        $value = 'folder:' . $folder->id . ':' . base64_encode('/');
+        $input = ['profileid' => $fixture['profileid'], 'items' => [], 'toggleitem' => $value, 'openfolder' => $value];
+        \local_multipicker\local\selection\browser_controller::data(
+            $token,
+            \local_multipicker\local\selection\browser_controller::input($input)
+        );
+        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+        $this->assertCount(2, $scope['view']['selected']);
+        $file = get_file_storage()->get_file($folder->context->id, 'mod_folder', 'content', 0, '/', 'lesson.txt');
+        $html = \local_multipicker_output_fragment_browser(['scope' => $token, 'context' => $context,
+            'state' => json_encode(['profileid' => $fixture['profileid'], 'items' => $scope['view']['selected'],
+                'toggleitem' => 'file:' . $file->get_pathnamehash()])]);
+        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+        $this->assertSame($value, $scope['view']['folder']);
+        $this->assertCount(1, $scope['view']['selected']);
+        $this->assertStringContainsString('multipicker-back', $html);
+    }
+
+    /**
+     * The embedded title uses the repository instance name rather than the component label.
+     */
+    public function test_browser_uses_repository_instance_name(): void {
+        $fixture = $this->fixture();
+        [$token] = $this->scope($fixture);
+        \local_multipicker\local\selection\draft_scope::select_repository($token, 'Course library', sesskey());
+        $data = \local_multipicker\local\selection\browser_controller::data($token)['data'];
+        $this->assertSame('Course library', $data['repositoryname']);
+    }
+
     /**
      * Assignment handouts are published, while student-owned components and undeclared areas are excluded.
      */

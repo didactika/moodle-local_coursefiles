@@ -27,11 +27,42 @@
 export const init = () => {
     document.querySelectorAll('[data-multipicker-profiles], [data-multipicker-migration-selection]').forEach(form => {
         const all = form.querySelector('[data-multipicker-selectall]');
+        form.querySelectorAll('[data-multipicker-course], [data-multipicker-folder]').forEach(control => {
+            control.indeterminate = control.dataset.partial === '1';
+            control.addEventListener('click', event => event.stopPropagation());
+            control.addEventListener('change', () => {
+                const folder = control.hasAttribute('data-multipicker-folder');
+                const data = {
+                    action: 'group', groupcourse: folder ? control.dataset.course : control.dataset.multipickerCourse,
+                    groupcmid: folder ? control.dataset.multipickerFolder : '0', groupincluded: control.checked ? '1' : '0',
+                };
+                for (const [name, value] of Object.entries(data)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.append(input);
+                }
+                form.requestSubmit();
+            });
+        });
         const checks = [...form.querySelectorAll('input[name="profiles[]"], input[name="included[]"]')];
         if (!all) {
             return;
         }
+        const initial = new Map(checks.map(check => [check, check.checked]));
         const update = () => {
+            form.querySelectorAll('[data-multipicker-course], [data-multipicker-folder]').forEach(control => {
+                const folder = control.hasAttribute('data-multipicker-folder');
+                const course = folder ? control.dataset.course : control.dataset.multipickerCourse;
+                const delta = checks.filter(check => check.dataset.sourceCourse === course
+                    && (!folder || check.dataset.sourceFolder === control.dataset.multipickerFolder))
+                    .reduce((sum, check) => sum + Number(check.checked) - Number(initial.get(check)), 0);
+                const included = Number(control.dataset.included) + delta;
+                const total = Number(control.dataset.total);
+                control.checked = total > 0 && included === total;
+                control.indeterminate = included > 0 && included < total;
+            });
             const count = checks.filter(check => check.checked).length;
             all.checked = checks.length > 0 && count === checks.length;
             all.indeterminate = count > 0 && count < checks.length;

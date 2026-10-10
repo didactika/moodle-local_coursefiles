@@ -71,6 +71,22 @@ final class selection_options {
     }
 
     /**
+     * Require an exact native filename without silently rewriting submitted text.
+     *
+     * @param string $filename Destination name.
+     * @return string Validated name.
+     */
+    public static function filename(string $filename): string {
+        if (
+            $filename === '' || $filename === '.' || $filename === '..'
+            || \core_text::strlen($filename) > 255 || clean_param($filename, PARAM_FILE) !== $filename
+        ) {
+            throw new \moodle_exception('invalidselection', 'local_multipicker');
+        }
+        return $filename;
+    }
+
+    /**
      * Build one page of authorized choices and retain off-page selected values without disclosing source metadata.
      *
      * @param int $courseid Destination course.

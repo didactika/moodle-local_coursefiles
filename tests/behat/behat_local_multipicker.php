@@ -89,21 +89,23 @@ class behat_local_multipicker extends behat_base {
      * Enter through the actual native Add files control and repository sidebar.
      *
      * @When /^I open the native MultiPicker$/
+     * @When /^I open the native repository "([^"]*)"$/
+     * @param string $name Native repository label.
      */
-    public function open_native_picker(): void {
+    public function open_native_picker(string $name = 'MultiPicker'): void {
         $this->getSession()->getDriver()->executeScript(
             'const add=document.querySelector(".filemanager .fp-btn-add a");'
             . 'if(!add){throw new Error("Native Add files action is unavailable");}add.click();'
         );
         $ready = $this->getSession()->wait(
             10000,
-            '[...document.querySelectorAll(".fp-repo-name")].some(node=>node.textContent.trim()==="MultiPicker")'
+            '[...document.querySelectorAll(".fp-repo-name")].some(node=>node.textContent.trim()===' . json_encode($name) . ')'
         );
         if (!$ready) {
             throw new \Exception('The MultiPicker repository was not registered in the native picker.');
         }
         $this->getSession()->getDriver()->executeScript(
-            '[...document.querySelectorAll(".fp-repo-name")].find(node=>node.textContent.trim()==="MultiPicker")'
+            '[...document.querySelectorAll(".fp-repo-name")].find(node=>node.textContent.trim()===' . json_encode($name) . ')'
             . '.closest("a").click();'
         );
         $this->wait_for_browser();
@@ -296,7 +298,9 @@ class behat_local_multipicker extends behat_base {
         $found = $this->getSession()->wait(
             10000,
             'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-selection-review")'
-            . '?.textContent.includes(' . json_encode($text) . ')'
+            . '&&(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'return doc.querySelector(".multipicker-selection-review").textContent.includes(' . json_encode($text) . ')'
+            . '||[...doc.querySelectorAll("input[name^=renames]")].some(input=>input.value.includes(' . json_encode($text) . '));})()'
         );
         if (!$found) {
             throw new \Exception('Expected reviewed material was not rendered: ' . $text);
@@ -315,6 +319,7 @@ class behat_local_multipicker extends behat_base {
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
             . 'window.multipickerPreviousDocument=doc;window.multipickerPreviousForm=doc.querySelector(".multipicker-browser");'
+            . 'window.multipickerPreviousRefresh=doc.querySelector("[data-multipicker-results]").dataset.refresh;'
             . 'const field=doc.getElementsByName(' . json_encode($name) . ')[0];'
             . 'field.focus();field.value=' . json_encode($value) . ';field.dispatchEvent(new Event("input",{bubbles:true}));'
             . 'field.dispatchEvent(new Event("change",{bubbles:true}));'
@@ -322,7 +327,7 @@ class behat_local_multipicker extends behat_base {
         if (
             !$this->getSession()->wait(
                 10000,
-                'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-browser")!==window.multipickerPreviousForm'
+                'document.querySelector(".fp-object-container")?.contentDocument?.querySelector("[data-multipicker-results]").dataset.refresh!==window.multipickerPreviousRefresh'
                 . '&&document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
             )
         ) {
@@ -373,8 +378,10 @@ class behat_local_multipicker extends behat_base {
         $this->wait_for_browser();
         $found = $this->getSession()->wait(
             10000,
-            '!document.querySelector(".fp-object-container").contentDocument.querySelector(".multipicker-browser")'
-            . '.textContent.includes(' . json_encode($text) . ')'
+            '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'return !doc.querySelector(".multipicker-browser").textContent.includes(' . json_encode($text) . ')'
+            . '&&![...doc.querySelectorAll("input[name^=renames]")].some(input=>input.value.includes('
+            . json_encode($text) . '));})()'
         );
         if (!$found) {
             throw new \Exception('An unavailable or filtered origin was shown: ' . $text);
@@ -400,28 +407,198 @@ class behat_local_multipicker extends behat_base {
     }
 
     /**
-     * Remove an off-page selection through its actual native form button.
+     * Remove a resulting file after its source card was filtered out.
      *
-     * @When /^I remove MultiPicker selected material from "([^"]*)"$/
-     * @param string $course Source shortname.
+     * @When /^I remove MultiPicker reviewed file "([^"]*)"$/
+     * @param string $filename Reviewed destination name.
      */
-    public function remove_material(string $course): void {
-        $this->press_action("Review selection");
+    public function remove_reviewed_file(string $filename): void {
+        $this->press_action('Review selection');
         $this->wait_for_browser();
         $this->getSession()->getDriver()->executeScript(
             'const doc=document.querySelector(".fp-object-container").contentDocument;'
-            . 'window.multipickerPreviousDocument=doc;window.multipickerPreviousForm=doc.querySelector(".multipicker-browser");'
-            . 'const button=[...doc.querySelectorAll("button[name=removeitem]")]'
-            . '.find(button=>button.parentElement.textContent.includes(' . json_encode($course) . '));'
-            . 'if(!button){throw new Error("Selected item unavailable");}button.click();'
+            . 'window.multipickerPreviousForm=doc.querySelector(".multipicker-browser");'
+            . 'const input=[...doc.querySelectorAll("input[name^=renames]")].find(input=>input.value==='
+            . json_encode($filename) . ');input.closest(".multipicker-tree-file").querySelector("button[name=removeitem]").click();'
         );
         $this->getSession()->wait(
             10000,
             'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-browser")!==window.multipickerPreviousForm'
-            . '&&document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
         );
         $this->wait_for_browser();
         $this->back_to_selection();
+    }
+
+
+    /**
+     * Navigate an actual source folder without changing its selection.
+     *
+     * @When /^I open MultiPicker folder "([^"]*)" from "([^"]*)"$/
+     * @param string $name Folder label.
+     * @param string $course Source shortname.
+     */
+    public function open_source_folder(string $name, string $course): void {
+        $this->wait_for_browser();
+        $this->getSession()->getDriver()->executeScript(
+            'const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'window.multipickerPreviousForm=doc.querySelector(".multipicker-browser");'
+            . 'const card=[...doc.querySelectorAll(".card-body")].find(card=>'
+            . 'card.querySelector("label").textContent.trim()===' . json_encode($name)
+            . '&&card.querySelector(".multipicker-origin")?.textContent.startsWith(' . json_encode($course) . '));'
+            . 'card.querySelector(".multipicker-open").click();'
+        );
+        $this->getSession()->wait(
+            10000,
+            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-browser")'
+            . '!==window.multipickerPreviousForm'
+        );
+        $this->wait_for_browser();
+    }
+
+    /**
+     * Deselect one real file after recursively selecting its enclosing folder.
+     *
+     * @When /^I deselect MultiPicker file "([^"]*)"$/
+     * @param string $name Source file label.
+     */
+    public function deselect_source_file(string $name): void {
+        $this->wait_for_browser();
+        $this->getSession()->getDriver()->executeScript(
+            'const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'const card=[...doc.querySelectorAll(".card-body")].find(card=>'
+            . 'card.querySelector("label").textContent.trim()===' . json_encode($name) . ');'
+            . 'const check=card.querySelector("input[type=checkbox]");'
+            . 'if(!check.checked){throw new Error("Recursive file selection was lost");}'
+            . 'check.click();'
+        );
+    }
+
+    /**
+     * Count resolved files rather than source folder locators.
+     *
+     * @Then /^MultiPicker should have "([0-9]+)" selected files$/
+     * @param int $count Expected resolved files.
+     */
+    public function selected_file_count(int $count): void {
+        if (
+            !$this->getSession()->wait(
+                10000,
+                'Number(document.querySelector(".fp-object-container")?.contentDocument'
+                . '?.querySelector("[data-multipicker-count]")?.textContent)===' . $count
+            )
+        ) {
+            throw new \Exception('The recursive file count is incorrect.');
+        }
+        $this->wait_for_browser();
+    }
+
+    /**
+     * Rename through the visible review input and rebuild server approval.
+     *
+     * @When /^I rename MultiPicker reviewed file "([^"]*)" to "([^"]*)"$/
+     * @param string $previous Current destination filename.
+     * @param string $name New destination filename.
+     */
+    public function rename_reviewed_file(string $previous, string $name): void {
+        $this->wait_for_browser();
+        $this->getSession()->getDriver()->executeScript(
+            'const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'window.multipickerPreviousForm=doc.querySelector(".multipicker-browser");'
+            . 'const input=[...doc.querySelectorAll("input[name^=renames]")].find(input=>input.value==='
+            . json_encode($previous) . ');input.closest(".multipicker-tree-file")'
+            . '.querySelector("[data-multipicker-rename]").click();'
+        );
+        if (
+            !$this->getSession()->wait(
+                10000,
+                '!!document.querySelector(".fp-object-container").contentDocument.querySelector("[data-multipicker-filename]")'
+            )
+        ) {
+            throw new \Exception('The native rename modal did not open.');
+        }
+        $this->getSession()->getDriver()->executeScript(
+            'const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'const input=doc.querySelector("[data-multipicker-filename]");input.value=' . json_encode($name) . ';'
+            . 'input.closest(".modal").querySelector("[data-action=save]").click();'
+        );
+        $this->getSession()->wait(
+            10000,
+            'document.querySelector(".fp-object-container")?.contentDocument?.querySelector(".multipicker-browser")'
+            . '!==window.multipickerPreviousForm'
+        );
+        $this->wait_for_browser();
+    }
+
+
+    /**
+     * Use a real native instance name before rendering the owning activity.
+     *
+     * @Given /^the native MultiPicker repository is named "([^"]*)"$/
+     * @param string $name Repository instance name.
+     */
+    public function name_repository(string $name): void {
+        global $DB;
+        $typeid = $DB->get_field('repository', 'id', ['type' => 'multipicker'], MUST_EXIST);
+        $DB->set_field('repository_instances', 'name', $name, ['typeid' => $typeid]);
+    }
+
+    /**
+     * Check the same configured name on the native sidebar and embedded heading.
+     *
+     * @Then /^the MultiPicker heading should be "([^"]*)"$/
+     * @param string $name Configured name.
+     */
+    public function repository_heading(string $name): void {
+        $this->wait_for_browser();
+        if (
+            !$this->getSession()->getDriver()->evaluateScript(
+                'document.querySelector(".fp-object-container").contentDocument.querySelector("h2").textContent.trim()==='
+                . json_encode($name)
+            )
+        ) {
+            throw new \Exception('The embedded heading does not match the repository name.');
+        }
+    }
+
+    /**
+     * Continue typing while a real Fragment response is intentionally delayed.
+     *
+     * @When /^I filter MultiPicker while its results are loading$/
+     */
+    public function filter_while_loading(): void {
+        $this->wait_for_browser();
+        $this->getSession()->getDriver()->executeScript(
+            'const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'const frame=doc.defaultView;window.multipickerLiveFilter=null;'
+            . 'const height=document.querySelector(".file-picker").getBoundingClientRect().height;'
+            . 'frame.require(["core/fragment"],module=>{const fragment=module.default||module;'
+            . 'const load=fragment.loadFragment.bind(fragment);fragment.loadFragment=(...args)=>'
+            . 'new Promise((resolve,reject)=>setTimeout(()=>load(...args).then(resolve,reject),500));'
+            . 'const input=doc.querySelector("input[name=q]");input.focus();input.value="notes";'
+            . 'input.dispatchEvent(new Event("input",{bubbles:true}));'
+            . 'setTimeout(()=>{window.multipickerLiveFilter={input,height,enabled:!input.disabled,'
+            . 'focused:doc.activeElement===input,busy:doc.querySelector("form").getAttribute("aria-busy")==="true"};'
+            . 'input.value="notes2025";input.dispatchEvent(new Event("input",{bubbles:true}));},650);});'
+        );
+        if (
+            !$this->getSession()->wait(
+                15000,
+                'window.multipickerLiveFilter&&document.querySelector(".fp-object-container").contentDocument'
+                . '.querySelector(".multipicker-card-title")?.textContent.trim()==="notes2025.txt"'
+            )
+        ) {
+            throw new \Exception('The latest filter text was not applied after the pending response.');
+        }
+        $this->wait_for_browser();
+        $valid = $this->getSession()->getDriver()->evaluateScript(
+            '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'const state=window.multipickerLiveFilter;return state.enabled&&state.focused&&state.busy'
+            . '&&doc.activeElement===state.input&&state.input.value==="notes2025"'
+            . '&&Math.abs(document.querySelector(".file-picker").getBoundingClientRect().height-state.height)<=1;})()'
+        );
+        if (!$valid) {
+            throw new \Exception('Filter input, focus or modal dimensions changed during the refresh.');
+        }
     }
 
     /**
@@ -461,6 +638,7 @@ class behat_local_multipicker extends behat_base {
             10000,
             'document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
             . '&&document.querySelector(".fp-object-container").contentDocument.querySelector(".multipicker-browser")?.dataset.multipickerReady==="true"'
+            . '&&document.querySelector(".fp-object-container").contentDocument.querySelector(".multipicker-browser")?.getAttribute("aria-busy")!=="true"'
         );
         if (!$ready) {
             throw new \Exception('The native MultiPicker browser did not load.');

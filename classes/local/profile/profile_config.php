@@ -120,8 +120,8 @@ final class profile_config {
         }
         $migration = $config['migration'] ?? [];
         foreach (
-            ['missing_target' => ['block'], 'ambiguous_target' => ['block'],
-                'same_path_same_content' => ['skip'], 'same_path_different_content' => ['block'],
+            ['missing_target' => ['block', 'create'], 'ambiguous_target' => ['block'],
+                'same_path_same_content' => ['skip'], 'same_path_different_content' => ['block', 'overwrite'],
                 'same_content_different_path' => ['skip-and-report', 'keep'],
                 'on_item_failure' => ['continue-unaffected']] as $name => $allowed
         ) {

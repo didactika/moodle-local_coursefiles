@@ -15,16 +15,16 @@
 
 | Step | Responsibility | Action |
 |---|---|---|
-| 1 | Administrator | Chooses a profile and an edition or configured capture, then distinct source/destination values; confirms ordinal layout when applicable. |
-| 2 | migration_planner / placement | Resolves unique family/dimension course pairs, sections and existing folders. |
+| 1 | Administrator | Chooses a profile, source/destination capture filters and editable folder correspondences; confirms ordinal layout when applicable. |
+| 2 | migration_planner / placement | Resolves unique family/dimension course pairs, sections and existing or explicitly requested destination folders. |
 | 3 | copy_decision / author_policy | Compares source and target content, paths, declarations and copy policy. |
 | 4 | migration_planner | Stores immutable intent, snapshots, decisions and digest. |
 | 5 | Administrator | Reviews paginated files and placement issues, searches and saves inclusions or exclusions across pages. |
 
 ## Alternative outcomes
 
-- Missing or ambiguous pairs/placements create blockers.
-- Identical-byte targets with conflicting attribution are blocked.
+- Missing sources are informational; missing targets create blockers unless creation is explicitly requested. Ambiguous pairs/placements remain blockers.
+- New migration settings skip identical bytes while retaining the destination declaration. Legacy reviewed attribution decisions remain unchanged.
 - Unsupported strict copying blocks the initial plan.
 - Selection changes update the approval digest before the first run; unresolved placement issues remain blockers.
 

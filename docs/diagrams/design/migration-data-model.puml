@@ -14,6 +14,7 @@ entity "local_multipicker_operation" as operation {
   * id
   planid / opkey
   sourcehash / targetcmid
+  sourcecourseid / targetcourseid / sourcecmid
   snapshot / decision / included
   state / result / timemodified
 }
@@ -25,6 +26,13 @@ entity "local_multipicker_run" as run {
   timecreated / timemodified
 }
 
+entity "local_multipicker_target" as target {
+  * id
+  planid / targetkey
+  definitionjson / cmid / snapshotjson
+}
+
+plan ||--o{ target
 plan ||--o{ operation
 plan ||--o{ run
 operation -[hidden]down-> run

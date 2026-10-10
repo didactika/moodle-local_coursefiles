@@ -38,7 +38,7 @@ admin_externalpage_setup(
     new moodle_url('/local/multipicker/admin/profile.php', ['profileid' => $profileid])
 );
 if ($profileid) {
-    $profile = $DB->get_record('local_multipicker', ['id' => $profileid], '*', MUST_EXIST);
+    $profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
     $revision = $DB->get_record('local_multipicker_revision', ['id' => $profile->activeid], '*', MUST_EXIST);
     $config = json_decode($revision->configjson, true);
 } else {
@@ -56,7 +56,7 @@ $summary = null;
 if ($data = $form->get_data()) {
     $config = profile_form::document((array)$data, $config);
     if (!empty($data->previewrules)) {
-        $summary = profile_summary::data($config);
+        $summary = profile_summary::data($config, false);
     } else {
         \local_multipicker\local\profile\profiles::save(json_encode($config), $profileid);
         redirect(

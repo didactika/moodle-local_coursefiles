@@ -46,8 +46,18 @@ final class migration_executor {
         if (!$lock) {
             throw new \moodle_exception('lockfailed', 'local_multipicker');
         }
+        $profilelock = null;
         try {
             $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
+            $profilelock = \core\lock\lock_config::get_lock_factory('local_multipicker')
+                ->get_lock('profile:' . $plan->profileid, 10);
+            if (!$profilelock) {
+                throw new \moodle_exception('lockfailed', 'local_multipicker');
+            }
+            [, $revision] = profiles::load($plan->profileid);
+            if ((int)$revision->id !== (int)$plan->revisionid) {
+                throw new \moodle_exception('planstale', 'local_multipicker');
+            }
             if (
                 $plan->state !== 'reviewable' || !hash_equals($plan->digest, $digest)
                     || !hash_equals($plan->digest, hash('sha256', $plan->configjson))
@@ -93,6 +103,9 @@ final class migration_executor {
             $transaction->allow_commit();
             return $runid;
         } finally {
+            if ($profilelock) {
+                $profilelock->release();
+            }
             $lock->release();
         }
     }
@@ -140,33 +153,62 @@ final class migration_executor {
             if ($DB->get_field('local_multipicker_run', 'cancelled', ['id' => $runid])) {
                 break;
             }
+            $preview = json_decode($operation->snapshot, true);
             $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')
-                ->get_lock('destination:' . $operation->targetcmid, 10);
+                ->get_lock('destination:' . ($operation->targetcmid ?: 'create:' . $preview['targetkey']), 10);
             if (!$lock) {
                 throw new \moodle_exception('lockfailed', 'local_multipicker');
             }
+            $destinationlock = null;
             try {
                 $operation = $DB->get_record('local_multipicker_operation', ['id' => $operation->id], '*', MUST_EXIST);
                 if ($operation->state !== 'pending') {
                     continue;
                 }
                 $snapshot = json_decode($operation->snapshot, true);
-                $target = placement::snapshot($operation->targetcmid);
-                require_capability('moodle/course:manageactivities', \context_module::instance($operation->targetcmid));
+                [$source, $sourcecm] = material_source::resolve(
+                    $operation->sourcehash,
+                    $snapshot['target']['courseid'],
+                    $plan->profileid
+                );
+                if (
+                    copy_decision::snapshot($source) !== $snapshot['source']
+                    || $rules->resolve(get_course($sourcecm->course)) !== $snapshot['sourceidentity']
+                    || $rules->resolve(get_course($snapshot['target']['courseid'])) !== $snapshot['targetidentity']
+                ) {
+                    throw new \moodle_exception('planstale', 'local_multipicker');
+                }
+                if (in_array($operation->decision, ['copy', 'overwrite'], true)) {
+                    author_policy::require_native_copy($source, $sourcecm->course, $snapshot['target']['courseid']);
+                }
+                $target = $operation->targetcmid ? placement::snapshot($operation->targetcmid)
+                    : target_binding::resolve($plan->id, $snapshot['targetkey'], $snapshot['target']);
+                $targetcmid = $target['cmid'];
+                if (!$operation->targetcmid) {
+                    $destinationlock = \core\lock\lock_config::get_lock_factory('local_multipicker')
+                        ->get_lock('destination:' . $targetcmid, 10);
+                    if (!$destinationlock) {
+                        throw new \moodle_exception('lockfailed', 'local_multipicker');
+                    }
+                    if (placement::snapshot($targetcmid) !== $target) {
+                        throw new \moodle_exception('planstale', 'local_multipicker');
+                    }
+                }
+                require_capability('moodle/course:manageactivities', \context_module::instance($targetcmid));
                 [$source, $sourcecm] = material_source::resolve(
                     $operation->sourcehash,
                     $target['courseid'],
                     $plan->profileid
                 );
                 if (
-                    $target !== $snapshot['target']
+                    ($operation->targetcmid && $target !== $snapshot['target'])
                         || copy_decision::snapshot($source) !== $snapshot['source']
                         || $rules->resolve(get_course($sourcecm->course)) !== $snapshot['sourceidentity']
                         || $rules->resolve(get_course($target['courseid'])) !== $snapshot['targetidentity']
                 ) {
                     throw new \moodle_exception('planstale', 'local_multipicker');
                 }
-                $context = \context_module::instance($operation->targetcmid);
+                $context = \context_module::instance($targetcmid);
                 $existing = get_file_storage()->get_file(
                     $context->id,
                     'mod_folder',
@@ -187,14 +229,24 @@ final class migration_executor {
                 if ($actual !== $snapshot['existing'] && $decision !== 'skip_identical') {
                     throw new \moodle_exception('planstale', 'local_multipicker');
                 }
-                if ($decision === 'copy') {
+                if ($operation->decision === 'overwrite' && $decision === 'blocked_content') {
+                    $decision = 'overwrite';
+                }
+                if ($decision === 'copy' || $decision === 'overwrite') {
                     author_policy::require_native_copy($source, $sourcecm->course, $target['courseid']);
                     $attributionid = author_policy::capture($source);
-                    $saved = folder_destination::copy($source, $operation->targetcmid);
-                    $DB->insert_record('local_multipicker_origin', (object)[
+                    $saved = folder_destination::copy($source, $targetcmid, $decision === 'overwrite');
+                    $origin = (object)[
                         'pathnamehash' => $saved->get_pathnamehash(), 'attributionid' => $attributionid,
                         'contenthash' => $saved->get_contenthash(), 'userid' => $USER->id, 'timecreated' => time(),
-                    ]);
+                    ];
+                    $previous = $DB->get_field('local_multipicker_origin', 'id', ['pathnamehash' => $origin->pathnamehash]);
+                    if ($previous) {
+                        $origin->id = $previous;
+                        $DB->update_record('local_multipicker_origin', $origin);
+                    } else {
+                        $DB->insert_record('local_multipicker_origin', $origin);
+                    }
                     $outcome = ['runid' => $runid, 'outcome' => 'copied', 'pathnamehash' => $saved->get_pathnamehash()];
                 } else if ($decision === 'skip_identical' || $decision === 'skip_content') {
                     $outcome = ['runid' => $runid, 'outcome' => 'already_present'];
@@ -209,6 +261,9 @@ final class migration_executor {
             } finally {
                 $operation->timemodified = time();
                 $DB->update_record('local_multipicker_operation', $operation);
+                if ($destinationlock) {
+                    $destinationlock->release();
+                }
                 $lock->release();
             }
         }

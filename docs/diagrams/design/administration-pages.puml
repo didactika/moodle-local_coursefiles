@@ -3,9 +3,9 @@
 title Design - administration pages
 top to bottom direction
 rectangle "Permission-aware tabs" as Tabs
-rectangle "Settings\nNative author policy" as Settings
-rectangle "Profiles\nSelect / export / import" as Profiles
-rectangle "Migration wizard\nProfile / source and destination" as Migration
+rectangle "Settings\nPolicy / retention" as Settings
+rectangle "Profiles\nTable / state actions / import-export" as Profiles
+rectangle "Migration history\nPaged status table" as Migration
 rectangle "Reports: material reuse\nAction / reference / date filters" as Log
 rectangle "Guided profile form\nAdvanced JSON retained" as Editor
 rectangle "Paged review\nSearch / persistent inclusions" as Review
@@ -15,6 +15,8 @@ Tabs --> Profiles
 Tabs --> Migration
 Tabs --> Log
 Profiles --> Editor
-Migration --> Review
+rectangle "New migration\nCaptures / folder correspondences" as Wizard
+Migration --> Wizard
+Wizard --> Review
 Review --> Execute
 @enduml

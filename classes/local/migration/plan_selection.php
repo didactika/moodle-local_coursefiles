@@ -34,14 +34,22 @@ final class plan_selection {
      * @param string $digest Rendered approval.
      * @param array $visible IDs represented on this page.
      * @param array $included Checked IDs from that page.
-     * @param string $action page, all or none.
+     * @param string $action page, all, none or group.
+     * @param array $group Explicit source course/folder and inclusion.
      */
-    public static function save(int $planid, string $digest, array $visible, array $included, string $action = 'page'): void {
+    public static function save(
+        int $planid,
+        string $digest,
+        array $visible,
+        array $included,
+        string $action = 'page',
+        array $group = []
+    ): void {
         global $DB;
         require_capability('local/multipicker:planmigration', \context_system::instance());
         $visible = array_values(array_unique(array_map('intval', $visible)));
         $included = array_values(array_unique(array_map('intval', $included)));
-        if (!in_array($action, ['page', 'all', 'none'], true) || count($visible) > 50 || array_diff($included, $visible)) {
+        if (!in_array($action, ['page', 'all', 'none', 'group'], true) || count($visible) > 50 || array_diff($included, $visible)) {
             throw new \invalid_parameter_exception('Invalid migration selection');
         }
         $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('plan:' . $planid, 10);
@@ -57,7 +65,28 @@ final class plan_selection {
                 throw new \moodle_exception('planstale', 'local_multipicker');
             }
             $transaction = $DB->start_delegated_transaction();
-            if ($action !== 'page') {
+            if ($action === 'group') {
+                foreach ($visible as $id) {
+                    $DB->get_record('local_multipicker_operation', ['id' => $id, 'planid' => $planid], '*', MUST_EXIST);
+                    $DB->set_field(
+                        'local_multipicker_operation',
+                        'included',
+                        in_array($id, $included, true) ? 1 : 0,
+                        ['id' => $id]
+                    );
+                }
+                $conditions = ['planid' => $planid, 'sourcecourseid' => (int)($group['courseid'] ?? 0)];
+                if (!empty($group['cmid'])) {
+                    $conditions['sourcecmid'] = (int)$group['cmid'];
+                }
+                if (
+                    !$conditions['sourcecourseid'] || !in_array($group['included'] ?? null, [0, 1], true)
+                    || !$DB->record_exists('local_multipicker_operation', $conditions)
+                ) {
+                    throw new \invalid_parameter_exception('Invalid migration group');
+                }
+                $DB->set_field('local_multipicker_operation', 'included', $group['included'], $conditions);
+            } else if ($action !== 'page') {
                 $DB->set_field('local_multipicker_operation', 'included', $action === 'all' ? 1 : 0, ['planid' => $planid]);
             } else {
                 foreach ($visible as $id) {
@@ -84,7 +113,8 @@ final class plan_selection {
                 'planid = ? AND included = 1 AND ' . $DB->sql_like('decision', '?'),
                 [$planid, 'blocked%']
             );
-            $plan->state = !empty($document['issues']) || $blocked ? 'blocked' : 'reviewable';
+            $issues = array_filter($document['issues'] ?? [], static fn($issue) => $issue['blocking'] ?? true);
+            $plan->state = $issues || $blocked ? 'blocked' : 'reviewable';
             $DB->update_record('local_multipicker_plan', $plan);
             \local_multipicker\local\logging\log::record(
                 'migration_selection_changed',

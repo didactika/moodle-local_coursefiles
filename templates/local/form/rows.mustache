@@ -1,0 +1,9 @@
+{{!
+    @template local_multipicker/local/form/rows
+    Native editable table enhanced by the row editor.
+    Example context (json): {"columns":[{"label":"Capture"}],"add":"Add row"}
+}}
+<div class="multipicker-row-editor table-responsive">
+    <table class="table table-sm"><thead><tr>{{#columns}}<th scope="col">{{label}}</th>{{/columns}}<th scope="col"><span class="multipicker-visually-hidden">{{#str}}actions, core{{/str}}</span></th></tr></thead><tbody></tbody></table>
+</div>
+<button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-multipicker-addrow>{{#pix}}t/add, core{{/pix}}{{add}}</button>

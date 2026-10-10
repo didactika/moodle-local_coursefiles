@@ -1,7 +1,7 @@
 @startuml
 !include ../../_style.puml
 skinparam maxMessageSize 200
-title Bounded existing-folder batch
+title Bounded reviewed-folder batch
 participant "execute_migration task" as Task
 participant migration_executor as Executor
 participant "Source / author policy" as Policy

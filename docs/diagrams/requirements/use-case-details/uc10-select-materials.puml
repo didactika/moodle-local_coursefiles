@@ -5,12 +5,15 @@ title UC10 - select and import materials
 start
 :Open native Folder content or activity form;
 :Open Add files / editor Link browser;
-:Select MultiPicker;
+:Select configured repository;
 |Moodle / MultiPicker|
 :Open scoped browser inside native picker;
 |Teacher|
 :Choose profile and optional compact filters;
-:Browse folders and tick files/folders;
+:Browse folders and select cards or all results;
+|MultiPicker|
+:Resolve recursive files and parent partial state;
+|Teacher|
 :Choose destination and folder structure;
 :Review selection;
 |MultiPicker|
@@ -18,7 +21,11 @@ start
 :Check policies, current draft and native limits;
 if (Review allowed?) then (yes)
  :Open separate folder-tree review;
-:Show paths, declarations and decisions;
+ :Show resulting tree, declarations and decisions;
+ |Teacher|
+ :Optionally open pencil rename modal or remove files;
+ |MultiPicker|
+ :Rebuild approval after changes;
  |Teacher|
  :Press Import reviewed materials;
  |MultiPicker|

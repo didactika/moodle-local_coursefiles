@@ -57,6 +57,14 @@ final class settings_form extends \moodleform {
             $form->addElement('static', $name . '_help', '', get_string($name . '_desc', 'local_multipicker'));
             $form->setDefault($name, $values[0]);
         }
+        $form->addElement('header', 'retention', get_string('retention', 'local_multipicker'));
+        foreach (['logretentiondays' => 90, 'migrationretentiondays' => 365] as $name => $days) {
+            $form->addElement('text', $name, get_string($name, 'local_multipicker'), ['size' => 6]);
+            $form->setType($name, PARAM_INT);
+            $form->addRule($name, null, 'numeric', null, 'client');
+            $form->setDefault($name, $days);
+        }
+        $form->addElement('static', 'retentionhelp', '', get_string('retentionhelp', 'local_multipicker'));
         $this->add_action_buttons(false);
     }
 
@@ -72,6 +80,11 @@ final class settings_form extends \moodleform {
         foreach (self::choices() as $name => $values) {
             if (!in_array($data[$name] ?? '', $values, true)) {
                 $errors[$name] = get_string('invalidpolicy', 'local_multipicker');
+            }
+        }
+        foreach (['logretentiondays', 'migrationretentiondays'] as $name) {
+            if (!isset($data[$name]) || $data[$name] < 0 || $data[$name] > 36500) {
+                $errors[$name] = get_string('invalidretention', 'local_multipicker');
             }
         }
         return $errors;

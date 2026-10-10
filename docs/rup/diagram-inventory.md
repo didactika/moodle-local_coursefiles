@@ -61,3 +61,5 @@ Each source has a sibling SVG preview. Views are grouped by responsibility and d
 
 | design/public-source-providers.puml | [Source](../diagrams/design/public-source-providers.puml) | [SVG](../diagrams/design/public-source-providers.svg) |
 | design/sequences/editor-selection.puml | [Source](../diagrams/design/sequences/editor-selection.puml) | [SVG](../diagrams/design/sequences/editor-selection.svg) |
+
+[History retention sequence](../diagrams/design/sequences/history-retention.svg).
