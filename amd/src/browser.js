@@ -136,6 +136,25 @@ export const selection = () => {
     let loading = false;
     let changes = 0;
     form.dataset.profileid = form.elements.profileid.value;
+    const syncLayout = (layout = form.dataset.layout) => {
+        layout = ['grid', 'list', 'tree'].includes(layout) ? layout : 'grid';
+        form.dataset.layout = layout;
+        form.elements.layout.value = layout;
+        form.querySelectorAll('[data-multipicker-layout]').forEach(button => {
+            const active = button.dataset.multipickerLayout === layout;
+            button.setAttribute('aria-pressed', String(active));
+            button.classList.toggle('active', active);
+        });
+        form.querySelectorAll('[data-multipicker-course-toggle]').forEach(heading => {
+            heading.hidden = layout !== 'tree';
+            heading.classList.toggle('d-none', heading.hidden);
+            if (layout !== 'tree') {
+                heading.setAttribute('aria-expanded', 'true');
+                heading.closest('.multipicker-browser-tree-group').dataset.collapsed = 'false';
+            }
+        });
+        form.dispatchEvent(new CustomEvent('multipicker:layoutchanged', {detail: {layout}}));
+    };
     const filters = form.querySelector('.multipicker-filter-popover');
     document.addEventListener('click', event => {
         if (!filters.contains(event.target)) {
@@ -169,8 +188,8 @@ export const selection = () => {
         form.querySelector('[data-multipicker-count]').textContent = count;
         review.disabled = !count || loading || count > Number(form.dataset.selectioncapacity);
         form.querySelectorAll('[data-multipicker-choice]').forEach(input => {
-            input.disabled = !input.checked && input.dataset.partial !== '1'
-                && count >= Number(form.dataset.selectioncapacity);
+            input.disabled = loading || (!input.checked && input.dataset.partial !== '1'
+                && count >= Number(form.dataset.selectioncapacity));
         });
         form.querySelectorAll('[data-multipicker-choice]').forEach(input => {
             input.indeterminate = input.dataset.partial === '1';
@@ -178,6 +197,10 @@ export const selection = () => {
         form.querySelectorAll('.multipicker-card').forEach(card => {
             card.classList.toggle('multipicker-selected', card.querySelector('input[type=checkbox]').checked);
         });
+        form.querySelector('[data-multipicker-clear-filters]').disabled = ![...form.querySelectorAll(
+            '[data-multipicker-filter]:not([name=profileid])'
+        )].some(input => input.value.trim() !== '');
+        syncLayout();
     };
     const apply = async(toggleitem = '') => {
         clearTimeout(timer);
@@ -201,7 +224,7 @@ export const selection = () => {
         if (!toggleitem) {
             form.querySelector('[data-multipicker-results]').classList.add('multipicker-loading');
         }
-        const actions = [...form.querySelectorAll('button[name], [data-multipicker-choice]')];
+        const actions = [...form.querySelectorAll('button[name]:not([data-multipicker-clear-filters]), [data-multipicker-choice]')];
         actions.forEach(button => {
             button.dataset.multipickerDisabled = String(button.disabled);
             button.disabled = true;
@@ -356,6 +379,18 @@ export const selection = () => {
         }
     });
     form.addEventListener('click', event => {
+        if (!event.target.closest('[data-multipicker-clear-filters]')) {
+            return;
+        }
+        event.preventDefault();
+        form.querySelectorAll('[data-multipicker-filter]:not([name=profileid])').forEach(input => {
+            input.value = '';
+        });
+        changes++;
+        update();
+        apply();
+    });
+    form.addEventListener('click', event => {
         const button = event.target.closest('[data-multipicker-course-toggle]');
         if (!button) {
             return;
@@ -384,6 +419,7 @@ export const selection = () => {
     form.addEventListener('input', event => {
         changes++;
         if (event.target.matches('input[data-multipicker-filter]')) {
+            update();
             clearTimeout(timer);
             timer = setTimeout(() => apply(), 500);
         }
@@ -431,23 +467,10 @@ export const selection = () => {
         }).catch(() => {});
     });
     form.addEventListener('click', event => {
-            const button = event.target.closest('[data-multipicker-layout]');
-            if (!button) {
-                return;
-            }
-            changes++;
-            form.dataset.layout = button.dataset.multipickerLayout;
-            form.elements.layout.value = button.dataset.multipickerLayout;
-            form.querySelectorAll('[data-multipicker-layout]').forEach(other => {
-                other.setAttribute('aria-pressed', String(other === button));
-                other.classList.toggle('active', other === button);
-            });
-            if (button.dataset.multipickerLayout !== 'tree') {
-                form.querySelectorAll('.multipicker-browser-tree-group').forEach(group => {
-                    group.dataset.collapsed = 'false';
-                    group.querySelector('[data-multipicker-course-toggle]').setAttribute('aria-expanded', 'true');
-                });
-            }
+        const button = event.target.closest('[data-multipicker-layout]');
+        if (button) {
+            syncLayout(button.dataset.multipickerLayout);
+        }
     });
     update();
 };

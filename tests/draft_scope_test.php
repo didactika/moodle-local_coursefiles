@@ -52,6 +52,33 @@ use local_multipicker\local\selection\draft_scope;
 #[\PHPUnit\Framework\Attributes\CoversFunction('local_multipicker_output_fragment_browser_tree')]
 final class draft_scope_test extends \advanced_testcase {
     /**
+     * Clearing restrictions must retain the actor's chosen content, profile and owning destination.
+     */
+    public function test_clear_filters_preserves_native_selection_and_profile(): void {
+        [$form, $profileid, $source, $target, $context] = $this->fixture();
+        \local_multipicker\local\catalog\indexer::refresh($source->course);
+        \local_multipicker\local\catalog\indexer::refresh($target->course);
+        $token = $form->control()->open_scope($context);
+        $controller = \local_multipicker\local\selection\browser_controller::class;
+        $selected = $controller::data($token, $controller::input(['profileid' => $profileid, 'selectall' => true]));
+        $items = array_column($selected['data']['selecteditems'], 'value');
+        $filtered = $controller::data($token, $controller::input(['profileid' => $profileid, 'items' => $items,
+            'q' => 'missing', 'module' => 'folder', 'shortname' => 'missing', 'captures' => ['edition' => '1900'],
+            'refresh' => true, 'layout' => 'list']));
+        $this->assertSame(4, $filtered['data']['filtercount']);
+        $cleared = $controller::data($token, $controller::input(['profileid' => $profileid, 'items' => $items,
+            'q' => 'missing', 'module' => 'folder', 'shortname' => 'missing', 'captures' => ['edition' => '1900'],
+            'clearfilters' => true, 'layout' => 'list']));
+        $this->assertSame('', $cleared['message']);
+        $this->assertSame(0, $cleared['data']['filtercount']);
+        $this->assertSame($selected['data']['selecteditems'], $cleared['data']['selecteditems']);
+        $this->assertSame(2, $cleared['data']['count']);
+        $this->assertSame($profileid, $cleared['data']['profileid']);
+        $this->assertSame('list', $cleared['data']['layout']);
+        $this->assertNotEmpty($cleared['data']['cards']);
+    }
+
+    /**
      * Existing bytes are excluded before pagination, even when the destination file was renamed.
      */
     public function test_existing_draft_content_is_hidden_and_not_selected_with_its_folder(): void {

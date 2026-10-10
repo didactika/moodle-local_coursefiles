@@ -4,6 +4,8 @@
 
 - Native React/TypeScript view selector, core auto-initialization and ESM assets isolated from the Moodle 4.5 line.
 
+- Explicitly hide course tree headings in Cards/List, synchronize native and React view state across pending result loads, and clear all search restrictions without losing selected content.
+
 - English-only source language strings; detailed documentation and UML moved to the central services workspace.
 
 - Stable Moodle 5.3 distribution with Didactika copyright, author metadata and GPLv3 LICENSE.

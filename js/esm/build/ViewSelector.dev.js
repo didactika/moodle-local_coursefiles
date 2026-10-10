@@ -9,29 +9,40 @@ import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { normalizeLayout } from "./layout";
 function ViewSelector({ initialLayout, views }) {
   const [active, setActive] = useState(normalizeLayout(initialLayout));
-  return /* @__PURE__ */ jsxDEV(Fragment, { children: views.map((view) => /* @__PURE__ */ jsxDEV(
+  const firstButton = useRef(null);
+  useEffect(() => {
+    const form = firstButton.current?.closest("form.multipicker-browser");
+    if (!form) {
+      return;
+    }
+    const sync = /* @__PURE__ */ __name(() => setActive(normalizeLayout(form.dataset.layout || initialLayout)), "sync");
+    sync();
+    form.addEventListener("multipicker:layoutchanged", sync);
+    return () => form.removeEventListener("multipicker:layoutchanged", sync);
+  }, [initialLayout]);
+  return /* @__PURE__ */ jsxDEV(Fragment, { children: views.map((view, index) => /* @__PURE__ */ jsxDEV(
     "button",
     {
+      ref: index === 0 ? firstButton : void 0,
       type: "button",
       className: `btn btn-sm btn-outline-secondary${active === view.value ? " active" : ""}`,
       "data-multipicker-layout": view.value,
       "data-multipicker-react-view": "true",
       "aria-pressed": active === view.value,
       title: view.label,
-      onClick: () => setActive(view.value),
       children: [
         /* @__PURE__ */ jsxDEV("span", { dangerouslySetInnerHTML: { __html: view.icon } }, void 0, false, {
           fileName: "public/local/multipicker/js/esm/src/ViewSelector.tsx",
-          lineNumber: 39,
+          lineNumber: 51,
           columnNumber: 9
         }, this),
         /* @__PURE__ */ jsxDEV("span", { className: "multipicker-visually-hidden", children: view.label }, void 0, false, {
           fileName: "public/local/multipicker/js/esm/src/ViewSelector.tsx",
-          lineNumber: 40,
+          lineNumber: 52,
           columnNumber: 9
         }, this)
       ]
@@ -40,13 +51,13 @@ function ViewSelector({ initialLayout, views }) {
     true,
     {
       fileName: "public/local/multipicker/js/esm/src/ViewSelector.tsx",
-      lineNumber: 29,
-      columnNumber: 33
+      lineNumber: 41,
+      columnNumber: 42
     },
     this
   )) }, void 0, false, {
     fileName: "public/local/multipicker/js/esm/src/ViewSelector.tsx",
-    lineNumber: 29,
+    lineNumber: 41,
     columnNumber: 12
   }, this);
 }

@@ -10,7 +10,7 @@
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {normalizeLayout, type LayoutView} from './layout';
 
 interface ViewSelectorProps {
@@ -25,8 +25,21 @@ interface ViewSelectorProps {
  */
 export default function ViewSelector({initialLayout, views}: ViewSelectorProps) {
     const [active, setActive] = useState(normalizeLayout(initialLayout));
+    const firstButton = useRef<HTMLButtonElement>(null);
 
-    return <>{views.map(view => <button
+    useEffect(() => {
+        const form = firstButton.current?.closest<HTMLFormElement>('form.multipicker-browser');
+        if (!form) {
+            return;
+        }
+        const sync = () => setActive(normalizeLayout(form.dataset.layout || initialLayout));
+        sync();
+        form.addEventListener('multipicker:layoutchanged', sync);
+        return () => form.removeEventListener('multipicker:layoutchanged', sync);
+    }, [initialLayout]);
+
+    return <>{views.map((view, index) => <button
+        ref={index === 0 ? firstButton : undefined}
         key={view.value}
         type="button"
         className={`btn btn-sm btn-outline-secondary${active === view.value ? ' active' : ''}`}
@@ -34,7 +47,6 @@ export default function ViewSelector({initialLayout, views}: ViewSelectorProps) 
         data-multipicker-react-view="true"
         aria-pressed={active === view.value}
         title={view.label}
-        onClick={() => setActive(view.value)}
     >
         <span dangerouslySetInnerHTML={{__html: view.icon}} />
         <span className="multipicker-visually-hidden">{view.label}</span>

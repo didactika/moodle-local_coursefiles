@@ -28,7 +28,7 @@ The local component owns profiles, their version history, a searchable metadata 
 |---|---|
 | Related courses | Named regular-expression captures define course groups and up to nine configurable search filters. |
 | Public material library | Folder, File, public Assignment attachments and other declared public providers; private user material remains excluded. |
-| Multi-file selection | Grid, list and lazy recursive tree views share checks and unique-content counts. Existing destination content is excluded before pagination. |
+| Multi-file selection | Grid, list and lazy recursive tree views share checks and unique-content counts. Clear filters retains selected material and copy options. Existing destination content is excluded before pagination. |
 | Native review | Resulting-file tree, folder removal checks and pencil rename dialogs before importing into the native draft. |
 | Native limits | Accepted types, remaining file count, directory support and byte limits are enforced again at import. |
 | Profiles | Guided forms, bulk state actions, portable export/import, version comparison and restoration. |

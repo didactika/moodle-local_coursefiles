@@ -61,7 +61,7 @@ final class browser_controller {
         $input['toggleitem'] = clean_param($raw['toggleitem'] ?? '', PARAM_RAW);
         $input['removeitem'] = clean_param($raw['removeitem'] ?? '', PARAM_RAW);
         $input['destination'] = material_selection::path($raw['destination'] ?? '/');
-        foreach (['search', 'refresh', 'clear', 'selectpage', 'selectall', 'review'] as $name) {
+        foreach (['search', 'refresh', 'clear', 'clearfilters', 'selectpage', 'selectall', 'review'] as $name) {
             $input[$name] = clean_param($raw[$name] ?? false, PARAM_BOOL);
         }
         foreach (['openfolder', 'previouspage', 'next'] as $name) {
@@ -140,6 +140,10 @@ final class browser_controller {
                 foreach (['q', 'edition', 'shortname', 'module', 'mimetype'] as $filter) {
                     $state['filters'][$filter] = $input[$filter];
                 }
+                if (!empty($input['clearfilters'])) {
+                    $state['filters'] = ['q' => '', 'edition' => '', 'shortname' => '', 'module' => '',
+                        'mimetype' => '', 'captures' => []];
+                }
                 if (!empty($input['clear'])) {
                     $state['selected'] = [];
                     $state['roots'] = [];
@@ -200,7 +204,7 @@ final class browser_controller {
                     $state['after'] = '';
                     $state['history'] = [];
                     $state['folder'] = '';
-                } else if (!empty($input['refresh'])) {
+                } else if (!empty($input['refresh']) || !empty($input['clearfilters'])) {
                     $state['after'] = '';
                     $state['history'] = [];
                 } else if (array_key_exists('openfolder', $input)) {

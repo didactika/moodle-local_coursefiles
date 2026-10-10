@@ -729,7 +729,7 @@ class behat_local_multipicker extends behat_base {
     /**
      * Change the rendered layout without navigating or losing checks.
      *
-     * @When /^I switch MultiPicker layout to "(grid|list)"$/
+     * @When /^I switch MultiPicker layout to "(grid|list|tree)"$/
      * @param string $layout Requested layout.
      */
     public function switch_layout(string $layout): void {
@@ -747,6 +747,96 @@ class behat_local_multipicker extends behat_base {
         ) {
             throw new \Exception('The visible material layout did not change.');
         }
+    }
+
+    /**
+     * Exercise one canonical selection through real cards, lazy tree leaves and list rows.
+     * @Then /^MultiPicker selections should stay consistent across all views$/
+     */
+    public function shared_view_selection(): void {
+        $this->select_material('Published materials', 'CB2025');
+        $this->selected_file_count(2);
+        $this->switch_layout('tree');
+        $this->getSession()->getDriver()->executeScript(
+            'const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'const root=[...doc.querySelectorAll("[data-tree-folder]")].find(folder=>'
+            . 'folder.querySelector(".multipicker-origin").textContent.startsWith("CB2025"));'
+            . 'window.multipickerViewRoot=root;root.querySelector("[name=openfolder]").click();'
+        );
+        if (!$this->getSession()->wait(10000, 'window.multipickerViewRoot.querySelector("[data-tree-entries]").dataset.loaded')) {
+            throw new \Exception('The selected native tree folder did not expand.');
+        }
+        $this->deselect_source_file('lesson.txt');
+        $this->selected_file_count(1);
+        $this->switch_layout('list');
+        $correct = $this->getSession()->getDriver()->evaluateScript(
+            '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'const root=window.multipickerViewRoot,check=root.querySelector("[data-multipicker-choice]");'
+            . 'return root.isConnected&&check.indeterminate&&!check.checked&&'
+            . '[...doc.querySelectorAll("[data-multipicker-course-toggle]")].every(heading=>'
+            . 'heading.hidden&&heading.classList.contains("d-none")&&!heading.getClientRects().length);})()'
+        );
+        if (!$correct) {
+            throw new \Exception('List rows exposed course headers or lost the tree partial selection.');
+        }
+        $this->select_material('Published materials', 'CB2025');
+        $this->selected_file_count(2);
+        $this->switch_layout('grid');
+        $this->native_browser_layouts();
+        $this->selected_file_count(2);
+        $this->capture_browser();
+    }
+
+    /**
+     * Clear an in-flight search while changing layouts, preserving profile and actual selected files.
+     * @Then /^MultiPicker should clear pending filters without losing its view or selection$/
+     */
+    public function clear_pending_filters(): void {
+        $this->select_material('Published materials', 'CB2025');
+        $this->selected_file_count(2);
+        $this->getSession()->getDriver()->executeScript(
+            'const doc=document.querySelector(".fp-object-container").contentDocument,form=doc.querySelector("form");'
+            . 'window.multipickerResetState={form,profile:form.elements.profileid.value,busy:false};'
+            . 'doc.defaultView.require(["core/fragment"],module=>{const fragment=module.default||module;'
+            . 'const load=fragment.loadFragment.bind(fragment);fragment.loadFragment=(...args)=>'
+            . 'new Promise((resolve,reject)=>setTimeout(()=>load(...args).then(resolve,reject),500));'
+            . 'const input=form.elements.q;input.value="no-such-file";'
+            . 'input.dispatchEvent(new Event("input",{bubbles:true}));setTimeout(()=>{'
+            . 'window.multipickerResetState.busy=form.getAttribute("aria-busy")==="true";'
+            . 'form.querySelector("[data-multipicker-layout=tree]").click();'
+            . 'form.querySelector("[data-multipicker-layout=list]").click();'
+            . 'form.querySelector("[data-multipicker-options]").open=true;'
+            . 'form.querySelector("[data-multipicker-clear-filters]").click();'
+            . 'window.multipickerResetState.choicesblocked=[...form.querySelectorAll("[data-multipicker-choice]")]'
+            . '.every(choice=>choice.disabled);},650);});'
+        );
+        if (
+            !$this->getSession()->wait(
+                15000,
+                'window.multipickerResetState.busy&&window.multipickerResetState.form.elements.q.value===""'
+                . '&&window.multipickerResetState.choicesblocked'
+                . '&&window.multipickerResetState.form.querySelector("[data-multipicker-filter-count]").textContent.trim()===""'
+                . '&&window.multipickerResetState.form.getAttribute("aria-busy")!=="true"'
+            )
+        ) {
+            throw new \Exception('Clearing the pending search did not apply unrestricted results.');
+        }
+        $correct = $this->getSession()->getDriver()->evaluateScript(
+            '(()=>{const state=window.multipickerResetState,form=state.form;'
+            . 'return form.isConnected&&form.dataset.layout==="list"&&form.elements.layout.value==="list"'
+            . '&&form.elements.profileid.value===state.profile'
+            . '&&form.querySelectorAll("[data-multipicker-layout].active").length===1'
+            . '&&form.querySelector("[data-multipicker-layout=list]").getAttribute("aria-pressed")==="true"'
+            . '&&form.querySelector("[data-multipicker-clear-filters]").disabled'
+            . '&&[...form.querySelectorAll("[data-multipicker-filter]:not([name=profileid])")].every(input=>input.value==="")'
+            . '&&[...form.querySelectorAll("[data-multipicker-course-toggle]")].every(heading=>'
+            . 'heading.hidden&&!heading.getClientRects().length);})()'
+        );
+        if (!$correct) {
+            throw new \Exception('Layout, active native view, filter reset or owning profile became inconsistent.');
+        }
+        $this->selected_file_count(2);
+        $this->capture_browser();
     }
 
     /**

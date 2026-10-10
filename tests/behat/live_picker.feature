@@ -30,6 +30,14 @@ Feature: Stable native selection with the configured repository name
     When I select a MultiPicker card without rebuilding its results
     Then MultiPicker should have "2" selected files
 
+  @multipicker_views
+  Scenario: Cards list and lazy tree share checked content without flat course headings
+    Then MultiPicker selections should stay consistent across all views
+
+  @multipicker_views
+  Scenario: Clearing a pending search retains the active view and selected material
+    Then MultiPicker should clear pending filters without losing its view or selection
+
   Scenario: Review rows select files and retain native import approval
     When I press MultiPicker action "Select all"
     And I press MultiPicker action "Review selection"
