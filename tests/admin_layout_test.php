@@ -35,6 +35,7 @@ use local_multipicker\output\navigation;
  * @covers \local_multipicker\output\migration_report
  * @covers \local_multipicker\output\navigation
  * @covers \local_multipicker\form\profile_form
+ * @covers \local_multipicker\output\profile_summary
  */
 final class admin_layout_test extends \advanced_testcase {
     /**
@@ -69,6 +70,10 @@ final class admin_layout_test extends \advanced_testcase {
         $document = profile_form::document(['configjson' => $json, 'profilename' => 'Preview only']);
         $this->assertSame('Preview only', $document['name']);
         $this->assertSame(0, $DB->count_records('local_multipicker_revision'));
+        $summary = \local_multipicker\output\profile_summary::data($document, false);
+        $html = $GLOBALS['OUTPUT']->render_from_template('local_multipicker/local/profile/summary', $summary);
+        $this->assertStringNotContainsString(get_string('rulesinuse', 'local_multipicker'), $html);
+        $this->assertStringContainsString('Preview only', $html);
         $this->expectException(\moodle_exception::class);
         profile_form::document(['configjson' => 'null', 'profilename' => 'Invalid']);
     }

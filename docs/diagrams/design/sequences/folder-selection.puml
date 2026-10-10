@@ -14,14 +14,21 @@ Teacher -> Form : Add files; select configured repository
 Form -> Browser : Embed scoped HTML chooser
 Teacher -> Browser : Filter / browse / select all or check materials
 Browser -> Scope : Authenticated Fragment request
-Scope --> Browser : Authorized results; canonical checks / folder counts
+Scope -> Files : Exclude existing actor draft bytes before pagination
+Scope --> Browser : Authorized results; canonical checks / grouped folder counts
+opt Expand collapsed tree folder
+ Teacher -> Browser : Open folder / child folder
+ Browser -> Scope : Authenticated browser_tree Fragment under issued root
+ Scope --> Browser : Bounded subfolder / file page; retain main cursor
+end
 note right of Browser : Filters retain focus and width.\nCheckboxes patch existing cards.\nFolder / cursor / scroll remain.
 Teacher -> Browser : Review selection
 Browser -> Scope : Expand and recheck selected sources
 Scope --> Browser : Resulting tree / readable filenames / approval
 Teacher -> Browser : Pencil opens native rename modal; remove files
 Browser -> Scope : Rebuild reviewed digest
-Teacher -> Browser : Import reviewed materials
+note over Teacher, Browser : Removal checks alone retain import approval.
+Teacher -> Browser : Import materials
 Browser -> Transfer : Documented native chooser callback
 Transfer -> Scope : Revalidate digest and destination
 Scope -> Files : Transactional copies / original declarations

@@ -23,8 +23,8 @@ if (Included blockers or unresolved placement issues?) then (yes)
 endif
 repeat while (Included blockers remain?) is (yes)
 if (Included copy work remains?) then (yes)
-  :Step 4: confirm the whole included set;
-  :Require confirmation and execution permission;
+  :Step 4: press Execute for the whole included set;
+  :Require session key and execution permission;
   :Validate digest under the shared plan lock;
   :Queue every included operation;
   :Freeze selection and show progress / cancellation;

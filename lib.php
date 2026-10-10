@@ -87,6 +87,47 @@ function local_multipicker_output_fragment_browser(array $args): string {
 }
 
 /**
+ * Load a bounded folder branch without changing the browser's owning folder or cursor.
+ *
+ * @param array $args Core-validated context, owning scope and folder/cursor selectors.
+ * @return string Themeable child nodes and next cursor.
+ */
+function local_multipicker_output_fragment_browser_tree(array $args): string {
+    global $OUTPUT;
+    $token = clean_param($args['scope'] ?? '', PARAM_ALPHANUM);
+    $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+    $folder = clean_param($args['folder'] ?? '', PARAM_RAW);
+    $allowed = false;
+    if (strlen($folder) <= 2048 && str_starts_with($folder, 'folder:')) {
+        $item = \local_multipicker\local\selection\selection_options::parse([$folder])[0];
+        foreach ($scope['view']['treeroots'] ?? [] as $root) {
+            $ancestor = \local_multipicker\local\selection\selection_options::parse([$root])[0];
+            if ($item['cmid'] === $ancestor['cmid'] && str_starts_with($item['filepath'], $ancestor['filepath'])) {
+                $allowed = true;
+                break;
+            }
+        }
+    }
+    if ($args['context']->id !== $scope['contextid'] || !$allowed) {
+        throw new moodle_exception('formscopeunavailable', 'local_multipicker');
+    }
+    $state = $scope['view'];
+    $state['folder'] = $folder;
+    $state['after'] = clean_param($args['after'] ?? '', PARAM_ALPHANUM);
+    $listing = \local_multipicker\local\selection\browser_listing::page($scope, $state);
+    $view = $scope['view'];
+    $view['treefolders'] = array_slice(array_values(array_unique(array_merge(
+        $view['treefolders'],
+        array_column(array_filter($listing['cards'], static fn($card) => $card['isfolder']), 'value')
+    ))), -\local_multipicker\local\selection\material_selection::MAX_FILES);
+    \local_multipicker\local\selection\draft_scope::remember_view($token, $view, sesskey());
+    return $OUTPUT->render_from_template(
+        'local_multipicker/local/selection/tree_children',
+        ['cards' => $listing['cards'], 'folder' => $folder, 'next' => $listing['next']]
+    );
+}
+
+/**
  * Save a bounded review change and render its current canonical state.
  * @param array $args Core-validated system context and serialized request.
  * @return string Themeable review fragment.
@@ -143,4 +184,45 @@ function local_multipicker_output_fragment_migration(array $args): string {
         (int)($state['perpage'] ?? 50)
     );
     return $OUTPUT->render_from_template('local_multipicker/local/migration/report', $data);
+}
+
+/**
+ * Change selected profile states without replacing the list or its selection.
+ *
+ * @param array $args Core-validated system context and bounded JSON state.
+ * @return string Encoded state of the affected rows only.
+ */
+function local_multipicker_output_fragment_profiles(array $args): string {
+    global $DB, $OUTPUT;
+    require_capability('local/multipicker:manageprofiles', context_system::instance());
+    if (
+        $args['context']->id !== context_system::instance()->id || !is_string($args['state'] ?? null)
+            || strlen($args['state']) > 16384
+    ) {
+        throw new invalid_parameter_exception('Invalid profile request');
+    }
+    try {
+        $state = json_decode($args['state'], true, 4, JSON_THROW_ON_ERROR);
+    } catch (JsonException $exception) {
+        throw new invalid_parameter_exception('Invalid profile document');
+    }
+    if (!is_array($state) || !confirm_sesskey($state['sesskey'] ?? '')) {
+        throw new moodle_exception('invalidsesskey');
+    }
+    $ids = $state['ids'] ?? [];
+    $action = $state['action'] ?? '';
+    if (!is_array($ids) || count($ids) > 50 || !in_array($action, ['enable', 'disable'], true)) {
+        throw new invalid_parameter_exception('Unsupported profile change');
+    }
+    $ids = array_map(static fn($id) => clean_param($id, PARAM_INT), $ids);
+    \local_multipicker\local\profile\profiles::change_state($ids, $action);
+    $rows = [];
+    foreach ($DB->get_records_list('local_multipicker', 'id', $ids) as $profile) {
+        $next = $profile->enabled ? 'disable' : 'enable';
+        $rows[] = ['id' => (int)$profile->id, 'enabled' => (int)$profile->enabled,
+            'status' => \local_multipicker\output\display::outcome($profile->enabled ? 'enabled' : 'disabled'),
+            'action' => $next, 'label' => get_string($next),
+            'icon' => $OUTPUT->pix_icon($profile->enabled ? 't/hide' : 't/show', '')];
+    }
+    return html_writer::div('', '', ['data-multipicker-profile-state' => json_encode($rows)]);
 }

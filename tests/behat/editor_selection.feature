@@ -20,7 +20,7 @@ Feature: Reuse several public files from an existing activity editor
     And I select MultiPicker material "resource.txt" from "CB2025"
     And I press MultiPicker action "Review selection"
     Then the MultiPicker review should include "resource.txt"
-    When I press MultiPicker action "Import reviewed materials"
+    When I press MultiPicker action "Import materials"
     Then the activity editor should contain MultiPicker links "lesson.txt,resource.txt"
     When I press "Save and display"
     And I navigate to "Settings" in current page administration

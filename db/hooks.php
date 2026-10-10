@@ -26,6 +26,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $callbacks = [
     [
+        'hook' => \core\hook\output\before_http_headers::class,
+        'callback' => \local_multipicker\output\navigation::class . '::open_category',
+    ],
+    [
         'hook' => \core\hook\after_config::class,
         'callback' => \local_multipicker\local\selection\native_integration::class . '::register',
     ],

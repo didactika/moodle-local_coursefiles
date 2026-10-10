@@ -95,7 +95,7 @@ export const complete = file => {
         button.disabled = false;
     }
     document.querySelector('.multipicker-review-form')?.addEventListener('input', event => {
-        if (event.target.matches('input[name="removefiles[]"]')) {
+        if (event.target.matches('input[name="removefiles[]"], [data-multipicker-review-folder]')) {
             return;
         }
         if (button) {
@@ -150,8 +150,20 @@ export const selection = () => {
     form.querySelector('[data-multipicker-search]').hidden = true;
     const review = form.querySelector('[data-multipicker-review]');
     const update = () => {
-        const count = new Set([...form.querySelectorAll('input[name="items[]"]')]
-            .filter(input => input.type === 'hidden' || input.checked).map(input => input.value)).size;
+        const selected = new Set([...form.querySelectorAll('input[name="items[]"]')].map(input => input.value));
+        const count = selected.size;
+        const folderStates = new Map(JSON.parse(form.dataset.folderstates || '[]').map(state => [state.value, state]));
+        form.querySelectorAll('[data-multipicker-choice]').forEach(choice => {
+            if (choice.value.startsWith('file:')) {
+                choice.checked = selected.has(choice.value);
+            } else if (folderStates.has(choice.value)) {
+                const state = folderStates.get(choice.value);
+                choice.checked = state.checked;
+                choice.dataset.partial = state.partial ? '1' : '0';
+                choice.closest('.multipicker-card').querySelector('.multipicker-card-meta .multipicker-chip')
+                    .textContent = state.selectionlabel;
+            }
+        });
         form.querySelector('[data-multipicker-count]').textContent = count;
         review.disabled = !count || loading || count > Number(form.dataset.selectioncapacity);
         form.querySelectorAll('[data-multipicker-choice]').forEach(input => {
@@ -209,6 +221,7 @@ export const selection = () => {
             const response = new DOMParser().parseFromString(html, 'text/html');
             const next = response.querySelector('form.multipicker-browser');
             form.dataset.selectioncapacity = next.dataset.selectioncapacity;
+            form.dataset.folderstates = next.dataset.folderstates;
             const results = form.querySelector('[data-multipicker-results]');
             const position = results.scrollTop;
             if (toggleitem) {
@@ -234,6 +247,8 @@ export const selection = () => {
             // Keep active inputs, caret and native select menus in their original DOM nodes.
             form.querySelectorAll('input[name="items[]"]').forEach(input => input.remove());
             next.querySelectorAll('input[name="items[]"]').forEach(input => form.prepend(input));
+            form.querySelector('[data-multipicker-filter-count]').textContent =
+                next.querySelector('[data-multipicker-filter-count]').textContent;
             form.querySelector('[data-multipicker-count]').textContent =
                 next.querySelector('[data-multipicker-count]').textContent;
             if (changes !== version) {
@@ -276,6 +291,67 @@ export const selection = () => {
             }
         }
     };
+    form.addEventListener('click', async event => {
+        const button = event.target.closest('[name=openfolder], [data-tree-next]');
+        if (!button || form.dataset.layout !== 'tree') {
+            return;
+        }
+        event.preventDefault();
+        if (loading || submitting || button.disabled) {
+            return;
+        }
+        const folder = button.closest('[data-tree-folder]');
+        const entries = folder.querySelector(':scope > [data-tree-entries]');
+        const nextPage = button.hasAttribute('data-tree-next');
+        if (!nextPage && !entries.hidden) {
+            entries.hidden = true;
+            button.setAttribute('aria-expanded', 'false');
+            return;
+        }
+        entries.hidden = false;
+        folder.querySelector('[name=openfolder]').setAttribute('aria-expanded', 'true');
+        if (!nextPage && entries.dataset.loaded) {
+            return;
+        }
+        button.disabled = true;
+        entries.setAttribute('aria-busy', 'true');
+        const skeleton = document.createElement('div');
+        skeleton.className = 'multipicker-tree-placeholder';
+        skeleton.innerHTML = '<span></span><span></span>';
+        entries.append(skeleton);
+        try {
+            const html = await new Promise((resolve, reject) => {
+                Fragment.loadFragment('local_multipicker', 'browser_tree', Number(form.dataset.contextid), {
+                    scope: form.elements.scope.value, folder: folder.dataset.treeFolder,
+                    after: nextPage ? button.dataset.treeNext : '',
+                }).then(resolve, reject);
+            });
+            const holder = document.createElement('div');
+            await Templates.replaceNodeContents(holder, html, '');
+            const existing = new Set([...entries.querySelectorAll('[data-multipicker-choice]')].map(choice => choice.value));
+            [...holder.children].forEach(node => {
+                const choice = node.querySelector('[data-multipicker-choice]');
+                if (!choice || !existing.has(choice.value)) {
+                    entries.append(node);
+                }
+            });
+            if (nextPage) {
+                button.remove();
+            }
+            entries.dataset.loaded = 'true';
+            update();
+        } catch (error) {
+            if (!nextPage) {
+                entries.hidden = true;
+                button.setAttribute('aria-expanded', 'false');
+            }
+            Notification.exception(error);
+        } finally {
+            button.disabled = false;
+            entries.removeAttribute('aria-busy');
+            skeleton.remove();
+        }
+    });
     // Remember disclosures without changing server-side authority or selection.
     for (const detail of form.querySelectorAll('details[data-multipicker-options]')) {
         const key = 'multipicker-options';
@@ -301,10 +377,12 @@ export const selection = () => {
     });
     form.addEventListener('change', event => {
         changes++;
-        update();
         if (event.target.matches('[data-multipicker-choice]')) {
+            event.target.closest('.multipicker-card').classList.toggle('multipicker-selected', event.target.checked);
             apply(event.target.value);
+            return;
         }
+        update();
         if (event.target.matches('select[data-multipicker-filter]')) {
             clearTimeout(timer);
             apply();
@@ -346,7 +424,13 @@ export const selection = () => {
             form.elements.layout.value = button.dataset.multipickerLayout;
             form.querySelectorAll('[data-multipicker-layout]').forEach(other => {
                 other.setAttribute('aria-pressed', String(other === button));
+                other.classList.toggle('active', other === button);
             });
+            if (button.dataset.multipickerLayout !== 'tree') {
+                form.querySelectorAll('.multipicker-browser-tree-group').forEach(group => {
+                    group.open = true;
+                });
+            }
         });
     });
     update();

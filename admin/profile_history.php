@@ -50,7 +50,7 @@ $records = $DB->get_records(
     $perpage
 );
 $left = optional_param('left', 0, PARAM_INT);
-$right = optional_param('right', (int)$profile->activeid, PARAM_INT);
+$right = optional_param('right', 0, PARAM_INT);
 $data = ['name' => display::name($profile->name), 'profileid' => $profileid, 'action' => $url->out(false),
     'sesskey' => sesskey(), 'versions' => [], 'choices' => [], 'rows' => [],
     'backurl' => (new moodle_url('/local/multipicker/admin/profile.php', ['profileid' => $profileid]))->out(false),
@@ -62,7 +62,7 @@ $data = ['name' => display::name($profile->name), 'profileid' => $profileid, 'ac
         new moodle_url($url, ['left' => optional_param('left', 0, PARAM_INT),
         'right' => optional_param(
             'right',
-            (int)$profile->activeid,
+            0,
             PARAM_INT
         )])
     )];
@@ -88,9 +88,16 @@ foreach ($choices as $version) {
 foreach ($records as $version) {
     $data['versions'][] = ['id' => $version->id, 'number' => $version->revision, 'date' => userdate($version->timecreated),
         'active' => $version->id == $profile->activeid,
+        'selected' => $version->id == $left || $version->id == $right,
         'compareurl' => (new moodle_url($url, ['left' => $version->id, 'right' => $profile->activeid]))->out(false)];
 }
-if ($left && $right) {
+$data['offpagechoices'] = [];
+foreach (array_unique([$left, $right]) as $id) {
+    if ($id && !isset($records[$id])) {
+        $data['offpagechoices'][] = ['id' => $id, 'number' => $choices[$id]->revision];
+    }
+}
+if ($left && $right && $left !== $right) {
     $data['comparing'] = true;
     $data['leftnumber'] = $choices[$left]->revision;
     $data['rightnumber'] = $choices[$right]->revision;

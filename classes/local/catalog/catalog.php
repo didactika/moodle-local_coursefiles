@@ -37,6 +37,7 @@ final class catalog {
      * @param array $filters Filename, edition, module, MIME, shortname and section.
      * @param string $after Last complete content hash.
      * @param int $limit Page size.
+     * @param int $draftid Current actor's destination draft; zero leaves catalog browsing unchanged.
      * @return array Grouped assets and next cursor.
      */
     public static function search(
@@ -44,7 +45,8 @@ final class catalog {
         int $profileid,
         array $filters = [],
         string $after = '',
-        int $limit = 20
+        int $limit = 20,
+        int $draftid = 0
     ): array {
         global $DB;
         require_capability('local/multipicker:browse', \context_course::instance($targetcourse));
@@ -61,6 +63,9 @@ final class catalog {
         $limit = max(1, min(50, $limit));
         $params = ['revisionid' => $revision->id, 'familyhash' => $identity['familyhash'], 'after' => $after];
         $where = 'c.revisionid = :revisionid AND c.familyhash = :familyhash AND f.contenthash > :after';
+        [$exclusion, $destinationparams] = \local_multipicker\local\selection\destination_content::exclusion('n', $draftid);
+        $where .= $exclusion;
+        $params += $destinationparams;
         if (!empty($filters['excludedcontext'])) {
             $where .= ' AND n.contextid <> :excludedcontext';
             $params['excludedcontext'] = (int)$filters['excludedcontext'];

@@ -1,6 +1,6 @@
 # Presentation and theme overrides
 
-The interface uses the active Moodle theme's page layout, typography, colours, buttons, forms, cards and tables. There is no embedded colour palette, mandatory frontend framework.
+The interface uses the active Moodle theme's page layout, typography, colours, buttons, forms, cards and tables. Theme variables supply colours; native Moodle APIs own navigation and dialogs.
 
 ![Output boundary](diagrams/design/presentation.svg)
 
@@ -17,8 +17,8 @@ Labels are associated with controls. Tables use column headers and responsive co
 | Template | Responsibility |
 |---|---|
 | `local_multipicker/local/navigation/tabs` | Permission-aware site/course page links |
-| `local_multipicker/local/migration/setup` | Selected profile, current rules and recent previews |
-| `local_multipicker/local/profile/summary` | Exact relationship and migration rule descriptions |
+| `local_multipicker/local/migration/setup` | Profile selection and configuration steps |
+| `local_multipicker/local/profile/summary` | Relationship descriptions; placement rules only in migration review |
 | `local_multipicker/local/catalog/index` | Course page and secondary controls |
 | `local_multipicker/local/catalog/filters` | Named GET filters |
 | `local_multipicker/local/catalog/material_card` | One content group and exact origins |
@@ -28,6 +28,7 @@ Labels are associated with controls. Tables use column headers and responsive co
 | `local_multipicker/local/profile/list` | Named profiles, grouping, status and grouped history/edit/state actions |
 | `local_multipicker/local/log/index` | Labelled action/reference filters and paginated action records |
 | `local_multipicker/local/selection/browser` | Embedded compact filters, navigable cards and checkbox selection |
+| `local_multipicker/local/selection/card` | Shared authorized material node for grid, list and recursive tree |
 | `local_multipicker/local/selection/review` | Mixed-selection paths, declarations, decisions and resulting draft totals |
 
 Page controllers pass plain data to `output/view`. `output/renderer::render_view()` selects the component template. Services own authorization and copying; a theme changes presentation without replacing those decisions.
@@ -49,9 +50,9 @@ References: [Moodle theme plugin API](https://moodledev.io/docs/4.5/apis/plugint
 
 ## Embedded chooser
 
-The browser uses native cards and labelled checkboxes with primary-colour hover/focus. Filename search stays visible; activity/type, capture and copy options use a bounded top-right native filter popover. Cards/List buttons change the result layout. Debounced Fragment updates preserve the search document, selection and focus. Grid cards stack on small screens.
+The browser uses native cards and labelled checkboxes with primary-colour hover/focus. Filename search stays visible; activity/type, capture and copy options use a bounded top-right native filter popover. Cards/List/Tree buttons change the result layout. Debounced Fragment updates preserve the search document, selection and focus. Grid cards stack on small screens.
 
-The review is a separate embedded page with a Back arrow and collapsible folder tree. Its recursive partial is local_multipicker/local/selection/review_node. Folder arrows and Back/Cards/List actions use Moodle core icons. Both plugin components use the same supplied pix/icon.svg for their plugin identity.
+The review is a separate embedded page with a Back arrow and collapsible folder tree. Its recursive partial is local_multipicker/local/selection/review_node. Folder arrows and Back/Cards/List/Tree actions use Moodle core icons. Both plugin components use the same supplied pix/icon.svg for their plugin identity.
 
 Scoped styles.css uses the active theme's primary, surface, border and radius variables, with Moodle-compatible fallbacks. .multipicker-native-host enlarges only the active embedded picker panel and hides core layout/path controls that do not operate on this chooser. A parent observer releases this styling when another repository takes over.
 
@@ -63,7 +64,7 @@ Administration navigation delegates to native core more_menu exports. The 5.3 te
 
 Filename review uses plain text and a native pencil action; the rename dialog is `core/modal_save_cancel` with the overridable `local/selection/rename` template. Filter controls remain enabled and focused during result loading. Native select classes let each supported core/theme provide its own dropdown styling.
 
-Administration page actions use a footer below their content; row actions use compact native button groups. Bulk buttons appear only when profiles are selected. Profile fields align through native form columns and shared fieldset spacing; required markers do not change their input origin. Core help icons replace inline configuration tutorials.
+Back and selection tools appear above content; save, continue and execute actions appear below it. Row actions use compact native button groups. Profile bulk actions appear only with checked rows and adapt to their current enabled states. Profile fields align through native form columns and shared fieldset spacing; required markers do not change their input origin. Core help icons replace inline configuration tutorials.
 
 Search-filter columns have equal widths with a three-column maximum. Checkbox selection patches card state and folder badges in place, without result skeletons or a new pagination cursor.
 
@@ -71,6 +72,16 @@ The browser filter popover is bounded and independently scrollable. Result-card 
 
 Editable profile filters, folder correspondences and section maps share `local/form/rows` and the same row editor. Tables adapt to the available form column, including native side drawers: narrower containers expose labelled fields in two columns, and very narrow containers use one column. Controls in the same row stay aligned when labels wrap. Native select/input/button classes remain specific to each supported Moodle distribution; responsive presentation preserves field names, validation, maximum row counts and submission values. The unenhanced native textarea remains available if JavaScript fails.
 
-Back actions use a small native secondary-outline button, the core left-arrow icon and the shared `multipicker-back` hook. Profile version history places Back at the left edge of its page-action footer, consistently with folder navigation, selection review and migration execution. The repository component reuses these local templates and styles for batch selection rather than maintaining a separate visual system.
+Back actions use a small native secondary-outline button, the core left-arrow icon and the shared `multipicker-back` hook. Profile version history places Back at the leading edge above the table, consistently with selection review and migration execution. The repository component reuses these local templates and styles for batch selection rather than maintaining a separate visual system.
 
 The shared local/navigation/pagination partial renders range/page summaries, 10/25/50 sizes and native Previous/Next icon groups. local_multipicker/migration_review owns delegated review events and serializes authenticated Fragment updates. Selection patches replace no visible course/folder/file nodes; resolution retains disclosure and scroll state. Theme overrides must preserve data-multipicker-operation, selection/group hooks, approval fields and the always-rendered data-multipicker-continue control. Administration footers stay in normal document flow to avoid covering native inputs and popovers.
+
+## Shared picker layouts and native utilities
+
+Grid, list and tree reuse one material-node template. The tree groups the bounded page by source course, with native collapsible headings. Folder branches start collapsed and lazily load authorized subfolders and file leaves in place through the authenticated browser_tree Fragment. Each branch retains a 50-content-group cursor and displays its own light loading placeholders. Reopening a loaded branch reuses its nodes; canonical selection patches visible descendant checks and parent partial states without replacing the tree. Layout buttons keep the native active state. All layouts use the same canonical selection and show the material checkbox at the leading upper edge.
+
+Review folders select all descendant file-removal checks and show a partial state for mixed descendants. Remove selected is hidden until files are checked and appears on the same footer as Import materials. Import approval remains independent of removal checks.
+
+Native Bootstrap utilities own flex layout, alignment, wrapping and ordinary spacing in templates. Component CSS is organized by shared surfaces, native disclosures, host sizing, material nodes, review, administration and responsive behavior. It retains theme variables, bounded scrolling, clamping, folder hover/focus, tree indentation and version-specific form bounds. Each base selector has one definition; media/container rules express actual size changes. Native utilities shared by Bootstrap 4 and 5 are used without assuming version-specific class aliases.
+
+Picker help links sit outside labels, use core popovers and describe the specific field. Filters shows the number of nonempty restrictions; All and copy-location/mode choices do not count. Automatic filtering replaces only result content and retains the active input and caret.

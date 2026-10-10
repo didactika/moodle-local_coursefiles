@@ -3,83 +3,77 @@
     Native embedded browser with automatic filters and selectable grid/list cards.
     Example context (json): {"action":"#","scope":"example","sesskey":"example","cards":[],"count":0,"layout":"grid"}
 }}
-<form method="post" action="{{action}}" class="multipicker-browser p-3" data-layout="{{layout}}" data-contextid="{{contextid}}" data-selectioncapacity="{{selectioncapacity}}">
+<form method="post" action="{{action}}" class="multipicker-browser p-3" data-layout="{{layout}}" data-contextid="{{contextid}}" data-selectioncapacity="{{selectioncapacity}}" data-folderstates="{{folderstates}}">
     <input type="hidden" name="sesskey" value="{{sesskey}}">
     <input type="hidden" name="scope" value="{{scope}}">
     <input type="hidden" name="layout" value="{{layout}}">
     {{^multipleprofiles}}<input type="hidden" name="profileid" value="{{profileid}}">{{/multipleprofiles}}
     {{#selecteditems}}<input type="hidden" name="items[]" value="{{value}}">{{/selecteditems}}
-    <div class="multipicker-heading"><h2 class="h4 mb-0">{{{repositoryname}}}</h2>
+    <div class="multipicker-heading d-flex align-items-center justify-content-between flex-wrap mb-2"><h2 class="h4 mb-0">{{{repositoryname}}}</h2>
         <span class="small text-muted" role="status" data-multipicker-loading></span>
     </div>
     {{#locked}}<div class="alert alert-warning" role="status">{{#str}}browserlocked, local_multipicker{{/str}}</div>{{/locked}}
-    <div class="multipicker-toolbar multipicker-browser-filters">
-        <div class="multipicker-search"><label for="mpq" class="small">{{#str}}filenamefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
+    <div class="multipicker-toolbar multipicker-browser-filters d-flex align-items-center justify-content-between flex-wrap my-2">
+        <div class="multipicker-search"><label for="mpq" class="small">{{#str}}filenamefilter, local_multipicker{{/str}}</label> {{{filenamehelp}}}
             <div class="input-group input-group-sm"><span class="input-group-text">{{#pix}}a/search, core{{/pix}}</span>
                 <input type="search" name="q" id="mpq" value="{{filters.q}}" class="form-control form-control-sm" data-multipicker-filter autocomplete="off">
             </div>
         </div>
 
         <details class="multipicker-filter-popover" data-multipicker-options>
-            <summary class="btn btn-sm btn-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}</summary>
+            <summary class="btn btn-sm btn-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}} <span data-multipicker-filter-count>{{#filtercount}}({{filtercount}}){{/filtercount}}</span></summary>
             <div class="multipicker-filter-menu"><div class="multipicker-filterbar">
-        <div><label for="mpmodule" class="small">{{#str}}modulefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
+        <div><label for="mpmodule" class="small">{{#str}}modulefilter, local_multipicker{{/str}}</label> {{{modulehelp}}}
             <select name="module" id="mpmodule" class="custom-select custom-select-sm" data-multipicker-filter>{{#modules}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modules}}</select>
         </div>
-        <div><label for="mptype" class="small">{{#str}}filetypefilter, local_multipicker{{/str}} {{{filterhelp}}}</label>
+        <div><label for="mptype" class="small">{{#str}}filetypefilter, local_multipicker{{/str}}</label> {{{filetypehelp}}}
             <select name="mimetype" id="mptype" class="custom-select custom-select-sm" data-multipicker-filter>{{#types}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/types}}</select>
         </div>
-        {{#capturefilters}}<div><label for="{{id}}" class="small">{{{label}}} {{{filterhelp}}}</label>
+        {{#capturefilters}}<div><label for="{{id}}" class="small">{{{label}}}</label> {{{capturehelp}}}
             <input type="text" name="captures[{{key}}]" id="{{id}}" value="{{value}}" class="form-control form-control-sm" maxlength="255" list="{{id}}-values" data-multipicker-filter autocomplete="off">
             <datalist id="{{id}}-values">{{#suggestions}}<option value="{{value}}"></option>{{/suggestions}}</datalist>
         </div>{{/capturefilters}}
 
-            {{#morecapturefilters}}<div><label for="{{id}}" class="small">{{{label}}} {{{filterhelp}}}</label>
+            {{#morecapturefilters}}<div><label for="{{id}}" class="small">{{{label}}}</label> {{{capturehelp}}}
                 <input type="text" name="captures[{{key}}]" id="{{id}}" value="{{value}}" class="form-control form-control-sm" maxlength="255" list="{{id}}-values" data-multipicker-filter autocomplete="off">
                 <datalist id="{{id}}-values">{{#suggestions}}<option value="{{value}}"></option>{{/suggestions}}</datalist>
             </div>{{/morecapturefilters}}
-            {{#multipleprofiles}}<div><label for="mpprofile" class="small">{{#str}}browserprofile, local_multipicker{{/str}} {{{filterhelp}}}</label>
+            {{#multipleprofiles}}<div><label for="mpprofile" class="small">{{#str}}browserprofile, local_multipicker{{/str}}</label> {{{profilehelp}}}
                 <select name="profileid" id="mpprofile" class="custom-select custom-select-sm" data-multipicker-filter>{{#profiles}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/profiles}}</select>
             </div>{{/multipleprofiles}}
-            <div><label for="mpshortname" class="small">{{#str}}shortnamefilter, local_multipicker{{/str}} {{{filterhelp}}}</label><input type="text" name="shortname" id="mpshortname" value="{{filters.shortname}}" class="form-control form-control-sm" data-multipicker-filter></div>
-            <div><label for="mpdestination" class="small">{{#str}}batchdestination, local_multipicker{{/str}} {{{filterhelp}}}</label><select name="destination" id="mpdestination" class="custom-select custom-select-sm">{{#destinations}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/destinations}}</select></div>
-            <div><label for="mpmode" class="small">{{#str}}copymode, local_multipicker{{/str}} {{{filterhelp}}}</label><select name="mode" id="mpmode" class="custom-select custom-select-sm">{{#modes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modes}}</select></div>
+            <div><label for="mpshortname" class="small">{{#str}}shortnamefilter, local_multipicker{{/str}}</label> {{{coursehelp}}}<input type="text" name="shortname" id="mpshortname" value="{{filters.shortname}}" class="form-control form-control-sm" data-multipicker-filter></div>
+            <div><label for="mpdestination" class="small">{{#str}}batchdestination, local_multipicker{{/str}}</label> {{{destinationhelp}}}<select name="destination" id="mpdestination" class="custom-select custom-select-sm">{{#destinations}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/destinations}}</select></div>
+            <div><label for="mpmode" class="small">{{#str}}copymode, local_multipicker{{/str}}</label> {{{modehelp}}}<select name="mode" id="mpmode" class="custom-select custom-select-sm">{{#modes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modes}}</select></div>
 
             </div></div>
         </details>
     </div>
-    <div class="multipicker-toolbar">
+    <div class="multipicker-toolbar d-flex align-items-center justify-content-between flex-wrap my-2">
         <div class="d-flex flex-wrap">
             <button name="search" value="1" class="btn btn-sm btn-outline-secondary" data-multipicker-search>{{#str}}batchsearch, local_multipicker{{/str}}</button>
             <button name="selectall" value="1" class="btn btn-sm btn-link">{{#str}}selectall, local_multipicker{{/str}}</button>
             <button name="clear" value="1" class="btn btn-sm btn-link">{{#str}}clearselection, local_multipicker{{/str}}</button>
         </div>
         <div class="btn-group" role="group" aria-label="{{#str}}browserlayout, local_multipicker{{/str}}">
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-multipicker-layout="grid" aria-pressed="{{^listlayout}}true{{/listlayout}}{{#listlayout}}false{{/listlayout}}" title="{{#str}}layoutgrid, local_multipicker{{/str}}">{{#pix}}a/view_icon_active, core{{/pix}}<span class="multipicker-visually-hidden">{{#str}}layoutgrid, local_multipicker{{/str}}</span></button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-multipicker-layout="list" aria-pressed="{{#listlayout}}true{{/listlayout}}{{^listlayout}}false{{/listlayout}}" title="{{#str}}layoutlist, local_multipicker{{/str}}">{{#pix}}a/view_list_active, core{{/pix}}<span class="multipicker-visually-hidden">{{#str}}layoutlist, local_multipicker{{/str}}</span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary {{#gridlayout}}active{{/gridlayout}}" data-multipicker-layout="grid" aria-pressed="{{#gridlayout}}true{{/gridlayout}}{{^gridlayout}}false{{/gridlayout}}" title="{{#str}}layoutgrid, local_multipicker{{/str}}">{{#pix}}a/view_icon_active, core{{/pix}}<span class="multipicker-visually-hidden">{{#str}}layoutgrid, local_multipicker{{/str}}</span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary {{#listlayout}}active{{/listlayout}}" data-multipicker-layout="list" aria-pressed="{{#listlayout}}true{{/listlayout}}{{^listlayout}}false{{/listlayout}}" title="{{#str}}layoutlist, local_multipicker{{/str}}">{{#pix}}a/view_list_active, core{{/pix}}<span class="multipicker-visually-hidden">{{#str}}layoutlist, local_multipicker{{/str}}</span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary {{#treelayout}}active{{/treelayout}}" data-multipicker-layout="tree" aria-pressed="{{#treelayout}}true{{/treelayout}}{{^treelayout}}false{{/treelayout}}" title="{{#str}}layouttree, local_multipicker{{/str}}">{{#pix}}a/view_tree_active, core{{/pix}}<span class="multipicker-visually-hidden">{{#str}}layouttree, local_multipicker{{/str}}</span></button>
         </div>
     </div>
-    {{#infolder}}<div class="multipicker-toolbar mb-2"><button name="openfolder" value="{{parent}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</button><span class="small text-muted text-break">{{{location}}}</span></div>{{/infolder}}
+    {{#infolder}}<div class="multipicker-toolbar mb-2 d-flex align-items-center justify-content-between flex-wrap my-2"><button name="openfolder" value="{{parent}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</button><span class="small text-muted text-break">{{{location}}}</span></div>{{/infolder}}
     <div class="multipicker-results" data-multipicker-results><div class="multipicker-skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div class="multipicker-cards">
-        {{#cards}}<div class="card multipicker-card {{#checked}}multipicker-selected{{/checked}}">
-            <div class="card-body">
-                <input type="checkbox" id="{{id}}" name="choices[]" data-multipicker-choice value="{{value}}" data-partial="{{partial}}" {{#checked}}checked{{/checked}}>
-                <div class="multipicker-card-content">
-                    <div class="multipicker-card-kind">{{#isfolder}}{{#pix}}f/folder, core{{/pix}}{{/isfolder}}{{^isfolder}}{{#pix}}{{icon}}, core{{/pix}}{{/isfolder}} <span class="multipicker-chip">{{#isfolder}}{{#str}}folder, core{{/str}}{{/isfolder}}{{^isfolder}}{{#str}}file, core{{/str}}{{/isfolder}}</span></div>
-                    <label for="{{id}}" class="multipicker-card-title" title="{{plaintitle}}">{{{title}}}</label>
-                    <div class="multipicker-origin text-break">{{#showorigin}}{{{origin}}}{{/showorigin}}</div>
-                    <div class="multipicker-card-meta">{{#isfolder}}<span class="multipicker-chip">{{selectionlabel}}</span>{{/isfolder}}{{^isfolder}}<span class="text-muted text-break">{{details}}</span>{{/isfolder}}</div>
-                </div>
-                {{#isfolder}}<button name="openfolder" value="{{open}}" class="btn btn-outline-secondary multipicker-open" title="{{#str}}openfolder, local_multipicker{{/str}}">{{#pix}}t/right, core{{/pix}}<span class="multipicker-visually-hidden">{{#str}}openfolder, local_multipicker{{/str}}</span></button>{{/isfolder}}
-            </div>
-        </div>{{/cards}}
+        {{#treegroups}}<details class="multipicker-browser-tree-group" open>
+            <summary class="small"><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}i/course, core{{/pix}} <strong class="text-break">{{{name}}}</strong></summary>
+            <div class="multipicker-tree-entries">{{#cards}}{{> local_multipicker/local/selection/card}}{{/cards}}</div>
+        </details>{{/treegroups}}
+
     </div>
     {{^cards}}<div class="multipicker-empty text-muted py-4 text-center">{{#pix}}a/search, core{{/pix}}<p class="mt-2">{{#catalogpending}}{{#str}}catalogpending, local_multipicker{{/str}}{{/catalogpending}}{{^catalogpending}}{{#str}}batchempty, local_multipicker{{/str}}{{/catalogpending}}</p></div>{{/cards}}
-    <div class="multipicker-pagination mt-3">
+    <div class="multipicker-pagination mt-3 d-flex align-items-center justify-content-between flex-wrap">
         {{#previouspage}}<button name="previouspage" value="1" class="btn btn-sm btn-outline-secondary">{{#pix}}t/left, core{{/pix}} {{#str}}previous, core{{/str}}</button>{{/previouspage}}
         {{#next}}<button name="next" value="{{next}}" class="btn btn-sm btn-outline-secondary">{{#str}}batchnext, local_multipicker{{/str}} {{#pix}}t/right, core{{/pix}}</button>{{/next}}
     </div>
-    </div><div class="multipicker-footer">
+    </div><div class="multipicker-footer d-flex align-items-center justify-content-between flex-wrap mt-2 pt-2 pb-1 border-top">
         <span class="small"><strong data-multipicker-count>{{count}}</strong> {{#str}}selecteditems, local_multipicker{{/str}}</span>
         <button name="review" value="1" class="btn btn-primary" data-multipicker-review>{{#str}}batchreview, local_multipicker{{/str}} {{#pix}}t/right, core{{/pix}}</button>
     </div>

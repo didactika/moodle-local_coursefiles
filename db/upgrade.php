@@ -150,5 +150,9 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
         }
         upgrade_plugin_savepoint(true, 2026101000, 'local', 'multipicker');
     }
+    if ($oldversion < 2026101001) {
+        \local_multipicker\local\upgrade\legacy_import::repair_tasks();
+        upgrade_plugin_savepoint(true, 2026101001, 'local', 'multipicker');
+    }
     return true;
 }

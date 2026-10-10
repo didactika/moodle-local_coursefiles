@@ -11,16 +11,15 @@
         <dl class="row mb-0">{{#filters}}
             <dt class="col-md-4">{{{label}}}</dt><dd class="col-md-8 text-break"><code>{{capture}}</code></dd>
         {{/filters}}</dl>
-        <details class="mt-3">
+        {{#placement}}<details class="mt-3">
             <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}rulesinuse, local_multipicker{{/str}}</summary>
         <dl class="row mb-0 mt-3">{{#rows}}
             <dt class="col-md-4">{{label}}</dt><dd class="col-md-8 text-break">{{value}}</dd>
         {{/rows}}</dl>
-        </details>
+        </details>{{/placement}}
         <details class="mt-3">
             <summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}relationshiprules, local_multipicker{{/str}}</summary>
-            <p class="mt-3">{{#str}}familykey, local_multipicker{{/str}}: <code>{{familykey}}</code><br>
-                {{#str}}editioncapture, local_multipicker{{/str}}: <code>{{editioncapture}}</code></p>
+            <p class="mt-3">{{#str}}familykey, local_multipicker{{/str}}: <code>{{familykey}}</code></p>
             {{#parsers}}<p>{{field}}<br><code class="text-break">{{pattern}}</code></p>{{/parsers}}
         </details>
     </div>

@@ -30,6 +30,30 @@ namespace local_multipicker\local\upgrade;
  */
 final class legacy_import {
     /**
+     * Remove retired scheduled registrations and preserve supported queued work.
+     * Disabled registrations also get instantiated by cron, so disabling is insufficient.
+     */
+    public static function repair_tasks(): void {
+        global $DB;
+        $transaction = $DB->start_delegated_transaction();
+        $DB->delete_records('task_scheduled', ['component' => 'local_coursebridge']);
+        foreach ($DB->get_records('task_adhoc', ['component' => 'local_coursebridge']) as $task) {
+            $classname = str_replace('local_coursebridge\\', 'local_multipicker\\', $task->classname);
+            if (!is_subclass_of($classname, \core\task\adhoc_task::class)) {
+                throw new \coding_exception('Unsupported legacy queued task: ' . $task->classname);
+            }
+            $task->component = 'local_multipicker';
+            $task->classname = $classname;
+            if (property_exists($task, 'identityhash')) {
+                // Moodle 5.3 rebuilds nullable legacy identities when deduplicating queued work.
+                $task->identityhash = null;
+            }
+            $DB->update_record('task_adhoc', $task);
+        }
+        $transaction->allow_commit();
+    }
+
+    /**
      * Import the complete old installation after XMLDB creates the new tables.
      */
     public static function execute(): void {
@@ -80,13 +104,8 @@ final class legacy_import {
                 }
             }
         }
-        foreach ($DB->get_records('task_adhoc', ['component' => 'local_coursebridge']) as $task) {
-            $task->component = 'local_multipicker';
-            $task->classname = str_replace('local_coursebridge\\', 'local_multipicker\\', $task->classname);
-            $DB->update_record('task_adhoc', $task);
-        }
         // Old scheduled tasks must not run against the retained rollback tables.
-        $DB->set_field('task_scheduled', 'disabled', 1, ['component' => 'local_coursebridge']);
+        self::repair_tasks();
         set_config('legacy_version', get_config('local_coursebridge', 'version'), 'local_multipicker');
         unset_config('version', 'local_coursebridge');
         set_config('legacy_imported', time(), 'local_multipicker');

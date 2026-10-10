@@ -4,7 +4,7 @@
     Example context (json): {"backurl":"#","count":2,"nodes":[],"approved":false}
 }}
 <main class="multipicker-browser multipicker-selection-review p-3">
-    <div class="multipicker-heading">
+    <div class="multipicker-heading d-flex align-items-center justify-content-between flex-wrap mb-2">
         <a href="{{backurl}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a>
         <h2 class="h6 mb-0">{{#str}}batchreview, local_multipicker{{/str}}</h2>
         <span class="small text-muted">{{count}} {{#str}}files, core{{/str}}</span>
@@ -12,13 +12,13 @@
     {{#renameerror}}<div class="alert alert-danger" role="alert">{{renameerror}}</div>{{/renameerror}}
     {{#error}}<div class="alert alert-danger" role="alert">{{error}}</div>{{/error}}
     {{^error}}
-    <form method="post" action="{{action}}" class="multipicker-review-form">
+    <form method="post" action="{{action}}" class="multipicker-review-form" id="multipicker-review-form">
         <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="scope" value="{{scope}}">
         <div class="multipicker-results"><ul class="multipicker-tree multipicker-tree-root">{{#nodes}}{{> local_multipicker/local/selection/review_node}}{{/nodes}}</ul></div>
-        <div class="multipicker-toolbar"><button name="removeselected" value="1" class="btn btn-sm btn-outline-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_multipicker{{/str}}</button></div>
     </form>
-    <div class="multipicker-footer">
+    <div class="multipicker-footer d-flex align-items-center justify-content-between flex-wrap mt-2 pt-2 pb-1 border-top">
         {{#approved}}<button type="button" data-multipicker-confirm disabled class="btn btn-sm btn-primary">{{#str}}importselection, local_multipicker{{/str}}</button>{{/approved}}
         <span data-multipicker-status role="status" class="small text-muted"></span>
+        <button name="removeselected" value="1" form="multipicker-review-form" data-multipicker-remove-selected hidden disabled class="btn btn-sm btn-outline-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_multipicker{{/str}}</button>
     </div>{{/error}}
 </main>

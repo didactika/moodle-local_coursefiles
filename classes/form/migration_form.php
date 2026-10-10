@@ -131,14 +131,6 @@ final class migration_form extends \moodleform {
         $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_multipicker'));
         $form->hideIf('layoutconfirmed', 'sectionstrategy', 'neq', 'ordinal');
         $buttons = [
-            $form->createElement('static', 'back', '', \html_writer::link(
-                new \moodle_url(
-                    '/local/multipicker/admin/migration.php',
-                    ['new' => 1, 'profileid' => $this->_customdata['profileid'], 'step' => 'profile']
-                ),
-                $OUTPUT->pix_icon('t/left', '') . ' ' . get_string('back'),
-                ['class' => 'btn btn-sm btn-outline-secondary multipicker-back']
-            )),
             $form->createElement('submit', 'submitbutton', get_string('createpreview', 'local_multipicker')),
         ];
         $form->addGroup($buttons, 'buttons', '', [' '], false);

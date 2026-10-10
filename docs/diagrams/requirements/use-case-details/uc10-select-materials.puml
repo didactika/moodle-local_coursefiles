@@ -10,7 +10,12 @@ start
 :Open scoped browser inside native picker;
 |Teacher|
 :Choose profile and optional compact filters;
-:Browse folders and select cards or all results;
+:Browse cards or expand initially collapsed tree branches;
+|MultiPicker|
+:Exclude bytes already in the owning draft before paging;
+:Load bounded subfolder / file children on demand;
+|Teacher|
+:Select files, folders or all matching results;
 |MultiPicker|
 :Resolve recursive files and parent partial state;
 |Teacher|
@@ -27,7 +32,7 @@ if (Review allowed?) then (yes)
  |MultiPicker|
  :Rebuild approval after changes;
  |Teacher|
- :Press Import reviewed materials;
+ :Press Import materials;
  |MultiPicker|
  :Recheck approval and copy transactionally to native draft;
  :Refresh the original filemanager;

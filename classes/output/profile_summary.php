@@ -62,7 +62,8 @@ final class profile_summary {
         foreach ($rules->filter_definitions() as $definition) {
             $filters[] = ['label' => display::label($definition['label']), 'capture' => $definition['capture']];
         }
-        return ['rows' => $placement ? $rows : [], 'filters' => $filters, 'name' => display::name($config['name'] ?? ''),
+        return ['rows' => $placement ? $rows : [], 'placement' => $placement,
+            'filters' => $filters, 'name' => display::name($config['name'] ?? ''),
             'parsers' => $config['relationship']['parsers'] ?? [],
             'familykey' => $config['relationship']['family_key'] ?? '',
             'editioncapture' => $config['relationship']['edition']['capture'] ?? 'edition'];

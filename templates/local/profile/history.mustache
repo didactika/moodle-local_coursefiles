@@ -3,19 +3,20 @@
     Paged history and field comparison within a single profile.
     Example context (json): {"versions":[],"choices":[],"rows":[],"profileid":1}
 }}
-<section class="multipicker-admin">
-<div class="multipicker-actionbar mb-3"><h2 class="h4 mb-0">{{#str}}versionhistory, local_multipicker{{/str}}: {{{name}}}</h2></div>
+<section class="multipicker-admin" data-multipicker-history>
+<div class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{backurl}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a></div>
+<div class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap"><h2 class="h4 mb-0">{{#str}}versionhistory, local_multipicker{{/str}}: {{{name}}}</h2></div>
 <p class="text-muted">{{#str}}versionhistoryhelp, local_multipicker{{/str}} {{{historyhelp}}}</p>
-<form method="get" action="{{action}}" class="multipicker-toolbar mb-3">
+<form id="multipicker-compare" method="get" action="{{action}}" class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap">
 <input type="hidden" name="profileid" value="{{profileid}}">
-<div><label for="mp-history-left">{{#str}}comparebefore, local_multipicker{{/str}} {{{historyhelp}}}</label><select id="mp-history-left" name="left" class="custom-select custom-select-sm">{{#choices}}<option value="{{id}}" {{#left}}selected{{/left}}>{{number}}</option>{{/choices}}</select></div>
-<div><label for="mp-history-right">{{#str}}compareafter, local_multipicker{{/str}} {{{historyhelp}}}</label><select id="mp-history-right" name="right" class="custom-select custom-select-sm">{{#choices}}<option value="{{id}}" {{#right}}selected{{/right}}>{{number}}</option>{{/choices}}</select></div>
-<label class="mb-0"><input type="checkbox" name="changesonly" value="1" {{#changesonly}}checked{{/changesonly}}> {{#str}}changesonly, local_multipicker{{/str}} {{{historyhelp}}}</label>
+<input type="hidden" name="left" value="0"><input type="hidden" name="right" value="0">
+<label class="mb-0"><input type="checkbox" name="changesonly" value="1" {{#changesonly}}checked{{/changesonly}}> {{#str}}changesonly, local_multipicker{{/str}}</label>
 <button class="btn btn-sm btn-primary">{{#pix}}i/search, core{{/pix}}{{#str}}compareversions, local_multipicker{{/str}}</button>
+{{#offpagechoices}}<label class="mb-0 small"><input type="checkbox" data-multipicker-version value="{{id}}" checked> {{#str}}version, core{{/str}} {{number}}</label>{{/offpagechoices}}
 </form>
 {{#comparing}}<div class="table-responsive"><table class="table table-bordered multipicker-version-diff"><thead><tr><th>{{#str}}configfield, local_multipicker{{/str}}</th><th>{{#str}}version, core{{/str}} {{leftnumber}}</th><th>{{#str}}version, core{{/str}} {{rightnumber}}</th></tr></thead><tbody>{{#rows}}<tr {{#changed}}class="table-warning"{{/changed}}><th>{{field}}</th><td><code>{{before}}</code></td><td><code>{{after}}</code></td></tr>{{/rows}}</tbody></table></div>{{/comparing}}
-<form method="post" action="{{action}}"><input type="hidden" name="sesskey" value="{{sesskey}}"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>{{#str}}version, core{{/str}}</th><th>{{#str}}date, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}actions, core{{/str}}</th></tr></thead><tbody>
-{{#versions}}<tr><td>{{number}}</td><td>{{date}}</td><td>{{#active}}<span class="multipicker-chip">{{#str}}active, core{{/str}}</span>{{/active}}</td><td><div class="btn-group multipicker-row-actions"><a href="{{compareurl}}" class="btn btn-sm btn-outline-primary" title="{{#str}}compareversions, local_multipicker{{/str}}" aria-label="{{#str}}compareversions, local_multipicker{{/str}}">{{#pix}}i/search, core{{/pix}}</a>{{^active}}<button name="restore" value="{{id}}" class="btn btn-sm btn-outline-success" title="{{#str}}restoreversion, local_multipicker{{/str}}" aria-label="{{#str}}restoreversion, local_multipicker{{/str}}">{{#pix}}i/restore, core{{/pix}}</button>{{/active}}</div></td></tr>{{/versions}}
+<form method="post" action="{{action}}"><input type="hidden" name="sesskey" value="{{sesskey}}"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>{{#str}}select, core{{/str}}</th><th>{{#str}}version, core{{/str}}</th><th>{{#str}}date, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}actions, core{{/str}}</th></tr></thead><tbody>
+{{#versions}}<tr><td><input type="checkbox" data-multipicker-version value="{{id}}" {{#selected}}checked{{/selected}} aria-label="{{#str}}version, core{{/str}} {{number}}"></td><td>{{number}}</td><td>{{date}}</td><td>{{#active}}<span class="multipicker-chip">{{#str}}active, core{{/str}}</span>{{/active}}</td><td><div class="btn-group multipicker-row-actions"><a href="{{compareurl}}" class="btn btn-sm btn-outline-primary" title="{{#str}}compareversions, local_multipicker{{/str}}" aria-label="{{#str}}compareversions, local_multipicker{{/str}}">{{#pix}}i/search, core{{/pix}}</a>{{^active}}<button name="restore" value="{{id}}" class="btn btn-sm btn-outline-primary" title="{{#str}}restoreversion, local_multipicker{{/str}}" aria-label="{{#str}}restoreversion, local_multipicker{{/str}}">{{#pix}}i/restore, core{{/pix}}</button>{{/active}}</div></td></tr>{{/versions}}
 </tbody></table></div></form>{{{pagination}}}
-<div class="multipicker-page-actions"><a href="{{backurl}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a></div>
+
 </section>

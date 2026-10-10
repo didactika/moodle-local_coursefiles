@@ -29,6 +29,93 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
  */
 class behat_local_multipicker extends behat_base {
     /**
+     * Retain actual DOM nodes to detect navigation or lost native checkbox properties.
+     * @When /^I remember the selected MultiPicker profile rows$/
+     */
+    public function remember_profile_rows(): void {
+        $this->getSession()->getDriver()->executeScript(
+            'window.multipickerProfileRows=[...document.querySelectorAll("input[name=\\"profiles[]\\"]")]'
+            . '.filter(check=>check.checked);'
+        );
+    }
+
+    /**
+     * State actions must retain checked rows rather than reloading the list.
+     * @Then /^MultiPicker should retain its selected profile rows$/
+     */
+    public function retain_profile_rows(): void {
+        $correct = $this->getSession()->getDriver()->evaluateScript(
+            '!!window.multipickerProfileRows?.length'
+            . '&&window.multipickerProfileRows.every(check=>check.isConnected&&check.checked)'
+        );
+        if (!$correct) {
+            throw new \Exception('A state change replaced the profile list or cleared its selection.');
+        }
+    }
+
+    /**
+     * Exercise native help links with actual pointer clicks inside the picker iframe.
+     * @Then /^all MultiPicker filter help icons should open their content$/
+     */
+    public function filter_help_opens(): void {
+        $this->wait_for_browser();
+        $this->getSession()->getDriver()->executeScript(
+            'const frame=document.querySelector(".fp-object-container");frame.id="multipickerhelpframe";'
+            . 'frame.name="multipickerhelpframe";'
+            . 'frame.contentDocument.querySelector("[data-multipicker-options]").open=true;'
+        );
+        $this->getSession()->switchToIFrame('multipickerhelpframe');
+        try {
+            $selector = '.multipicker-browser-filters a[data-toggle="popover"],'
+                . '.multipicker-browser-filters a[data-bs-toggle="popover"]';
+            $links = $this->getSession()->getPage()->findAll('css', $selector);
+            if (count($links) < 6) {
+                throw new \Exception('Specific filter and copy-option help links are missing.');
+            }
+            foreach ($links as $link) {
+                $this->getSession()->getDriver()->executeScript(
+                    'document.querySelector("[data-multipicker-options]").open=true;'
+                );
+                $link->click();
+                if (
+                    !$this->getSession()->wait(
+                        3000,
+                        '!!document.querySelector(".popover.show .popover-body")'
+                        . '&&document.querySelector(".popover.show .popover-body").textContent.trim().length>10'
+                        . '&&document.activeElement.tagName!=="INPUT"'
+                    )
+                ) {
+                    throw new \Exception('A native filter help link did not open readable content.');
+                }
+                $this->getSession()->getDriver()->executeScript('document.activeElement.blur();');
+            }
+        } finally {
+            $this->getSession()->switchToIFrame(null);
+            $this->getSession()->getDriver()->executeScript(
+                'document.querySelector(".fp-object-container").contentDocument'
+                . '.querySelector("[data-multipicker-options]").open=false;'
+            );
+        }
+    }
+
+    /**
+     * Count actual restrictions, excluding empty/All choices and copy options.
+     * @Then /^MultiPicker should show "([0-9]+)" active filters$/
+     * @param string $count Expected restrictions.
+     */
+    public function active_filter_count(string $count): void {
+        $this->wait_for_browser();
+        $expected = (int)$count ? '(' . $count . ')' : '';
+        $actual = $this->getSession()->getDriver()->evaluateScript(
+            'document.querySelector(".fp-object-container").contentDocument'
+            . '.querySelector("[data-multipicker-filter-count]").textContent'
+        );
+        if (trim($actual) !== $expected) {
+            throw new \Exception('The active filter count is incorrect: ' . $actual);
+        }
+    }
+
+    /**
      * Exercise real editable rows, serialization and native form bounds at both widths.
      *
      * @Then /^the MultiPicker correspondence rows should fit narrow screens$/
@@ -117,9 +204,10 @@ class behat_local_multipicker extends behat_base {
      */
     public function compare_oldest_profile_version(): void {
         $this->getSession()->getDriver()->executeScript(
-            'const links=[...document.querySelectorAll(".multipicker-row-actions a[href*=left]")];'
-            . 'if(!links.length){throw new Error("Profile version comparison link is missing.");}'
-            . 'links.at(-1).click();'
+            'const checks=[...document.querySelectorAll("[data-multipicker-version]")];'
+            . 'if(checks.length<2){throw new Error("Profile versions are missing.");}'
+            . 'checks[0].click();checks.at(-1).click();'
+            . 'document.querySelector("#multipicker-compare button").click();'
         );
     }
 
@@ -170,7 +258,7 @@ class behat_local_multipicker extends behat_base {
     }
 
     /**
-     * Verify actual visibility, icon-only content and accessible action labels.
+     * Verify actual visibility, compact labels and native action icons.
      *
      * @Then /^MultiPicker profile bulk actions should be "(hidden|visible)"$/
      * @param string $state Expected visibility.
@@ -181,7 +269,7 @@ class behat_local_multipicker extends behat_base {
             '(()=>{const bar=document.querySelector("[data-multipicker-bulk-actions]");'
             . 'const buttons=[...bar.querySelectorAll("button")];'
             . 'return (bar.getClientRects().length>0)===' . $visible . '&&buttons.length===4'
-            . '&&buttons.every(button=>button.textContent.trim()===""&&button.getAttribute("title")'
+            . '&&buttons.every(button=>button.textContent.trim()!==""&&button.getAttribute("title")'
             . '&&button.getAttribute("aria-label")&&button.querySelector(".icon"));})()'
         );
         if (!$correct) {
@@ -304,10 +392,119 @@ class behat_local_multipicker extends behat_base {
      * @param string $page Page name.
      */
     public function open_administration(string $page): void {
+        if ($page === 'category') {
+            $this->getSession()->visit($this->locate_path('/admin/category.php?category=local_multipicker'));
+            return;
+        }
         if (!in_array($page, ['settings', 'profiles', 'migration', 'log'], true)) {
             throw new \Exception('Unknown administration page');
         }
         $this->getSession()->visit($this->locate_path('/local/multipicker/admin/' . $page . '.php'));
+    }
+
+    /**
+     * Switch shared nodes between native grid, list and a collapsible course tree.
+     * @Then /^MultiPicker layouts should share selections and mark the active view$/
+     */
+    public function native_browser_layouts(): void {
+        $this->wait_for_browser();
+        $correct = $this->getSession()->getDriver()->evaluateScript(
+            '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'const form=doc.querySelector(".multipicker-browser"),card=doc.querySelector(".multipicker-card");'
+            . 'for(const layout of ["list","tree"]){form.querySelector("[data-multipicker-layout="+layout+"]").click();'
+            . 'if(form.dataset.layout!==layout||form.querySelectorAll("[data-multipicker-layout].active").length!==1)'
+            . '{return false;}}const group=doc.querySelector(".multipicker-browser-tree-group");'
+            . 'if(!group.querySelector("summary").getClientRects().length){return false;}group.open=false;'
+            . 'const hidden=!group.querySelector(".multipicker-card").getClientRects().length;'
+            . 'form.querySelector("[data-multipicker-layout=grid]").click();'
+            . 'return hidden&&group.open&&card===doc.querySelector(".multipicker-card")'
+            . '&&doc.querySelector("[data-multipicker-layout=grid]").getAttribute("aria-pressed")==="true";})()'
+        );
+        if (!$correct) {
+            throw new \Exception('The course tree, native active view or shared result nodes are incorrect.');
+        }
+        $this->getSession()->getDriver()->executeScript(
+            'document.querySelector(".fp-object-container").contentDocument'
+            . '.querySelector("[data-multipicker-layout=tree]").click();'
+            . 'window.multipickerTreePainted=false;requestAnimationFrame(()=>requestAnimationFrame(()=>'
+            . '{window.multipickerTreePainted=true;}));'
+        );
+        if (!$this->getSession()->wait(3000, 'window.multipickerTreePainted')) {
+            throw new \Exception('The native tree layout did not finish painting.');
+        }
+        file_put_contents('/tmp/multipicker-tree-desktop.png', $this->getSession()->getScreenshot());
+        $this->getSession()->getDriver()->executeScript(
+            'document.querySelector(".fp-object-container").contentDocument'
+            . '.querySelector("[data-multipicker-layout=grid]").click();'
+        );
+    }
+
+    /**
+     * Folder removal checks include descendants and share the import action row.
+     * @Then /^MultiPicker review folders should select their files and reveal removal$/
+     */
+    public function review_folder_removal(): void {
+        $this->wait_for_browser();
+        $correct = $this->getSession()->getDriver()->evaluateScript(
+            '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'const remove=doc.querySelector("[data-multipicker-remove-selected]");if(!remove.hidden){return false;}'
+            . 'const folder=doc.querySelector("[data-multipicker-review-folder]");if(!folder){return false;}folder.click();'
+            . 'const files=[...folder.closest("details").querySelectorAll("input[name=\\"removefiles[]\\"]")];'
+            . 'const selected=files.every(check=>check.checked)&&!remove.hidden&&!remove.disabled;'
+            . 'const importButton=doc.querySelector("[data-multipicker-confirm]");'
+            . 'const aligned=Math.abs(remove.getBoundingClientRect().y-importButton.getBoundingClientRect().y)<2;'
+            . 'const approved=!importButton.disabled;'
+            . 'folder.click();return selected&&aligned&&approved&&!importButton.disabled'
+            . '&&files.every(check=>!check.checked)&&remove.hidden;})()'
+        );
+        if (!$correct) {
+            throw new \Exception('Review folder selection or the conditional footer removal action is incorrect.');
+        }
+    }
+
+    /**
+     * Load real recursive fragments, select their owning folder and retain all expanded nodes.
+     * @Then /^MultiPicker tree folders should load through to selectable files$/
+     */
+    public function native_tree_files(): void {
+        $this->wait_for_browser();
+        $this->getSession()->getDriver()->executeScript(
+            '(()=>{const doc=document.querySelector(".fp-object-container").contentDocument;'
+            . 'doc.querySelector("[data-multipicker-layout=tree]").click();'
+            . 'const root=doc.querySelector("[data-tree-folder]");'
+            . 'window.multipickerTreeTest={root,entries:root.querySelector("[data-tree-entries]")};'
+            . 'if(!window.multipickerTreeTest.entries.hidden||window.multipickerTreeTest.entries.children.length)'
+            . '{throw new Error("Tree children were eagerly loaded");}'
+            . 'root.querySelector("[name=openfolder]").click();})()'
+        );
+        if (!$this->getSession()->wait(10000, 'window.multipickerTreeTest.entries.dataset.loaded==="true"')) {
+            throw new \Exception('The first native tree branch did not load.');
+        }
+        $this->getSession()->getDriver()->executeScript(
+            '(()=>{const state=window.multipickerTreeTest;const child=state.entries.querySelector("[data-tree-folder]");'
+            . 'if(!child||!child.querySelector("[data-tree-entries]").hidden'
+            . '||!state.entries.querySelector("[data-multipicker-choice][value^=\\"file:\\"]"))'
+            . '{throw new Error("Missing selectable files or collapsed nested folder");}'
+            . 'state.child=child;state.nested=child.querySelector("[data-tree-entries]");'
+            . 'child.querySelector("[name=openfolder]").click();})()'
+        );
+        if (!$this->getSession()->wait(10000, 'window.multipickerTreeTest.nested.dataset.loaded==="true"')) {
+            throw new \Exception('The nested native tree branch did not load.');
+        }
+        $this->getSession()->getDriver()->executeScript(
+            'window.multipickerTreeTest.root.querySelector("[data-multipicker-choice]").click();'
+        );
+        $this->selected_file_count(2);
+        $correct = $this->getSession()->getDriver()->evaluateScript(
+            '(()=>{const state=window.multipickerTreeTest;'
+            . 'const checks=[...state.root.querySelectorAll("[data-multipicker-choice]")];'
+            . 'return checks.length>=4&&checks.every(check=>check.checked)&&state.child.isConnected'
+            . '&&state.nested.querySelector("[data-multipicker-choice][value^=\\"file:\\"]")!==null;})()'
+        );
+        if (!$correct) {
+            throw new \Exception('Recursive tree selection did not update files and nested folder checks in place.');
+        }
+        file_put_contents('/tmp/multipicker-recursive-tree.png', $this->getSession()->getScreenshot());
     }
 
     /**
@@ -554,7 +751,7 @@ class behat_local_multipicker extends behat_base {
                 . '&&document.querySelector(".fp-object-container")?.contentDocument?.readyState==="complete"'
             );
         }
-        if ($label === 'Import reviewed materials') {
+        if ($label === 'Import materials') {
             $this->getSession()->wait(
                 10000,
                 '!document.querySelector(".file-picker") || document.querySelector(".file-picker").offsetParent===null'
