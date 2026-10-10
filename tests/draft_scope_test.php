@@ -36,12 +36,119 @@ use local_multipicker\local\selection\draft_scope;
  * @covers \local_multipicker\local\catalog\material_source
  * @covers \local_multipicker\local\profile\profiles
  * @covers \local_multipicker\local\selection\draft_scope
+ * @covers \local_multipicker\local\selection\destination_content
+ * @covers \local_multipicker\local\selection\browser_controller
+ * @covers \local_multipicker\local\selection\browser_listing
+ * @covers ::local_multipicker_output_fragment_browser_tree
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\form\scoped_filemanager::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\material_source::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\draft_scope::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\destination_content::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\browser_controller::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\selection\browser_listing::class)]
+#[\PHPUnit\Framework\Attributes\CoversFunction('local_multipicker_output_fragment_browser_tree')]
 final class draft_scope_test extends \advanced_testcase {
+    /**
+     * Existing bytes are excluded before pagination, even when the destination file was renamed.
+     */
+    public function test_existing_draft_content_is_hidden_and_not_selected_with_its_folder(): void {
+        global $USER;
+        [$form, $profileid, $source, $target, $context] = $this->fixture();
+        \local_multipicker\local\catalog\indexer::refresh($source->course);
+        \local_multipicker\local\catalog\indexer::refresh($target->course);
+        $draftid = (int)$form->control()->getValue();
+        $fs = get_file_storage();
+        $original = $fs->get_file(
+            \context_module::instance($source->cmid)->id,
+            'mod_folder',
+            'content',
+            0,
+            '/',
+            'first.txt'
+        );
+        $existing = $fs->create_file_from_storedfile(['contextid' => \context_user::instance($USER->id)->id,
+            'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid,
+            'filepath' => '/renamed/', 'filename' => 'already-used.txt', 'author' => 'Changed native author'], $original);
+        $token = $form->control()->open_scope($context);
+        $data = \local_multipicker\local\selection\browser_controller::data($token);
+        $root = array_values(array_filter($data['data']['cards'], static fn($card) => $card['isfolder']))[0];
+        $this->assertSame('0 / 1 selected', $root['selectionlabel']);
+        $result = \local_multipicker\local\selection\browser_controller::data(
+            $token,
+            \local_multipicker\local\selection\browser_controller::input(['profileid' => $profileid, 'selectall' => true])
+        );
+        $this->assertSame(1, $result['data']['count']);
+        $this->assertNotContains(['value' => 'file:' . $original->get_pathnamehash()], $result['data']['selecteditems']);
+        $assets = \local_multipicker\local\catalog\catalog::search($target->course, $profileid, [], '', 1, $draftid);
+        $this->assertCount(1, $assets['assets']);
+        $this->assertSame('second.txt', $assets['assets'][0]['occurrences'][0]['filename']);
+        $this->assertSame('', $assets['next']);
+        $existing->delete();
+        $assets = \local_multipicker\local\catalog\catalog::search($target->course, $profileid, [], '', 50, $draftid);
+        $this->assertCount(2, $assets['assets']);
+    }
+
+    /**
+     * Another actor's draft with the same item ID cannot hide available material.
+     */
+    public function test_destination_exclusion_is_actor_scoped(): void {
+        [$form, $profileid, $source, $target] = $this->fixture();
+        \local_multipicker\local\catalog\indexer::refresh($source->course);
+        \local_multipicker\local\catalog\indexer::refresh($target->course);
+        $actor = $this->getDataGenerator()->create_user();
+        $file = get_file_storage()->get_file(
+            \context_module::instance($source->cmid)->id,
+            'mod_folder',
+            'content',
+            0,
+            '/',
+            'first.txt'
+        );
+        get_file_storage()->create_file_from_storedfile(['contextid' => \context_user::instance($actor->id)->id,
+            'component' => 'user', 'filearea' => 'draft', 'itemid' => (int)$form->control()->getValue()], $file);
+        $assets = \local_multipicker\local\catalog\catalog::search(
+            $target->course,
+            $profileid,
+            [],
+            '',
+            50,
+            (int)$form->control()->getValue()
+        );
+        $this->assertCount(2, $assets['assets']);
+    }
+
+    /**
+     * Lazy children preserve the owning cursor and reject folders not issued by the authorized browser.
+     */
+    public function test_tree_branches_load_files_without_changing_browser_navigation(): void {
+        global $CFG;
+        [$form, , $source, , $context] = $this->fixture();
+        require_once($CFG->dirroot . '/local/multipicker/lib.php');
+        \local_multipicker\local\catalog\indexer::refresh($source->course);
+        \local_multipicker\local\catalog\indexer::refresh($context->get_course_context()->instanceid);
+        $token = $form->control()->open_scope($context);
+        \local_multipicker\local\selection\browser_controller::data($token);
+        $args = ['context' => $context, 'scope' => $token, 'folder' => 'folder:' . $source->cmid . ':' . base64_encode('/')];
+        $html = \local_multipicker_output_fragment_browser_tree($args);
+        $this->assertStringContainsString('first.txt', $html);
+        $this->assertStringNotContainsString('second.txt', $html);
+        $args['folder'] = 'folder:' . $source->cmid . ':' . base64_encode('/notes/');
+        $html = \local_multipicker_output_fragment_browser_tree($args);
+        $this->assertStringContainsString('second.txt', $html);
+        $view = draft_scope::describe($token, sesskey())['view'];
+        $this->assertSame('', $view['folder']);
+        $this->assertSame('', $view['after']);
+        $args['folder'] = 'folder:' . $context->instanceid . ':' . base64_encode('/');
+        try {
+            \local_multipicker_output_fragment_browser_tree($args);
+            $this->fail('A folder outside the issued source roots was accepted.');
+        } catch (\moodle_exception $exception) {
+            $this->assertSame('formscopeunavailable', $exception->errorcode);
+        }
+    }
+
     /**
      * A folder exceeding the actual field capacity cannot change the stored selection.
      */

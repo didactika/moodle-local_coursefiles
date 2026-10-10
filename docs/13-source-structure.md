@@ -14,7 +14,7 @@ local/multipicker/
 │   │   ├── profile/        profiles, profile_config
 │   │   ├── policy/         author_policy
 │   │   ├── migration/      planner, executor, placement, folder adapter, decisions
-│   │   ├── selection/      material_selection, draft_import, draft_scope, browser_controller, browser_listing, selection_basket, destination_access, native_integration, selection_options
+│   │   ├── selection/      material_selection, draft_import, draft_scope, browser_controller, browser_listing, selection_basket, destination_access, destination_content, native_integration, selection_options
 │   │   └── logging/        log
 │   ├── form/               native Moodle forms, scoped_filemanager, native_filemanager, native_editor integration elements
 │   ├── output/             view, renderer, display, navigation, profile_summary, migration_report
@@ -78,4 +78,6 @@ Migration-owned rows are validated by local/migration/migration_rules; created n
 
 `classes/task/refresh_profile.php` reconciles an activated profile through revision-bound 25-course slices. `profiles::save` queues that work transactionally and reuses current membership for unchanged relationship/scope rules. Event-driven course tasks and periodic reconciliation remain independent catalogue refresh paths.
 
-Profile comparison, restoration and bounded version expiration belong to local/profile/profile_history. admin/profile_history.php renders templates/local/profile/history with 25-version pages. local/migration/plan_history validates inactive-history deletion and whether an included plan contains actual writes. local/selection/selection_limits computes the native field capacity before any recursive selection is persisted.
+Profile comparison, restoration and bounded version expiration belong to local/profile/profile_history. admin/profile_history.php renders templates/local/profile/history with bounded 10/25/50-version pages and two-version checkbox comparison. local/migration/plan_history validates inactive-history deletion and whether an included plan contains actual writes. local/selection/selection_limits computes the native field capacity before any recursive selection is persisted.
+
+`classes/local/selection/destination_content.php` owns the shared native-draft exclusion SQL and bounded selector pruning. `lib.php::local_multipicker_output_fragment_browser_tree` returns lazy child pages under authorized issued roots; `templates/local/selection/tree_children.mustache` reuses the common card partial for nested folder/file nodes and branch pagination. Browser tree requests do not navigate the main browser or alter its selection.

@@ -11,7 +11,7 @@ Existing CourseBridge installations use the [component rename procedure](docs/21
 ## Install and use
 
 1. Install this repository into the Moodle application directory `local/multipicker` and run Moodle's plugin installation.
-2. Open Site administration → Plugins → Local plugins → MultiPicker → Settings, then use the Profiles tab.
+2. Open Site administration → Plugins → Local plugins → MultiPicker; Settings opens directly. Use the Profiles tab to configure related courses.
 3. Activate a [profile](examples/institutional-profile.json), then refresh course materials from the course page or cron.
 4. Install and enable repository_multipicker to select materials in native course editing forms.
 5. Review the site author policy before copying. The strict default blocks copies through native editors that permit later author changes.
@@ -39,10 +39,10 @@ Existing CourseBridge installations use the [component rename procedure](docs/21
 | History expiration and retained provenance | [Retention](docs/23-history-and-retention.md) |
 | Tested core versions | [Compatibility](docs/10-compatibility-and-branches.md) |
 | Actors, analysis, design and behavior | [UML catalogue](docs/rup/README.md) |
-| Native builds, CI and packaging | [Development](docs/24-development-and-packaging.md) |
 | Automated check results | [Validation](docs/07-validation-and-decisions.md) |
+| Native builds and GitHub workflows | [Development and packaging](docs/24-development-and-packaging.md) |
 
-The interface uses native Moodle layouts, forms and theme-overridable Mustache templates. Cards and responsive tables expose file origins; migration reports show readable decisions and outcomes.
+The interface uses native Moodle layouts, forms and theme-overridable Mustache templates. Grid, list and lazy recursive tree views share their material selection. Initially collapsed folders expand in place through subfolders to individual files. Content already present in the owning native draft is excluded before paging or recursive selection, even after renaming. Responsive tables group native row actions; migration reports show readable decisions and outcomes.
 
 Version: **0.1.0-dev / alpha**. The documented workflows describe the current package. Native copies preserve the initial author/licence, but subsequent native edits remain possible under editable policy; strict policy refuses those copies. Bulk writes run in the background while the site remains available. Migrations can create explicitly reviewed missing destination folders and optionally overwrite conflicting paths. Its installed schema has fourteen tables using `local_multipicker` or `local_multipicker_*`; native Moodle storage owns all binaries.
 

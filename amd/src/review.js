@@ -35,6 +35,27 @@ export const init = () => {
     if (!form) {
         return;
     }
+    const update = () => {
+        const selected = [...form.querySelectorAll('input[name="removefiles[]"]')].filter(check => check.checked);
+        form.querySelectorAll('[data-multipicker-review-folder]').forEach(check => {
+            const descendants = [...check.closest('details').querySelectorAll('input[name="removefiles[]"]')];
+            const count = descendants.filter(file => file.checked).length;
+            check.checked = count > 0 && count === descendants.length;
+            check.indeterminate = count > 0 && count < descendants.length;
+        });
+        const remove = document.querySelector('[data-multipicker-remove-selected]');
+        remove.hidden = selected.length === 0;
+        remove.disabled = selected.length === 0;
+    };
+    form.addEventListener('change', event => {
+        const folder = event.target.closest('[data-multipicker-review-folder]');
+        if (folder) {
+            folder.closest('details').querySelectorAll('input[name="removefiles[]"]').forEach(check => {
+                check.checked = folder.checked;
+            });
+        }
+        update();
+    });
     form.addEventListener('click', event => {
         const row = event.target.closest('.multipicker-tree-file');
         if (!row || event.target.closest('button, a, input, label')) {
@@ -76,4 +97,5 @@ export const init = () => {
             Notification.exception(error);
         }
     });
+    update();
 };

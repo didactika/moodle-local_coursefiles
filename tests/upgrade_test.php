@@ -27,9 +27,45 @@ namespace local_multipicker;
 /**
  * Confirms that schema and permission changes preserve existing records.
  * @covers ::xmldb_local_multipicker_upgrade
+ * @covers \local_multipicker\local\upgrade\legacy_import
  */
 #[\PHPUnit\Framework\Attributes\CoversFunction('xmldb_local_multipicker_upgrade')]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\upgrade\legacy_import::class)]
 final class upgrade_test extends \advanced_testcase {
+    /**
+     * Retired registrations are removed while current schedules and queued work survive.
+     */
+    public function test_legacy_tasks_are_repaired_without_changing_current_schedules(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $current = $DB->get_record('task_scheduled', ['classname' => '\local_multipicker\task\reconcile_catalog'], '*', MUST_EXIST);
+        $legacy = clone $current;
+        unset($legacy->id);
+        $legacy->classname = '\local_coursebridge\task\reconcile_catalog';
+        $legacy->component = 'local_coursebridge';
+        $legacy->disabled = 1;
+        $id = $DB->insert_record('task_scheduled', $legacy);
+        \local_multipicker\task\refresh_profile::queue(123, 456);
+        $task = $DB->get_record('task_adhoc', ['component' => 'local_multipicker'], '*', MUST_EXIST);
+        unset($task->id);
+        $task->classname = '\local_coursebridge\task\refresh_profile';
+        $task->component = 'local_coursebridge';
+        if (property_exists($task, 'identityhash')) {
+            $task->identityhash = null;
+        }
+        $queuedid = $DB->insert_record('task_adhoc', $task);
+        \local_multipicker\local\upgrade\legacy_import::repair_tasks();
+        $this->assertFalse($DB->record_exists('task_scheduled', ['id' => $id]));
+        $this->assertEquals($current, $DB->get_record('task_scheduled', ['id' => $current->id]));
+        $queued = $DB->get_record('task_adhoc', ['id' => $queuedid]);
+        $this->assertSame('local_multipicker', $queued->component);
+        $this->assertSame('\local_multipicker\task\refresh_profile', $queued->classname);
+        $this->assertSame($task->customdata, $queued->customdata);
+        // Running the upgrade again is safe and does not change native scheduling settings.
+        \local_multipicker\local\upgrade\legacy_import::repair_tasks();
+        $this->assertEquals($current, $DB->get_record('task_scheduled', ['id' => $current->id]));
+    }
+
     /**
      * The real XMLDB parser loads the schema without normalizing an empty CHAR default.
      */
@@ -65,7 +101,7 @@ final class upgrade_test extends \advanced_testcase {
         set_config('version', 2026100801, 'local_multipicker');
         $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100801));
         $this->assertEquals($before, $DB->get_records_list('local_multipicker_attribution', 'id', $ids, 'id'));
-        $this->assertSame('2026101000', get_config('local_multipicker', 'version'));
+        $this->assertSame('2026101001', get_config('local_multipicker', 'version'));
     }
 
     /**
@@ -133,8 +169,8 @@ final class upgrade_test extends \advanced_testcase {
                 $table,
                 new \xmldb_index('entityid', XMLDB_INDEX_NOTUNIQUE, ['entityuuid', 'id'])
             ));
-            $this->assertSame('2026101000', get_config('local_multipicker', 'version'));
-            $this->assertTrue(\xmldb_local_multipicker_upgrade(2026101000));
+            $this->assertSame('2026101001', get_config('local_multipicker', 'version'));
+            $this->assertTrue(\xmldb_local_multipicker_upgrade(2026101001));
         } finally {
             if ($dbman->table_exists('local_multipicker_audit') && !$dbman->table_exists($table)) {
                 $dbman->rename_table(new \xmldb_table('local_multipicker_audit'), 'local_multipicker_log');
@@ -152,7 +188,7 @@ final class upgrade_test extends \advanced_testcase {
         require_once(__DIR__ . '/../db/upgrade.php');
         set_config('version', 2026100800, 'local_multipicker');
         $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100800));
-        $this->assertSame('2026101000', get_config('local_multipicker', 'version'));
+        $this->assertSame('2026101001', get_config('local_multipicker', 'version'));
         $this->assertTrue($DB->get_manager()->table_exists('local_multipicker_log'));
     }
 

@@ -20,6 +20,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import Notification from 'core/notification';
+import Fragment from 'core/fragment';
+import {add as addToast} from 'core/toast';
 import {getStrings} from 'core/str';
 
 /**
@@ -33,6 +35,7 @@ export const init = () => {
         form.dataset.ready = 'true';
         const all = form.querySelector('[data-multipicker-selectall]');
         const checks = [...form.querySelectorAll('input[name="profiles[]"],input[name="plans[]"]')];
+        let saving = false;
         const update = () => {
             const count = checks.filter(check => check.checked).length;
             if (all) {
@@ -43,7 +46,11 @@ export const init = () => {
             if (bulk) {
                 bulk.hidden = count === 0;
                 bulk.querySelectorAll('button').forEach(button => {
-                    button.disabled = count === 0;
+                    button.disabled = count === 0 || saving;
+                    if (form.hasAttribute('data-multipicker-profiles') && ['enable', 'disable'].includes(button.value)) {
+                        button.hidden = !checks.some(check => check.checked
+                            && check.closest('tr').dataset.enabled === (button.value === 'enable' ? '0' : '1'));
+                    }
                 });
             }
         };
@@ -56,6 +63,52 @@ export const init = () => {
         checks.forEach(check => check.addEventListener('change', update));
         form.addEventListener('submit', async event => {
             const button = event.submitter;
+            const row = button?.name === 'rowaction' ? button.value.split(':') : [];
+            const action = row[0] || button?.value;
+            if (form.hasAttribute('data-multipicker-profiles') && ['enable', 'disable'].includes(action)) {
+                event.preventDefault();
+                if (saving) {
+                    return;
+                }
+                const ids = row.length ? [Number(row[1])] : checks.filter(check => check.checked)
+                    .map(check => Number(check.value));
+                saving = true;
+                form.setAttribute('aria-busy', 'true');
+                form.querySelectorAll('button[name="rowaction"]').forEach(control => {
+                    control.disabled = true;
+                });
+                update();
+                try {
+                    const html = await Fragment.loadFragment('local_multipicker', 'profiles', Number(form.dataset.contextid), {
+                        state: JSON.stringify({ids, action, sesskey: form.elements.sesskey.value}),
+                    });
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const states = JSON.parse(doc.querySelector('[data-multipicker-profile-state]')
+                        .dataset.multipickerProfileState);
+                    states.forEach(state => {
+                        const item = form.querySelector('[data-profile-id="' + state.id + '"]');
+                        item.dataset.enabled = String(state.enabled);
+                        item.querySelector('[data-profile-status]').textContent = state.status;
+                        const toggle = item.querySelector('button[name="rowaction"]:not([value^="delete:"])');
+                        toggle.value = state.action + ':' + state.id;
+                        toggle.setAttribute('aria-label', state.label);
+                        toggle.title = state.label;
+                        toggle.innerHTML = state.icon;
+                    });
+                    const [message] = await getStrings([{key: 'changessaved', component: 'core'}]);
+                    await addToast(message, {type: 'success'});
+                } catch (error) {
+                    Notification.exception(error);
+                } finally {
+                    saving = false;
+                    form.removeAttribute('aria-busy');
+                    form.querySelectorAll('button[name="rowaction"]').forEach(control => {
+                        control.disabled = false;
+                    });
+                    update();
+                }
+                return;
+            }
             const destructive = button && (button.value === 'delete' || button.name === 'deleteplan'
                 || button.value.startsWith('delete:'));
             if (!destructive || form.dataset.confirmed) {
@@ -77,6 +130,32 @@ export const init = () => {
                 Notification.exception(error);
             }
         });
+        update();
+    });
+    document.querySelectorAll('[data-multipicker-history]').forEach(history => {
+        const comparison = document.getElementById('multipicker-compare');
+        const checks = [...history.querySelectorAll('[data-multipicker-version]')];
+        const update = () => {
+            const selected = checks.filter(check => check.checked);
+            checks.forEach(check => {
+                check.disabled = !check.checked && selected.length >= 2;
+            });
+            comparison.querySelector('button').disabled = selected.length !== 2;
+            const ids = selected.map(check => check.value);
+            comparison.elements.left.value = ids[0] || '0';
+            comparison.elements.right.value = ids[1] || '0';
+            history.querySelectorAll('.multipicker-pagination a, [data-multipicker-pagesize]').forEach(control => {
+                const url = new URL(control.href || control.dataset.url, document.baseURI);
+                url.searchParams.set('left', ids[0] || '0');
+                url.searchParams.set('right', ids[1] || '0');
+                if (control.href) {
+                    control.href = url.toString();
+                } else {
+                    control.dataset.url = url.toString();
+                }
+            });
+        };
+        checks.forEach(check => check.addEventListener('change', update));
         update();
     });
     if (!document.body.dataset.multipickerPagination) {

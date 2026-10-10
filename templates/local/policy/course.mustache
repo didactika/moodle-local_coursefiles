@@ -16,11 +16,11 @@
     {{#canoverride}}<form method="post" action="{{actionurl}}" class="card mb-4"><div class="card-body">
         <input type="hidden" name="sesskey" value="{{sesskey}}">
         <input type="hidden" name="courseid" value="{{courseid}}">
-        <label for="multipickerpolicy">{{#str}}author_policy, local_multipicker{{/str}} {{{policyhelp}}}</label>
+        <label for="multipickerpolicy">{{#str}}author_policy, local_multipicker{{/str}} </label> {{{policyhelp}}}
         <select class="form-select form-select-sm mb-3" name="policy" id="multipickerpolicy">{{#choices}}
             <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
         {{/choices}}</select>
-        <div class="multipicker-page-actions"><button class="btn btn-primary" type="submit">{{#str}}savechanges, core{{/str}}</button></div>
+        <div class="multipicker-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top"><button class="btn btn-primary" type="submit">{{#str}}savechanges, core{{/str}}</button></div>
     </div></form>{{/canoverride}}
     {{^canoverride}}<p>{{#str}}policymanagedbysite, local_multipicker{{/str}}</p>{{/canoverride}}
     <a class="btn btn-outline-secondary" href="{{catalogurl}}">{{#str}}backtomaterials, local_multipicker{{/str}}</a>

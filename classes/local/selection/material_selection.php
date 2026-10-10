@@ -40,9 +40,10 @@ final class material_selection {
      * @param int $courseid Destination course.
      * @param int $profileid Enabled relationship profile.
      * @param array $items File locators or folder module/path selectors.
+     * @param int $draftid Exclude content already present in the actor's destination draft when browsing.
      * @return array Authorized stored files keyed by pathname hash.
      */
-    public static function resolve(int $courseid, int $profileid, array $items): array {
+    public static function resolve(int $courseid, int $profileid, array $items, int $draftid = 0): array {
         global $DB;
         if (!$items || count($items) > self::MAX_FILES) {
             throw new \moodle_exception('invalidselection', 'local_multipicker');
@@ -66,15 +67,19 @@ final class material_selection {
                     . $DB->sql_like('filepath', ':path', true);
                 $params = ['contextid' => $context->id, 'component' => 'mod_folder', 'filearea' => 'content',
                     'directory' => '.', 'path' => $DB->sql_like_escape($path) . '%'];
-                $candidates = $DB->get_records_select(
-                    'files',
-                    $conditions,
+                [$exclusion, $destinationparams] = destination_content::exclusion('sourcefile', $draftid);
+                $conditions .= $exclusion;
+                $params += $destinationparams;
+                $candidates = $DB->get_records_sql(
+                    'SELECT sourcefile.id, sourcefile.pathnamehash FROM {files} sourcefile WHERE ' . $conditions
+                        . ' ORDER BY sourcefile.filepath, sourcefile.filename, sourcefile.id',
                     $params,
-                    'filepath, filename, id',
-                    'id, pathnamehash',
                     0,
                     self::MAX_FILES + 1
                 );
+                if (!$candidates && $draftid > 0) {
+                    continue;
+                }
                 if (!$candidates || count($candidates) > self::MAX_FILES) {
                     throw new \moodle_exception('invalidselection', 'local_multipicker');
                 }
@@ -89,7 +94,7 @@ final class material_selection {
                 throw new \moodle_exception('invalidselection', 'local_multipicker');
             }
         }
-        return $files;
+        return destination_content::filter($files, $draftid);
     }
 
     /**

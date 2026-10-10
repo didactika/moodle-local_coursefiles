@@ -90,6 +90,7 @@ final class browser_controller {
         $state['renames'] = $state['renames'] ?? [];
         $state['history'] = $state['history'] ?? [];
         $state['layout'] = $state['layout'] ?? 'grid';
+        $state['treefolders'] = $state['treefolders'] ?? [];
         $capturecontrols = [];
         $message = '';
         $originalstate = $state;
@@ -103,7 +104,8 @@ final class browser_controller {
                 $files = material_selection::resolve(
                     $scope['courseid'],
                     $state['profileid'],
-                    selection_options::parse($state['selected'])
+                    selection_options::parse($state['selected']),
+                    $scope['draftid']
                 );
                 $state['selected'] = array_map(static fn($hash) => 'file:' . $hash, array_keys($files));
                 draft_scope::remember_view($token, $state, sesskey());
@@ -122,10 +124,11 @@ final class browser_controller {
                     $state['folder'] = '';
                     $state['after'] = '';
                     $state['history'] = [];
+                    $state['treefolders'] = [];
                 }
                 $state['profileid'] = $profileid;
                 $layout = $input['layout'];
-                $state['layout'] = in_array($layout, ['grid', 'list'], true) ? $layout : 'grid';
+                $state['layout'] = in_array($layout, ['grid', 'list', 'tree'], true) ? $layout : 'grid';
                 $removed = $input['removeitem'];
                 if ($removed !== '') {
                     $state['selected'] = array_values(array_diff($state['selected'], [$removed]));
@@ -143,7 +146,12 @@ final class browser_controller {
                 }
                 if ($input['toggleitem'] !== '') {
                     $values = [$input['toggleitem']];
-                    $files = material_selection::resolve($scope['courseid'], $profileid, selection_options::parse($values));
+                    $files = material_selection::resolve(
+                        $scope['courseid'],
+                        $profileid,
+                        selection_options::parse($values),
+                        $scope['draftid']
+                    );
                     $values = array_map(static fn($hash) => 'file:' . $hash, array_keys($files));
                     if (!array_diff($values, $state['selected'])) {
                         $state['selected'] = array_values(array_diff($state['selected'], $values));
@@ -170,7 +178,8 @@ final class browser_controller {
                         array_map(static fn($hash) => 'file:' . $hash, array_keys(material_selection::resolve(
                             $scope['courseid'],
                             $profileid,
-                            selection_options::parse(array_column($current['cards'], 'value'))
+                            selection_options::parse(array_column($current['cards'], 'value')),
+                            $scope['draftid']
                         )))
                     )));
                     selection_options::parse($state['selected']);
@@ -207,12 +216,29 @@ final class browser_controller {
                 draft_scope::select_destination($token, $input['destination'], sesskey());
                 draft_scope::select_mode($token, $input['mode'], sesskey());
                 draft_scope::remember_view($token, $state, sesskey());
-                if (!empty($input['review'])) {
-                    return ['review' => true, 'data' => [], 'message' => ''];
-                }
             }
             $scope = draft_scope::describe($token, sesskey());
+            if ($state['selected']) {
+                $remaining = destination_content::filter(array_fill_keys(array_map(
+                    static fn($value) => substr($value, 5),
+                    $state['selected']
+                ), true), $scope['draftid']);
+                $state['selected'] = array_values(array_filter(
+                    $state['selected'],
+                    static fn($value) => str_starts_with($value, 'folder:') || isset($remaining[substr($value, 5)])
+                ));
+            }
+            if (!empty($input['review']) && $state['selected']) {
+                draft_scope::remember_view($token, $state, sesskey());
+                return ['review' => true, 'data' => [], 'message' => ''];
+            }
             $listing = browser_listing::page($scope, $state);
+            $state['treeroots'] = array_column(array_filter($listing['cards'], static fn($card) => $card['isfolder']), 'value');
+            $state['treefolders'] = array_slice(array_values(array_unique(array_merge(
+                $state['treefolders'],
+                array_column(array_filter($listing['cards'], static fn($card) => $card['isfolder']), 'value')
+            ))), -material_selection::MAX_FILES);
+            draft_scope::remember_view($token, $state, sesskey());
             $capturecontrols = \local_multipicker\output\capture_filters::data(
                 (int)$state['profileid'],
                 $state['filters']['captures'] ?? [],
@@ -239,12 +265,26 @@ final class browser_controller {
             }
         }
         return ['review' => false, 'message' => $message, 'data' => $listing + [
-        'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_multipicker'),
+
+        'filenamehelp' => $OUTPUT->help_icon('filenamefilter', 'local_multipicker'),
+        'modulehelp' => $OUTPUT->help_icon('modulefilter', 'local_multipicker'),
+        'filetypehelp' => $OUTPUT->help_icon('filetypefilter', 'local_multipicker'),
+        'capturehelp' => $OUTPUT->help_icon('capturefilter', 'local_multipicker'),
+        'profilehelp' => $OUTPUT->help_icon('browserprofile', 'local_multipicker'),
+        'coursehelp' => $OUTPUT->help_icon('shortnamefilter', 'local_multipicker'),
+        'destinationhelp' => $OUTPUT->help_icon('batchdestination', 'local_multipicker'),
+        'modehelp' => $OUTPUT->help_icon('copymode', 'local_multipicker'),
+        'filtercount' => count(array_filter(array_merge(
+            array_intersect_key($state['filters'], array_flip(['q', 'shortname', 'module', 'mimetype', 'edition'])),
+            $state['filters']['captures'] ?? []
+        ), static fn($value) => trim((string)$value) !== '')),
         'catalogpending' => $catalogpending, 'selectioncapacity' => selection_limits::capacity($scope),
         'contextid' => $scope['contextid'],
         'repositoryname' => display::name($scope['repositoryname'] ?? get_string('pluginname', 'local_multipicker')),
         'layout' => $state['layout'],
         'listlayout' => $state['layout'] === 'list',
+        'treelayout' => $state['layout'] === 'tree',
+        'gridlayout' => $state['layout'] === 'grid',
         'action' => (new \moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false),
         'sesskey' => sesskey(), 'scope' => $token,
         'multipleprofiles' => count($profiles) > 1, 'profileid' => $state['profileid'],

@@ -7,12 +7,13 @@
     <h2 class="h4">{{#str}}migrations, local_multipicker{{/str}}</h2>
     <div class="d-flex justify-content-end mb-3"><details class="multipicker-filter-popover"><summary class="btn btn-sm btn-secondary">{{#pix}}i/filter, core{{/pix}} {{#str}}filters, core{{/str}}</summary><form method="get" action="{{formurl}}" class="multipicker-filter-menu">
         <input type="hidden" name="perpage" value="{{perpage}}">
-        <label for="mpmigrationsearch">{{#str}}profile, local_multipicker{{/str}} {{{filterhelp}}}</label><input type="search" class="form-control form-control-sm mb-3" name="q" id="mpmigrationsearch" value="{{search}}">
-        <label for="mpmigrationstate">{{#str}}status, core{{/str}} {{{filterhelp}}}</label><select class="form-select form-select-sm mb-3" name="state" id="mpmigrationstate"><option value="">{{#str}}all, core{{/str}}</option>{{#states}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/states}}</select>
-        <div class="multipicker-actionbar"><button class="btn btn-sm btn-primary">{{#str}}apply, core{{/str}}</button><a href="{{formurl}}" class="btn btn-sm btn-link">{{#str}}reset, core{{/str}}</a></div>
+        <label for="mpmigrationsearch">{{#str}}profile, local_multipicker{{/str}} </label> {{{filterhelp}}}<input type="search" class="form-control form-control-sm mb-3" name="q" id="mpmigrationsearch" value="{{search}}">
+        <label for="mpmigrationstate">{{#str}}status, core{{/str}} </label> {{{filterhelp}}}<select class="form-select form-select-sm mb-3" name="state" id="mpmigrationstate"><option value="">{{#str}}all, core{{/str}}</option>{{#states}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/states}}</select>
+        <div class="multipicker-actionbar d-flex align-items-center flex-wrap"><button class="btn btn-sm btn-primary">{{#str}}apply, core{{/str}}</button><a href="{{formurl}}" class="btn btn-sm btn-link">{{#str}}reset, core{{/str}}</a></div>
     </form></details></div>
     <form method="post" action="{{formurl}}" data-multipicker-migrations>
         <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="q" value="{{search}}"><input type="hidden" name="perpage" value="{{perpage}}">
+        <div class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{newurl}}" class="btn btn-sm btn-primary">{{#pix}}t/add, core{{/pix}} {{#str}}newmigration, local_multipicker{{/str}}</a><div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}" data-multipicker-bulk-actions hidden><button name="action" value="delete" class="btn btn-sm btn-outline-danger" disabled title="{{#str}}deleteselectedmigrations, local_multipicker{{/str}}" aria-label="{{#str}}deleteselectedmigrations, local_multipicker{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div></div>
         <div class="table-responsive"><table class="table table-hover"><thead><tr><th><input type="checkbox" data-multipicker-selectall aria-label="{{#str}}selectall, core{{/str}}"></th><th>{{#str}}profile, local_multipicker{{/str}}</th><th>{{#str}}sourcecourses, local_multipicker{{/str}}</th><th>{{#str}}targetcourses, local_multipicker{{/str}}</th><th>{{#str}}date, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}actions, core{{/str}}</th></tr></thead><tbody>
             {{#records}}<tr><td>{{#candelete}}<input type="checkbox" name="plans[]" value="{{id}}" aria-label="{{#str}}selectmigration, local_multipicker{{/str}}">{{/candelete}}</td><td><a href="{{url}}">{{{name}}}</a></td><td class="small">{{source}}</td><td class="small">{{target}}</td><td class="small">{{date}}</td><td><span class="multipicker-chip">{{status}}</span></td><td><div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}">
                 <a href="{{url}}" class="btn btn-sm btn-outline-primary" title="{{#str}}view, core{{/str}}" aria-label="{{#str}}view, core{{/str}}">{{#pix}}i/search, core{{/pix}}</a>
@@ -22,6 +23,6 @@
         </tbody></table></div>
         {{^records}}<p class="alert alert-info">{{#str}}nomigrations, local_multipicker{{/str}}</p>{{/records}}
         {{{pagination}}}
-        <div class="multipicker-page-actions"><a href="{{newurl}}" class="btn btn-sm btn-primary">{{#pix}}t/add, core{{/pix}} {{#str}}newmigration, local_multipicker{{/str}}</a><div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}" data-multipicker-bulk-actions hidden><button name="action" value="delete" class="btn btn-sm btn-outline-danger" disabled title="{{#str}}deleteselectedmigrations, local_multipicker{{/str}}" aria-label="{{#str}}deleteselectedmigrations, local_multipicker{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div></div>
+
     </form>
 </section>

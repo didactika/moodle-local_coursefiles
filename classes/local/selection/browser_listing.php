@@ -45,7 +45,12 @@ final class browser_listing {
             $page = self::page($scope, $state);
             if ($page['cards']) {
                 $values = array_column($page['cards'], 'value');
-                $files = material_selection::resolve($scope['courseid'], $state['profileid'], selection_options::parse($values));
+                $files = material_selection::resolve(
+                    $scope['courseid'],
+                    $state['profileid'],
+                    selection_options::parse($values),
+                    $scope['draftid'] ?? 0
+                );
                 foreach ($files as $hash => $file) {
                     $selected['file:' . $hash] = true;
                 }
@@ -83,7 +88,7 @@ final class browser_listing {
             $filters['cmid'] = $folder['cmid'];
             $filters['sourcepath'] = $folder['filepath'];
         }
-        $result = catalog::search($scope['courseid'], $state['profileid'], $filters, $state['after'], 50);
+        $result = catalog::search($scope['courseid'], $state['profileid'], $filters, $state['after'], 50, $scope['draftid'] ?? 0);
         $cards = [];
         $seen = [];
         $suggestions = [];
@@ -111,6 +116,11 @@ final class browser_listing {
                             continue;
                         }
                         $cards[$value] = ['value' => $value, 'title' => s($origin['filename']), 'isfolder' => false,
+                            'courseid' => $origin['courseid'],
+                            'coursename' => \local_multipicker\output\display::name(
+                                $origin['shortname'],
+                                \context_course::instance($origin['courseid'])
+                            ),
                             'origin' => \local_multipicker\output\display::name(
                                 $origin['shortname'],
                                 \context_course::instance($origin['courseid'])
@@ -146,6 +156,11 @@ final class browser_listing {
                     }
                     $value = 'folder:' . $origin['cmid'] . ':' . base64_encode($targetpath);
                     $cards[$value] = ['value' => $value, 'title' => $title, 'isfolder' => true,
+                        'courseid' => $origin['courseid'],
+                        'coursename' => \local_multipicker\output\display::name(
+                            $origin['shortname'],
+                            \context_course::instance($origin['courseid'])
+                        ),
                         'origin' => \local_multipicker\output\display::name(
                             $origin['shortname'],
                             \context_course::instance($origin['courseid'])
@@ -159,36 +174,16 @@ final class browser_listing {
         $selecteditems = array_map(static fn($value) => ['value' => $value], $state['selected']);
         $retained = array_values(array_filter($selecteditems, static fn($item) => !isset($cards[$item['value']])));
         $capacity = selection_limits::capacity($scope);
+        $foldervalues = array_unique(array_merge(
+            $state['treefolders'] ?? [],
+            array_column(array_filter($cards, static fn($card) => $card['isfolder']), 'value')
+        ));
+        $folderstates = self::folder_states($scope, $state['selected'], $foldervalues);
         foreach ($cards as &$card) {
             $card['plaintitle'] = strip_tags(html_entity_decode($card['title'], ENT_QUOTES, 'UTF-8'));
             $card['selectionfull'] = count($state['selected']) >= $capacity;
             if ($card['isfolder']) {
-                global $DB;
-                $selector = selection_options::parse([$card['value']])[0];
-                $context = \context_module::instance($selector['cmid']);
-                $condition = 'contextid = ? AND component = ? AND filearea = ? AND itemid = 0 AND filename <> ? AND '
-                    . $DB->sql_like('filepath', '?', true);
-                $params = [$context->id, 'mod_folder', 'content', '.', $DB->sql_like_escape($selector['filepath']) . '%'];
-                $total = $DB->count_records_select('files', $condition, $params);
-                $selected = 0;
-                if ($state['selected']) {
-                    [$in, $selectedparams] = $DB->get_in_or_equal(array_map(
-                        static fn($value) => substr($value, 5),
-                        $state['selected']
-                    ));
-                    $selected = $DB->count_records_select(
-                        'files',
-                        $condition . ' AND pathnamehash ' . $in,
-                        array_merge($params, $selectedparams)
-                    );
-                }
-                $card['checked'] = $total > 0 && $selected === $total;
-                $card['partial'] = $selected > 0 && !$card['checked'];
-                $card['selectionlabel'] = get_string(
-                    'folderselectioncount',
-                    'local_multipicker',
-                    (object)['selected' => $selected, 'total' => $total]
-                );
+                $card += $folderstates[$card['value']];
             } else {
                 $card['checked'] = in_array($card['value'], $state['selected'], true);
             }
@@ -196,17 +191,91 @@ final class browser_listing {
             $card['id'] = 'cbitem-' . sha1($card['value']);
         }
         unset($card);
+        $groups = [];
+        foreach ($cards as $card) {
+            $id = $card['courseid'];
+            $groups[$id]['name'] = $card['coursename'];
+            $groups[$id]['cards'][] = $card;
+        }
         $parent = '';
         if ($folder && $folder['filepath'] !== '/') {
             $parentpath = dirname(rtrim($folder['filepath'], '/'));
             $parent = 'folder:' . $folder['cmid'] . ':' . base64_encode($parentpath === '/' ? '/' : $parentpath . '/');
         }
-        return ['cards' => array_values($cards), 'suggestions' => $suggestions,
+        return ['cards' => array_values($cards), 'treegroups' => array_values($groups), 'suggestions' => $suggestions,
+            'folderstates' => json_encode(array_values($folderstates)),
             'retained' => $retained, 'selecteditems' => $selecteditems, 'next' => $result['next'],
             'location' => $folder ? \local_multipicker\output\display::name(
                 get_course(get_coursemodule_from_id('folder', $folder['cmid'])->course)->shortname
             ) . ' / ' . s($folder['filepath']) : '',
             'parent' => $parent, 'infolder' => $folder !== null, 'path' => $folder['filepath'] ?? '',
             'count' => count($state['selected'])];
+    }
+
+    /**
+     * Count remaining and selected descendants for authorized visible folders with one grouped query.
+     *
+     * @param array $scope Validated destination.
+     * @param array $selected Canonical file selectors.
+     * @param array $values Folder selectors issued by the current browser.
+     * @return array Checkbox states and readable counts indexed by folder selector.
+     */
+    private static function folder_states(array $scope, array $selected, array $values): array {
+        global $DB;
+        if (!$values) {
+            return [];
+        }
+        $folders = [];
+        $contexts = [];
+        foreach ($values as $value) {
+            $item = selection_options::parse([$value])[0];
+            $id = \context_module::instance($item['cmid'])->id;
+            $contexts[$id] = $id;
+            $folders[$value] = ['contextid' => $id, 'path' => $item['filepath']];
+        }
+        [$in, $params] = $DB->get_in_or_equal(array_values($contexts), SQL_PARAMS_NAMED, 'foldercontext');
+        $params += ['component' => 'mod_folder', 'filearea' => 'content', 'directory' => '.'];
+        $sum = '0';
+        if ($selected) {
+            [$selectedin, $selectedparams] = $DB->get_in_or_equal(
+                array_map(static fn($value) => substr($value, 5), $selected),
+                SQL_PARAMS_NAMED,
+                'selectedhash'
+            );
+            $params += $selectedparams;
+            $sum = 'SUM(CASE WHEN sourcefile.pathnamehash ' . $selectedin . ' THEN 1 ELSE 0 END)';
+        }
+        [$exclusion, $destinationparams] = destination_content::exclusion('sourcefile', $scope['draftid'] ?? 0);
+        $records = $DB->get_recordset_sql('SELECT sourcefile.contextid, sourcefile.filepath, COUNT(1) AS total, '
+            . $sum . ' AS selected FROM {files} sourcefile WHERE sourcefile.contextid ' . $in
+            . ' AND sourcefile.component = :component AND sourcefile.filearea = :filearea'
+            . ' AND sourcefile.itemid = 0 AND sourcefile.filename <> :directory' . $exclusion
+            . ' GROUP BY sourcefile.contextid, sourcefile.filepath', $params + $destinationparams);
+        $counts = [];
+        try {
+            foreach ($records as $record) {
+                $counts[$record->contextid][] = $record;
+            }
+        } finally {
+            $records->close();
+        }
+        $states = [];
+        foreach ($folders as $value => $folder) {
+            $total = $checked = 0;
+            foreach ($counts[$folder['contextid']] ?? [] as $record) {
+                if (str_starts_with($record->filepath, $folder['path'])) {
+                    $total += (int)$record->total;
+                    $checked += (int)$record->selected;
+                }
+            }
+            $states[$value] = ['value' => $value, 'checked' => $total > 0 && $checked === $total,
+                'partial' => $checked > 0 && $checked < $total,
+                'selectionlabel' => get_string(
+                    'folderselectioncount',
+                    'local_multipicker',
+                    (object)['selected' => $checked, 'total' => $total]
+                )];
+        }
+        return $states;
     }
 }

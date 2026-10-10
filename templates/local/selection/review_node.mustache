@@ -4,7 +4,7 @@
     Example context (json): {"name":"notes","folder":true,"children":[]}
 }}
 <li class="multipicker-tree-node">
-    {{#folder}}<details open><summary><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}f/folder, core{{/pix}} <span>{{name}}</span></summary>
+    {{#folder}}<details open><summary><input type="checkbox" data-multipicker-review-folder aria-label="{{name}}"><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}f/folder, core{{/pix}} <span>{{name}}</span></summary>
         <ul class="multipicker-tree">{{#children}}{{> local_multipicker/local/selection/review_node}}{{/children}}</ul>
     </details>{{/folder}}
     {{^folder}}<div class="multipicker-tree-file">

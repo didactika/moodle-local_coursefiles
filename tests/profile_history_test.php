@@ -52,11 +52,17 @@ final class profile_history_test extends \advanced_testcase {
         $config = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
         $id = profiles::save(json_encode($config));
         $first = $DB->get_field('local_multipicker', 'activeid', ['id' => $id]);
+        $original = $DB->get_record('local_multipicker_revision', ['id' => $first]);
         $config['name'] = 'Changed profile';
         profiles::save(json_encode($config), $id);
         $this->assertSame($id, profile_history::restore($id, $first));
         $this->assertSame(1, $DB->count_records('local_multipicker'));
-        $this->assertSame(3, $DB->count_records('local_multipicker_revision', ['profileid' => $id]));
+        $this->assertSame(2, $DB->count_records('local_multipicker_revision', ['profileid' => $id]));
+        $this->assertEquals($first, $DB->get_field('local_multipicker', 'activeid', ['id' => $id]));
+        $this->assertNotSame('Changed profile', $DB->get_field('local_multipicker', 'name', ['id' => $id]));
+        $this->assertEquals($original, $DB->get_record('local_multipicker_revision', ['id' => $first]));
+        profile_history::restore($id, $first);
+        $this->assertSame(2, $DB->count_records('local_multipicker_revision', ['profileid' => $id]));
         $bundle = profile_bundle::export([$id]);
         $document = json_decode($bundle, true);
         $this->assertSame(2, $document['version']);
@@ -71,6 +77,28 @@ final class profile_history_test extends \advanced_testcase {
         $other = profiles::save(json_encode($config));
         $this->expectException(\dml_missing_record_exception::class);
         profile_history::restore($other, $first);
+    }
+
+    /**
+     * Live profile actions return only affected state and keep one profile/version identity.
+     */
+    public function test_profile_state_fragment_checks_session_and_preserves_versions(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        require_once(__DIR__ . '/../lib.php');
+        $config = file_get_contents(__DIR__ . '/../examples/institutional-profile.json');
+        $id = profiles::save($config);
+        $args = ['context' => \context_system::instance(),
+            'state' => json_encode(['ids' => [$id], 'action' => 'disable', 'sesskey' => sesskey()])];
+        $html = \local_multipicker_output_fragment_profiles($args);
+        $this->assertStringContainsString('data-multipicker-profile-state', $html);
+        $this->assertEquals(0, $DB->get_field('local_multipicker', 'enabled', ['id' => $id]));
+        $this->assertSame(1, $DB->count_records('local_multipicker_revision', ['profileid' => $id]));
+        $args['state'] = json_encode(['ids' => [$id], 'action' => 'enable', 'sesskey' => 'invalid']);
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('invalidsesskey', 'error'));
+        \local_multipicker_output_fragment_profiles($args);
     }
 
     /**

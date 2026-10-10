@@ -28,6 +28,29 @@ namespace local_multipicker\output;
  */
 final class navigation {
     /**
+     * Open the first permitted page directly from the native plugin category.
+     *
+     * @param \core\hook\output\before_http_headers $hook Native output hook.
+     */
+    public static function open_category(\core\hook\output\before_http_headers $hook): void {
+        global $PAGE, $CFG;
+        static $redirecting = false;
+        if (
+            CLI_SCRIPT || AJAX_SCRIPT || $redirecting
+                || $PAGE->url->get_path() !== '/' . $CFG->admin . '/category.php'
+                || $PAGE->url->get_param('category') !== 'local_multipicker'
+        ) {
+            return;
+        }
+        foreach (self::pages() as $name => $page) {
+            if ($name !== 'log' && has_capability($page['capability'], \context_system::instance())) {
+                $redirecting = true;
+                redirect(new \moodle_url('/local/multipicker/admin/' . $name . '.php'));
+            }
+        }
+    }
+
+    /**
      * Return registered administration pages.
      *
      * @return array Page contracts.
