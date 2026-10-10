@@ -161,5 +161,8 @@ function xmldb_local_multipicker_upgrade(int $oldversion): bool {
     if ($oldversion < 2026101003) {
         upgrade_plugin_savepoint(true, 2026101003, 'local', 'multipicker');
     }
+    if ($oldversion < 2026101004) {
+        upgrade_plugin_savepoint(true, 2026101004, 'local', 'multipicker');
+    }
     return true;
 }

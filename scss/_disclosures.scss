@@ -1,0 +1,45 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* Native chevrons replace browser disclosure markers. */
+
+.multipicker-admin details, .multipicker-log details {
+    border: 1px solid var(--multipicker-border);
+    border-radius: var(--multipicker-radius);
+    padding: .65rem .85rem;
+}
+
+.multipicker-browser summary, .multipicker-admin summary, .multipicker-log summary {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    list-style: none;
+    cursor: pointer;
+}
+
+.multipicker-browser summary::-webkit-details-marker,
+.multipicker-admin summary::-webkit-details-marker, .multipicker-log summary::-webkit-details-marker {
+    display: none;
+}
+
+.multipicker-disclosure-icon {
+    display: inline-flex;
+    width: 1.8rem;
+    height: 1.8rem;
+    border: 1px solid var(--multipicker-border);
+    border-radius: .5rem;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    .icon {
+        margin: 0;
+        width: .85rem;
+        height: .85rem;
+    }
+}
+
+details[open] > summary > .multipicker-disclosure-icon .icon {
+    transform: rotate(90deg);
+}
+

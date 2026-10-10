@@ -81,7 +81,7 @@ Detailed explanations, the RUP UML catalogue, rendered diagrams and the exact va
 
 That local collection covers both maintenance lines and is not published online. This README, [CHANGELOG](CHANGELOG.md) and [LICENSE](LICENSE) remain in each distribution. The package ships English language strings only; Moodle language packs can provide translations.
 
-Run the packaged PHPUnit and native Behat tests in a disposable Moodle checkout with both companions installed and independent test databases. Build frontend assets with the exact supported core tooling. Local validation distinguishes completed checks from pending remote pipelines; it does not claim untested runtime combinations.
+Run the packaged PHPUnit and native Behat tests in a disposable Moodle checkout with both companions installed and independent test databases. Build frontend assets with the exact supported core tooling. All custom behavior lives in TypeScript ESM feature modules, with a native React view selector and six AMD entry shims for existing Moodle calls. Typed adapters isolate core APIs that remain in AMD. Nested SCSS component sources generate the shipped styles.css; use `node tools/build-styles.mjs /path/to/moodle` to rebuild it. Local validation distinguishes completed checks from pending remote pipelines; it does not claim untested runtime combinations.
 
 ## Security and privacy
 

@@ -1,0 +1,101 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* Editable native rows adapt to their actual form-column width, including side drawers. */
+
+@container (max-width: 48rem) {
+    .multipicker-row-editor {
+        tbody tr {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .table td {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 0;
+        }
+    }
+    .multipicker-row-label {
+        flex-grow: 1;
+        margin-bottom: .2rem;
+    }
+    .multipicker-row-editor {
+        .table .multipicker-row-remove {
+            display: block;
+            grid-column: 1 / -1;
+            text-align: end;
+        }
+    }
+}
+
+@container (max-width: 24rem) {
+    .multipicker-row-editor {
+        tbody tr {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+}
+
+@media (max-width: 575.98px) {
+    .multipicker-issue {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .multipicker-metrics .card-body {
+        padding-inline: .5rem;
+    }
+    .multipicker-native-host {
+        .fp-repo-area {
+            width: 100%;
+            max-width: 100%;
+            flex-direction: row !important;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: .5rem;
+        }
+        .fp-repo {
+            flex-shrink: 0;
+        }
+        .fp-repo a {
+            white-space: nowrap;
+        }
+        .fp-repo-area + div {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+        .fp-repo-items {
+            width: 100%;
+        }
+    }
+    .multipicker-browser {
+        padding: .75rem !important;
+    }
+    .multipicker-filterbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .multipicker-steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        li {
+            padding: .5rem;
+        }
+    }
+}
+
+@media (max-width: 359.98px) {
+    .multipicker-filterbar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .multipicker-card {
+        transition: none;
+    }
+    .multipicker-skeleton {
+        span {
+            animation: none;
+        }
+    }
+}
+

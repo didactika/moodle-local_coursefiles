@@ -1,0 +1,16 @@
+/**
+ * Nested component sources; styles.css is generated for Moodle's supported browsers.
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+@import 'scss/surfaces';
+@import 'scss/disclosures';
+@import 'scss/picker';
+@import 'scss/materials';
+@import 'scss/tree';
+@import 'scss/loading';
+@import 'scss/review';
+@import 'scss/administration';
+@import 'scss/responsive';

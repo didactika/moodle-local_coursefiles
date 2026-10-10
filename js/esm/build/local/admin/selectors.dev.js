@@ -1,0 +1,29 @@
+/**
+ * admin selectors.
+ * @module local_multipicker/local/admin/selectors
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+import Common from "@moodle/lms/local_multipicker/local/selectors";
+var selectors_default = {
+  bulkActions: Common.bulkActions,
+  bulkChecks: Common.bulkChecks,
+  bulkForms: Common.bulkForms,
+  button: Common.button,
+  history: Common.history,
+  migration: Common.migration,
+  pageSize: Common.pageSize,
+  paginationControls: Common.paginationControls,
+  profileState: Common.profileState,
+  profileStatus: Common.profileStatus,
+  rowActions: Common.rowActions,
+  rowToggle: Common.rowToggle,
+  selectAll: Common.selectAll,
+  tableRow: Common.tableRow,
+  versions: Common.versions
+};
+export {
+  selectors_default as default
+};
+//# sourceMappingURL=selectors.dev.js.map

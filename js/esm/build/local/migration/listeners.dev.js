@@ -1,0 +1,21 @@
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+/**
+ * Bind feature events to scoped actions without owning business state.
+ *
+ * @module local_multipicker/local/migration/listeners
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+import { listen } from "@moodle/lms/local_multipicker/local/listeners";
+const registerListeners = /* @__PURE__ */ __name((root, actions) => {
+  listen(root, "change", actions.selectionChange);
+  listen(root, "submit", actions.submit);
+  listen(root, "input", actions.filterInput);
+  listen(root, "click", actions.navigate);
+}, "registerListeners");
+export {
+  registerListeners
+};
+//# sourceMappingURL=listeners.dev.js.map

@@ -1,0 +1,77 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* The embedded host has a stable viewport; only results scroll. */
+
+.multipicker-native-host {
+    .fp-navbar {
+        display: none;
+    }
+    .fp-content {
+        height: min(72vh, 48rem) !important;
+        max-height: none !important;
+    }
+    .fp-object-container {
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+}
+
+body.multipicker-embedded, .multipicker-embedded #page,
+.multipicker-embedded #page-content, .multipicker-embedded #region-main {
+    background: var(--multipicker-host-background, #fff);
+}
+
+.multipicker-embedded {
+    overflow: hidden;
+    #page {
+        padding: 0;
+    }
+    .multipicker-browser {
+        height: calc(100dvh - .5rem);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        background: var(--multipicker-host-background, #fff);
+    }
+}
+
+.multipicker-browser {
+    > * {
+        flex-shrink: 0;
+    }
+    .multipicker-results {
+        flex: 1 1 auto;
+        min-height: 5rem;
+        overflow: auto;
+        padding: .2rem;
+    }
+}
+
+.multipicker-footer {
+    background: var(--multipicker-host-background, var(--multipicker-surface));
+}
+
+.multipicker-filterbar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .4rem .6rem;
+    > div {
+        min-width: 0;
+    }
+}
+
+.multipicker-filterbar .form-control, .multipicker-filterbar select {
+    width: 100%;
+    min-width: 0;
+}
+
+.multipicker-filterbar {
+    label {
+        margin-bottom: .15rem;
+        font-size: .75rem;
+    }
+}
+

@@ -1,0 +1,7 @@
+import{createRows as r,createProfile as i}from"@moodle/lms/local_multipicker/local/form/actions";import{registerRows as e,registerProfile as s}from"@moodle/lms/local_multipicker/local/form/listeners";/**
+ * form controller.
+ * @module local_multipicker/local/form/controller
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */const a=async o=>{const t=await r(o);t&&e(t)},f=()=>{const o=i();o&&s(o)};export{a as init,f as profile};

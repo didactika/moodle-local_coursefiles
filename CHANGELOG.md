@@ -2,6 +2,11 @@
 
 ## [5.3.0] - 2026-10-10
 
+- Message Broker-style frontend feature structure: controllers, scoped actions, listeners, selectors and authenticated backend repository access.
+- Nested SCSS component sources with generated flat CSS, shared responsive declarations and a CI freshness check.
+- All custom frontend behavior moved to strict TypeScript ESM; six thin AMD entry shims and typed core adapters preserve native picker/editor contracts.
+
+
 - Native React/TypeScript view selector, core auto-initialization and ESM assets isolated from the Moodle 4.5 line.
 
 - Explicitly hide course tree headings in Cards/List, synchronize native and React view state across pending result loads, and clear all search restrictions without losing selected content.

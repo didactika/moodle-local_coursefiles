@@ -15,10 +15,16 @@ export type PickerLayout = 'grid' | 'list' | 'tree';
 export interface LayoutView {
     value: PickerLayout;
     label: string;
-    /** Trusted icon markup produced by Moodle's output renderer. */
+    /**
+     * Trusted icon markup produced by Moodle's output renderer.
+     */
     icon: string;
 }
 
-/** Normalize untrusted presentation state without affecting material authorization. */
+/**
+ * Normalize untrusted presentation state without affecting material authorization.
+ *
+ * @param {string} value Requested layout name.
+ */
 export const normalizeLayout = (value: string): PickerLayout =>
     value === 'list' || value === 'tree' ? value : 'grid';

@@ -1,0 +1,217 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* Native administration forms, compact tables and independent filter popovers. */
+
+.multipicker-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .5rem;
+    padding: 0;
+    list-style: none;
+    li {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        border: 1px solid var(--multipicker-border);
+        border-radius: var(--multipicker-radius);
+        padding: .75rem;
+        font-size: .85rem;
+    }
+    li[aria-current=step] {
+        border-color: var(--multipicker-primary);
+        color: var(--multipicker-primary);
+        background: color-mix(in srgb, var(--multipicker-primary) 6%, var(--multipicker-surface));
+    }
+}
+
+.multipicker-step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    font-weight: 600;
+}
+
+.multipicker-panel {
+    padding: 1rem;
+    border: 1px solid var(--multipicker-border);
+    border-radius: var(--multipicker-radius);
+    margin-bottom: 1rem;
+}
+
+.multipicker-admin .fdescription, .multipicker-admin .form-control, .multipicker-admin .custom-select {
+    max-width: 100%;
+}
+
+.multipicker-admin {
+    .btn {
+        max-width: 100%;
+        white-space: normal;
+    }
+    input[type=checkbox] {
+        width: 1rem;
+        height: 1rem;
+        margin-inline-end: .6rem;
+        vertical-align: middle;
+    }
+}
+
+.multipicker-admin .table td, .multipicker-admin .table th {
+    vertical-align: middle;
+    padding: .6rem .75rem;
+    font-size: .875rem;
+}
+
+.multipicker-row-fields {
+    width: 100%;
+    min-width: 0;
+}
+
+.multipicker-row-editor {
+    container-type: inline-size;
+    width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+}
+
+.multipicker-row-label {
+    display: block;
+    min-height: 2.5rem;
+    font-size: .8rem;
+    overflow-wrap: anywhere;
+}
+
+.multipicker-row-editor {
+    .table {
+        margin-bottom: 0;
+    }
+}
+
+.multipicker-row-editor .table, .multipicker-row-editor tbody {
+    display: block;
+    width: 100%;
+}
+
+.multipicker-row-editor {
+    thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+    }
+    tbody tr {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+        gap: .5rem;
+        padding: .75rem 0;
+        border-bottom: 1px solid var(--multipicker-border);
+    }
+    .table td {
+        min-width: 0;
+    }
+}
+
+.multipicker-row-editor input:not([type=checkbox]), .multipicker-row-editor select {
+    width: 100%;
+    min-width: 0;
+}
+
+.multipicker-row-editor .table td, .multipicker-row-editor .table th {
+    border: 0;
+    padding: .35rem;
+}
+
+.multipicker-row-editor {
+    th {
+        font-size: .8rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .multipicker-row-check {
+        margin-inline: .5rem;
+    }
+}
+
+.multipicker-table-search {
+    max-width: 24rem;
+}
+
+.multipicker-row-actions .btn {
+    padding: .35rem .5rem;
+    white-space: nowrap;
+}
+
+.multipicker-row-actions .icon {
+    margin: 0;
+}
+
+.multipicker-admin {
+    .mform .fitem > .col-form-label {
+        padding-inline-start: 0;
+    }
+    .mform fieldset {
+        margin-inline: 0;
+        padding-inline: 0;
+    }
+    .mform .felement {
+        min-width: 0;
+    }
+}
+
+.multipicker-admin .mform .felement > input[type=text], .multipicker-admin .mform .felement > textarea {
+    width: 100%;
+}
+
+.multipicker-admin {
+    .mform #fgroup_id_buttons > .col-form-label {
+        display: none;
+    }
+    .mform #fgroup_id_buttons > .felement {
+        margin-inline-start: 0;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .multipicker-filter-popover {
+        position: relative;
+        padding: 0;
+        border: 0;
+    }
+}
+
+.multipicker-filter-menu {
+    position: absolute;
+    inset-inline-end: 0;
+    top: calc(100% + .4rem);
+    width: min(24rem, 85vw);
+    border: 1px solid var(--multipicker-border);
+    border-radius: .5rem;
+    box-shadow: 0 .3rem 1rem #0002;
+    padding: 1rem;
+    background: var(--multipicker-surface);
+    z-index: 5;
+}
+
+.multipicker-migration-group > summary {
+    font-weight: 600;
+}
+
+.multipicker-migration-group > summary input, .multipicker-migration-folder > summary input {
+    margin-inline-start: auto;
+}
+
+.multipicker-version-diff code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.multipicker-migration [data-multipicker-continue].disabled {
+    opacity: .45;
+}
+
