@@ -2,10 +2,10 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_coursefiles/local/selection/tree_children
+    @template local_filebank/local/selection/tree_children
     One lazy authorized folder page, including nested collapsed folders and selectable files.
     Example context (json): {"cards":[],"folder":"folder:1:Lw==","next":""}
 }}
-{{#cards}}{{> local_coursefiles/local/selection/card}}{{/cards}}
-{{^cards}}<p class="small text-muted m-2">{{#str}}batchempty, local_coursefiles{{/str}}</p>{{/cards}}
-{{#next}}<button type="button" class="btn btn-sm btn-outline-secondary my-2" data-tree-next="{{next}}" data-tree-parent="{{folder}}">{{#str}}batchnext, local_coursefiles{{/str}}{{#pix}}t/right, core{{/pix}}</button>{{/next}}
+{{#cards}}{{> local_filebank/local/selection/card}}{{/cards}}
+{{^cards}}<p class="small text-muted m-2">{{#str}}batchempty, local_filebank{{/str}}</p>{{/cards}}
+{{#next}}<button type="button" class="btn btn-sm btn-outline-secondary my-2" data-tree-next="{{next}}" data-tree-parent="{{folder}}">{{#str}}batchnext, local_filebank{{/str}}{{#pix}}t/right, core{{/pix}}</button>{{/next}}

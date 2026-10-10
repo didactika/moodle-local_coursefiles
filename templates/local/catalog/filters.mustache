@@ -2,29 +2,29 @@
     @copyright 2026 Didactika.org
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-    @template local_coursefiles/local/catalog/filters
+    @template local_filebank/local/catalog/filters
     Compact native GET filters with optional advanced fields.
     Example context (json): {"courseid":2,"profiles":[],"profileid":1,"filters":{},"modules":[],"filetypes":[]}
 }}
-<form method="get" action="{{actionurl}}" class="card mb-4" aria-label="{{#str}}filtermaterials, local_coursefiles{{/str}}">
+<form method="get" action="{{actionurl}}" class="card mb-4" aria-label="{{#str}}filtermaterials, local_filebank{{/str}}">
     <div class="card-body">
         <input type="hidden" name="courseid" value="{{courseid}}">
         {{^multipleprofiles}}<input type="hidden" name="profileid" value="{{profileid}}">{{/multipleprofiles}}
         <div class="row">
             <div class="col-md-8 mb-3">
-                <label for="cb-query">{{#str}}filenamefilter, local_coursefiles{{/str}} </label> {{{filterhelp}}}
+                <label for="cb-query">{{#str}}filenamefilter, local_filebank{{/str}} </label> {{{filterhelp}}}
                 <input type="search" class="form-control" name="q" id="cb-query" value="{{filters.q}}">
             </div>
             <div class="col-md-4 mb-3">
-                <label for="cb-edition">{{#str}}editionfilter, local_coursefiles{{/str}} </label> {{{filterhelp}}}
+                <label for="cb-edition">{{#str}}editionfilter, local_filebank{{/str}} </label> {{{filterhelp}}}
                 <input class="form-control" name="edition" id="cb-edition" value="{{filters.edition}}">
             </div>
         </div>
         <details class="mb-3" {{#advancedfilters}}open{{/advancedfilters}}>
-            <summary><span class="coursefiles-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}morefilters, local_coursefiles{{/str}}</summary>
+            <summary><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}morefilters, local_filebank{{/str}}</summary>
             <div class="row mt-3">
                 {{#multipleprofiles}}<div class="col-md-6 mb-3">
-                    <label for="cb-profile">{{#str}}profile, local_coursefiles{{/str}} </label> {{{filterhelp}}}
+                    <label for="cb-profile">{{#str}}profile, local_filebank{{/str}} </label> {{{filterhelp}}}
                     <select class="form-control" name="profileid" id="cb-profile">{{#profiles}}
                         <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                     {{/profiles}}</select>
@@ -34,13 +34,13 @@
                     <input class="form-control" name="shortname" id="cb-course" value="{{filters.shortname}}">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="cb-module">{{#str}}modulefilter, local_coursefiles{{/str}} </label> {{{filterhelp}}}
+                    <label for="cb-module">{{#str}}modulefilter, local_filebank{{/str}} </label> {{{filterhelp}}}
                     <select class="form-control" name="module" id="cb-module">{{#modules}}
                         <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                     {{/modules}}</select>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="cb-filetype">{{#str}}filetypefilter, local_coursefiles{{/str}} </label> {{{filterhelp}}}
+                    <label for="cb-filetype">{{#str}}filetypefilter, local_filebank{{/str}} </label> {{{filterhelp}}}
                     <select class="form-control" name="mimetype" id="cb-filetype">{{#filetypes}}
                         <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                     {{/filetypes}}</select>
@@ -48,6 +48,6 @@
             </div>
         </details>
         <button class="btn btn-primary" type="submit">{{#str}}search, core{{/str}}</button>
-        <a class="btn btn-link" href="{{reseturl}}">{{#str}}clearfilters, local_coursefiles{{/str}}</a>
+        <a class="btn btn-link" href="{{reseturl}}">{{#str}}clearfilters, local_filebank{{/str}}</a>
     </div>
 </form>
