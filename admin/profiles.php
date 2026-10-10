@@ -62,7 +62,8 @@ $profileid = optional_param('profileid', 0, PARAM_INT);
 if ($profileid) {
     redirect(new moodle_url('/local/multipicker/admin/profile.php', ['profileid' => $profileid]));
 }
-$data = ['profiles' => [], 'newprofileurl' => (new moodle_url('/local/multipicker/admin/profile.php'))->out(false),
+$data = ['contextid' => context_system::instance()->id, 'profiles' => [],
+    'newprofileurl' => (new moodle_url('/local/multipicker/admin/profile.php'))->out(false),
     'importurl' => (new moodle_url('/local/multipicker/admin/profile_import.php'))->out(false),
     'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_multipicker'),
     'actionurl' => $PAGE->url->out(false), 'search' => $search, 'sesskey' => sesskey(), 'perpage' => $perpage];

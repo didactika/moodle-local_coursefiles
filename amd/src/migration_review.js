@@ -48,7 +48,6 @@ export const init = async() => {
         button.classList.toggle('disabled', disabled);
         button.setAttribute('aria-disabled', String(disabled));
         button.tabIndex = disabled ? -1 : 0;
-        root.querySelector('[data-multipicker-blockedhelp]').hidden = canContinue;
         root.dataset.pending = String(pending);
         root.querySelectorAll('input[type=checkbox], [data-multipicker-resolve], [data-multipicker-file-resolution]')
             .forEach(control => {

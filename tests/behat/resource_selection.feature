@@ -18,7 +18,7 @@ Feature: Import supporting materials without changing the native resource main f
     And I select MultiPicker material "resource.txt" from "CB2025"
     And I press MultiPicker action "Review selection"
     Then the MultiPicker review should include "notes2025.txt"
-    When I press MultiPicker action "Import reviewed materials"
+    When I press MultiPicker action "Import materials"
     And I press "Save and display"
     And I navigate to "Settings" in current page administration
     Then I should see "4" elements in "Select files" filemanager
@@ -26,7 +26,7 @@ Feature: Import supporting materials without changing the native resource main f
   Scenario: Cancel keeps the saved resource unchanged
     When I select MultiPicker material "Published materials" from "CB2025"
     And I press MultiPicker action "Review selection"
-    And I press MultiPicker action "Import reviewed materials"
+    And I press MultiPicker action "Import materials"
     And I press "Cancel"
     And I am on the "Target resource" "resource activity" page
     And I navigate to "Settings" in current page administration

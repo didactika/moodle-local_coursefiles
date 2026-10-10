@@ -132,7 +132,7 @@ final class profile_form extends \moodleform {
                     ['profileid' => $this->_customdata['profileid']]
                 ),
                 get_string('versionhistory', 'local_multipicker'),
-                ['class' => 'btn btn-sm btn-outline-info']
+                ['class' => 'btn btn-outline-info']
             ));
         }
         $form->addGroup($buttons, 'buttons', '', [' '], false);

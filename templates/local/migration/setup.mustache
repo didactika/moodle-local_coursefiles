@@ -4,6 +4,8 @@
     Example context (json): {"profiles":[],"hasprofiles":false,"recent":[],"hasrecent":false}
 }}
 <section class="multipicker-admin" data-region="multipicker-migration-setup">
+    {{#chooseprofile}}<div class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{listurl}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}}{{#str}}back, core{{/str}}</a></div>{{/chooseprofile}}
+    {{#choosescope}}<div class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{scopebackurl}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}}{{#str}}back, core{{/str}}</a></div>{{/choosescope}}
     <h2>{{#str}}migrations, local_multipicker{{/str}}</h2>
     <p class="text-muted">{{#str}}migrationintro, local_multipicker{{/str}}</p>
     <ol class="multipicker-steps mb-4" aria-label="{{#str}}migrationsteps, local_multipicker{{/str}}">
@@ -17,13 +19,13 @@
     {{#chooseprofile}}<div class="multipicker-panel"><p class="text-muted">{{#str}}migrationprofilehelp, local_multipicker{{/str}}</p>
     <form method="get" action="{{actionurl}}" class="mb-4">
         <input type="hidden" name="step" value="scope">
-        <label for="cb-migration-profile">{{#str}}profile, local_multipicker{{/str}} {{{profilehelp}}}</label>
+        <label for="cb-migration-profile">{{#str}}profile, local_multipicker{{/str}} </label> {{{profilehelp}}}
         <div class="row"><div class="col-md-8 mb-2">
             <select class="custom-select custom-select-sm" name="profileid" id="cb-migration-profile">{{#profiles}}
                 <option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>
             {{/profiles}}</select>
-        </div></div><div class="multipicker-page-actions">
-            <a href="{{listurl}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}}{{#str}}back, core{{/str}}</a>
+        </div></div><div class="multipicker-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top">
+
             <button class="btn btn-outline-secondary" type="submit">{{#str}}continuescope, local_multipicker{{/str}}</button>
         </div>
     </form></div>{{/chooseprofile}}

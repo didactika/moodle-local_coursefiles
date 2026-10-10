@@ -34,3 +34,9 @@ Integration tests cover mixed overlapping selections, multiple source folders, c
 
 
 Review accepts server-held placement roots and per-source destination filenames. Filenames must pass native PARAM_FILE validation and accepted-type checks. Removal leaves only actual selected source hashes. The approval covers the destination filenames, source snapshots, paths and native draft state; changing a filename invalidates an earlier approval.
+
+## Excluding content already in the owning draft
+
+Interactive catalog search, recursive selection and folder counts share `destination_content`. A native-file `NOT EXISTS` condition excludes matching contenthash/filesize in the current actor's actual user/draft area before content grouping, pagination and expansion limits. Existing destination names, paths, authors and licences do not make those bytes selectable again. A renamed file and an unsaved native upload therefore remain hidden. Other users' drafts with the same itemid do not affect results. Removing a destination file makes its source available on the next query. One bounded query also prunes retained canonical selectors against the live draft.
+
+This presentation rule does not replace approval or transfer validation. Direct PHP services retain their existing skip/conflict decisions; final import rechecks source authorization, native limits, snapshots and the reviewed digest. Folder removal checkboxes do not change the batch and cannot invalidate approval.

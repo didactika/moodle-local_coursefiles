@@ -5,7 +5,6 @@ title One profile - retained configuration versions
 actor Administrator
 participant "Native history page" as UI
 participant profile_history as History
-participant profiles as Profiles
 database "Profile / versions" as DB
 participant "Core task queue" as Queue
 Administrator -> UI : Compare two retained versions
@@ -16,10 +15,10 @@ UI -> UI : Escape values in native template
 Administrator -> UI : Restore a historical configuration
 UI -> History : restore(profileid, versionid) / session key
 History -> DB : Read historical configuration for this profile
-History -> Profiles : save(configuration, same profileid)
-Profiles -> DB : Append version / set current under lock
-Profiles -> Queue : Queue catalogue reconciliation
-Profiles --> UI : Same profile / new current version
+History -> DB : Lock profile / validate saved rules
+History -> DB : Set activeid to existing version / restore name
+History -> Queue : Queue catalogue reconciliation
+History --> UI : Same profile / selected version active
 note over DB
 Retention preserves the current version
 and versions used by migration plans.

@@ -4,7 +4,7 @@ A profile has one UUID and one current configuration. Saving retains earlier con
 
 ![Profile history](diagrams/design/sequences/profile-history.svg)
 
-The history compares two retained versions side by side by configuration field. Changed fields are highlighted; Show only changes excludes unchanged fields. Values are escaped, including expressions and embedded markup. Each row can compare its version with the current configuration. Restoration creates a new current version using the selected historical content, without changing the profile identity or overwriting earlier history. Native capability checks and session keys protect restoration.
+Select two version checkboxes to compare their configurations side by side. The Compare action enables only for two selected versions; selection can continue across history pages. Back stays above the history at the left. Changed fields are highlighted; Show only changes excludes unchanged fields. Values are escaped, including expressions and embedded markup. Each row can compare its version with the current configuration. Restoration activates the selected existing version under the profile lock. It keeps that version’s original configuration, number, author and date, restores the profile name, and queues catalogue reconciliation. It does not append a duplicate version or change migration snapshots. Saving a subsequent edit still appends the next version number. Native capability checks and session keys protect restoration.
 
 ## Retention
 

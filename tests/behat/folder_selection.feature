@@ -23,7 +23,7 @@ Feature: Import mixed materials inside the native folder picker
     And the MultiPicker review should include "notes2025.txt"
     And the MultiPicker review should include "Original teacher"
     And I capture the MultiPicker browser
-    When I press MultiPicker action "Import reviewed materials"
+    When I press MultiPicker action "Import materials"
     And I press "Save changes"
     Then I should see "existing.txt"
     And I should see "lesson.txt"
@@ -34,7 +34,7 @@ Feature: Import mixed materials inside the native folder picker
   Scenario: Cancel retains the previously saved folder
     When I select MultiPicker material "Published materials" from "CB2025"
     And I press MultiPicker action "Review selection"
-    And I press MultiPicker action "Import reviewed materials"
+    And I press MultiPicker action "Import materials"
     And I press "Cancel"
     Then I should see "existing.txt"
     And I should not see "lesson.txt"
@@ -43,7 +43,7 @@ Feature: Import mixed materials inside the native folder picker
     Given the MultiPicker teacher can only manage folder content
     When I select MultiPicker material "Published materials" from "CB2025"
     And I press MultiPicker action "Review selection"
-    And I press MultiPicker action "Import reviewed materials"
+    And I press MultiPicker action "Import materials"
     And I press "Save changes"
     Then I should see "lesson.txt"
     And I should see "notes2025.txt"
@@ -57,7 +57,7 @@ Feature: Import mixed materials inside the native folder picker
     Then the MultiPicker review should include "notes2025.txt"
     And the MultiPicker browser should not include "notes2024.txt"
     And I capture the MultiPicker browser
-    When I press MultiPicker action "Import reviewed materials"
+    When I press MultiPicker action "Import materials"
     And I press "Save changes"
     Then I should see "notes2025.txt"
     And I should not see "notes2024.txt"
@@ -78,7 +78,7 @@ Feature: Import mixed materials inside the native folder picker
     When I select MultiPicker material "handout.txt" from "CB2025"
     And I press MultiPicker action "Review selection"
     Then the MultiPicker review should include "handout.txt"
-    When I press MultiPicker action "Import reviewed materials"
+    When I press MultiPicker action "Import materials"
     And I press "Save changes"
     Then I should see "handout.txt"
 
@@ -91,7 +91,7 @@ Feature: Import mixed materials inside the native folder picker
     When I press MultiPicker action "Review selection"
     Then the MultiPicker review should include "notes2025.txt"
     And the MultiPicker browser should not include "lesson.txt"
-    When I press MultiPicker action "Import reviewed materials"
+    When I press MultiPicker action "Import materials"
     And I press "Save changes"
     Then I should see "notes2025.txt"
     And I should not see "lesson.txt"
@@ -101,7 +101,7 @@ Feature: Import mixed materials inside the native folder picker
     And I press MultiPicker action "Review selection"
     And I rename MultiPicker reviewed file "lesson.txt" to "renamed-lesson.txt"
     Then the MultiPicker review should include "renamed-lesson.txt"
-    When I press MultiPicker action "Import reviewed materials"
+    When I press MultiPicker action "Import materials"
     And I press "Save changes"
     Then I should see "renamed-lesson.txt"
     And "//a[normalize-space()='lesson.txt']" "xpath_element" should not exist

@@ -13,11 +13,11 @@
             <input type="hidden" name="sesskey" value="{{sesskey}}">
             <input type="hidden" name="courseid" value="{{courseid}}">
             <input type="hidden" name="profileid" value="{{profileid}}">
-            <label for="cb-publication-module">{{#str}}publicationmodule, local_multipicker{{/str}} {{{publicationhelp}}}</label>
+            <label for="cb-publication-module">{{#str}}publicationmodule, local_multipicker{{/str}} </label> {{{publicationhelp}}}
             <select class="custom-select custom-select-sm mb-3" name="cmid" id="cb-publication-module">{{#publicationmodules}}
                 <option value="{{value}}">{{{label}}}</option>
             {{/publicationmodules}}</select>
-            <div class="multipicker-page-actions"><button class="btn btn-primary" name="action" value="publish" type="submit">{{#str}}publish, local_multipicker{{/str}}</button>
+            <div class="multipicker-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top"><button class="btn btn-primary" name="action" value="publish" type="submit">{{#str}}publish, local_multipicker{{/str}}</button>
             <button class="btn btn-outline-warning" name="action" value="revoke" type="submit">{{#str}}revoke, local_multipicker{{/str}}</button></div>
         </form>
         {{/haspublicationmodules}}

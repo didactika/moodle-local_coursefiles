@@ -57,9 +57,6 @@ if (data_submitted()) {
         );
         $message = get_string('selectionupdated', 'local_multipicker');
     } else if ($action === 'execute') {
-        if (!required_param('confirmed', PARAM_BOOL)) {
-            throw new moodle_exception('reviewrequired', 'local_multipicker');
-        }
         $runid = \local_multipicker\local\migration\migration_executor::queue($planid, required_param('digest', PARAM_ALPHANUM));
         $message = get_string($runid ? 'migrationqueued' : 'emptymigration', 'local_multipicker');
     } else if (in_array($action, ['selection', 'all', 'none'], true)) {

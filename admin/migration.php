@@ -133,6 +133,10 @@ $data['choosescope'] = $step === 'scope';
 $data['listurl'] = (new moodle_url('/local/multipicker/admin/migration.php'))->out(false);
 $profileurl = new moodle_url('/local/multipicker/admin/migration.php', ['profileid' => $profileid, 'new' => 1]);
 $data['profileurl'] = $profileurl->out(false);
+$data['scopebackurl'] = (new moodle_url(
+    '/local/multipicker/admin/migration.php',
+    ['profileid' => $profileid, 'new' => 1, 'step' => 'profile']
+))->out(false);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
 $renderer = $PAGE->get_renderer('local_multipicker');

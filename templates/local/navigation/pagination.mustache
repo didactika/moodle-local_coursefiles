@@ -3,14 +3,14 @@
     Bounded shared pagination with native controls and preserved search parameters.
     Example context (json): {"id":"mp-page-1","summary":"1–25 / 100","pagelabel":"Page 1 of 4","sizes":[]}
 }}
-<nav class="multipicker-pagination my-3" aria-label="{{#str}}pagination, local_multipicker{{/str}}">
-    <div class="d-flex align-items-center multipicker-actionbar">
-        <label for="{{id}}" class="small mb-0">{{#str}}pagesize, local_multipicker{{/str}} {{{help}}}</label>
+<nav class="multipicker-pagination my-3 d-flex align-items-center justify-content-between flex-wrap" aria-label="{{#str}}pagination, local_multipicker{{/str}}">
+    <div class="d-flex align-items-center multipicker-actionbar flex-wrap">
+        <label for="{{id}}" class="small mb-0">{{#str}}pagesize, local_multipicker{{/str}} </label> {{{help}}}
         <select id="{{id}}" class="custom-select custom-select-sm multipicker-page-size" data-multipicker-pagesize data-url="{{url}}" data-pageparameter="{{pageparameter}}">
             {{#sizes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{value}}</option>{{/sizes}}
         </select>
     </div>
-    <div class="multipicker-actionbar"><span class="small text-muted" aria-live="polite">{{summary}} · {{pagelabel}}</span>
+    <div class="multipicker-actionbar d-flex align-items-center flex-wrap"><span class="small text-muted" aria-live="polite">{{summary}} · {{pagelabel}}</span>
         <div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}pagination, local_multipicker{{/str}}">
             {{#previousurl}}<a href="{{previousurl}}" class="btn btn-sm btn-outline-secondary" title="{{#str}}previous, core{{/str}}" aria-label="{{#str}}previous, core{{/str}}">{{#pix}}t/left, core{{/pix}}</a>{{/previousurl}}
             {{^previousurl}}<button type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="{{#str}}previous, core{{/str}}">{{#pix}}t/left, core{{/pix}}</button>{{/previousurl}}

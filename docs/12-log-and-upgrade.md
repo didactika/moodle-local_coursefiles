@@ -33,3 +33,7 @@ Deploy both plugin versions together. The repository plugin requires local_multi
 See [validation evidence](07-validation-and-decisions.md) and the [installed schema](05-data-model.md).
 
 Version 2026101000 adds the revision timecreated/id index without changing existing configuration or native materials. Migration deletion records migration_deleted after removing only the inactive plan metadata. Version cleanup preserves current and migration-referenced configurations.
+
+## Version 2026101001
+
+The normal Moodle plugin upgrade removes retired local_coursebridge scheduled-task registrations. Disabling the old registrations is insufficient because core cron still instantiates registered task classes. Current local_multipicker schedules and their custom settings remain unchanged. Supported legacy ad hoc work keeps its ID, payload and scheduling fields while adopting the new component/class names; an unsupported queued class stops the transaction instead of silently discarding work. On Moodle 5.3 the queued task identity hash is cleared when its class changes, allowing core to rebuild its deduplication identity. Moodle 4.5 has no such column. Legacy teaching/configuration tables remain available as before. This repair is repeatable and does not require site maintenance.

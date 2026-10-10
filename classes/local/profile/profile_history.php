@@ -27,7 +27,7 @@ namespace local_multipicker\local\profile;
  */
 final class profile_history {
     /**
-     * Restore historical content as a new active version of the same profile.
+     * Activate an existing version without changing its content, author or date.
      * @param int $profileid Profile.
      * @param int $versionid Historical record belonging to that profile.
      * @return int Unchanged profile identity.
@@ -35,8 +35,54 @@ final class profile_history {
     public static function restore(int $profileid, int $versionid): int {
         global $DB;
         require_capability('local/multipicker:manageprofiles', \context_system::instance());
-        $version = $DB->get_record('local_multipicker_revision', ['id' => $versionid, 'profileid' => $profileid], '*', MUST_EXIST);
-        return profiles::save($version->configjson, $profileid);
+        $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('profile:' . $profileid, 10);
+        if (!$lock) {
+            throw new \moodle_exception('lockfailed', 'local_multipicker');
+        }
+        try {
+            $transaction = $DB->start_delegated_transaction();
+            $profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
+            $version = $DB->get_record(
+                'local_multipicker_revision',
+                ['id' => $versionid, 'profileid' => $profileid],
+                '*',
+                MUST_EXIST
+            );
+            $config = json_decode($version->configjson, true);
+            new profile_config($config);
+            if ((int)$profile->activeid !== $versionid) {
+                $previousid = (int)$profile->activeid;
+                $previous = $DB->get_record('local_multipicker_revision', ['id' => $previousid], '*', MUST_EXIST);
+                $oldconfig = json_decode($previous->configjson, true);
+                $profile->activeid = $versionid;
+                $profile->name = $config['name'];
+                $DB->update_record('local_multipicker', $profile);
+                if (
+                    $oldconfig['relationship'] === $config['relationship']
+                        && ($oldconfig['scope'] ?? []) === ($config['scope'] ?? [])
+                ) {
+                    foreach (['local_multipicker_course', 'local_multipicker_value'] as $table) {
+                        $DB->set_field(
+                            $table,
+                            'revisionid',
+                            $versionid,
+                            ['profileid' => $profileid, 'revisionid' => $previousid]
+                        );
+                    }
+                }
+                // Rebuild derived catalog metadata; historical migration snapshots remain unchanged.
+                \local_multipicker\task\refresh_profile::queue($profileid, $versionid);
+                \local_multipicker\local\logging\log::record(
+                    'profile_activated',
+                    $profile->uuid,
+                    ['revision' => $version->revision, 'restored' => true]
+                );
+            }
+            $transaction->allow_commit();
+            return $profileid;
+        } finally {
+            $lock->release();
+        }
     }
 
     /**

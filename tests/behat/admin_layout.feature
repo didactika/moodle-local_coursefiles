@@ -18,17 +18,19 @@ Feature: Clear administration tabs and immutable migration previews
     When I click on "input[name='profiles[]']" "css_element"
     Then MultiPicker profile bulk actions should be "hidden"
     When I click on "[data-multipicker-selectall]" "css_element"
+    And I remember the selected MultiPicker profile rows
     And I press "Disable selected"
     Then I should see "Disabled" in the ".multipicker-profiles table" "css_element"
-    And MultiPicker profile bulk actions should be "hidden"
-    When I click on "input[name='profiles[]']" "css_element"
-    And I press "Enable selected"
+    And MultiPicker profile bulk actions should be "visible"
+    And MultiPicker should retain its selected profile rows
+    And "button[value='disable']" "css_element" should not be visible
+    When I press "Enable selected"
     Then I should see "Enabled" in the ".multipicker-profiles table" "css_element"
     And I capture MultiPicker administration "bulk-icons"
 
   Scenario: Native settings save without leaving the administration tabs
     Given I log in as "admin"
-    When I open MultiPicker administration "settings"
+    When I open MultiPicker administration "category"
     Then I should see "Profiles" in the "[data-region='multipicker-navigation']" "css_element"
     And I should see "Migrations" in the "[data-region='multipicker-navigation']" "css_element"
     And I should see "Log" in the "[data-region='multipicker-navigation']" "css_element"
@@ -43,6 +45,7 @@ Feature: Clear administration tabs and immutable migration previews
     And I set the field "Name" to "Unsaved profile name"
     And I press "Preview rules"
     Then I should see "Nothing has been saved or activated"
+    And I should not see "Rules in use"
     And I should see "Unsaved profile name"
     And I capture MultiPicker administration "profile-editor"
     When I press "Cancel"
@@ -121,7 +124,8 @@ Feature: Clear administration tabs and immutable migration previews
     When I click on "[data-multipicker-selectall]" "css_element"
     And I wait for the MultiPicker migration selection to save
     And I follow "Continue to execution"
-    Then I should see "I have reviewed every destination and copy decision"
+    Then I should see "Files are processed in the background without enabling site maintenance"
+    And "input[name='confirmed']" "css_element" should not exist
     And I should not see "Find a course, folder or file"
 
   @_file_upload
@@ -198,14 +202,14 @@ Feature: Clear administration tabs and immutable migration previews
     And I press "Save profile"
     And I follow "Updated acceptance"
     And I follow "Version history"
-    Then I should see "One profile keeps its saved versions"
+    Then I should see "Select two versions to compare"
     And I capture MultiPicker administration "version-history"
     And the MultiPicker history Back action should stay on the left
     When I compare the oldest MultiPicker profile version
     Then I should see "Updated acceptance" in the ".multipicker-version-diff" "css_element"
     And I capture MultiPicker administration "version-compare"
     When I press "Restore this version"
-    Then I should see "The configuration was restored as a new version of the same profile"
+    Then I should see "The selected version is now active"
     When I open MultiPicker administration "profiles"
     Then I should see "Migration acceptance" in the ".multipicker-profiles table" "css_element"
     And I should not see "Updated acceptance" in the ".multipicker-profiles table" "css_element"
@@ -228,4 +232,5 @@ Feature: Clear administration tabs and immutable migration previews
     And I should see "lesson.txt"
     And I capture MultiPicker administration "resolved-migration"
     When I follow "Continue to execution"
-    Then I should see "I have reviewed every destination and copy decision"
+    Then I should see "Files are processed in the background without enabling site maintenance"
+    And "input[name='confirmed']" "css_element" should not exist
