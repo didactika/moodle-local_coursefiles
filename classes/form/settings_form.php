@@ -54,7 +54,7 @@ final class settings_form extends \moodleform {
                 $options[$value] = get_string($value, 'local_multipicker');
             }
             $form->addElement('select', $name, get_string($name, 'local_multipicker'), $options);
-            $form->addElement('static', $name . '_help', '', get_string($name . '_desc', 'local_multipicker'));
+            $form->addHelpButton($name, $name, 'local_multipicker');
             $form->setDefault($name, $values[0]);
         }
         $form->addElement('header', 'retention', get_string('retention', 'local_multipicker'));
@@ -67,12 +67,8 @@ final class settings_form extends \moodleform {
             $form->setType($name, PARAM_INT);
             $form->addRule($name, null, 'numeric', null, 'client');
             $form->setDefault($name, $days);
-            if (str_starts_with($name, 'version')) {
-                $form->addHelpButton($name, $name, 'local_multipicker');
-            }
+            $form->addHelpButton($name, $name, 'local_multipicker');
         }
-        $form->addElement('static', 'versionretentionhelp', '', get_string('versionretentionhelp', 'local_multipicker'));
-        $form->addElement('static', 'retentionhelp', '', get_string('retentionhelp', 'local_multipicker'));
         $this->add_action_buttons(false);
     }
 

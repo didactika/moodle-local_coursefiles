@@ -36,7 +36,11 @@ final class row_data {
      * @param int $maximum Server-enforced row limit.
      */
     public static function enhance(\MoodleQuickForm $form, string $name, array $columns, int $maximum): void {
-        global $PAGE;
+        global $PAGE, $OUTPUT;
+        foreach ($columns as &$column) {
+            $column['help'] = $OUTPUT->help_icon('rowfield_' . $column['key'], 'local_multipicker');
+        }
+        unset($column);
         $form->getElement($name)->updateAttributes([
             'data-multipicker-schema' => json_encode(['columns' => $columns, 'maximum' => $maximum], JSON_UNESCAPED_UNICODE),
         ]);

@@ -35,17 +35,141 @@ use local_multipicker\local\profile\profiles;
  * Exercises native destinations, history retention and profile lifecycle.
  *
  * @covers \local_multipicker\local\migration\migration_planner
+ * @covers \local_multipicker\local\migration\plan_resolution
+ * @covers \local_multipicker\local\migration\plan_history
+ * @covers \local_multipicker\local\migration\plan_selection
  * @covers \local_multipicker\local\migration\target_binding
  * @covers \local_multipicker\local\migration\migration_executor
  * @covers \local_multipicker\local\maintenance\retention
  * @covers \local_multipicker\local\profile\profiles
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\migration_planner::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\plan_resolution::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\plan_history::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\plan_selection::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\target_binding::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\migration\migration_executor::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\maintenance\retention::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
 final class workflow_test extends \advanced_testcase {
+    /**
+     * Explicit destination choices preserve the old review and included exclusions.
+     */
+    public function test_resolve_destination_without_losing_selection(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+            ->create_migration_fixture(['name' => 'Conflict review']);
+        $options = ['migration' => ['section_match' => ['strategy' => 'ordinal'], 'missing_target' => 'block',
+            'correspondences' => [
+                ['source_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Published materials'],
+                'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Target materials']],
+                ['source_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Published materials'],
+                'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Missing destination']],
+            ]]];
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', $options);
+        $this->assertSame('blocked', $plan->state);
+        $operations = $DB->get_records('local_multipicker_operation', ['planid' => $plan->id]);
+        $ids = array_keys($operations);
+        plan_selection::save($plan->id, $plan->digest, $ids, [$ids[0]]);
+        $plan = $DB->get_record('local_multipicker_plan', ['id' => $plan->id]);
+        $next = \local_multipicker\local\migration\plan_resolution::apply(
+            $plan->id,
+            $plan->digest,
+            'issue',
+            0,
+            'folder:' . $fixture['targetcmid']
+        );
+        $this->assertNotSame((int)$plan->id, $next);
+        $this->assertSame($plan->configjson, $DB->get_field('local_multipicker_plan', 'configjson', ['id' => $plan->id]));
+        $this->assertSame('reviewable', $DB->get_field('local_multipicker_plan', 'state', ['id' => $next]));
+        $this->assertSame(1, $DB->count_records('local_multipicker_operation', ['planid' => $next, 'included' => 0]));
+        $state = plan_selection::state($next, []);
+        $this->assertTrue($state['cancontinue']);
+        $this->assertSame(1, $state['included']);
+        $this->assertSame(2, $state['total']);
+    }
+
+    /**
+     * Missing destinations are only created at execution in the explicit existing section.
+     */
+    public function test_resolve_creation_and_execute_without_maintenance(): void {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+            ->create_migration_fixture(['name' => 'Create resolved destination']);
+        $options = ['migration' => ['source_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Published materials'],
+            'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Missing destination'],
+            'section_match' => ['strategy' => 'ordinal'], 'missing_target' => 'block']];
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', $options);
+        $target = get_coursemodule_from_id('folder', $fixture['targetcmid']);
+        $count = $DB->count_records('folder', ['course' => $target->course]);
+        $next = \local_multipicker\local\migration\plan_resolution::apply(
+            $plan->id,
+            $plan->digest,
+            'issue',
+            0,
+            'create:' . $target->section
+        );
+        $this->assertSame($count, $DB->count_records('folder', ['course' => $target->course]));
+        $plan = $DB->get_record('local_multipicker_plan', ['id' => $next]);
+        $this->assertSame('reviewable', $plan->state);
+        $CFG->maintenance_enabled = false;
+        $run = migration_executor::queue($next, $plan->digest);
+        $more = migration_executor::execute($run);
+        while ($more) {
+            $more = migration_executor::execute($run);
+        }
+        $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $run]));
+        $this->assertSame($count + 1, $DB->count_records('folder', ['course' => $target->course]));
+        $this->assertFalse((bool)$CFG->maintenance_enabled);
+    }
+
+    /**
+     * Whole-plan inclusion is independent of visible pages and queued runs cannot be bulk deleted.
+     */
+    public function test_whole_plan_selection_and_atomic_bulk_delete(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+            ->create_migration_fixture(['name' => 'Whole review']);
+        $source = get_fast_modinfo($DB->get_field('course', 'id', ['shortname' => 'CB2025']))->get_instances_of('folder');
+        $cm = reset($source);
+        for ($i = 0; $i < 55; $i++) {
+            get_file_storage()->create_file_from_string(['contextid' => $cm->context->id, 'component' => 'mod_folder',
+                'filearea' => 'content', 'itemid' => 0, 'filepath' => '/', 'filename' => 'extra-' . $i . '.txt',
+                'author' => 'Original teacher', 'license' => 'cc'], 'Unique lesson ' . $i);
+        }
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $ops = $DB->get_records('local_multipicker_operation', ['planid' => $plan->id], 'id', '*', 0, 10);
+        plan_selection::save($plan->id, $plan->digest, array_keys($ops), [], 'none');
+        $state = plan_selection::state($plan->id, array_keys($ops));
+        $this->assertSame(57, $state['total']);
+        $this->assertSame(0, $state['included']);
+        $this->assertTrue($state['emptycancelled']);
+        $this->assertFalse($state['cancontinue']);
+        plan_selection::save($plan->id, $state['digest'], array_keys($ops), [], 'all');
+        $state = plan_selection::state($plan->id, array_keys($ops));
+        $this->assertSame(57, $state['included']);
+        $this->assertTrue($state['cancontinue']);
+        $other = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        migration_executor::queue($plan->id, $state['digest']);
+        try {
+            \local_multipicker\local\migration\plan_history::delete_many([$other->id, $plan->id]);
+            $this->fail('A queued plan must protect the entire deletion');
+        } catch (\moodle_exception $exception) {
+            $this->assertSame('migrationinuse', $exception->errorcode);
+        }
+        $this->assertTrue($DB->record_exists('local_multipicker_plan', ['id' => $other->id]));
+        $this->assertTrue($DB->record_exists('local_multipicker_plan', ['id' => $plan->id]));
+        \local_multipicker\local\migration\plan_history::delete_many([$other->id]);
+        $this->assertFalse($DB->record_exists('local_multipicker_plan', ['id' => $other->id]));
+    }
+
+
     /**
      * A teacher can add unrelated material after review while the site stays available.
      */

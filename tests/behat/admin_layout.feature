@@ -103,18 +103,23 @@ Feature: Clear administration tabs and immutable migration previews
     And I set the field "targetfilters[edition]" to "2026"
     And I set the field "layoutconfirmed" to "1"
     And I press "Create preview"
-    And I press "Exclude every file"
+    And I click on "[data-multipicker-selectall]" "css_element"
+    And I wait for the MultiPicker migration selection to save
     Then I should see "0 files included across all pages"
     When I set the field "Find a course, folder or file" to "lesson"
-    And I click on ".multipicker-migration form[method='get'] button" "css_element"
+    And I wait for the MultiPicker migration selection to save
+    And I click on "[data-multipicker-review-search] button" "css_element"
     Then I should see "lesson.txt"
     And I should see "Excluded"
-    When I press "Include every file"
+    When I click on "[data-multipicker-selectall]" "css_element"
+    And I wait for the MultiPicker migration selection to save
     Then I should see "2 files included across all pages"
     When I click on "input[name='included[]']" "css_element"
-    And I click on ".multipicker-migration form[method='get'] button" "css_element"
+    And I wait for the MultiPicker migration selection to save
+    And I click on "[data-multipicker-review-search] button" "css_element"
     Then I should see "1 files included across all pages"
-    When I press "Include every file"
+    When I click on "[data-multipicker-selectall]" "css_element"
+    And I wait for the MultiPicker migration selection to save
     And I follow "Continue to execution"
     Then I should see "I have reviewed every destination and copy decision"
     And I should not see "Find a course, folder or file"
@@ -169,6 +174,7 @@ Feature: Clear administration tabs and immutable migration previews
     When I open MultiPicker administration "migration"
     And I follow "New migration"
     And I press "Continue to source and destination"
+    And the MultiPicker correspondence rows should fit narrow screens
     And I set the field "sourcefilters[edition]" to "2025"
     And I set the field "targetfilters[edition]" to "2026"
     And I set the field "layoutconfirmed" to "1"
@@ -191,9 +197,10 @@ Feature: Clear administration tabs and immutable migration previews
     And I set the field "profilename" to "Updated acceptance"
     And I press "Save profile"
     And I follow "Updated acceptance"
-    And I press "Version history"
+    And I follow "Version history"
     Then I should see "One profile keeps its saved versions"
     And I capture MultiPicker administration "version-history"
+    And the MultiPicker history Back action should stay on the left
     When I compare the oldest MultiPicker profile version
     Then I should see "Updated acceptance" in the ".multipicker-version-diff" "css_element"
     And I capture MultiPicker administration "version-compare"
@@ -202,3 +209,23 @@ Feature: Clear administration tabs and immutable migration previews
     When I open MultiPicker administration "profiles"
     Then I should see "Migration acceptance" in the ".multipicker-profiles table" "css_element"
     And I should not see "Updated acceptance" in the ".multipicker-profiles table" "css_element"
+
+  Scenario: Resolve a missing destination in place and keep Continue visible
+    Given I log in as "admin"
+    When I open MultiPicker administration "migration"
+    And I follow "New migration"
+    And I press "Continue to source and destination"
+    And I set the field "sourcefilters[edition]" to "2025"
+    And I set the field "targetfilters[edition]" to "2026"
+    And I set the field "layoutconfirmed" to "1"
+    And I set the MultiPicker destination folder rule to "Missing destination"
+    And I press "Create preview"
+    Then "[data-multipicker-continue][aria-disabled='true']" "css_element" should exist
+    And "[data-multipicker-continue]" "css_element" should be visible
+    When I set the field "mp-issue-0" to "Use: Target materials"
+    And I wait for the MultiPicker migration selection to save
+    Then "[data-multipicker-continue][aria-disabled='false']" "css_element" should exist
+    And I should see "lesson.txt"
+    And I capture MultiPicker administration "resolved-migration"
+    When I follow "Continue to execution"
+    Then I should see "I have reviewed every destination and copy decision"

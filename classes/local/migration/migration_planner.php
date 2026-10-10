@@ -56,6 +56,10 @@ final class migration_planner {
         [$profile, $revision, $rules] = profiles::load($profileid);
         $scopecapture = $scopekey !== '' ? course_scope::capture($rules, $scopekey) : '';
         $config = $options['migration'] ?? $rules->get_config()['migration'] ?? [];
+        $placements = $options['placements'] ?? [];
+        $excluded = $options['excluded'] ?? [];
+        $ignoredissues = $options['ignoredissues'] ?? [];
+        $filechoices = $options['filechoices'] ?? [];
         $filters = $options['filters'] ?? null;
         if ($filters !== null) {
             foreach (['source', 'target'] as $side) {
@@ -132,21 +136,57 @@ final class migration_planner {
                         continue;
                     }
                     $matched = true;
+                    $sourcesection = get_fast_modinfo($sourcecourse)->get_section_info($sourcecm->sectionnum);
+                    if (
+                        !$sourcecourseinfo->visible || !$sourcecm->visible || !empty($sourcecm->availability)
+                        || !$sourcesection->visible || !empty($sourcesection->availability)
+                    ) {
+                        continue;
+                    }
+                    $placementkey = $sourcecm->id . ':' . $targetcourse;
+                    $override = $placements[$placementkey] ?? [];
+                    if (!empty($override['exclude'])) {
+                        continue;
+                    }
                     $captures += ['name' => $sourcecm->name, 'idnumber' => $sourcecm->idnumber];
                     try {
-                        $sectionid = placement::section($sourcecm, $targetcourse, $config['section_match'] ?? []);
+                        // Authorize public leaves before producing destination errors or creation requests.
+                        $files = get_file_storage()->get_area_files(
+                            $sourcecm->context->id,
+                            'mod_folder',
+                            'content',
+                            0,
+                            'filepath, filename',
+                            false
+                        );
+                        if (!$files) {
+                            continue;
+                        }
+                        foreach ($files as $candidate) {
+                            material_source::resolve(
+                                $candidate->get_pathnamehash(),
+                                $targetcourse,
+                                $profileid,
+                                [$profile, $revision, $rules],
+                                $sourcescope
+                            );
+                        }
+                        $sectionid = !empty($override['sectionid']) ? (int)$override['sectionid']
+                            : placement::section($sourcecm, $targetcourse, $config['section_match'] ?? []);
+                        $DB->get_record('course_sections', ['id' => $sectionid, 'course' => $targetcourse], '*', MUST_EXIST);
                         $targets = [];
                         foreach (get_fast_modinfo($targetcourse)->get_cms() as $targetcm) {
                             if (
-                                $targetcm->section == $sectionid
-                                && placement::match($targetcm, $correspondence['target_module'] ?? [], $captures) !== null
+                                (!empty($override['cmid']) ? $targetcm->id == $override['cmid']
+                                    : (!$override && $targetcm->section == $sectionid
+                                        && placement::match($targetcm, $correspondence['target_module'] ?? [], $captures) !== null))
                             ) {
                                 $targets[] = $targetcm;
                             }
                         }
                         if (
                             count($targets) > 1 || $sourcecm->modname !== 'folder'
-                            || (!$targets && ($config['missing_target'] ?? 'block') !== 'create')
+                            || (!$targets && empty($override['create']) && ($config['missing_target'] ?? 'block') !== 'create')
                         ) {
                             throw new \moodle_exception('placementambiguous', 'local_multipicker');
                         }
@@ -154,9 +194,19 @@ final class migration_planner {
                             $targetdata = target_binding::descriptor(
                                 $targetcourse,
                                 $sectionid,
-                                $correspondence['target_module'],
+                                !empty($override['create']) ? ['field' => 'name', 'equals' => $sourcecm->name]
+                                    : $correspondence['target_module'],
                                 $captures
                             );
+                            foreach (get_fast_modinfo($targetcourse)->get_cms() as $existingcm) {
+                                if (
+                                    $existingcm->modname === 'folder' && $existingcm->section == $sectionid
+                                    && ($targetdata['idnumber'] !== '' ? $existingcm->idnumber === $targetdata['idnumber']
+                                        : $existingcm->name === $targetdata['name'])
+                                ) {
+                                    throw new \moodle_exception('placementambiguous', 'local_multipicker');
+                                }
+                            }
                             $targetkey = hash('sha256', json_encode($targetdata));
                             $creations[$targetkey] = $targetdata;
                             $target = (object)['id' => 0, 'context' => (object)['id' => 0]];
@@ -178,14 +228,6 @@ final class migration_planner {
                         ) {
                             $targetcontent[$targetfile->get_contenthash()][] = $targetfile;
                         }
-                        $files = get_file_storage()->get_area_files(
-                            $sourcecm->context->id,
-                            'mod_folder',
-                            'content',
-                            0,
-                            'filepath, filename',
-                            false
-                        );
                         foreach ($files as $candidate) {
                             [$file, $cm] = material_source::resolve(
                                 $candidate->get_pathnamehash(),
@@ -242,12 +284,18 @@ final class migration_planner {
                             'sourceidentity' => $sourceidentity,
                             'targetidentity' => $targetidentity];
                             $opkey = hash('sha256', $file->get_pathnamehash() . ':' . ($targetkey ?: $target->id));
+                            $choicekey = $file->get_pathnamehash() . ':' . $targetcourse;
+                            if (($filechoices[$choicekey] ?? '') === 'overwrite' && $decision === 'blocked_content') {
+                                author_policy::require_native_copy($file, $cm->course, $targetcourse);
+                                $decision = 'overwrite';
+                            }
                             $operations[$opkey] = ['sourcehash' => $file->get_pathnamehash(), 'targetcmid' => $target->id,
                             'decision' => $decision, 'snapshot' => $snapshot,
-                            'opkey' => $opkey];
+                            'included' => !in_array($choicekey, $excluded, true), 'opkey' => $opkey];
                         }
                     } catch (\moodle_exception $exception) {
-                        $issues[] = ['sourcecmid' => $sourcecm->id, 'targetcourseid' => $targetcourse,
+                        $issues[] = ['sourcecmid' => $sourcecm->id, 'sourcecourseid' => $sourcecourse,
+                        'targetcourseid' => $targetcourse,
                         'reason' => $exception->errorcode];
                     }
                 }
@@ -256,14 +304,23 @@ final class migration_planner {
                 }
             }
         }
+        $issues = array_values(array_filter($issues, static fn($issue) => !in_array(
+            hash('sha256', json_encode($issue)),
+            $ignoredissues,
+            true
+        )));
         $document = ['sourceedition' => $sourceedition, 'targetedition' => $targetedition, 'scopekey' => $scopekey,
             'layoutconfirmed' => $layoutconfirmed, 'migration' => $config, 'filters' => $filters,
+            'placements' => $placements, 'excluded' => $excluded, 'ignoredissues' => $ignoredissues,
+            'filechoices' => $filechoices,
             'issues' => $issues, 'operationcount' => count($operations)];
         $json = json_encode($document, JSON_UNESCAPED_SLASHES);
         $blockedissues = array_filter($issues, static fn($issue) => $issue['blocking'] ?? true);
-        $blockedfiles = array_filter($operations, static fn($operation) => str_starts_with($operation['decision'], 'blocked_'));
+        $blockedfiles = array_filter($operations, static fn($operation) => $operation['included']
+            && str_starts_with($operation['decision'], 'blocked_'));
         $blocked = $blockedissues || $blockedfiles;
-        $haswork = array_filter($operations, static fn($op) => in_array($op['decision'], ['copy', 'overwrite'], true));
+        $haswork = array_filter($operations, static fn($op) => $op['included']
+            && in_array($op['decision'], ['copy', 'overwrite'], true));
         $transaction = $DB->start_delegated_transaction();
         $planid = $DB->insert_record('local_multipicker_plan', (object)[
             'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
@@ -280,6 +337,7 @@ final class migration_planner {
                 'targetcmid' => $operation['targetcmid'], 'sourcecourseid' => $operation['snapshot']['sourcecourse'],
                 'targetcourseid' => $operation['snapshot']['target']['courseid'],
                 'sourcecmid' => $operation['snapshot']['sourcecmid'], 'snapshot' => json_encode($operation['snapshot']),
+                'included' => $operation['included'] ? 1 : 0,
                 'decision' => $operation['decision'], 'state' => 'pending', 'result' => '{}', 'timemodified' => time(),
             ]);
         }

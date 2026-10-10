@@ -52,6 +52,7 @@ if (!$profileid && $profiles) {
 }
 $form = null;
 $data = ['profiles' => [], 'hasprofiles' => (bool)$profiles,
+    'profilehelp' => $OUTPUT->help_icon('migrationprofile', 'local_multipicker'),
     'actionurl' => (new moodle_url('/local/multipicker/admin/migration.php'))->out(false)];
 foreach ($profiles as $profile) {
     $data['profiles'][] = ['value' => $profile->id, 'label' => display::name($profile->name),

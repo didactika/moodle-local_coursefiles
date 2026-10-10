@@ -34,7 +34,7 @@ final class migration_form extends \moodleform {
      * Define the reviewed migration scope and destination behavior.
      */
     public function definition(): void {
-        global $PAGE;
+        global $PAGE, $OUTPUT;
         $form = $this->_form;
         $form->addElement('hidden', 'profileid', $this->_customdata['profileid']);
         $form->setType('profileid', PARAM_INT);
@@ -50,6 +50,7 @@ final class migration_form extends \moodleform {
                 $name = $side . 'filters[' . $key . ']';
                 $form->addElement('text', $name, $label, ['maxlength' => 255]);
                 $form->setType($name, PARAM_TEXT);
+                $form->addHelpButton($name, 'migrationfilter', 'local_multipicker');
             }
         }
         $form->addElement('header', 'placementreview', get_string('migrationrules', 'local_multipicker'));
@@ -129,12 +130,25 @@ final class migration_form extends \moodleform {
         $form->hideIf('sectionmapjson', 'sectionstrategy', 'neq', 'mapping');
         $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_multipicker'));
         $form->hideIf('layoutconfirmed', 'sectionstrategy', 'neq', 'ordinal');
-        $form->addElement('static', 'layouthelp', '', get_string('layouthelp', 'local_multipicker'));
-        $this->add_action_buttons(false, get_string('createpreview', 'local_multipicker'));
-        $form->insertElementBefore(
-            $form->removeElement('submitbutton', false),
-            $this->_customdata['dimensions'] ? 'sourcescope' : 'placementreview'
-        );
+        $buttons = [
+            $form->createElement('static', 'back', '', \html_writer::link(
+                new \moodle_url(
+                    '/local/multipicker/admin/migration.php',
+                    ['new' => 1, 'profileid' => $this->_customdata['profileid'], 'step' => 'profile']
+                ),
+                $OUTPUT->pix_icon('t/left', '') . ' ' . get_string('back'),
+                ['class' => 'btn btn-sm btn-outline-secondary multipicker-back']
+            )),
+            $form->createElement('submit', 'submitbutton', get_string('createpreview', 'local_multipicker')),
+        ];
+        $form->addGroup($buttons, 'buttons', '', [' '], false);
+        $form->closeHeaderBefore('buttons');
+        foreach (
+            ['correspondencesjson', 'sectionstrategy', 'duplicatepolicy', 'missingtarget',
+            'conflictpolicy', 'sectionmapjson', 'layoutconfirmed'] as $name
+        ) {
+            $form->addHelpButton($name, $name, 'local_multipicker');
+        }
     }
 
     /**

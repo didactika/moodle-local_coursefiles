@@ -44,10 +44,20 @@ foreach (['from' => $from, 'until' => $until] as $key => $value) {
     $dates[$key] = ($key === 'until' ? $date->modify('+1 day') : $date)->getTimestamp();
 }
 $url = new moodle_url('/local/multipicker/admin/log.php', [
-    'action' => $action, 'entityuuid' => $entityuuid, 'from' => $from, 'until' => $until,
+    'action' => $action, 'entityuuid' => $entityuuid, 'from' => $from, 'until' => $until, 'before' => $before,
 ]);
 $PAGE->set_url($url);
-$page = \local_multipicker\local\logging\log::page($action, $entityuuid, $before, 50, $dates['from'], $dates['until']);
+$perpage = \local_multipicker\output\pagination::size();
+$page = \local_multipicker\local\logging\log::page(
+    $action,
+    $entityuuid,
+    $before,
+    $perpage,
+    $dates['from'],
+    $dates['until'],
+    max(0, optional_param('page', 0, PARAM_INT))
+);
+$PAGE->requires->js_call_amd('local_multipicker/administration', 'init');
 $options = [];
 foreach (\local_multipicker\local\logging\log::actions() as $name) {
     $options[] = ['value' => $name, 'label' => get_string('logaction_' . $name, 'local_multipicker'),
@@ -75,6 +85,8 @@ echo $PAGE->get_renderer('local_multipicker')->render(\local_multipicker\output\
 echo $renderer->render(new \local_multipicker\output\view('log', [
     'formurl' => (new moodle_url('/local/multipicker/admin/log.php'))->out(false),
     'options' => $options, 'entityuuid' => $entityuuid, 'records' => $records,
+    'perpage' => $perpage, 'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_multipicker'),
+    'pagination' => \local_multipicker\output\pagination::render($page['total'], $page['page'], $perpage, $url),
     'from' => $from, 'until' => $until, 'hasrecords' => (bool)$records, 'nexturl' => $nexturl ? $nexturl->out(false) : '',
     'clearurl' => (new moodle_url('/local/multipicker/admin/log.php'))->out(false),
 ]));

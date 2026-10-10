@@ -239,6 +239,7 @@ final class browser_controller {
             }
         }
         return ['review' => false, 'message' => $message, 'data' => $listing + [
+        'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_multipicker'),
         'catalogpending' => $catalogpending, 'selectioncapacity' => selection_limits::capacity($scope),
         'contextid' => $scope['contextid'],
         'repositoryname' => display::name($scope['repositoryname'] ?? get_string('pluginname', 'local_multipicker')),

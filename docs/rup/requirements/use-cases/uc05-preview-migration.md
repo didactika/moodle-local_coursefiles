@@ -35,3 +35,5 @@
 [Sequence source](../../../diagrams/design/sequences/uc05-preview-migration.puml). Current collaborators: migration_planner, placement, material_source, copy_decision, author_policy.
 
 [All supported use cases](README.md) · [Stored behavior](../../behavior/README.md).
+
+Selection changes save automatically across pagination. Select all includes the full plan; individual/course/folder exclusions survive searches. Blocking placement decisions can be resolved within review by choosing an existing destination, proposing creation in an existing section, or excluding the source. The earlier plan remains in history. Continue is always present and disabled until the saved complete selection can execute. Execution requires explicit confirmation and never requires site maintenance.

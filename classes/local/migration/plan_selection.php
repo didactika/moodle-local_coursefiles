@@ -28,6 +28,68 @@ namespace local_multipicker\local\migration;
  */
 final class plan_selection {
     /**
+     * Return only changed selection state, not file snapshots or a replacement review.
+     * @param int $planid Stored plan.
+     * @param array $visible Bounded visible operation IDs.
+     * @return array Canonical checks, counts, approval and continuation state.
+     */
+    public static function state(int $planid, array $visible): array {
+        global $DB;
+        require_capability('local/multipicker:planmigration', \context_system::instance());
+        if (count($visible) > 50) {
+            throw new \invalid_parameter_exception('Too many visible operations');
+        }
+        $plan = $DB->get_record('local_multipicker_plan', ['id' => $planid], '*', MUST_EXIST);
+        $records = $visible ? $DB->get_records_list(
+            'local_multipicker_operation',
+            'id',
+            $visible,
+            'id',
+            'id, planid, included, sourcecourseid, sourcecmid'
+        ) : [];
+        $checks = [];
+        foreach ($records as $record) {
+            if ((int)$record->planid !== $planid) {
+                throw new \invalid_parameter_exception('Operation belongs to another migration');
+            }
+            $checks[] = ['id' => (int)$record->id, 'included' => (bool)$record->included];
+        }
+        $courses = array_unique(array_column($records, 'sourcecourseid'));
+        $groups = [];
+        $coursetotals = [];
+        if ($courses) {
+            [$insql, $params] = $DB->get_in_or_equal($courses, SQL_PARAMS_NAMED, 'course');
+            $params['planid'] = $planid;
+            foreach (
+                $DB->get_records_sql(
+                    'SELECT MIN(id) AS id, sourcecourseid, sourcecmid,
+                    COUNT(1) AS total, SUM(included) AS included FROM {local_multipicker_operation}
+                    WHERE planid = :planid AND sourcecourseid ' . $insql . ' GROUP BY sourcecourseid, sourcecmid',
+                    $params
+                ) as $record
+            ) {
+                $course = (int)$record->sourcecourseid;
+                $groups[] = ['courseid' => $course, 'cmid' => (int)$record->sourcecmid,
+                    'total' => (int)$record->total, 'included' => (int)$record->included];
+                $coursetotals[$course]['total'] = ($coursetotals[$course]['total'] ?? 0) + (int)$record->total;
+                $coursetotals[$course]['included'] = ($coursetotals[$course]['included'] ?? 0) + (int)$record->included;
+            }
+        }
+        foreach ($coursetotals as $id => $counts) {
+            $groups[] = ['courseid' => $id, 'cmid' => 0] + $counts;
+        }
+        $total = $DB->count_records('local_multipicker_operation', ['planid' => $planid]);
+        $included = $DB->count_records('local_multipicker_operation', ['planid' => $planid, 'included' => 1]);
+        return ['digest' => $plan->digest, 'checks' => $checks, 'groups' => $groups, 'total' => $total, 'included' => $included,
+            'emptycancelled' => $plan->state === 'cancelled' && !plan_history::has_work($planid),
+            'includedlabel' => get_string('includedcount', 'local_multipicker', $included),
+            'planstate' => \local_multipicker\output\display::outcome($plan->state),
+            'cancontinue' => $plan->state === 'reviewable' && plan_history::has_work($planid)
+                && !$DB->record_exists('local_multipicker_run', ['planid' => $planid])
+                && has_capability('local/multipicker:executemigration', \context_system::instance())];
+    }
+
+    /**
      * Save at most one rendered page or an explicit whole-plan action.
      *
      * @param int $planid Stored plan.

@@ -88,13 +88,6 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
 $renderer = $PAGE->get_renderer('local_multipicker');
 echo $renderer->render(navigation::site('profiles'));
 echo $OUTPUT->heading(get_string($profileid ? 'profileeditor' : 'newprofile', 'local_multipicker'), 3);
-if ($profileid) {
-    echo $OUTPUT->single_button(
-        new moodle_url('/local/multipicker/admin/profile_history.php', ['profileid' => $profileid]),
-        get_string('versionhistory', 'local_multipicker'),
-        'get'
-    );
-}
 if ($summary !== null) {
     echo $OUTPUT->notification(get_string('unsavedpreview', 'local_multipicker'), 'info');
     echo $renderer->render(new view('profile_summary', $summary));
