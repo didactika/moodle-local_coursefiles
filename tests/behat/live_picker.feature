@@ -17,7 +17,7 @@ Feature: Stable native selection with the configured repository name
     And MultiPicker cards and filters should keep a compact aligned layout
     And MultiPicker layouts should share selections and mark the active view
     When I press MultiPicker action "Select all"
-    Then MultiPicker should have "4" selected files
+    Then MultiPicker should have "3" selected files
     When I press MultiPicker action "Clear selection"
     Then MultiPicker should have "0" selected files
 
@@ -47,6 +47,9 @@ Feature: Stable native selection with the configured repository name
 
   Scenario: Collapsed tree folders load nested selectable files without navigating away
     Then MultiPicker tree folders should load through to selectable files
+
+  Scenario: Returning from a folder after switching to tree preserves navigation
+    Then MultiPicker Back should work after switching layouts inside a folder
 
   Scenario: Already imported content stays hidden after renaming and reopening the native picker
     When I select MultiPicker material "Published materials" from "CB2025"

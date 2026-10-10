@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * MultiPicker native material import integration.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_multipicker\local\selection;
@@ -107,7 +108,7 @@ final class browser_controller {
                     selection_options::parse($state['selected']),
                     $scope['draftid']
                 );
-                $state['selected'] = array_map(static fn($hash) => 'file:' . $hash, array_keys($files));
+                $state['selected'] = selected_content::unique(array_map(static fn($hash) => 'file:' . $hash, array_keys($files)));
                 draft_scope::remember_view($token, $state, sesskey());
             }
             if ($input !== null) {
@@ -153,10 +154,17 @@ final class browser_controller {
                         $scope['draftid']
                     );
                     $values = array_map(static fn($hash) => 'file:' . $hash, array_keys($files));
-                    if (!array_diff($values, $state['selected'])) {
-                        $state['selected'] = array_values(array_diff($state['selected'], $values));
+                    $currentfiles = selected_content::records($state['selected']);
+                    $candidatehashes = array_unique(array_map(static fn($file) => $file->get_contenthash(), $files));
+                    $selectedhashes = array_unique(array_column($currentfiles, 'contenthash'));
+                    if (!array_diff($candidatehashes, $selectedhashes)) {
+                        $state['selected'] = array_values(array_filter(
+                            $state['selected'],
+                            static fn($value) => !isset($currentfiles[$value])
+                                || !in_array($currentfiles[$value]->contenthash, $candidatehashes, true)
+                        ));
                     } else {
-                        $state['selected'] = array_values(array_unique(array_merge($state['selected'], $values)));
+                        $state['selected'] = selected_content::unique(array_merge($state['selected'], $values));
                         if (str_starts_with($input['toggleitem'], 'folder:')) {
                             $state['roots'][] = $input['toggleitem'];
                             $state['roots'] = array_values(array_unique($state['roots']));
@@ -206,6 +214,7 @@ final class browser_controller {
                     $state['history'] = array_slice($state['history'], -32);
                     $state['after'] = $input['next'];
                 }
+                $state['selected'] = selected_content::unique($state['selected']);
                 $selectedhashes = array_fill_keys(array_map(
                     static fn($value) => substr($value, 5),
                     $state['selected']
@@ -282,6 +291,14 @@ final class browser_controller {
         'contextid' => $scope['contextid'],
         'repositoryname' => display::name($scope['repositoryname'] ?? get_string('pluginname', 'local_multipicker')),
         'layout' => $state['layout'],
+        'reactlayout' => json_encode([
+            'initialLayout' => $state['layout'],
+            'views' => array_map(static fn($layout, $icon) => [
+                'value' => $layout,
+                'label' => get_string('layout' . $layout, 'local_multipicker'),
+                'icon' => $OUTPUT->pix_icon($icon, '', 'core'),
+            ], ['grid', 'list', 'tree'], ['a/view_icon_active', 'a/view_list_active', 'a/view_tree_active']),
+        ], JSON_THROW_ON_ERROR),
         'listlayout' => $state['layout'] === 'list',
         'treelayout' => $state['layout'] === 'tree',
         'gridlayout' => $state['layout'] === 'grid',

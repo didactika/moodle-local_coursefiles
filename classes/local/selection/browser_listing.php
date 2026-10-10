@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * MultiPicker native material import integration.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_multipicker\local\selection;
@@ -59,6 +60,7 @@ final class browser_listing {
                         $roots[$card['value']] = true;
                     }
                 }
+                $selected = array_fill_keys(selected_content::unique(array_keys($selected)), true);
                 selection_limits::require_capacity($scope, array_keys($selected));
                 if (count($selected) > material_selection::MAX_FILES || count($roots) > material_selection::MAX_FILES) {
                     throw new \moodle_exception('batchlimit', 'local_multipicker');
@@ -116,7 +118,7 @@ final class browser_listing {
                             continue;
                         }
                         $cards[$value] = ['value' => $value, 'title' => s($origin['filename']), 'isfolder' => false,
-                            'courseid' => $origin['courseid'],
+                            'courseid' => $origin['courseid'], 'contenthash' => $sourcefile->get_contenthash(),
                             'coursename' => \local_multipicker\output\display::name(
                                 $origin['shortname'],
                                 \context_course::instance($origin['courseid'])
@@ -171,6 +173,7 @@ final class browser_listing {
         }
         uasort($cards, static fn($left, $right) => ($right['isfolder'] <=> $left['isfolder'])
             ?: strnatcasecmp($left['title'], $right['title']));
+        $selectedcontent = array_unique(array_column(selected_content::records($state['selected']), 'contenthash'));
         $selecteditems = array_map(static fn($value) => ['value' => $value], $state['selected']);
         $retained = array_values(array_filter($selecteditems, static fn($item) => !isset($cards[$item['value']])));
         $capacity = selection_limits::capacity($scope);
@@ -185,7 +188,7 @@ final class browser_listing {
             if ($card['isfolder']) {
                 $card += $folderstates[$card['value']];
             } else {
-                $card['checked'] = in_array($card['value'], $state['selected'], true);
+                $card['checked'] = in_array($card['contenthash'], $selectedcontent, true);
             }
             $card['showorigin'] = !$folder;
             $card['id'] = 'cbitem-' . sha1($card['value']);
@@ -204,6 +207,7 @@ final class browser_listing {
         }
         return ['cards' => array_values($cards), 'treegroups' => array_values($groups), 'suggestions' => $suggestions,
             'folderstates' => json_encode(array_values($folderstates)),
+            'selectedcontent' => json_encode(array_values($selectedcontent)),
             'retained' => $retained, 'selecteditems' => $selecteditems, 'next' => $result['next'],
             'location' => $folder ? \local_multipicker\output\display::name(
                 get_course(get_coursemodule_from_id('folder', $folder['cmid'])->course)->shortname
@@ -236,21 +240,22 @@ final class browser_listing {
         [$in, $params] = $DB->get_in_or_equal(array_values($contexts), SQL_PARAMS_NAMED, 'foldercontext');
         $params += ['component' => 'mod_folder', 'filearea' => 'content', 'directory' => '.'];
         $sum = '0';
-        if ($selected) {
+        $selectedhashes = array_unique(array_column(selected_content::records($selected), 'contenthash'));
+        if ($selectedhashes) {
             [$selectedin, $selectedparams] = $DB->get_in_or_equal(
-                array_map(static fn($value) => substr($value, 5), $selected),
+                $selectedhashes,
                 SQL_PARAMS_NAMED,
                 'selectedhash'
             );
             $params += $selectedparams;
-            $sum = 'SUM(CASE WHEN sourcefile.pathnamehash ' . $selectedin . ' THEN 1 ELSE 0 END)';
+            $sum = 'MAX(CASE WHEN sourcefile.contenthash ' . $selectedin . ' THEN 1 ELSE 0 END)';
         }
         [$exclusion, $destinationparams] = destination_content::exclusion('sourcefile', $scope['draftid'] ?? 0);
-        $records = $DB->get_recordset_sql('SELECT sourcefile.contextid, sourcefile.filepath, COUNT(1) AS total, '
+        $records = $DB->get_recordset_sql('SELECT sourcefile.contextid, sourcefile.filepath, sourcefile.contenthash, '
             . $sum . ' AS selected FROM {files} sourcefile WHERE sourcefile.contextid ' . $in
             . ' AND sourcefile.component = :component AND sourcefile.filearea = :filearea'
             . ' AND sourcefile.itemid = 0 AND sourcefile.filename <> :directory' . $exclusion
-            . ' GROUP BY sourcefile.contextid, sourcefile.filepath', $params + $destinationparams);
+            . ' GROUP BY sourcefile.contextid, sourcefile.filepath, sourcefile.contenthash', $params + $destinationparams);
         $counts = [];
         try {
             foreach ($records as $record) {
@@ -261,13 +266,17 @@ final class browser_listing {
         }
         $states = [];
         foreach ($folders as $value => $folder) {
-            $total = $checked = 0;
+            $all = $included = [];
             foreach ($counts[$folder['contextid']] ?? [] as $record) {
                 if (str_starts_with($record->filepath, $folder['path'])) {
-                    $total += (int)$record->total;
-                    $checked += (int)$record->selected;
+                    $all[$record->contenthash] = true;
+                    if ($record->selected) {
+                        $included[$record->contenthash] = true;
+                    }
                 }
             }
+            $total = count($all);
+            $checked = count($included);
             $states[$value] = ['value' => $value, 'checked' => $total > 0 && $checked === $total,
                 'partial' => $checked > 0 && $checked < $total,
                 'selectionlabel' => get_string(

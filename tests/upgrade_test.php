@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * Existing installation upgrade tests.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_multipicker;
@@ -101,7 +102,7 @@ final class upgrade_test extends \advanced_testcase {
         set_config('version', 2026100801, 'local_multipicker');
         $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100801));
         $this->assertEquals($before, $DB->get_records_list('local_multipicker_attribution', 'id', $ids, 'id'));
-        $this->assertSame('2026101001', get_config('local_multipicker', 'version'));
+        $this->assertSame('2026101002', get_config('local_multipicker', 'version'));
     }
 
     /**
@@ -169,8 +170,8 @@ final class upgrade_test extends \advanced_testcase {
                 $table,
                 new \xmldb_index('entityid', XMLDB_INDEX_NOTUNIQUE, ['entityuuid', 'id'])
             ));
-            $this->assertSame('2026101001', get_config('local_multipicker', 'version'));
-            $this->assertTrue(\xmldb_local_multipicker_upgrade(2026101001));
+            $this->assertSame('2026101002', get_config('local_multipicker', 'version'));
+            $this->assertTrue(\xmldb_local_multipicker_upgrade(2026101002));
         } finally {
             if ($dbman->table_exists('local_multipicker_audit') && !$dbman->table_exists($table)) {
                 $dbman->rename_table(new \xmldb_table('local_multipicker_audit'), 'local_multipicker_log');
@@ -188,7 +189,7 @@ final class upgrade_test extends \advanced_testcase {
         require_once(__DIR__ . '/../db/upgrade.php');
         set_config('version', 2026100800, 'local_multipicker');
         $this->assertTrue(\xmldb_local_multipicker_upgrade(2026100800));
-        $this->assertSame('2026101001', get_config('local_multipicker', 'version'));
+        $this->assertSame('2026101002', get_config('local_multipicker', 'version'));
         $this->assertTrue($DB->get_manager()->table_exists('local_multipicker_log'));
     }
 

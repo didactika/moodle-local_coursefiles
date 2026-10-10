@@ -151,11 +151,11 @@ Feature: Clear administration tabs and immutable migration previews
     Then I should see "Profile activated"
     And I capture MultiPicker administration "log"
 
-  Scenario: Create and edit a blank guided profile with the Spanish native form
+  Scenario: Create and edit a blank guided profile with English plugin strings on a Spanish site
     Given the MultiPicker administrator uses Spanish
     And I log in as "admin"
     When I open MultiPicker administration "profiles"
-    And I follow "Nuevo perfil"
+    And I follow "New profile"
     Then the field "profilename" matches value ""
     And the field "coursepattern" matches value ""
     And the field "familytemplate" matches value ""
@@ -165,11 +165,11 @@ Feature: Clear administration tabs and immutable migration previews
     When I set the field "profilename" to "Perfil nuevo"
     And I set the field "coursepattern" to "~^(?<group>.+)$~"
     And I set the field "familytemplate" to "${group}"
-    And I press "Guardar perfil"
+    And I press "Save profile"
     Then I should see "Perfil nuevo"
     When I follow "Perfil nuevo"
     And I set the field "profilename" to "Perfil editado"
-    And I press "Guardar perfil"
+    And I press "Save profile"
     Then I should see "Perfil editado"
     And I capture MultiPicker administration "spanish-profiles"
 

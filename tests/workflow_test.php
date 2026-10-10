@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * Administration authorization and bounded review tests.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_multipicker;
@@ -52,6 +53,39 @@ use local_multipicker\local\profile\profiles;
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\maintenance\retention::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
 final class workflow_test extends \advanced_testcase {
+    /**
+     * Migration source types reuse public providers and exclude private assignment submissions.
+     */
+    public function test_public_activity_sources_copy_into_native_folders(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+            ->create_migration_fixture(['name' => 'Public activity migration']);
+        foreach (['resource' => 'Published resource', 'assign' => 'Public assignment handouts'] as $type => $name) {
+            $config = \local_multipicker\local\migration\migration_rules::from_form([
+                'sectionstrategy' => 'ordinal',
+                'correspondencesjson' => json_encode([[
+                    'sourcetype' => $type, 'sourcefield' => 'name', 'sourcemethod' => 'equals', 'sourcevalue' => $name,
+                    'targetfield' => 'name', 'targetmethod' => 'equals', 'targetvalue' => 'Target materials',
+                ]]),
+            ]);
+            $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', ['migration' => $config]);
+            $this->assertSame('reviewable', $plan->state);
+            $operations = $DB->get_records('local_multipicker_operation', ['planid' => $plan->id]);
+            $this->assertCount(1, $operations);
+            $run = migration_executor::queue($plan->id, $plan->digest);
+            $this->assertFalse(migration_executor::execute($run));
+            $this->assertSame('completed', $DB->get_field('local_multipicker_run', 'state', ['id' => $run]));
+        }
+        $context = \context_module::instance($fixture['targetcmid']);
+        $files = get_file_storage()->get_area_files($context->id, 'mod_folder', 'content', 0, 'filename', false);
+        $names = array_map(static fn($file) => $file->get_filename(), $files);
+        $this->assertContains('resource.txt', $names);
+        $this->assertContains('handout.txt', $names);
+        $this->assertNotContains('student-private.txt', $names);
+    }
+
     /**
      * Explicit destination choices preserve the old review and included exclusions.
      */

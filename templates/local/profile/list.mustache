@@ -1,4 +1,7 @@
 {{!
+    @copyright 2026 Didactika.org
+    @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+    @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
     @template local_multipicker/local/profile/list
     Named profile list with active status and revision.
     Context: profiles, hasprofiles, newprofileurl.
@@ -16,8 +19,7 @@
             <a class="btn btn-sm btn-outline-secondary" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_multipicker{{/str}}</a>
             {{#hasprofiles}}<button name="action" value="exportall" class="btn btn-sm btn-outline-secondary">{{#pix}}i/export, core{{/pix}}{{#str}}exportallprofiles, local_multipicker{{/str}}</button>{{/hasprofiles}}
         </div>
-    {{#hasprofiles}}<div class="d-flex align-items-center flex-wrap multipicker-actionbar mb-3">
-        <label class="mb-0 multipicker-gap-end-lg"><input type="checkbox" data-multipicker-selectall> {{#str}}selectall{{/str}}</label>
+    {{#hasprofiles}}<div class="d-flex align-items-center flex-wrap multipicker-actionbar">
         <span class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}" data-multipicker-bulk-actions hidden>
         <button name="action" value="export" class="btn btn-sm btn-outline-info" disabled title="{{#str}}exportselectedprofiles, local_multipicker{{/str}}" aria-label="{{#str}}exportselectedprofiles, local_multipicker{{/str}}">{{#pix}}i/export, core{{/pix}}{{#str}}exportaction, local_multipicker{{/str}}</button>
         <button name="action" value="enable" class="btn btn-sm btn-outline-primary" disabled title="{{#str}}enableselected, local_multipicker{{/str}}" aria-label="{{#str}}enableselected, local_multipicker{{/str}}">{{#pix}}t/show, core{{/pix}}{{#str}}enable, core{{/str}}</button>
@@ -26,7 +28,7 @@
         </span>
     </div>{{/hasprofiles}}
     </div>
-    <div class="table-responsive"><table class="table table-hover"><thead><tr><th></th><th>{{#str}}name, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}lastmodified, core{{/str}}</th><th class="text-end">{{#str}}actions, core{{/str}}</th></tr></thead><tbody>{{#profiles}}
+    <div class="table-responsive"><table class="table table-hover"><thead><tr><th><input type="checkbox" data-multipicker-selectall aria-label="{{#str}}selectall, core{{/str}}" title="{{#str}}selectall, core{{/str}}"></th><th>{{#str}}name, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}lastmodified, core{{/str}}</th><th class="text-end">{{#str}}actions, core{{/str}}</th></tr></thead><tbody>{{#profiles}}
         <tr data-profile-id="{{id}}" data-enabled="{{#enabled}}1{{/enabled}}{{^enabled}}0{{/enabled}}"><td><input type="checkbox" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_multipicker{{/str}}"></td><td><a href="{{url}}">{{{name}}}</a><div class="small text-muted text-break">{{grouping}}</div><div class="small">{{{filters}}}</div></td><td><span class="multipicker-chip" data-profile-status>{{status}}</span></td><td>{{date}}</td><td class="text-end text-nowrap"><div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}"><a href="{{historyurl}}" class="btn btn-sm btn-outline-info" title="{{#str}}versionhistory, local_multipicker{{/str}}" aria-label="{{#str}}versionhistory, local_multipicker{{/str}}">{{#pix}}i/log, core{{/pix}}</a><a class="btn btn-sm btn-outline-secondary" href="{{url}}" title="{{#str}}edit, core{{/str}}" aria-label="{{#str}}edit, core{{/str}}">{{#pix}}t/edit, core{{/pix}}</a><button class="btn btn-sm btn-outline-primary" name="rowaction" value="{{#enabled}}disable{{/enabled}}{{^enabled}}enable{{/enabled}}:{{id}}" aria-label="{{#enabled}}{{#str}}disable, core{{/str}}{{/enabled}}{{^enabled}}{{#str}}enable, core{{/str}}{{/enabled}}">{{#enabled}}{{#pix}}t/hide, core{{/pix}}{{/enabled}}{{^enabled}}{{#pix}}t/show, core{{/pix}}{{/enabled}}</button><button class="btn btn-sm btn-outline-danger" name="rowaction" value="delete:{{id}}" title="{{#str}}delete, core{{/str}}" aria-label="{{#str}}delete, core{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div></td></tr>
     {{/profiles}}</tbody></table></div>
     {{^hasprofiles}}<p>{{#str}}noprofile, local_multipicker{{/str}}</p>{{/hasprofiles}}

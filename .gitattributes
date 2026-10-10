@@ -5,5 +5,4 @@
 /.github        export-ignore
 /.gitignore     export-ignore
 /.gitattributes export-ignore
-/AGENTS.md export-ignore
 /.phpcs.xml export-ignore

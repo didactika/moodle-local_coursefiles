@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * Reviewed immutable family migration planning.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_multipicker\local\migration;
 
@@ -151,14 +152,19 @@ final class migration_planner {
                     $captures += ['name' => $sourcecm->name, 'idnumber' => $sourcecm->idnumber];
                     try {
                         // Authorize public leaves before producing destination errors or creation requests.
-                        $files = get_file_storage()->get_area_files(
-                            $sourcecm->context->id,
-                            'mod_folder',
-                            'content',
-                            0,
-                            'filepath, filename',
-                            false
-                        );
+                        $provider = \local_multipicker\local\catalog\source_registry::provider($sourcecm->modname);
+                        $files = [];
+                        foreach ($provider ? $provider->files($sourcecm) : [] as $candidate) {
+                            if (
+                                \local_multipicker\local\catalog\source_registry::enabled(
+                                    $rules->get_config()['publication']['allowed_sources']
+                                    ?? ['mod_folder/content', 'mod_resource/content'],
+                                    $candidate
+                                )
+                            ) {
+                                $files[] = $candidate;
+                            }
+                        }
                         if (!$files) {
                             continue;
                         }
@@ -185,7 +191,7 @@ final class migration_planner {
                             }
                         }
                         if (
-                            count($targets) > 1 || $sourcecm->modname !== 'folder'
+                            count($targets) > 1 || ($targets && $targets[0]->modname !== 'folder')
                             || (!$targets && empty($override['create']) && ($config['missing_target'] ?? 'block') !== 'create')
                         ) {
                             throw new \moodle_exception('placementambiguous', 'local_multipicker');

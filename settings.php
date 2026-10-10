@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * Administration page registration.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
@@ -29,16 +30,17 @@ $configuration = array_filter($visible, static fn($name) => $name !== 'log', ARR
 if ($configuration) {
     $ADMIN->add(
         $hassiteconfig ? 'localplugins' : 'root',
-        new admin_category('local_multipicker', get_string('pluginname', 'local_multipicker'))
+        new admin_category('local_multipicker', get_string('pluginname', 'local_multipicker'), true)
     );
     foreach ($configuration as $name => $page) {
-        $ADMIN->add('local_multipicker', new admin_externalpage(
-            'local_multipicker_' . $name,
-            get_string($page['label'], 'local_multipicker'),
-            new moodle_url('/local/multipicker/admin/' . $name . '.php'),
-            $page['capability'],
-            $name !== array_key_first($configuration)
-        ));
+        $ADMIN->add($name === array_key_first($configuration) ? ($hassiteconfig ? 'localplugins' : 'root')
+            : 'local_multipicker', new admin_externalpage(
+                'local_multipicker_' . $name,
+                get_string($name === array_key_first($configuration) ? 'pluginname' : $page['label'], 'local_multipicker'),
+                new moodle_url('/local/multipicker/admin/' . $name . '.php'),
+                $page['capability'],
+                $name !== array_key_first($configuration)
+            ));
     }
 }
 

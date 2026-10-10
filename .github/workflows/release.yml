@@ -1,3 +1,6 @@
+# @copyright 2026 Didactika.org
+# @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+# @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 name: Publish a reviewed release
 
 # Derived from didactika/template-moodle-plugin. Publishing is explicitly requested.

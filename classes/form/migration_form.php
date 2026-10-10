@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * Capture scope and layout selection before preview.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_multipicker\form;
 
@@ -66,6 +67,9 @@ final class migration_form extends \moodleform {
             $row = [];
             foreach (['source', 'target'] as $side) {
                 $predicate = $rule[$side . '_module'] ?? ['equals' => ''];
+                if ($side === 'source') {
+                    $row['sourcetype'] = $predicate['type'] ?? 'folder';
+                }
                 $method = isset($predicate['pattern']) ? 'pattern' : (isset($predicate['template']) ? 'template' : 'equals');
                 $row[$side . 'field'] = $predicate['field'] ?? 'name';
                 $row[$side . 'method'] = $method;
@@ -81,7 +85,12 @@ final class migration_form extends \moodleform {
         );
         $form->setType('correspondencesjson', PARAM_RAW);
         $form->setDefault('correspondencesjson', json_encode($rows));
-        $columns = [];
+        $moduleoptions = [];
+        foreach (\local_multipicker\local\catalog\source_registry::module_names() as $module => $label) {
+            $moduleoptions[] = ['value' => $module, 'label' => $label];
+        }
+        $columns = [['key' => 'sourcetype', 'label' => get_string('modulefilter', 'local_multipicker'),
+            'type' => 'text', 'options' => $moduleoptions]];
         foreach (['source', 'target'] as $side) {
             $columns[] = ['key' => $side . 'field', 'label' => get_string($side . 'folderfield', 'local_multipicker'),
                 'type' => 'text', 'options' => [['value' => 'name', 'label' => get_string('name')],

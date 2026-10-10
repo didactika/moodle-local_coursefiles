@@ -1,4 +1,4 @@
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,8 +17,9 @@
  * Native picker entry and documented embedded-chooser completion.
  *
  * @module local_multipicker/browser
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import {getString} from 'core/str';
@@ -152,10 +153,11 @@ export const selection = () => {
     const update = () => {
         const selected = new Set([...form.querySelectorAll('input[name="items[]"]')].map(input => input.value));
         const count = selected.size;
+        const content = new Set(JSON.parse(form.dataset.selectedContent || '[]'));
         const folderStates = new Map(JSON.parse(form.dataset.folderstates || '[]').map(state => [state.value, state]));
         form.querySelectorAll('[data-multipicker-choice]').forEach(choice => {
             if (choice.value.startsWith('file:')) {
-                choice.checked = selected.has(choice.value);
+                choice.checked = content.has(choice.dataset.contenthash);
             } else if (folderStates.has(choice.value)) {
                 const state = folderStates.get(choice.value);
                 choice.checked = state.checked;
@@ -222,6 +224,7 @@ export const selection = () => {
             const next = response.querySelector('form.multipicker-browser');
             form.dataset.selectioncapacity = next.dataset.selectioncapacity;
             form.dataset.folderstates = next.dataset.folderstates;
+            form.dataset.selectedContent = next.dataset.selectedContent;
             const results = form.querySelector('[data-multipicker-results]');
             const position = results.scrollTop;
             if (toggleitem) {
@@ -292,7 +295,7 @@ export const selection = () => {
         }
     };
     form.addEventListener('click', async event => {
-        const button = event.target.closest('[name=openfolder], [data-tree-next]');
+        const button = event.target.closest('.multipicker-open[name=openfolder], [data-tree-next]');
         if (!button || form.dataset.layout !== 'tree') {
             return;
         }
@@ -351,6 +354,16 @@ export const selection = () => {
             entries.removeAttribute('aria-busy');
             skeleton.remove();
         }
+    });
+    form.addEventListener('click', event => {
+        const button = event.target.closest('[data-multipicker-course-toggle]');
+        if (!button) {
+            return;
+        }
+        const group = button.closest('.multipicker-browser-tree-group');
+        const expanded = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', String(expanded));
+        group.dataset.collapsed = String(!expanded);
     });
     // Remember disclosures without changing server-side authority or selection.
     for (const detail of form.querySelectorAll('details[data-multipicker-options]')) {
@@ -417,8 +430,11 @@ export const selection = () => {
             return text;
         }).catch(() => {});
     });
-    form.querySelectorAll('[data-multipicker-layout]').forEach(button => {
-        button.addEventListener('click', () => {
+    form.addEventListener('click', event => {
+            const button = event.target.closest('[data-multipicker-layout]');
+            if (!button) {
+                return;
+            }
             changes++;
             form.dataset.layout = button.dataset.multipickerLayout;
             form.elements.layout.value = button.dataset.multipickerLayout;
@@ -428,10 +444,10 @@ export const selection = () => {
             });
             if (button.dataset.multipickerLayout !== 'tree') {
                 form.querySelectorAll('.multipicker-browser-tree-group').forEach(group => {
-                    group.open = true;
+                    group.dataset.collapsed = 'false';
+                    group.querySelector('[data-multipicker-course-toggle]').setAttribute('aria-expanded', 'true');
                 });
             }
-        });
     });
     update();
 };

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
  * MultiPicker native material import integration.
  *
  * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_multipicker;
@@ -41,6 +42,30 @@ use local_multipicker\local\profile\profiles;
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\catalog\material_source::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_multipicker\local\profile\profiles::class)]
 final class public_sources_test extends \advanced_testcase {
+    /**
+     * Overlapping edition folders select each set of bytes once and synchronize their checks.
+     */
+    public function test_overlapping_folders_share_canonical_content_selection(): void {
+        $fixture = $this->fixture();
+        [$token] = $this->scope($fixture);
+        $controller = \local_multipicker\local\selection\browser_controller::class;
+        $result = $controller::data($token, $controller::input([
+            'profileid' => $fixture['profileid'], 'module' => 'folder', 'selectall' => true,
+        ]));
+        $this->assertSame('', $result['message']);
+        $this->assertSame(3, $result['data']['count']);
+        $scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+        $records = \local_multipicker\local\selection\selected_content::records($scope['view']['selected']);
+        $this->assertCount(3, array_unique(array_column($records, 'contenthash')));
+        foreach (json_decode($result['data']['folderstates'], true) as $state) {
+            $this->assertTrue($state['checked']);
+            $this->assertFalse($state['partial']);
+        }
+        $scope['view']['selected'] = array_column($result['data']['cards'], 'value');
+        \local_multipicker\local\selection\draft_scope::remember_view($token, $scope['view'], sesskey());
+        $this->assertSame(3, $controller::data($token)['data']['count']);
+    }
+
     /**
      * AJAX filters cannot render another native control's context or perform review actions.
      */
