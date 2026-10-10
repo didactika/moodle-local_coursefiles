@@ -17,12 +17,12 @@
 /**
  * Scheduled cursor-based catalog reconciliation.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\task;
+namespace local_filebank\task;
 
 /**
  * Revisits at most one hundred courses per scheduled run.
@@ -34,7 +34,7 @@ final class reconcile_catalog extends \core\task\scheduled_task {
      * @return string Name.
      */
     public function get_name(): string {
-        return get_string('reconcilecatalog', 'local_coursefiles');
+        return get_string('reconcilecatalog', 'local_filebank');
     }
 
     /**
@@ -42,26 +42,26 @@ final class reconcile_catalog extends \core\task\scheduled_task {
      */
     public function execute(): void {
         global $DB;
-        $after = (int)get_config('local_coursefiles', 'reconcile_cursor');
+        $after = (int)get_config('local_filebank', 'reconcile_cursor');
         $courses = $DB->get_records_select('course', 'id > ? AND id <> ?', [$after, SITEID], 'id', 'id', 0, 100);
         foreach ($courses as $course) {
-            \local_coursefiles\local\catalog\indexer::refresh($course->id);
-            set_config('reconcile_cursor', $course->id, 'local_coursefiles');
+            \local_filebank\local\catalog\indexer::refresh($course->id);
+            set_config('reconcile_cursor', $course->id, 'local_filebank');
         }
         if (count($courses) < 100) {
-            set_config('reconcile_cursor', 0, 'local_coursefiles');
+            set_config('reconcile_cursor', 0, 'local_filebank');
         }
         $DB->delete_records_select(
-            'local_coursefiles_file',
-            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_coursefiles_file}.courseid)'
+            'local_filebank_file',
+            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_filebank_file}.courseid)'
         );
         $DB->delete_records_select(
-            'local_coursefiles_value',
-            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_coursefiles_value}.courseid)'
+            'local_filebank_value',
+            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_filebank_value}.courseid)'
         );
         $DB->delete_records_select(
-            'local_coursefiles_course',
-            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_coursefiles_course}.courseid)'
+            'local_filebank_course',
+            'NOT EXISTS (SELECT 1 FROM {course} c WHERE c.id = {local_filebank_course}.courseid)'
         );
     }
 }

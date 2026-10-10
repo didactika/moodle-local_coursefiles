@@ -3,15 +3,15 @@
 
 /**
  * admin listeners.
- * @module local_coursefiles/local/admin/listeners
+ * @module local_filebank/local/admin/listeners
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_coursefiles/local/admin/selectors';
-import {listen} from 'local_coursefiles/local/listeners';
-import {changePage} from 'local_coursefiles/local/admin/actions';
+import Selectors from 'local_filebank/local/admin/selectors';
+import {listen} from 'local_filebank/local/listeners';
+import {changePage} from 'local_filebank/local/admin/actions';
 
 /**
  * Bind a bulk form while preserving selection after saves.
@@ -42,8 +42,8 @@ export const registerHistory = (history, actions) => {
  * Register the delegated pagination listener once.
  */
 export const registerPagination = () => {
-    if (!document.body.dataset.coursefilesPagination) {
-        document.body.dataset.coursefilesPagination = 'true';
+    if (!document.body.dataset.filebankPagination) {
+        document.body.dataset.filebankPagination = 'true';
         listen(document, 'change', changePage);
     }
 };

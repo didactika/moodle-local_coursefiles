@@ -17,13 +17,13 @@
 /**
  * Theme-overridable native presentation context.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursefiles\output;
+namespace local_filebank\output;
 
 /**
  * Carries plain data to a named component template.
@@ -60,7 +60,7 @@ final class view implements \renderable, \templatable {
      */
     public function __construct(string $template, array $data) {
         if (!isset(self::TEMPLATES[$template])) {
-            throw new \coding_exception('Unknown CourseFiles view');
+            throw new \coding_exception('Unknown FileBank view');
         }
         $this->template = self::TEMPLATES[$template];
         $this->data = $data;
@@ -72,7 +72,7 @@ final class view implements \renderable, \templatable {
      * @return string Component template.
      */
     public function template(): string {
-        return 'local_coursefiles/' . $this->template;
+        return 'local_filebank/' . $this->template;
     }
 
     /**
@@ -88,9 +88,9 @@ final class view implements \renderable, \templatable {
             return $data;
         }
         if ($this->template === 'local/navigation/tabs') {
-            $root = \navigation_node::create(get_string('pluginname', 'local_coursefiles'));
+            $root = \navigation_node::create(get_string('pluginname', 'local_filebank'));
             foreach ($this->data['tabs'] as $index => $tab) {
-                $node = $root->add($tab['label'], new \moodle_url($tab['url']), null, null, 'coursefiles-' . $index);
+                $node = $root->add($tab['label'], new \moodle_url($tab['url']), null, null, 'filebank-' . $index);
                 if ($tab['active']) {
                     $node->make_active();
                 }

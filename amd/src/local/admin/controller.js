@@ -3,15 +3,15 @@
 
 /**
  * admin controller.
- * @module local_coursefiles/local/admin/controller
+ * @module local_filebank/local/admin/controller
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_coursefiles/local/admin/selectors';
-import {createBulkActions, createHistoryActions} from 'local_coursefiles/local/admin/actions';
-import {registerBulk, registerHistory, registerPagination} from 'local_coursefiles/local/admin/listeners';
+import Selectors from 'local_filebank/local/admin/selectors';
+import {createBulkActions, createHistoryActions} from 'local_filebank/local/admin/actions';
+import {registerBulk, registerHistory, registerPagination} from 'local_filebank/local/admin/listeners';
 
 /**
  * Initialize native administration controls.

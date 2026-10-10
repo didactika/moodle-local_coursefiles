@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_coursefiles\output;
+namespace local_filebank\output;
 
 /**
  * One bounded pagination contract for administration lists and review pages.
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -60,11 +60,11 @@ final class pagination {
         $url = new \moodle_url($url, ['perpage' => $size]);
         $data = ['id' => \html_writer::random_id('mp-page-'), 'url' => $url->out(false),
             'pageparameter' => $parameter, 'sizes' => [],
-            'help' => $OUTPUT->help_icon('pagesize', 'local_coursefiles'),
-            'summary' => get_string('paginationrange', 'local_coursefiles', (object)[
+            'help' => $OUTPUT->help_icon('pagesize', 'local_filebank'),
+            'summary' => get_string('paginationrange', 'local_filebank', (object)[
                 'first' => $total ? $page * $size + 1 : 0, 'last' => min($total, ($page + 1) * $size), 'total' => $total,
             ]),
-            'pagelabel' => get_string('paginationpage', 'local_coursefiles', (object)[
+            'pagelabel' => get_string('paginationpage', 'local_filebank', (object)[
                 'page' => $page + 1, 'pages' => max(1, (int)ceil($total / $size)),
             ]),
         ];
@@ -76,6 +76,6 @@ final class pagination {
                 $data[$key . 'url'] = (new \moodle_url($url, [$parameter => $number]))->out(false);
             }
         }
-        return $OUTPUT->render_from_template('local_coursefiles/local/navigation/pagination', $data);
+        return $OUTPUT->render_from_template('local_filebank/local/navigation/pagination', $data);
     }
 }

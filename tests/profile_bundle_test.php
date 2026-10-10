@@ -17,23 +17,23 @@
 /**
  * Configuration transport and guided editing regression tests.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles;
+namespace local_filebank;
 
-use local_coursefiles\form\profile_form;
-use local_coursefiles\local\profile\guided_config;
-use local_coursefiles\local\profile\profile_bundle;
-use local_coursefiles\local\profile\profiles;
+use local_filebank\form\profile_form;
+use local_filebank\local\profile\guided_config;
+use local_filebank\local\profile\profile_bundle;
+use local_filebank\local\profile\profiles;
 
 /**
  * Exercises exported configurations rather than copying site database identities.
  *
- * @covers \local_coursefiles\local\profile\profile_bundle
- * @covers \local_coursefiles\local\profile\guided_config
+ * @covers \local_filebank\local\profile\profile_bundle
+ * @covers \local_filebank\local\profile\guided_config
  */
 final class profile_bundle_test extends \advanced_testcase {
     /**
@@ -67,8 +67,8 @@ final class profile_bundle_test extends \advanced_testcase {
         $ids = profile_bundle::import($all);
         $this->assertCount(2, $ids);
         $this->assertEmpty(array_intersect([$a, $b], $ids));
-        $this->assertSame(4, $DB->count_records('local_coursefiles'));
-        $this->assertSame(4, $DB->count_records('local_coursefiles_revision'));
+        $this->assertSame(4, $DB->count_records('local_filebank'));
+        $this->assertSame(4, $DB->count_records('local_filebank_revision'));
     }
 
     /**
@@ -78,12 +78,12 @@ final class profile_bundle_test extends \advanced_testcase {
         global $DB;
         $config = $this->config();
         try {
-            profile_bundle::import(json_encode(['format' => 'coursefiles-profiles', 'version' => 1,
+            profile_bundle::import(json_encode(['format' => 'filebank-profiles', 'version' => 1,
                 'profiles' => [$config, ['name' => 'Invalid rules']]]));
             $this->fail('Invalid documents must be rejected before writes.');
         } catch (\moodle_exception $exception) {
-            $this->assertSame(0, $DB->count_records('local_coursefiles'));
-            $this->assertSame(0, $DB->count_records('local_coursefiles_revision'));
+            $this->assertSame(0, $DB->count_records('local_filebank'));
+            $this->assertSame(0, $DB->count_records('local_filebank_revision'));
         }
     }
 
@@ -108,14 +108,14 @@ final class profile_bundle_test extends \advanced_testcase {
             'contextid' => \context_user::instance($USER->id)->id, 'component' => 'user', 'filearea' => 'draft',
             'itemid' => $draftid, 'filepath' => '/', 'filename' => 'profiles.json',
         ], json_encode($config));
-        $this->assertCount(1, profile_bundle::documents(\local_coursefiles\form\profile_import_form::uploaded_document($draftid)));
+        $this->assertCount(1, profile_bundle::documents(\local_filebank\form\profile_import_form::uploaded_document($draftid)));
         $other = $this->getDataGenerator()->create_user();
         $role = $this->getDataGenerator()->create_role();
-        assign_capability('local/coursefiles:manageprofiles', CAP_ALLOW, $role, \context_system::instance()->id);
+        assign_capability('local/filebank:manageprofiles', CAP_ALLOW, $role, \context_system::instance()->id);
         role_assign($role, $other->id, \context_system::instance()->id);
         $this->setUser($other);
         $this->expectException(\moodle_exception::class);
-        \local_coursefiles\form\profile_import_form::uploaded_document($draftid);
+        \local_filebank\form\profile_import_form::uploaded_document($draftid);
     }
 
     /**

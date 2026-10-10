@@ -16,13 +16,13 @@
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_coursefiles/local/editor/actions
+ * @module local_filebank/local/editor/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_coursefiles/local/selectors';
+import Selectors from 'local_filebank/local/selectors';
 
 
 /**

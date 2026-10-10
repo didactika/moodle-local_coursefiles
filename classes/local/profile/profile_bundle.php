@@ -17,14 +17,14 @@
 /**
  * Portable profile configuration without site records or material data.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\profile;
+namespace local_filebank\local\profile;
 
-use local_coursefiles\local\compatibility;
+use local_filebank\local\compatibility;
 
 /**
  * Validates complete bundles before importing independent new profiles.
@@ -44,10 +44,10 @@ final class profile_bundle {
      */
     public static function export(array $ids, bool $all = false): string {
         global $DB;
-        require_capability('local/coursefiles:manageprofiles', \context_system::instance());
+        require_capability('local/filebank:manageprofiles', \context_system::instance());
         $ids = array_values(array_unique(array_map('intval', $ids)));
         if (!$all && !$ids) {
-            throw new \moodle_exception('selectprofiles', 'local_coursefiles');
+            throw new \moodle_exception('selectprofiles', 'local_filebank');
         }
         $params = [];
         $where = ' WHERE p.deleted = 0';
@@ -55,13 +55,13 @@ final class profile_bundle {
             [$condition, $params] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
             $where .= ' AND p.id ' . $condition;
         }
-        $records = $DB->get_recordset_sql('SELECT p.id, p.activeid, p.enabled, r.configjson FROM {local_coursefiles} p
-            JOIN {local_coursefiles_revision} r ON r.id = p.activeid' . $where . ' ORDER BY p.name, p.id', $params);
+        $records = $DB->get_recordset_sql('SELECT p.id, p.activeid, p.enabled, r.configjson FROM {local_filebank} p
+            JOIN {local_filebank_revision} r ON r.id = p.activeid' . $where . ' ORDER BY p.name, p.id', $params);
         $documents = [];
         foreach ($records as $record) {
             $versions = [];
             $active = 0;
-            foreach ($DB->get_records('local_coursefiles_revision', ['profileid' => $record->id], 'revision') as $version) {
+            foreach ($DB->get_records('local_filebank_revision', ['profileid' => $record->id], 'revision') as $version) {
                 $versions[] = ['version' => (int)$version->revision, 'created' => (int)$version->timecreated,
                     'config' => json_decode($version->configjson, true)];
                 if ($version->id == $record->activeid) {
@@ -72,10 +72,10 @@ final class profile_bundle {
         }
         $records->close();
         if (!$all && count($documents) !== count($ids)) {
-            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         $json = json_encode(
-            ['format' => 'coursefiles-profiles', 'version' => 2, 'profiles' => $documents],
+            ['format' => 'filebank-profiles', 'version' => 2, 'profiles' => $documents],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
         );
         self::documents($json);
@@ -90,29 +90,29 @@ final class profile_bundle {
      */
     public static function documents(string $json): array {
         if (strlen($json) > self::MAX_BYTES) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
         }
         try {
             $document = json_decode($json, true, 64, JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
         }
         if (!is_array($document)) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
         }
         if (isset($document['format'])) {
             if (
-                !in_array($document['format'], ['coursefiles-profiles', 'multipicker-profiles'], true)
+                !in_array($document['format'], ['filebank-profiles', 'multipicker-profiles'], true)
                     || !in_array($document['version'] ?? null, [1, 2], true)
             ) {
-                throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+                throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
             }
             $documents = $document['profiles'] ?? [];
         } else {
             $documents = [$document];
         }
         if (!is_array($documents) || !compatibility::is_list($documents) || !$documents || count($documents) > 500) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
         }
         if (($document['version'] ?? 1) === 2 && isset($document['format'])) {
             $configs = [];
@@ -123,7 +123,7 @@ final class profile_bundle {
                         || !is_array($entry['versions'] ?? null) || !compatibility::is_list($entry['versions'])
                         || !$entry['versions']
                 ) {
-                    throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+                    throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
                 }
                 $last = 0;
                 $active = null;
@@ -134,13 +134,13 @@ final class profile_bundle {
                             || !is_int($version['created'] ?? null) || $version['created'] < 0
                             || !is_array($version['config'] ?? null) || ++$total > 5000
                     ) {
-                        throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+                        throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
                     }
                     if (
                         !is_string($version['config']['name'] ?? null) || trim($version['config']['name']) === ''
                             || \core_text::strlen($version['config']['name']) > 255
                     ) {
-                        throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+                        throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
                     }
                     new profile_config($version['config']);
                     $last = $version['version'];
@@ -149,7 +149,7 @@ final class profile_bundle {
                     }
                 }
                 if ($active === null) {
-                    throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+                    throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
                 }
                 $configs[] = $active;
             }
@@ -160,7 +160,7 @@ final class profile_bundle {
                 !is_array($config) || !is_string($config['name'] ?? null) || trim($config['name']) === ''
                     || \core_text::strlen($config['name']) > 255
             ) {
-                throw new \moodle_exception('invalidprofilebundle', 'local_coursefiles');
+                throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
             }
             new profile_config($config);
         }
@@ -175,7 +175,7 @@ final class profile_bundle {
      */
     public static function import(string $json): array {
         global $DB, $USER;
-        require_capability('local/coursefiles:manageprofiles', \context_system::instance());
+        require_capability('local/filebank:manageprofiles', \context_system::instance());
         $documents = self::documents($json);
         $transaction = $DB->start_delegated_transaction();
         $ids = [];
@@ -184,15 +184,15 @@ final class profile_bundle {
             $id = profiles::save(json_encode($config));
             $ids[] = $id;
             if (
-                in_array($bundle['format'] ?? '', ['coursefiles-profiles', 'multipicker-profiles'], true)
+                in_array($bundle['format'] ?? '', ['filebank-profiles', 'multipicker-profiles'], true)
                     && ($bundle['version'] ?? 1) === 2
             ) {
                 $entry = $bundle['profiles'][count($ids) - 1];
-                $initial = $DB->get_field('local_coursefiles', 'activeid', ['id' => $id]);
+                $initial = $DB->get_field('local_filebank', 'activeid', ['id' => $id]);
                 $activeid = 0;
                 foreach ($entry['versions'] as $version) {
                     $canonical = json_encode($version['config'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-                    $versionid = $DB->insert_record('local_coursefiles_revision', (object)[
+                    $versionid = $DB->insert_record('local_filebank_revision', (object)[
                         'profileid' => $id, 'revision' => $version['version'] + 1, 'configjson' => $canonical,
                         'digest' => hash('sha256', $canonical), 'userid' => $USER->id,
                         'timecreated' => $version['created'],
@@ -201,14 +201,14 @@ final class profile_bundle {
                         $activeid = $versionid;
                     }
                 }
-                $DB->update_record('local_coursefiles', (object)[
+                $DB->update_record('local_filebank', (object)[
                     'id' => $id, 'activeid' => $activeid, 'enabled' => $entry['enabled'],
                 ]);
-                $DB->delete_records('local_coursefiles_revision', ['id' => $initial]);
-                foreach ($DB->get_records('local_coursefiles_revision', ['profileid' => $id], 'revision') as $version) {
-                    $DB->set_field('local_coursefiles_revision', 'revision', $version->revision - 1, ['id' => $version->id]);
+                $DB->delete_records('local_filebank_revision', ['id' => $initial]);
+                foreach ($DB->get_records('local_filebank_revision', ['profileid' => $id], 'revision') as $version) {
+                    $DB->set_field('local_filebank_revision', 'revision', $version->revision - 1, ['id' => $version->id]);
                 }
-                \local_coursefiles\task\refresh_profile::queue($id, $activeid);
+                \local_filebank\task\refresh_profile::queue($id, $activeid);
             }
         }
         $transaction->allow_commit();

@@ -4,13 +4,13 @@
 /**
  * DOM contract for this feature.
  *
- * @module local_coursefiles/local/selection/selectors
+ * @module local_filebank/local/selection/selectors
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Common from 'local_coursefiles/local/selectors';
+import Common from 'local_filebank/local/selectors';
 
 export default {
     alerts: Common.alerts,

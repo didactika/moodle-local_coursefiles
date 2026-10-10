@@ -15,18 +15,18 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * CourseFiles native material import integration.
+ * FileBank native material import integration.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursefiles\form;
+namespace local_filebank\form;
 
-use local_coursefiles\local\selection\draft_scope;
-use local_coursefiles\local\selection\destination_access;
+use local_filebank\local\selection\draft_scope;
+use local_filebank\local\selection\destination_access;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -53,7 +53,7 @@ class native_editor extends \MoodleQuickForm_editor {
             $this->isFrozen() || !isloggedin() || isguestuser() || !$this->getMaxfiles()
                 || !($this->_options['return_types'] & FILE_INTERNAL)
                 || !$supported
-                || !$DB->record_exists('local_coursefiles', ['enabled' => 1])
+                || !$DB->record_exists('local_filebank', ['enabled' => 1])
         ) {
             return $html;
         }

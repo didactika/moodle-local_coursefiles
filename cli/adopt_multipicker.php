@@ -17,7 +17,7 @@
 /**
  * Adopt an existing MultiPicker installation without copying course file binaries.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -32,25 +32,25 @@ if ($unrecognised) {
     cli_error('Unknown options: ' . implode(', ', $unrecognised));
 }
 if ($options['help']) {
-    echo "Adopt MultiPicker metadata as CourseFiles. Back up the database first.\n";
+    echo "Adopt MultiPicker metadata as FileBank. Back up the database first.\n";
     echo "Run without --execute to inspect; run with --execute before admin/cli/upgrade.php.\n";
     exit(0);
 }
 $dbman = $DB->get_manager();
 if (
     $DB->record_exists('repository', ['type' => 'multipicker']) &&
-        $DB->record_exists('repository', ['type' => 'coursefiles'])
+        $DB->record_exists('repository', ['type' => 'filebank'])
 ) {
     cli_error('Both repository types exist; resolve their instances before adoption.');
 }
 $schema = new xmldb_file(__DIR__ . '/../db/install.xml');
 if (!$schema->loadXMLStructure()) {
-    cli_error('Unable to read the CourseFiles schema.');
+    cli_error('Unable to read the FileBank schema.');
 }
 $moves = [];
 foreach ($schema->getStructure()->getTables() as $table) {
     $new = $table->getName();
-    $old = str_replace('local_coursefiles', 'local_multipicker', $new);
+    $old = str_replace('local_filebank', 'local_multipicker', $new);
     $old = str_replace(
         ['local_multipicker_policy', 'local_multipicker_publish', 'local_multipicker_author'],
         ['local_multipicker_coursepolicy', 'local_multipicker_publication', 'local_multipicker_attribution'],
@@ -82,7 +82,7 @@ foreach ($moves as $old => $new) {
 $transaction = $DB->start_delegated_transaction();
 foreach (['local', 'repository'] as $type) {
     $old = $type . '_multipicker';
-    $new = $type . '_coursefiles';
+    $new = $type . '_filebank';
     foreach ($DB->get_records('config_plugins', ['plugin' => $old]) as $setting) {
         if (!$DB->record_exists('config_plugins', ['plugin' => $new, 'name' => $setting->name])) {
             $setting->plugin = $new;
@@ -108,7 +108,7 @@ foreach (['local', 'repository'] as $type) {
             ['prefix' => $DB->sql_like_escape($oldprefix) . '%']
         ) as $grant
     ) {
-        $grant->capability = str_replace($oldprefix, $type . '/coursefiles:', $grant->capability);
+        $grant->capability = str_replace($oldprefix, $type . '/filebank:', $grant->capability);
         if (
             $DB->record_exists('role_capabilities', ['roleid' => $grant->roleid, 'contextid' => $grant->contextid,
             'capability' => $grant->capability])
@@ -119,7 +119,7 @@ foreach (['local', 'repository'] as $type) {
         }
     }
 }
-$DB->set_field('repository', 'type', 'coursefiles', ['type' => 'multipicker']);
+$DB->set_field('repository', 'type', 'filebank', ['type' => 'multipicker']);
 // File-source declarations remain unchanged; attribution is resolved through the retained origin rows.
 $transaction->allow_commit();
 purge_all_caches();

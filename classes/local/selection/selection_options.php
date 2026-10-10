@@ -17,15 +17,15 @@
 /**
  * Authorized choices for native mixed material selection.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursefiles\local\selection;
+namespace local_filebank\local\selection;
 
-use local_coursefiles\local\catalog\catalog;
+use local_filebank\local\catalog\catalog;
 
 /**
  * Bounded native choice values; content groups show one explicitly labelled file origin.
@@ -40,18 +40,18 @@ final class selection_options {
     public static function parse(array $values): array {
         foreach ($values as $value) {
             if (!is_string($value)) {
-                throw new \moodle_exception('invalidselection', 'local_coursefiles');
+                throw new \moodle_exception('invalidselection', 'local_filebank');
             }
         }
         $values = array_values(array_unique($values));
         sort($values, SORT_STRING);
         if (count($values) > material_selection::MAX_FILES) {
-            throw new \moodle_exception('invalidselection', 'local_coursefiles');
+            throw new \moodle_exception('invalidselection', 'local_filebank');
         }
         $items = [];
         foreach ($values as $value) {
             if (!is_string($value)) {
-                throw new \moodle_exception('invalidselection', 'local_coursefiles');
+                throw new \moodle_exception('invalidselection', 'local_filebank');
             }
             if (preg_match('/^file:([a-f0-9]{40})$/', $value, $match)) {
                 $items[] = ['pathnamehash' => $match[1]];
@@ -61,11 +61,11 @@ final class selection_options {
                     $path === false || \core_text::strlen($path) > 255 || base64_encode($path) !== $match[2]
                         || (string)(int)$match[1] !== $match[1]
                 ) {
-                    throw new \moodle_exception('invalidselection', 'local_coursefiles');
+                    throw new \moodle_exception('invalidselection', 'local_filebank');
                 }
                 $items[] = ['cmid' => (int)$match[1], 'filepath' => material_selection::path($path)];
             } else {
-                throw new \moodle_exception('invalidselection', 'local_coursefiles');
+                throw new \moodle_exception('invalidselection', 'local_filebank');
             }
         }
         return $items;
@@ -82,7 +82,7 @@ final class selection_options {
             $filename === '' || $filename === '.' || $filename === '..'
             || \core_text::strlen($filename) > 255 || clean_param($filename, PARAM_FILE) !== $filename
         ) {
-            throw new \moodle_exception('invalidselection', 'local_coursefiles');
+            throw new \moodle_exception('invalidselection', 'local_filebank');
         }
         return $filename;
     }
@@ -119,7 +119,7 @@ final class selection_options {
                 }
                 $label = $origin['shortname'] . ': ' . $origin['modulename'];
                 if (!$chosen) {
-                    $files['file:' . $origin['pathnamehash']] = get_string('batchfile', 'local_coursefiles')
+                    $files['file:' . $origin['pathnamehash']] = get_string('batchfile', 'local_filebank')
                         . ': ' . $label . $origin['filepath'] . $origin['filename'];
                     $chosen = true;
                 }
@@ -131,7 +131,7 @@ final class selection_options {
                             break;
                         }
                         $value = 'folder:' . $origin['cmid'] . ':' . base64_encode($path);
-                        $folders[$value] = get_string('batchfolder', 'local_coursefiles') . ': ' . $label . $path;
+                        $folders[$value] = get_string('batchfolder', 'local_filebank') . ': ' . $label . $path;
                         $parent = dirname(rtrim($path, '/'));
                         $path = $parent === '/' || $parent === '.' ? '/' : $parent . '/';
                     } while (
@@ -146,7 +146,7 @@ final class selection_options {
         $choices = $folders + $files;
         foreach ($selected as $index => $value) {
             if (!isset($choices[$value])) {
-                $choices[$value] = get_string('batchretained', 'local_coursefiles', $index + 1);
+                $choices[$value] = get_string('batchretained', 'local_filebank', $index + 1);
             }
         }
         return ['choices' => $choices, 'next' => $result['next'], 'limited' => $limited];

@@ -17,7 +17,7 @@
 /**
  * Native course material policy presentation.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -25,39 +25,39 @@
 
 require_once(__DIR__ . '/../../../config.php');
 
-use local_coursefiles\local\policy\author_policy;
-use local_coursefiles\output\display;
-use local_coursefiles\output\view;
+use local_filebank\local\policy\author_policy;
+use local_filebank\output\display;
+use local_filebank\output\view;
 
 $courseid = required_param('courseid', PARAM_INT);
 $course = get_course($courseid);
 require_login($course);
 $context = context_course::instance($courseid);
-require_capability('local/coursefiles:managecoursepolicy', $context);
+require_capability('local/filebank:managecoursepolicy', $context);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_url('/local/coursefiles/course/policy.php', ['courseid' => $courseid]);
-$PAGE->set_title(get_string('coursepolicy', 'local_coursefiles'));
+$PAGE->set_url('/local/filebank/course/policy.php', ['courseid' => $courseid]);
+$PAGE->set_title(get_string('coursepolicy', 'local_filebank'));
 $PAGE->set_heading(format_string($course->fullname));
 if (data_submitted()) {
     require_sesskey();
     author_policy::save($courseid, required_param('policy', PARAM_ALPHANUMEXT));
-    redirect($PAGE->url, get_string('policyupdated', 'local_coursefiles'));
+    redirect($PAGE->url, get_string('policyupdated', 'local_filebank'));
 }
 $locked = author_policy::locked($courseid);
 $data = [
-    'policyhelp' => $OUTPUT->help_icon('author_policy', 'local_coursefiles'),
+    'policyhelp' => $OUTPUT->help_icon('author_policy', 'local_filebank'),
     'actionurl' => $PAGE->url->out(false), 'sesskey' => sesskey(), 'courseid' => $courseid,
     'locked' => $locked,
-    'effectivelabel' => get_string($locked ? 'preserve_locked' : 'editable_with_provenance', 'local_coursefiles'),
-    'canoverride' => get_config('local_coursefiles', 'author_course_override') === 'tighten_only',
+    'effectivelabel' => get_string($locked ? 'preserve_locked' : 'editable_with_provenance', 'local_filebank'),
+    'canoverride' => get_config('local_filebank', 'author_course_override') === 'tighten_only',
     'choices' => display::options([
-        'inherit' => get_string('inherit', 'local_coursefiles'),
-        'preserve_locked' => get_string('preserve_locked', 'local_coursefiles'),
-    ], $DB->get_field('local_coursefiles_policy', 'policy', ['courseid' => $courseid]) ?: 'inherit'),
-    'catalogurl' => (new moodle_url('/local/coursefiles/course/index.php', ['courseid' => $courseid]))->out(false),
+        'inherit' => get_string('inherit', 'local_filebank'),
+        'preserve_locked' => get_string('preserve_locked', 'local_filebank'),
+    ], $DB->get_field('local_filebank_policy', 'policy', ['courseid' => $courseid]) ?: 'inherit'),
+    'catalogurl' => (new moodle_url('/local/filebank/course/index.php', ['courseid' => $courseid]))->out(false),
 ];
 echo $OUTPUT->header();
-echo $PAGE->get_renderer('local_coursefiles')->render(\local_coursefiles\output\navigation::course('policy', $courseid));
-echo $PAGE->get_renderer('local_coursefiles')->render(new view('policy', $data));
+echo $PAGE->get_renderer('local_filebank')->render(\local_filebank\output\navigation::course('policy', $courseid));
+echo $PAGE->get_renderer('local_filebank')->render(new view('policy', $data));
 echo $OUTPUT->footer();

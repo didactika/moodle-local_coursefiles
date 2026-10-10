@@ -17,27 +17,27 @@
 /**
  * Administration page registration.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
-$pages = \local_coursefiles\output\navigation::pages();
+$pages = \local_filebank\output\navigation::pages();
 $visible = array_filter($pages, static fn($page) => has_capability($page['capability'], context_system::instance()));
 $configuration = array_filter($visible, static fn($name) => $name !== 'log', ARRAY_FILTER_USE_KEY);
 if ($configuration) {
     $ADMIN->add(
         $hassiteconfig ? 'localplugins' : 'root',
-        new admin_category('local_coursefiles', get_string('pluginname', 'local_coursefiles'), true)
+        new admin_category('local_filebank', get_string('pluginname', 'local_filebank'), true)
     );
     foreach ($configuration as $name => $page) {
         $ADMIN->add($name === array_key_first($configuration) ? ($hassiteconfig ? 'localplugins' : 'root')
-            : 'local_coursefiles', new admin_externalpage(
-                'local_coursefiles_' . $name,
-                get_string($name === array_key_first($configuration) ? 'pluginname' : $page['label'], 'local_coursefiles'),
-                new moodle_url('/local/coursefiles/admin/' . $name . '.php'),
+            : 'local_filebank', new admin_externalpage(
+                'local_filebank_' . $name,
+                get_string($name === array_key_first($configuration) ? 'pluginname' : $page['label'], 'local_filebank'),
+                new moodle_url('/local/filebank/admin/' . $name . '.php'),
                 $page['capability'],
                 $name !== array_key_first($configuration)
             ));
@@ -46,9 +46,9 @@ if ($configuration) {
 
 if (isset($visible['log'])) {
     $ADMIN->add('reports', new admin_externalpage(
-        'local_coursefiles_log',
-        get_string('logreports', 'local_coursefiles'),
-        new moodle_url('/local/coursefiles/admin/log.php'),
-        'local/coursefiles:viewlog'
+        'local_filebank_log',
+        get_string('logreports', 'local_filebank'),
+        new moodle_url('/local/filebank/admin/log.php'),
+        'local/filebank:viewlog'
     ));
 }

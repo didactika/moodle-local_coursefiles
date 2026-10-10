@@ -16,13 +16,13 @@
 /**
  * Accessible selection controls for native administration forms.
  *
- * @module local_coursefiles/local/form/actions
+ * @module local_filebank/local/form/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_coursefiles/local/form/selectors';
+import Selectors from 'local_filebank/local/form/selectors';
 import {getStrings} from 'core/str';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
@@ -34,21 +34,21 @@ import Notification from 'core/notification';
  */
 export const createRows = async id => {
     const field = document.getElementById(id);
-    if (!field || field.dataset.coursefilesRows) {
+    if (!field || field.dataset.filebankRows) {
         return;
     }
     try {
-        const {columns, maximum} = JSON.parse(field.dataset.coursefilesSchema);
+        const {columns, maximum} = JSON.parse(field.dataset.filebankSchema);
         const values = JSON.parse(field.value || '[]');
         if (!Array.isArray(values) || values.length > maximum) {
             return;
         }
         const [add, remove] = await getStrings([
-            {key: 'addrow', component: 'local_coursefiles'}, {key: 'delete', component: 'core'},
+            {key: 'addrow', component: 'local_filebank'}, {key: 'delete', component: 'core'},
         ]);
-        const {html, js} = await Templates.renderForPromise('local_coursefiles/local/form/rows', {columns, add});
+        const {html, js} = await Templates.renderForPromise('local_filebank/local/form/rows', {columns, add});
         const wrapper = document.createElement('div');
-        wrapper.className = 'coursefiles-row-fields';
+        wrapper.className = 'filebank-row-fields';
         field.after(wrapper);
         await Templates.replaceNodeContents(wrapper, html, js);
         const body = wrapper.querySelector(Selectors.rowBody);
@@ -66,7 +66,7 @@ export const createRows = async id => {
             for (const column of columns) {
                 const cell = row.insertCell();
                 const label = document.createElement('span');
-                label.className = 'coursefiles-row-label text-muted';
+                label.className = 'filebank-row-label text-muted';
                 label.textContent = column.label;
                 const help = document.createElement('span');
                 help.innerHTML = column.help || '';
@@ -89,7 +89,7 @@ export const createRows = async id => {
                         }
                     }
                 }
-                input.className = column.type === 'checkbox' ? 'coursefiles-row-check'
+                input.className = column.type === 'checkbox' ? 'filebank-row-check'
                     : (column.options ? 'custom-select custom-select-sm' : 'form-control form-control-sm');
                 if (column.type !== 'checkbox') {
                     input.value = value[column.key] || column.options?.[0]?.value || '';
@@ -97,8 +97,8 @@ export const createRows = async id => {
                 cell.append(input);
             }
             const cell = row.insertCell();
-            cell.className = 'coursefiles-row-remove';
-            const {html, js} = await Templates.renderForPromise('local_coursefiles/local/form/remove_row', {remove});
+            cell.className = 'filebank-row-remove';
+            const {html, js} = await Templates.renderForPromise('local_filebank/local/form/remove_row', {remove});
             await Templates.replaceNodeContents(cell, html, js);
             body.append(row);
             return row;
@@ -107,7 +107,7 @@ export const createRows = async id => {
             await append(value);
         }
         field.hidden = true;
-        field.dataset.coursefilesRows = 'true';
+        field.dataset.filebankRows = 'true';
         const addRow = async() => {
             if (body.rows.length >= maximum) {
                 return;

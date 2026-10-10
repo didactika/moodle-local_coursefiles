@@ -4,62 +4,62 @@
 
 /* Shared surfaces follow the active Moodle theme. */
 
-.coursefiles-admin, .coursefiles-browser, .coursefiles-log {
-    --coursefiles-primary: var(--bs-primary, var(--primary, #0f6cbf));
-    --coursefiles-border: var(--bs-border-color, #dee2e6);
-    --coursefiles-surface: var(--bs-body-bg, #fff);
-    --coursefiles-radius: var(--bs-border-radius, .5rem);
+.filebank-admin, .filebank-browser, .filebank-log {
+    --filebank-primary: var(--bs-primary, var(--primary, #0f6cbf));
+    --filebank-border: var(--bs-border-color, #dee2e6);
+    --filebank-surface: var(--bs-body-bg, #fff);
+    --filebank-radius: var(--bs-border-radius, .5rem);
 }
 
-.coursefiles-browser {
+.filebank-browser {
     color: var(--bs-body-color, inherit);
     max-width: 100%;
 }
 
-.coursefiles-heading, .coursefiles-toolbar, .coursefiles-footer, .coursefiles-pagination, .coursefiles-actionbar {
+.filebank-heading, .filebank-toolbar, .filebank-footer, .filebank-pagination, .filebank-actionbar {
     gap: .6rem;
 }
 
-.coursefiles-page-actions {
+.filebank-page-actions {
     gap: .75rem;
 }
 
-.coursefiles-page-size {
+.filebank-page-size {
     width: auto;
     min-width: 4rem;
 }
 
-.coursefiles-metrics {
+.filebank-metrics {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: .5rem;
 }
 
-.coursefiles-issue {
+.filebank-issue {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: .75rem;
 }
 
-.coursefiles-issue > * {
+.filebank-issue > * {
     min-width: 0;
 }
 
-.coursefiles-issue-context {
+.filebank-issue-context {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
 }
 
-.coursefiles-issue select {
+.filebank-issue select {
     width: 100%;
     min-width: 0;
 }
 
-.coursefiles-admin {
+.filebank-admin {
     .mform #fgroup_id_buttons {
-        background: var(--coursefiles-surface);
+        background: var(--filebank-surface);
         padding-block: .75rem;
     }
     [hidden] {
@@ -67,15 +67,15 @@
     }
 }
 
-.coursefiles-gap-end {
+.filebank-gap-end {
     margin-inline-end: .5rem;
 }
 
-.coursefiles-gap-end-lg {
+.filebank-gap-end-lg {
     margin-inline-end: .75rem;
 }
 
-.coursefiles-visually-hidden {
+.filebank-visually-hidden {
     position: absolute !important;
     width: 1px;
     height: 1px;

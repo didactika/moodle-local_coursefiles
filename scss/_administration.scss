@@ -4,7 +4,7 @@
 
 /* Native administration forms, compact tables and independent filter popovers. */
 
-.coursefiles-steps {
+.filebank-steps {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: .5rem;
@@ -14,19 +14,19 @@
         display: flex;
         align-items: center;
         gap: .6rem;
-        border: 1px solid var(--coursefiles-border);
-        border-radius: var(--coursefiles-radius);
+        border: 1px solid var(--filebank-border);
+        border-radius: var(--filebank-radius);
         padding: .75rem;
         font-size: .85rem;
     }
     li[aria-current=step] {
-        border-color: var(--coursefiles-primary);
-        color: var(--coursefiles-primary);
-        background: color-mix(in srgb, var(--coursefiles-primary) 6%, var(--coursefiles-surface));
+        border-color: var(--filebank-primary);
+        color: var(--filebank-primary);
+        background: color-mix(in srgb, var(--filebank-primary) 6%, var(--filebank-surface));
     }
 }
 
-.coursefiles-step-number {
+.filebank-step-number {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -38,18 +38,18 @@
     font-weight: 600;
 }
 
-.coursefiles-panel {
+.filebank-panel {
     padding: 1rem;
-    border: 1px solid var(--coursefiles-border);
-    border-radius: var(--coursefiles-radius);
+    border: 1px solid var(--filebank-border);
+    border-radius: var(--filebank-radius);
     margin-bottom: 1rem;
 }
 
-.coursefiles-admin .fdescription, .coursefiles-admin .form-control, .coursefiles-admin .custom-select {
+.filebank-admin .fdescription, .filebank-admin .form-control, .filebank-admin .custom-select {
     max-width: 100%;
 }
 
-.coursefiles-admin {
+.filebank-admin {
     .btn {
         max-width: 100%;
         white-space: normal;
@@ -62,43 +62,43 @@
     }
 }
 
-.coursefiles-admin .table td, .coursefiles-admin .table th {
+.filebank-admin .table td, .filebank-admin .table th {
     vertical-align: middle;
     padding: .6rem .75rem;
     font-size: .875rem;
 }
 
-.coursefiles-row-fields {
+.filebank-row-fields {
     width: 100%;
     min-width: 0;
 }
 
-.coursefiles-row-editor {
+.filebank-row-editor {
     container-type: inline-size;
     width: 100%;
     min-width: 0;
     overflow-x: clip;
 }
 
-.coursefiles-row-label {
+.filebank-row-label {
     display: block;
     min-height: 2.5rem;
     font-size: .8rem;
     overflow-wrap: anywhere;
 }
 
-.coursefiles-row-editor {
+.filebank-row-editor {
     .table {
         margin-bottom: 0;
     }
 }
 
-.coursefiles-row-editor .table, .coursefiles-row-editor tbody {
+.filebank-row-editor .table, .filebank-row-editor tbody {
     display: block;
     width: 100%;
 }
 
-.coursefiles-row-editor {
+.filebank-row-editor {
     thead {
         position: absolute;
         width: 1px;
@@ -111,48 +111,48 @@
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
         gap: .5rem;
         padding: .75rem 0;
-        border-bottom: 1px solid var(--coursefiles-border);
+        border-bottom: 1px solid var(--filebank-border);
     }
     .table td {
         min-width: 0;
     }
 }
 
-.coursefiles-row-editor input:not([type=checkbox]), .coursefiles-row-editor select {
+.filebank-row-editor input:not([type=checkbox]), .filebank-row-editor select {
     width: 100%;
     min-width: 0;
 }
 
-.coursefiles-row-editor .table td, .coursefiles-row-editor .table th {
+.filebank-row-editor .table td, .filebank-row-editor .table th {
     border: 0;
     padding: .35rem;
 }
 
-.coursefiles-row-editor {
+.filebank-row-editor {
     th {
         font-size: .8rem;
         font-weight: 500;
         white-space: nowrap;
     }
-    .coursefiles-row-check {
+    .filebank-row-check {
         margin-inline: .5rem;
     }
 }
 
-.coursefiles-table-search {
+.filebank-table-search {
     max-width: 24rem;
 }
 
-.coursefiles-row-actions .btn {
+.filebank-row-actions .btn {
     padding: .35rem .5rem;
     white-space: nowrap;
 }
 
-.coursefiles-row-actions .icon {
+.filebank-row-actions .icon {
     margin: 0;
 }
 
-.coursefiles-admin {
+.filebank-admin {
     .mform .fitem > .col-form-label {
         padding-inline-start: 0;
     }
@@ -165,11 +165,11 @@
     }
 }
 
-.coursefiles-admin .mform .felement > input[type=text], .coursefiles-admin .mform .felement > textarea {
+.filebank-admin .mform .felement > input[type=text], .filebank-admin .mform .felement > textarea {
     width: 100%;
 }
 
-.coursefiles-admin {
+.filebank-admin {
     .mform #fgroup_id_buttons > .col-form-label {
         display: none;
     }
@@ -178,40 +178,40 @@
         flex: 0 0 100%;
         max-width: 100%;
     }
-    .coursefiles-filter-popover {
+    .filebank-filter-popover {
         position: relative;
         padding: 0;
         border: 0;
     }
 }
 
-.coursefiles-filter-menu {
+.filebank-filter-menu {
     position: absolute;
     inset-inline-end: 0;
     top: calc(100% + .4rem);
     width: min(24rem, 85vw);
-    border: 1px solid var(--coursefiles-border);
+    border: 1px solid var(--filebank-border);
     border-radius: .5rem;
     box-shadow: 0 .3rem 1rem #0002;
     padding: 1rem;
-    background: var(--coursefiles-surface);
+    background: var(--filebank-surface);
     z-index: 5;
 }
 
-.coursefiles-migration-group > summary {
+.filebank-migration-group > summary {
     font-weight: 600;
 }
 
-.coursefiles-migration-group > summary input, .coursefiles-migration-folder > summary input {
+.filebank-migration-group > summary input, .filebank-migration-folder > summary input {
     margin-inline-start: auto;
 }
 
-.coursefiles-version-diff code {
+.filebank-version-diff code {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 
-.coursefiles-migration [data-coursefiles-continue].disabled {
+.filebank-migration [data-filebank-continue].disabled {
     opacity: .45;
 }
 

@@ -17,20 +17,20 @@
 /**
  * Published course edition fixtures for browser acceptance.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_coursefiles\local\profile\profiles;
-use local_coursefiles\local\catalog\indexer;
-use local_coursefiles\local\catalog\material_source;
+use local_filebank\local\profile\profiles;
+use local_filebank\local\catalog\indexer;
+use local_filebank\local\catalog\material_source;
 
 /**
  * Native folder form fixtures, isolated by Moodle's test environment.
  */
-final class local_coursefiles_generator extends component_generator_base {
+final class local_filebank_generator extends component_generator_base {
     /**
      * Create more than one native page for administration and whole-plan selection.
      * @param array $record Named fixture.
@@ -59,7 +59,7 @@ final class local_coursefiles_generator extends component_generator_base {
                 profiles::change_state([$id], 'disable');
             }
             for ($i = 0; $i < 26; $i++) {
-                \local_coursefiles\local\migration\migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+                \local_filebank\local\migration\migration_planner::preview($fixture['profileid'], '2025', '2026', true);
             }
             return $fixture;
         } finally {
@@ -105,17 +105,17 @@ final class local_coursefiles_generator extends component_generator_base {
         $previoususer = $USER;
         $this->set_user(get_admin());
         try {
-            $example = $CFG->dirroot . '/local/coursefiles/examples/institutional-profile.json';
+            $example = $CFG->dirroot . '/local/filebank/examples/institutional-profile.json';
             $config = json_decode(file_get_contents($example), true);
             $config['name'] = $record['name'];
             $config['publication']['mode'] = 'explicit-family-publication';
             $profileid = profiles::save(json_encode($config));
-            set_config('author_policy', 'editable_with_provenance', 'local_coursefiles');
+            set_config('author_policy', 'editable_with_provenance', 'local_filebank');
             $uuid = \core\uuid::generate();
             $courses = [];
             foreach ([2024, 2025, 2026] as $edition) {
                 $courses[$edition] = $this->datagenerator->create_course([
-                    'fullname' => 'CourseFiles ' . $edition, 'shortname' => 'CB' . $edition,
+                    'fullname' => 'FileBank ' . $edition, 'shortname' => 'CB' . $edition,
                     'idnumber' => $uuid . '||CB||' . $edition,
                 ]);
                 $folder = $this->datagenerator->create_module('folder', [
@@ -203,9 +203,9 @@ final class local_coursefiles_generator extends component_generator_base {
             }
             $teacher = $this->datagenerator->create_user(['username' => 'cbteacher', 'password' => 'cbteacher']);
             $this->datagenerator->enrol_user($teacher->id, $courses[2026]->id, 'editingteacher');
-            if (is_file($CFG->dirroot . '/repository/coursefiles/lib.php')) {
-                require_once($CFG->dirroot . '/repository/coursefiles/lib.php');
-                (new \repository_type('coursefiles'))->create(false);
+            if (is_file($CFG->dirroot . '/repository/filebank/lib.php')) {
+                require_once($CFG->dirroot . '/repository/filebank/lib.php');
+                (new \repository_type('filebank'))->create(false);
             }
             return ['targetcmid' => $targetcmid, 'targetcourse' => $courses[2026]->id, 'profileid' => $profileid,
                 'teacherid' => $teacher->id, 'wwwroot' => $CFG->wwwroot];

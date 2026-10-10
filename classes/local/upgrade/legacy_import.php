@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Preserve CourseBridge installations when adopting the CourseFiles component names.
+ * Preserve CourseBridge installations when adopting the FileBank component names.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\upgrade;
+namespace local_filebank\local\upgrade;
 
 /**
 
@@ -39,11 +39,11 @@ final class legacy_import {
         $transaction = $DB->start_delegated_transaction();
         $DB->delete_records('task_scheduled', ['component' => 'local_coursebridge']);
         foreach ($DB->get_records('task_adhoc', ['component' => 'local_coursebridge']) as $task) {
-            $classname = str_replace('local_coursebridge\\', 'local_coursefiles\\', $task->classname);
+            $classname = str_replace('local_coursebridge\\', 'local_filebank\\', $task->classname);
             if (!is_subclass_of($classname, \core\task\adhoc_task::class)) {
                 throw new \coding_exception('Unsupported legacy queued task: ' . $task->classname);
             }
-            $task->component = 'local_coursefiles';
+            $task->component = 'local_filebank';
             $task->classname = $classname;
             if (property_exists($task, 'identityhash')) {
                 // Moodle 5.3 rebuilds nullable legacy identities when deduplicating queued work.
@@ -68,8 +68,8 @@ final class legacy_import {
         $targets = ['_coursepolicy' => '_policy', '_publication' => '_publish', '_attribution' => '_author'];
         $sources = [];
         foreach ($tables as $suffix) {
-            if ($DB->record_exists('local_coursefiles' . ($targets[$suffix] ?? $suffix), [])) {
-                throw new \coding_exception('CourseFiles already contains data; the legacy import cannot merge installations.');
+            if ($DB->record_exists('local_filebank' . ($targets[$suffix] ?? $suffix), [])) {
+                throw new \coding_exception('FileBank already contains data; the legacy import cannot merge installations.');
             }
             $source = 'local_coursebridge' . $suffix;
             $shortsource = 'local_coursebridge' . ($targets[$suffix] ?? $suffix);
@@ -80,7 +80,7 @@ final class legacy_import {
                 $source = $shortsource;
             }
             if (!$dbman->table_exists(new \xmldb_table($source))) {
-                throw new \coding_exception('Upgrade CourseBridge before installing CourseFiles: missing legacy table ' . $suffix);
+                throw new \coding_exception('Upgrade CourseBridge before installing FileBank: missing legacy table ' . $suffix);
             }
             $sources[$suffix] = $source;
         }
@@ -88,13 +88,13 @@ final class legacy_import {
         foreach ($tables as $suffix) {
             $records = $DB->get_recordset($sources[$suffix], [], 'id');
             foreach ($records as $record) {
-                $DB->import_record('local_coursefiles' . ($targets[$suffix] ?? $suffix), $record);
+                $DB->import_record('local_filebank' . ($targets[$suffix] ?? $suffix), $record);
             }
             $records->close();
         }
         foreach ($DB->get_records('config_plugins', ['plugin' => 'local_coursebridge']) as $setting) {
             if ($setting->name !== 'version') {
-                set_config($setting->name, $setting->value, 'local_coursefiles');
+                set_config($setting->name, $setting->value, 'local_filebank');
             }
         }
         foreach (['local/coursebridge:', 'repository/coursebridge:'] as $prefix) {
@@ -104,7 +104,7 @@ final class legacy_import {
                 ['prefix' => $DB->sql_like_escape($prefix) . '%']
             );
             foreach ($records as $record) {
-                $record->capability = str_replace('/coursebridge:', '/coursefiles:', $record->capability);
+                $record->capability = str_replace('/coursebridge:', '/filebank:', $record->capability);
                 $existing = $DB->get_record('role_capabilities', ['roleid' => $record->roleid,
                     'contextid' => $record->contextid, 'capability' => $record->capability]);
                 if ($existing) {
@@ -118,12 +118,12 @@ final class legacy_import {
         }
         // Old scheduled tasks must not run against the retained rollback tables.
         self::repair_tasks();
-        set_config('legacy_version', get_config('local_coursebridge', 'version'), 'local_coursefiles');
+        set_config('legacy_version', get_config('local_coursebridge', 'version'), 'local_filebank');
         unset_config('version', 'local_coursebridge');
-        set_config('legacy_imported', time(), 'local_coursefiles');
+        set_config('legacy_imported', time(), 'local_filebank');
         $transaction->allow_commit();
         foreach ($tables as $suffix) {
-            $dbman->reset_sequence(new \xmldb_table('local_coursefiles' . ($targets[$suffix] ?? $suffix)));
+            $dbman->reset_sequence(new \xmldb_table('local_filebank' . ($targets[$suffix] ?? $suffix)));
         }
     }
 }

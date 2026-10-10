@@ -16,15 +16,15 @@
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_coursefiles/local/selection/actions
+ * @module local_filebank/local/selection/actions
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_coursefiles/local/selection/selectors';
+import Selectors from 'local_filebank/local/selection/selectors';
 import {getString} from 'core/str';
-import {loadFragment} from 'local_coursefiles/local/repository';
+import {loadFragment} from 'local_filebank/local/repository';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
 
@@ -44,7 +44,7 @@ export const createActions = (form) => {
         form.dataset.layout = layout;
         form.elements.layout.value = layout;
         form.querySelectorAll(Selectors.layouts).forEach(button => {
-            const active = button.dataset.coursefilesLayout === layout;
+            const active = button.dataset.filebankLayout === layout;
             button.setAttribute('aria-pressed', String(active));
             button.classList.toggle('active', active);
         });
@@ -56,7 +56,7 @@ export const createActions = (form) => {
                 heading.closest(Selectors.browserTreeGroup).dataset.collapsed = 'false';
             }
         });
-        form.dispatchEvent(new CustomEvent('coursefiles:layoutchanged', {detail: {layout}}));
+        form.dispatchEvent(new CustomEvent('filebank:layoutchanged', {detail: {layout}}));
     };
     const filters = form.querySelector(Selectors.filterMenu);
     const outsideClick = event => {
@@ -98,7 +98,7 @@ export const createActions = (form) => {
             input.indeterminate = input.dataset.partial === '1';
         });
         form.querySelectorAll(Selectors.card).forEach(card => {
-            card.classList.toggle('coursefiles-selected', card.querySelector(Selectors.checkbox).checked);
+            card.classList.toggle('filebank-selected', card.querySelector(Selectors.checkbox).checked);
         });
         form.querySelector(Selectors.clearFilters).disabled = ![...form.querySelectorAll(
             Selectors.restrictions
@@ -125,14 +125,14 @@ export const createActions = (form) => {
         }
         form.setAttribute('aria-busy', 'true');
         if (!toggleitem) {
-            form.querySelector(Selectors.results).classList.add('coursefiles-loading');
+            form.querySelector(Selectors.results).classList.add('filebank-loading');
         }
         const actions = [...form.querySelectorAll(Selectors.pendingActions)];
         actions.forEach(button => {
-            button.dataset.coursefilesDisabled = String(button.disabled);
+            button.dataset.filebankDisabled = String(button.disabled);
             button.disabled = true;
         });
-        getString('filterloading', 'local_coursefiles').then(text => {
+        getString('filterloading', 'local_filebank').then(text => {
             form.querySelector(Selectors.loading).textContent = text;
             return text;
         }).catch(() => {});
@@ -206,9 +206,9 @@ export const createActions = (form) => {
             loading = false;
             if (form.isConnected) {
                 form.removeAttribute('aria-busy');
-                form.querySelector(Selectors.results).classList.remove('coursefiles-loading');
+                form.querySelector(Selectors.results).classList.remove('filebank-loading');
                 actions.forEach(button => {
-                    button.disabled = button.dataset.coursefilesDisabled === 'true';
+                    button.disabled = button.dataset.filebankDisabled === 'true';
                 });
                 form.querySelector(Selectors.loading).textContent = '';
                 update();
@@ -243,7 +243,7 @@ export const createActions = (form) => {
         button.disabled = true;
         entries.setAttribute('aria-busy', 'true');
         const skeleton = document.createElement('div');
-        skeleton.className = 'coursefiles-tree-placeholder';
+        skeleton.className = 'filebank-tree-placeholder';
         skeleton.innerHTML = '<span></span><span></span>';
         entries.append(skeleton);
         try {
@@ -312,7 +312,7 @@ export const createActions = (form) => {
     const selectionChange = event => {
         changes++;
         if (event.target.matches(Selectors.choice)) {
-            event.target.closest(Selectors.card).classList.toggle('coursefiles-selected', event.target.checked);
+            event.target.closest(Selectors.card).classList.toggle('filebank-selected', event.target.checked);
             apply(event.target.value);
             return;
         }
@@ -346,7 +346,7 @@ export const createActions = (form) => {
         }
         submitting = true;
         form.setAttribute('aria-busy', 'true');
-        getString('filterloading', 'local_coursefiles').then(text => {
+        getString('filterloading', 'local_filebank').then(text => {
             form.querySelector(Selectors.loading).textContent = text;
             return text;
         }).catch(() => {});
@@ -354,7 +354,7 @@ export const createActions = (form) => {
     const changeLayout = event => {
         const button = event.target.closest(Selectors.layouts);
         if (button) {
-            syncLayout(button.dataset.coursefilesLayout);
+            syncLayout(button.dataset.filebankLayout);
         }
     };
     update();

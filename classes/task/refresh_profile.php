@@ -17,15 +17,15 @@
 /**
  * Bounded course reconciliation after profile activation.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\task;
+namespace local_filebank\task;
 
-use local_coursefiles\local\catalog\indexer;
-use local_coursefiles\local\profile\profiles;
+use local_filebank\local\catalog\indexer;
+use local_filebank\local\profile\profiles;
 
 /**
  * Refreshes matching or previously indexed courses without a whole-site form request.
@@ -57,7 +57,7 @@ final class refresh_profile extends \core\task\adhoc_task {
         $data = $this->get_custom_data();
         $profileid = (int)$data->profileid;
         if (
-            !$DB->record_exists('local_coursefiles', ['id' => $profileid, 'activeid' => (int)$data->revisionid,
+            !$DB->record_exists('local_filebank', ['id' => $profileid, 'activeid' => (int)$data->revisionid,
                 'enabled' => 1, 'deleted' => 0])
         ) {
             return;
@@ -74,7 +74,7 @@ final class refresh_profile extends \core\task\adhoc_task {
         );
         $after = (int)$data->after;
         foreach ($courses as $course) {
-            $previous = $DB->record_exists('local_coursefiles_course', ['courseid' => $course->id, 'profileid' => $profileid]);
+            $previous = $DB->record_exists('local_filebank_course', ['courseid' => $course->id, 'profileid' => $profileid]);
             try {
                 $identity = $rules->resolve($course);
             } catch (\moodle_exception $exception) {

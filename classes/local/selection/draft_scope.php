@@ -17,15 +17,15 @@
 /**
  * Session binding for reviewed native draft batches.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_coursefiles\local\selection;
+namespace local_filebank\local\selection;
 
-use local_coursefiles\form\scoped_filemanager;
+use local_filebank\form\scoped_filemanager;
 
 /**
  * Session-local authorization binding for an explicitly integrated owning form.
@@ -50,7 +50,7 @@ final class draft_scope {
      */
     public static function find(\context $context, int $draftid, string $sesskey): string {
         global $SESSION;
-        foreach ($SESSION->local_coursefiles_drafts ?? [] as $token => $scope) {
+        foreach ($SESSION->local_filebank_drafts ?? [] as $token => $scope) {
             if ($scope['contextid'] === $context->id && $scope['draftid'] === $draftid) {
                 try {
                     self::resolve($token, $sesskey);
@@ -85,9 +85,9 @@ final class draft_scope {
         global $SESSION;
         $scope = self::resolve($token, $sesskey);
         if (isset($scope['review']) && ($scope['view'] ?? []) !== $view) {
-            unset($SESSION->local_coursefiles_drafts[$token]['review']);
+            unset($SESSION->local_filebank_drafts[$token]['review']);
         }
-        $SESSION->local_coursefiles_drafts[$token]['view'] = $view;
+        $SESSION->local_filebank_drafts[$token]['view'] = $view;
     }
 
     /**
@@ -100,7 +100,7 @@ final class draft_scope {
     public static function select_repository(string $token, string $name, string $sesskey): void {
         global $SESSION;
         self::resolve($token, $sesskey);
-        $SESSION->local_coursefiles_drafts[$token]['repositoryname'] = $name;
+        $SESSION->local_filebank_drafts[$token]['repositoryname'] = $name;
     }
 
     /**
@@ -125,14 +125,14 @@ final class draft_scope {
                 || ($scope['editorlinks'] ?? false) !== $links
         ) {
             unset(
-                $SESSION->local_coursefiles_drafts[$token]['review'],
-                $SESSION->local_coursefiles_drafts[$token]['view'],
-                $SESSION->local_coursefiles_drafts[$token]['imported']
+                $SESSION->local_filebank_drafts[$token]['review'],
+                $SESSION->local_filebank_drafts[$token]['view'],
+                $SESSION->local_filebank_drafts[$token]['imported']
             );
         }
-        $SESSION->local_coursefiles_drafts[$token]['limits']['accepted_types'] = $types;
-        $SESSION->local_coursefiles_drafts[$token]['limits']['selectionlimit'] = $limit;
-        $SESSION->local_coursefiles_drafts[$token]['editorlinks'] = $links;
+        $SESSION->local_filebank_drafts[$token]['limits']['accepted_types'] = $types;
+        $SESSION->local_filebank_drafts[$token]['limits']['selectionlimit'] = $limit;
+        $SESSION->local_filebank_drafts[$token]['editorlinks'] = $links;
     }
 
     /**
@@ -147,7 +147,7 @@ final class draft_scope {
         $scope = self::resolve($token, $sesskey);
         $saved = $scope['review'] ?? null;
         if (!$saved || !hash_equals($saved['digest'], $digest)) {
-            throw new \moodle_exception('batchconflict', 'local_coursefiles');
+            throw new \moodle_exception('batchconflict', 'local_filebank');
         }
         $review = draft_import::review(
             $scope['courseid'],
@@ -160,7 +160,7 @@ final class draft_scope {
             ['roots' => $scope['view']['roots'] ?? [], 'renames' => $scope['view']['renames'] ?? []]
         );
         if ($review['blocked'] || !hash_equals($review['digest'], $digest)) {
-            throw new \moodle_exception('batchconflict', 'local_coursefiles');
+            throw new \moodle_exception('batchconflict', 'local_filebank');
         }
         return [$scope, $review];
     }
@@ -176,11 +176,11 @@ final class draft_scope {
         global $SESSION;
         $scope = self::resolve($token, $sesskey);
         if (!in_array($mode, ['paths', 'folder', 'contents'], true)) {
-            throw new \moodle_exception('invalidselection', 'local_coursefiles');
+            throw new \moodle_exception('invalidselection', 'local_filebank');
         }
         if (($scope['copymode'] ?? 'paths') !== $mode) {
-            unset($SESSION->local_coursefiles_drafts[$token]['review']);
-            $SESSION->local_coursefiles_drafts[$token]['copymode'] = $mode;
+            unset($SESSION->local_filebank_drafts[$token]['review']);
+            $SESSION->local_filebank_drafts[$token]['copymode'] = $mode;
         }
     }
 
@@ -218,7 +218,7 @@ final class draft_scope {
                 '.'
             )
         ) {
-            throw new \moodle_exception('invaliddraft', 'local_coursefiles');
+            throw new \moodle_exception('invaliddraft', 'local_filebank');
         }
         return self::open_contract($contract, $context, $basepath);
     }
@@ -245,9 +245,9 @@ final class draft_scope {
                 '.'
             )
         ) {
-            throw new \moodle_exception('invaliddraft', 'local_coursefiles');
+            throw new \moodle_exception('invaliddraft', 'local_filebank');
         }
-        $scopes = $SESSION->local_coursefiles_drafts ?? [];
+        $scopes = $SESSION->local_filebank_drafts ?? [];
         foreach ($scopes as $key => $scope) {
             if (
                 $scope['expires'] <= time() || $scope['userid'] !== (int)$USER->id
@@ -266,7 +266,7 @@ final class draft_scope {
         $scopes[$token] = $contract + ['userid' => (int)$USER->id, 'contextid' => $context->id,
             'courseid' => (int)$context->get_course_context()->instanceid, 'basepath' => $basepath,
             'expires' => time() + self::LIFETIME];
-        $SESSION->local_coursefiles_drafts = $scopes;
+        $SESSION->local_filebank_drafts = $scopes;
         return $token;
     }
 
@@ -290,7 +290,7 @@ final class draft_scope {
             $scope['contextid'] !== $context->id || $scope['field'] !== $contract['field']
                 || $scope['draftid'] !== $contract['draftid'] || $scope['limits'] !== $contract['limits']
         ) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursefiles');
+            throw new \moodle_exception('formscopeunavailable', 'local_filebank');
         }
     }
 
@@ -326,7 +326,7 @@ final class draft_scope {
         $scope = self::resolve($token, $sesskey);
         $basepath = material_selection::path($basepath);
         if (!$scope['limits']['subdirs'] && $basepath !== '/') {
-            throw new \moodle_exception('batchlimit', 'local_coursefiles');
+            throw new \moodle_exception('batchlimit', 'local_filebank');
         }
         if (
             !get_file_storage()->get_file(
@@ -338,11 +338,11 @@ final class draft_scope {
                 '.'
             )
         ) {
-            throw new \moodle_exception('invaliddraft', 'local_coursefiles');
+            throw new \moodle_exception('invaliddraft', 'local_filebank');
         }
         if ($scope['basepath'] !== $basepath) {
-            unset($SESSION->local_coursefiles_drafts[$token]['review']);
-            $SESSION->local_coursefiles_drafts[$token]['basepath'] = $basepath;
+            unset($SESSION->local_filebank_drafts[$token]['review']);
+            $SESSION->local_filebank_drafts[$token]['basepath'] = $basepath;
         }
     }
 
@@ -363,8 +363,8 @@ final class draft_scope {
             !$review || $review['profileid'] !== $profileid || $review['items'] !== $items
                 || !hash_equals($review['digest'], $digest)
         ) {
-            unset($SESSION->local_coursefiles_drafts[$token]['review']);
-            throw new \moodle_exception('batchconflict', 'local_coursefiles');
+            unset($SESSION->local_filebank_drafts[$token]['review']);
+            throw new \moodle_exception('batchconflict', 'local_filebank');
         }
     }
 
@@ -380,7 +380,7 @@ final class draft_scope {
     public static function review(string $token, int $profileid, array $items, string $sesskey): array {
         global $SESSION;
         $scope = self::resolve($token, $sesskey);
-        unset($SESSION->local_coursefiles_drafts[$token]['review'], $SESSION->local_coursefiles_drafts[$token]['imported']);
+        unset($SESSION->local_filebank_drafts[$token]['review'], $SESSION->local_filebank_drafts[$token]['imported']);
         $review = draft_import::review(
             $scope['courseid'],
             $profileid,
@@ -391,7 +391,7 @@ final class draft_scope {
             $scope['copymode'] ?? 'paths',
             ['roots' => $scope['view']['roots'] ?? [], 'renames' => $scope['view']['renames'] ?? []]
         );
-        $SESSION->local_coursefiles_drafts[$token]['review'] = [
+        $SESSION->local_filebank_drafts[$token]['review'] = [
             'profileid' => $profileid, 'items' => $items, 'digest' => $review['digest'],
         ];
         return $review;
@@ -409,9 +409,9 @@ final class draft_scope {
         global $SESSION;
         $scope = self::resolve($token, $sesskey);
         $review = $scope['review'] ?? null;
-        unset($SESSION->local_coursefiles_drafts[$token]['review']);
+        unset($SESSION->local_filebank_drafts[$token]['review']);
         if (!$review || !hash_equals($review['digest'], $digest)) {
-            throw new \moodle_exception('batchconflict', 'local_coursefiles');
+            throw new \moodle_exception('batchconflict', 'local_filebank');
         }
         $result = draft_import::apply(
             $scope['courseid'],
@@ -424,7 +424,7 @@ final class draft_scope {
             $scope['copymode'] ?? 'paths',
             ['roots' => $scope['view']['roots'] ?? [], 'renames' => $scope['view']['renames'] ?? []]
         );
-        $SESSION->local_coursefiles_drafts[$token]['imported'] = array_map(static fn($operation) => [
+        $SESSION->local_filebank_drafts[$token]['imported'] = array_map(static fn($operation) => [
             'filepath' => $operation['filepath'], 'filename' => $operation['filename'],
             'contenthash' => $operation['snapshot']['contenthash'],
         ], $result['operations']);
@@ -440,7 +440,7 @@ final class draft_scope {
     public static function close(string $token, string $sesskey): void {
         global $SESSION;
         self::resolve($token, $sesskey);
-        unset($SESSION->local_coursefiles_drafts[$token]);
+        unset($SESSION->local_filebank_drafts[$token]);
     }
 
     /**
@@ -455,21 +455,21 @@ final class draft_scope {
         if (!confirm_sesskey($sesskey)) {
             throw new \moodle_exception('invalidsesskey');
         }
-        $scope = $SESSION->local_coursefiles_drafts[$token] ?? null;
+        $scope = $SESSION->local_filebank_drafts[$token] ?? null;
         if (
             !preg_match('/^[a-f0-9]{64}$/', $token) || !$scope
                 || $scope['userid'] !== (int)$USER->id || $scope['expires'] <= time()
         ) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursefiles');
+            throw new \moodle_exception('formscopeunavailable', 'local_filebank');
         }
         $context = \context::instance_by_id($scope['contextid'], IGNORE_MISSING);
         if (!$context) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursefiles');
+            throw new \moodle_exception('formscopeunavailable', 'local_filebank');
         }
         self::require_context($context, $scope['field']);
         $course = get_course($scope['courseid']);
         if ((int)$context->get_course_context()->instanceid !== $scope['courseid']) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursefiles');
+            throw new \moodle_exception('formscopeunavailable', 'local_filebank');
         }
         $scope['limits']['maxbytes'] = get_user_max_upload_file_size(
             $context,
@@ -488,7 +488,7 @@ final class draft_scope {
      */
     private static function require_context(\context $context, string $field = ''): void {
         if (!isloggedin() || isguestuser() || !in_array($context->contextlevel, [CONTEXT_COURSE, CONTEXT_MODULE], true)) {
-            throw new \moodle_exception('formscopeunavailable', 'local_coursefiles');
+            throw new \moodle_exception('formscopeunavailable', 'local_filebank');
         }
         destination_access::require((int)$context->get_course_context()->instanceid, $context, $field);
     }

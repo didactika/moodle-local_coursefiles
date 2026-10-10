@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * CourseFiles database upgrades.
+ * FileBank database upgrades.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,20 +29,20 @@
  * @param int $oldversion Installed version.
  * @return bool Upgrade completed.
  */
-function xmldb_local_coursefiles_upgrade(int $oldversion): bool {
+function xmldb_local_filebank_upgrade(int $oldversion): bool {
     global $DB;
     $dbman = $DB->get_manager();
     if ($oldversion < 2026100801) {
-        $oldtable = new xmldb_table('local_coursefiles_audit');
-        $newtable = new xmldb_table('local_coursefiles_log');
+        $oldtable = new xmldb_table('local_filebank_audit');
+        $newtable = new xmldb_table('local_filebank_log');
         if ($dbman->table_exists($oldtable)) {
             if ($dbman->table_exists($newtable)) {
-                throw new coding_exception('Both CourseFiles history tables exist; resolve the conflict before upgrading.');
+                throw new coding_exception('Both FileBank history tables exist; resolve the conflict before upgrading.');
             }
-            $dbman->rename_table($oldtable, 'local_coursefiles_log');
+            $dbman->rename_table($oldtable, 'local_filebank_log');
         }
         if (!$dbman->table_exists($newtable)) {
-            throw new coding_exception('CourseFiles log table is missing.');
+            throw new coding_exception('FileBank log table is missing.');
         }
         foreach (
             [
@@ -54,27 +54,27 @@ function xmldb_local_coursefiles_upgrade(int $oldversion): bool {
                 $dbman->add_index($newtable, $index);
             }
         }
-        upgrade_plugin_savepoint(true, 2026100801, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026100801, 'local', 'filebank');
     }
     if ($oldversion < 2026100802) {
-        $table = new xmldb_table('local_coursefiles_author');
+        $table = new xmldb_table('local_filebank_author');
         $field = new xmldb_field('parentuuid', XMLDB_TYPE_CHAR, '36', null, XMLDB_NOTNULL, null, null);
         $dbman->change_field_default($table, $field);
-        upgrade_plugin_savepoint(true, 2026100802, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026100802, 'local', 'filebank');
     }
     if ($oldversion < 2026100902) {
         $file = new xmldb_file(__DIR__ . '/install.xml');
         if (!$file->loadXMLStructure()) {
-            throw new coding_exception('Unable to load the CourseFiles XMLDB schema.');
+            throw new coding_exception('Unable to load the FileBank XMLDB schema.');
         }
-        $table = $file->getStructure()->getTable('local_coursefiles_value');
+        $table = $file->getStructure()->getTable('local_filebank_value');
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
-        upgrade_plugin_savepoint(true, 2026100902, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026100902, 'local', 'filebank');
     }
     if ($oldversion < 2026100903) {
-        $table = new xmldb_table('local_coursefiles_operation');
+        $table = new xmldb_table('local_filebank_operation');
         $field = new xmldb_field('included', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'decision');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -83,30 +83,30 @@ function xmldb_local_coursefiles_upgrade(int $oldversion): bool {
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
-        upgrade_plugin_savepoint(true, 2026100903, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026100903, 'local', 'filebank');
     }
     if ($oldversion < 2026100904) {
         $file = new xmldb_file(__DIR__ . '/install.xml');
         if (!$file->loadXMLStructure()) {
-            throw new coding_exception('Unable to load the CourseFiles XMLDB schema.');
+            throw new coding_exception('Unable to load the FileBank XMLDB schema.');
         }
-        $targettable = $file->getStructure()->getTable('local_coursefiles_target');
+        $targettable = $file->getStructure()->getTable('local_filebank_target');
         if (!$dbman->table_exists($targettable)) {
             $dbman->create_table($targettable);
         }
-        $table = new xmldb_table('local_coursefiles');
+        $table = new xmldb_table('local_filebank');
         $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'enabled');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-        $table = new xmldb_table('local_coursefiles_operation');
+        $table = new xmldb_table('local_filebank_operation');
         foreach (['sourcecourseid', 'targetcourseid', 'sourcecmid'] as $name) {
             $field = new xmldb_field($name, XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
             if (!$dbman->field_exists($table, $field)) {
                 $dbman->add_field($table, $field);
             }
         }
-        $records = $DB->get_recordset_select('local_coursefiles_operation', 'sourcecourseid = 0');
+        $records = $DB->get_recordset_select('local_filebank_operation', 'sourcecourseid = 0');
         foreach ($records as $operation) {
             $snapshot = json_decode($operation->snapshot, true);
             $operation->sourcecourseid = $snapshot['sourcecourse'] ?? 0;
@@ -114,14 +114,14 @@ function xmldb_local_coursefiles_upgrade(int $oldversion): bool {
             $contextid = $DB->get_field('files', 'contextid', ['pathnamehash' => $operation->sourcehash]) ?: 0;
             $context = $contextid ? context::instance_by_id($contextid, IGNORE_MISSING) : null;
             $operation->sourcecmid = $context && $context->contextlevel === CONTEXT_MODULE ? $context->instanceid : 0;
-            $DB->update_record('local_coursefiles_operation', $operation);
+            $DB->update_record('local_filebank_operation', $operation);
         }
         $records->close();
         foreach (
             [
-            'local_coursefiles_plan' => ['timecreated-id', ['timecreated', 'id']],
-            'local_coursefiles_run' => ['planid-state-time', ['planid', 'state', 'timemodified']],
-            'local_coursefiles_operation' => ['planid-course-folder', ['planid', 'sourcecourseid', 'sourcecmid']],
+            'local_filebank_plan' => ['timecreated-id', ['timecreated', 'id']],
+            'local_filebank_run' => ['planid-state-time', ['planid', 'state', 'timemodified']],
+            'local_filebank_operation' => ['planid-course-folder', ['planid', 'sourcecourseid', 'sourcecmid']],
             ] as $name => [$indexname, $fields]
         ) {
             $table = new xmldb_table($name);
@@ -130,55 +130,55 @@ function xmldb_local_coursefiles_upgrade(int $oldversion): bool {
                 $dbman->add_index($table, $index);
             }
         }
-        upgrade_plugin_savepoint(true, 2026100904, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026100904, 'local', 'filebank');
     }
     if ($oldversion < 2026100905) {
         $file = new xmldb_file(__DIR__ . '/install.xml');
         if (!$file->loadXMLStructure()) {
-            throw new coding_exception('Unable to load the CourseFiles XMLDB schema.');
+            throw new coding_exception('Unable to load the FileBank XMLDB schema.');
         }
-        $table = $file->getStructure()->getTable('local_coursefiles_target');
+        $table = $file->getStructure()->getTable('local_filebank_target');
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
-        upgrade_plugin_savepoint(true, 2026100905, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026100905, 'local', 'filebank');
     }
     if ($oldversion < 2026101000) {
-        $table = new xmldb_table('local_coursefiles_revision');
+        $table = new xmldb_table('local_filebank_revision');
         $index = new xmldb_index('timecreated-id', XMLDB_INDEX_NOTUNIQUE, ['timecreated', 'id']);
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
-        upgrade_plugin_savepoint(true, 2026101000, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026101000, 'local', 'filebank');
     }
     if ($oldversion < 2026101001) {
-        \local_coursefiles\local\upgrade\legacy_import::repair_tasks();
-        upgrade_plugin_savepoint(true, 2026101001, 'local', 'coursefiles');
+        \local_filebank\local\upgrade\legacy_import::repair_tasks();
+        upgrade_plugin_savepoint(true, 2026101001, 'local', 'filebank');
     }
     if ($oldversion < 2026101002) {
-        upgrade_plugin_savepoint(true, 2026101002, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026101002, 'local', 'filebank');
     }
     if ($oldversion < 2026101003) {
-        upgrade_plugin_savepoint(true, 2026101003, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026101003, 'local', 'filebank');
     }
     if ($oldversion < 2026101004) {
-        upgrade_plugin_savepoint(true, 2026101004, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026101004, 'local', 'filebank');
     }
     if ($oldversion < 2026101100) {
-        upgrade_plugin_savepoint(true, 2026101100, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026101100, 'local', 'filebank');
     }
     if ($oldversion < 2026101101) {
         foreach (['_coursepolicy' => '_policy', '_publication' => '_publish', '_attribution' => '_author'] as $old => $new) {
-            $source = new xmldb_table('local_coursefiles' . $old);
-            $target = new xmldb_table('local_coursefiles' . $new);
+            $source = new xmldb_table('local_filebank' . $old);
+            $target = new xmldb_table('local_filebank' . $new);
             if ($dbman->table_exists($source)) {
                 if ($dbman->table_exists($target)) {
-                    throw new coding_exception('Both CourseFiles table names exist: ' . $old . ' / ' . $new);
+                    throw new coding_exception('Both FileBank table names exist: ' . $old . ' / ' . $new);
                 }
-                $dbman->rename_table($source, 'local_coursefiles' . $new);
+                $dbman->rename_table($source, 'local_filebank' . $new);
             }
         }
-        upgrade_plugin_savepoint(true, 2026101101, 'local', 'coursefiles');
+        upgrade_plugin_savepoint(true, 2026101101, 'local', 'filebank');
     }
     return true;
 }

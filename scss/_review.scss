@@ -4,7 +4,7 @@
 
 /* Resulting-file review keeps names readable until the native rename modal opens. */
 
-.coursefiles-review {
+.filebank-review {
     &-form {
         display: flex;
         flex-direction: column;
@@ -19,15 +19,15 @@
     }
 }
 
-.coursefiles-tree {
+.filebank-tree {
     list-style: none;
     margin: 0;
     padding-left: 1rem;
-    border-left: 1px solid var(--coursefiles-border);
+    border-left: 1px solid var(--filebank-border);
     &-root {
         padding: .75rem;
-        border: 1px solid var(--coursefiles-border);
-        border-radius: var(--coursefiles-radius);
+        border: 1px solid var(--filebank-border);
+        border-radius: var(--filebank-radius);
     }
     &-node {
         padding: .35rem 0;
@@ -37,19 +37,19 @@
         font-weight: 600;
         overflow-wrap: anywhere;
     }
-    .coursefiles-disclosure-icon {
+    .filebank-disclosure-icon {
         width: 1.4rem;
         height: 1.4rem;
         border: 0;
     }
 }
 
-.coursefiles-tree-file {
+.filebank-tree-file {
     padding: .5rem;
     border-radius: .25rem;
     cursor: pointer;
     &:hover {
-        background: color-mix(in srgb, var(--coursefiles-primary) 5%, var(--coursefiles-surface));
+        background: color-mix(in srgb, var(--filebank-primary) 5%, var(--filebank-surface));
     }
     .badge {
         margin: .25rem 0;
@@ -60,8 +60,8 @@
     }
 }
 
-.coursefiles-review {
-    &-name [data-coursefiles-file-name] {
+.filebank-review {
+    &-name [data-filebank-file-name] {
         min-width: 0;
         overflow-wrap: anywhere;
         flex: 0 1 auto;
@@ -83,7 +83,7 @@
     }
 }
 
-.coursefiles-pencil {
+.filebank-pencil {
     &.btn {
         border: 0;
         background: transparent;
@@ -93,15 +93,15 @@
     }
 }
 
-.coursefiles-pencil.btn:hover, .coursefiles-pencil.btn:active, .coursefiles-pencil.btn:focus {
+.filebank-pencil.btn:hover, .filebank-pencil.btn:active, .filebank-pencil.btn:focus {
     border: 0;
     background: transparent;
     box-shadow: none;
 }
 
-.coursefiles-pencil {
+.filebank-pencil {
     &.btn:focus-visible {
-        outline: 2px solid var(--coursefiles-primary);
+        outline: 2px solid var(--filebank-primary);
         outline-offset: 2px;
     }
 }

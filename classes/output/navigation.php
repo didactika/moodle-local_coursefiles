@@ -17,12 +17,12 @@
 /**
  * Permission-aware page navigation.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\output;
+namespace local_filebank\output;
 
 /**
  * Defines the administration entry points and course tabs.
@@ -39,14 +39,14 @@ final class navigation {
         if (
             CLI_SCRIPT || AJAX_SCRIPT || $redirecting
                 || $PAGE->url->get_path() !== '/' . $CFG->admin . '/category.php'
-                || $PAGE->url->get_param('category') !== 'local_coursefiles'
+                || $PAGE->url->get_param('category') !== 'local_filebank'
         ) {
             return;
         }
         foreach (self::pages() as $name => $page) {
             if ($name !== 'log' && has_capability($page['capability'], \context_system::instance())) {
                 $redirecting = true;
-                redirect(new \moodle_url('/local/coursefiles/admin/' . $name . '.php'));
+                redirect(new \moodle_url('/local/filebank/admin/' . $name . '.php'));
             }
         }
     }
@@ -59,9 +59,9 @@ final class navigation {
     public static function pages(): array {
         return [
             'settings' => ['label' => 'settings', 'capability' => 'moodle/site:config'],
-            'profiles' => ['label' => 'profiles', 'capability' => 'local/coursefiles:manageprofiles'],
-            'migration' => ['label' => 'migrations', 'capability' => 'local/coursefiles:planmigration'],
-            'log' => ['label' => 'log', 'capability' => 'local/coursefiles:viewlog'],
+            'profiles' => ['label' => 'profiles', 'capability' => 'local/filebank:manageprofiles'],
+            'migration' => ['label' => 'migrations', 'capability' => 'local/filebank:planmigration'],
+            'log' => ['label' => 'log', 'capability' => 'local/filebank:viewlog'],
         ];
     }
 
@@ -75,8 +75,8 @@ final class navigation {
         $tabs = [];
         foreach (self::pages() as $name => $page) {
             if (has_capability($page['capability'], \context_system::instance())) {
-                $tabs[] = ['label' => get_string($page['label'], 'local_coursefiles'),
-                    'url' => (new \moodle_url('/local/coursefiles/admin/' . $name . '.php'))->out(false),
+                $tabs[] = ['label' => get_string($page['label'], 'local_filebank'),
+                    'url' => (new \moodle_url('/local/filebank/admin/' . $name . '.php'))->out(false),
                     'active' => $name === $active];
             }
         }
@@ -93,10 +93,10 @@ final class navigation {
     public static function course(string $active, int $courseid): view {
         $tabs = [];
         foreach (['index' => ['dashboard', 'browse'], 'policy' => ['coursepolicy', 'managecoursepolicy']] as $name => $page) {
-            if (has_capability('local/coursefiles:' . $page[1], \context_course::instance($courseid))) {
-                $tabs[] = ['label' => get_string($page[0], 'local_coursefiles'),
+            if (has_capability('local/filebank:' . $page[1], \context_course::instance($courseid))) {
+                $tabs[] = ['label' => get_string($page[0], 'local_filebank'),
                     'url' => (new \moodle_url(
-                        '/local/coursefiles/course/' . $name . '.php',
+                        '/local/filebank/course/' . $name . '.php',
                         ['courseid' => $courseid]
                     ))->out(false), 'active' => $name === $active];
             }

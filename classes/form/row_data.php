@@ -17,14 +17,14 @@
 /**
  * Profile editor with validated unsaved previews.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\form;
+namespace local_filebank\form;
 
-use local_coursefiles\local\compatibility;
+use local_filebank\local\compatibility;
 
 /**
  * Validates bounded row documents submitted by native forms.
@@ -41,13 +41,13 @@ final class row_data {
     public static function enhance(\MoodleQuickForm $form, string $name, array $columns, int $maximum): void {
         global $PAGE, $OUTPUT;
         foreach ($columns as &$column) {
-            $column['help'] = $OUTPUT->help_icon('rowfield_' . $column['key'], 'local_coursefiles');
+            $column['help'] = $OUTPUT->help_icon('rowfield_' . $column['key'], 'local_filebank');
         }
         unset($column);
         $form->getElement($name)->updateAttributes([
-            'data-coursefiles-schema' => json_encode(['columns' => $columns, 'maximum' => $maximum], JSON_UNESCAPED_UNICODE),
+            'data-filebank-schema' => json_encode(['columns' => $columns, 'maximum' => $maximum], JSON_UNESCAPED_UNICODE),
         ]);
-        $PAGE->requires->js_call_amd('local_coursefiles/row_editor', 'init', ['id_' . $name]);
+        $PAGE->requires->js_call_amd('local_filebank/row_editor', 'init', ['id_' . $name]);
     }
 
     /**
@@ -61,14 +61,14 @@ final class row_data {
         try {
             $rows = json_decode($json, true, 16, JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
-            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         if (!is_array($rows) || !compatibility::is_list($rows) || count($rows) > $maximum || strlen($json) > 131072) {
-            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         foreach ($rows as $row) {
             if (!is_array($row)) {
-                throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+                throw new \moodle_exception('invalidprofile', 'local_filebank');
             }
         }
         return $rows;

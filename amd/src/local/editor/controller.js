@@ -16,15 +16,15 @@
 /**
  * Native picker entry and documented embedded-chooser completion.
  *
- * @module local_coursefiles/local/editor/controller
+ * @module local_filebank/local/editor/controller
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {appendLinks} from 'local_coursefiles/local/editor/actions';
-import {getImportStatus} from 'local_coursefiles/local/repository';
-import {resolve} from 'local_coursefiles/local/editor/adapter';
+import {appendLinks} from 'local_filebank/local/editor/actions';
+import {getImportStatus} from 'local_filebank/local/repository';
+import {resolve} from 'local_filebank/local/editor/adapter';
 import Notification from 'core/notification';
 import {getString} from 'core/str';
 
@@ -48,7 +48,7 @@ export const watch = async(scope, editorid) => {
                 }
                 const editor = await resolve(editorid);
                 if (!editor) {
-                    Notification.alert('', await getString('editorimportfailed', 'local_coursefiles'));
+                    Notification.alert('', await getString('editorimportfailed', 'local_filebank'));
                     return;
                 }
                 if (appendLinks(editor, result)) {

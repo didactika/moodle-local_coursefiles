@@ -3,14 +3,14 @@
 
 /**
  * form listeners.
- * @module local_coursefiles/local/form/listeners
+ * @module local_filebank/local/form/listeners
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_coursefiles/local/form/selectors';
-import {listen} from 'local_coursefiles/local/listeners';
+import Selectors from 'local_filebank/local/form/selectors';
+import {listen} from 'local_filebank/local/listeners';
 
 /**
  * Delegated events also cover rows appended after initialization.

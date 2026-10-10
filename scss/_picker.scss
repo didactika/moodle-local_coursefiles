@@ -4,7 +4,7 @@
 
 /* The embedded host has a stable viewport; only results scroll. */
 
-.coursefiles-native-host {
+.filebank-native-host {
     .fp-navbar {
         display: none;
     }
@@ -19,30 +19,30 @@
     }
 }
 
-body.coursefiles-embedded, .coursefiles-embedded #page,
-.coursefiles-embedded #page-content, .coursefiles-embedded #region-main {
-    background: var(--coursefiles-host-background, #fff);
+body.filebank-embedded, .filebank-embedded #page,
+.filebank-embedded #page-content, .filebank-embedded #region-main {
+    background: var(--filebank-host-background, #fff);
 }
 
-.coursefiles-embedded {
+.filebank-embedded {
     overflow: hidden;
     #page {
         padding: 0;
     }
-    .coursefiles-browser {
+    .filebank-browser {
         height: calc(100dvh - .5rem);
         display: flex;
         flex-direction: column;
         min-height: 0;
-        background: var(--coursefiles-host-background, #fff);
+        background: var(--filebank-host-background, #fff);
     }
 }
 
-.coursefiles-browser {
+.filebank-browser {
     > * {
         flex-shrink: 0;
     }
-    .coursefiles-results {
+    .filebank-results {
         flex: 1 1 auto;
         min-height: 5rem;
         overflow: auto;
@@ -50,11 +50,11 @@ body.coursefiles-embedded, .coursefiles-embedded #page,
     }
 }
 
-.coursefiles-footer {
-    background: var(--coursefiles-host-background, var(--coursefiles-surface));
+.filebank-footer {
+    background: var(--filebank-host-background, var(--filebank-surface));
 }
 
-.coursefiles-filterbar {
+.filebank-filterbar {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: .4rem .6rem;
@@ -63,12 +63,12 @@ body.coursefiles-embedded, .coursefiles-embedded #page,
     }
 }
 
-.coursefiles-filterbar .form-control, .coursefiles-filterbar select {
+.filebank-filterbar .form-control, .filebank-filterbar select {
     width: 100%;
     min-width: 0;
 }
 
-.coursefiles-filterbar {
+.filebank-filterbar {
     label {
         margin-bottom: .15rem;
         font-size: .75rem;

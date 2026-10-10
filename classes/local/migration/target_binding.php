@@ -17,14 +17,14 @@
 /**
  * Reviewed immutable family migration planning.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\migration;
+namespace local_filebank\local\migration;
 
-use local_coursefiles\local\profile\profile_config;
+use local_filebank\local\profile\profile_config;
 
 /**
  * Creates a destination once, from an immutable reviewed definition.
@@ -45,14 +45,14 @@ final class target_binding {
         $value = $predicate['equals'] ?? (isset($predicate['template'])
             ? profile_config::template($predicate['template'], $captures) : null);
         if (!is_string($value) || $value === '' || \core_text::strlen($value) > 255) {
-            throw new \moodle_exception('creationnamerequired', 'local_coursefiles');
+            throw new \moodle_exception('creationnamerequired', 'local_filebank');
         }
         $section = $DB->get_record('course_sections', ['id' => $sectionid, 'course' => $courseid], '*', MUST_EXIST);
         return ['cmid' => 0, 'courseid' => $courseid, 'sectionid' => $sectionid, 'sectionname' => $section->name,
             'sectionnum' => (int)$section->section, 'name' => $field === 'name' ? $value : $captures['name'],
             'idnumber' => $field === 'idnumber' ? $value : '', 'visible' => 1, 'availability' => null,
             'sectionvisible' => (int)$section->visible, 'sectionavailability' => $section->availability,
-            'authorlocked' => \local_coursefiles\local\policy\author_policy::locked($courseid)];
+            'authorlocked' => \local_filebank\local\policy\author_policy::locked($courseid)];
     }
 
     /**
@@ -66,17 +66,17 @@ final class target_binding {
     public static function resolve(int $planid, string $key, array $definition): array {
         global $CFG, $DB;
         if (!hash_equals($key, hash('sha256', json_encode($definition)))) {
-            throw new \moodle_exception('planstale', 'local_coursefiles');
+            throw new \moodle_exception('planstale', 'local_filebank');
         }
-        $binding = $DB->get_record('local_coursefiles_target', ['planid' => $planid, 'targetkey' => $key], '*', MUST_EXIST);
+        $binding = $DB->get_record('local_filebank_target', ['planid' => $planid, 'targetkey' => $key], '*', MUST_EXIST);
         if (json_decode($binding->definitionjson, true) !== $definition) {
-            throw new \moodle_exception('planstale', 'local_coursefiles');
+            throw new \moodle_exception('planstale', 'local_filebank');
         }
         require_capability('moodle/course:manageactivities', \context_course::instance($definition['courseid']));
         if ($binding->cmid) {
             $actual = placement::snapshot((int)$binding->cmid);
             if ($actual !== json_decode($binding->snapshotjson, true)) {
-                throw new \moodle_exception('planstale', 'local_coursefiles');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
             return $actual;
         }
@@ -87,9 +87,9 @@ final class target_binding {
             $section->name !== $definition['sectionname'] || (int)$section->section !== $definition['sectionnum']
             || (int)$section->visible !== $definition['sectionvisible']
             || $section->availability !== $definition['sectionavailability']
-                || \local_coursefiles\local\policy\author_policy::locked($definition['courseid']) !== $definition['authorlocked']
+                || \local_filebank\local\policy\author_policy::locked($definition['courseid']) !== $definition['authorlocked']
         ) {
-            throw new \moodle_exception('planstale', 'local_coursefiles');
+            throw new \moodle_exception('planstale', 'local_filebank');
         }
         foreach (get_fast_modinfo($definition['courseid'])->get_cms() as $cm) {
             if (
@@ -97,7 +97,7 @@ final class target_binding {
                 && ($definition['idnumber'] !== '' ? $cm->idnumber === $definition['idnumber']
                     : $cm->name === $definition['name'])
             ) {
-                throw new \moodle_exception('planstale', 'local_coursefiles');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
         }
         require_once($CFG->dirroot . '/course/modlib.php');
@@ -111,7 +111,7 @@ final class target_binding {
         $binding->cmid = $module->coursemodule;
         $actual = placement::snapshot((int)$binding->cmid);
         $binding->snapshotjson = json_encode($actual);
-        $DB->update_record('local_coursefiles_target', $binding);
+        $DB->update_record('local_filebank_target', $binding);
         $transaction->allow_commit();
         return $actual;
     }

@@ -4,21 +4,21 @@
 
 /* Light result placeholders leave surrounding controls and dimensions intact. */
 
-.coursefiles-loading {
+.filebank-loading {
     pointer-events: none;
 }
 
-.coursefiles-skeleton {
+.filebank-skeleton {
     display: none;
 }
 
-.coursefiles-loading > .coursefiles-cards, .coursefiles-loading > .coursefiles-empty,
-.coursefiles-loading > .coursefiles-pagination {
+.filebank-loading > .filebank-cards, .filebank-loading > .filebank-empty,
+.filebank-loading > .filebank-pagination {
     display: none;
 }
 
-.coursefiles-loading {
-    > .coursefiles-skeleton {
+.filebank-loading {
+    > .filebank-skeleton {
         display: grid;
         height: 100%;
         align-content: start;
@@ -27,24 +27,24 @@
     }
 }
 
-.coursefiles-skeleton {
+.filebank-skeleton {
     span {
-        border-radius: var(--coursefiles-radius);
+        border-radius: var(--filebank-radius);
         min-height: 7rem;
-        background: color-mix(in srgb, var(--coursefiles-border) 35%, var(--coursefiles-surface));
-        animation: coursefiles-pulse 1s ease-in-out infinite alternate;
+        background: color-mix(in srgb, var(--filebank-border) 35%, var(--filebank-surface));
+        animation: filebank-pulse 1s ease-in-out infinite alternate;
     }
 }
 
-.coursefiles-browser {
+.filebank-browser {
     &[data-layout=list] {
-        .coursefiles-skeleton {
+        .filebank-skeleton {
             grid-template-columns: 1fr;
         }
     }
 }
 
-@keyframes coursefiles-pulse {
+@keyframes filebank-pulse {
     to {
         opacity: .45;
     }

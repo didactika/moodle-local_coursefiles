@@ -17,12 +17,12 @@
 /**
  * Native profile fields backed by an existing validated document.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\profile;
+namespace local_filebank\local\profile;
 
 /**
  * Preserves advanced keys while editing the commonly used rules.
@@ -84,7 +84,7 @@ final class guided_config {
             $dimensions = array_values(array_unique(array_filter(array_map('trim', explode(',', $data['pairdimensions'])))));
             foreach ($dimensions as $dimension) {
                 if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/', $dimension)) {
-                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+                    throw new \moodle_exception('invalidprofile', 'local_filebank');
                 }
             }
             $config['relationship']['pair_dimensions'] = $dimensions;
@@ -97,7 +97,7 @@ final class guided_config {
                 ] as $key => $values
             ) {
                 if (!in_array($data[$key] ?? '', $values, true)) {
-                    throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+                    throw new \moodle_exception('invalidprofile', 'local_filebank');
                 }
             }
             $config['publication']['mode'] = $data['publicationmode'];

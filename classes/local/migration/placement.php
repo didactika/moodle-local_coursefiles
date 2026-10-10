@@ -17,15 +17,15 @@
 /**
  * Configurable unique course section and folder placement.
  *
- * @package local_coursefiles
+ * @package local_filebank
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_coursefiles\local\migration;
+namespace local_filebank\local\migration;
 
-use local_coursefiles\local\profile\profile_config;
-use local_coursefiles\local\policy\author_policy;
+use local_filebank\local\profile\profile_config;
+use local_filebank\local\policy\author_policy;
 
 /**
  * Selects exact destinations without guessing across course-local IDs.
@@ -45,7 +45,7 @@ final class placement {
         }
         $field = $predicate['field'] ?? 'name';
         if (!in_array($field, ['name', 'idnumber'], true)) {
-            throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         $value = (string)$cm->{$field};
         if (isset($predicate['equals'])) {
@@ -62,11 +62,11 @@ final class placement {
                 . substr($predicate['pattern'], 1);
             $result = @preg_match($pattern, $value, $matches, PREG_UNMATCHED_AS_NULL);
             if ($result === false) {
-                throw new \moodle_exception('regexfailed', 'local_coursefiles');
+                throw new \moodle_exception('regexfailed', 'local_filebank');
             }
             return $result ? array_filter($matches, static fn($key) => is_string($key), ARRAY_FILTER_USE_KEY) : null;
         }
-        throw new \moodle_exception('invalidprofile', 'local_coursefiles');
+        throw new \moodle_exception('invalidprofile', 'local_filebank');
     }
 
     /**
@@ -94,10 +94,10 @@ final class placement {
         } else if ($strategy === 'ordinal') {
             $matches = $DB->get_records('course_sections', ['course' => $targetcourse, 'section' => $section->section]);
         } else {
-            throw new \moodle_exception('placementambiguous', 'local_coursefiles');
+            throw new \moodle_exception('placementambiguous', 'local_filebank');
         }
         if (count($matches) !== 1) {
-            throw new \moodle_exception('placementambiguous', 'local_coursefiles');
+            throw new \moodle_exception('placementambiguous', 'local_filebank');
         }
         return (int)reset($matches)->id;
     }

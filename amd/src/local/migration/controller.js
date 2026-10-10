@@ -4,15 +4,15 @@
 /**
  * Initialize the feature actions and event listeners.
  *
- * @module local_coursefiles/local/migration/controller
+ * @module local_filebank/local/migration/controller
  * @copyright 2026 Didactika.org
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Selectors from 'local_coursefiles/local/migration/selectors';
-import {createActions} from 'local_coursefiles/local/migration/actions';
-import {registerListeners} from 'local_coursefiles/local/migration/listeners';
+import Selectors from 'local_filebank/local/migration/selectors';
+import {createActions} from 'local_filebank/local/migration/actions';
+import {registerListeners} from 'local_filebank/local/migration/listeners';
 
 /**
  * Enhance the native server-rendered view.

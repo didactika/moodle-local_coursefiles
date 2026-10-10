@@ -4,13 +4,13 @@
 
 /* Native chevrons replace browser disclosure markers. */
 
-.coursefiles-admin details, .coursefiles-log details {
-    border: 1px solid var(--coursefiles-border);
-    border-radius: var(--coursefiles-radius);
+.filebank-admin details, .filebank-log details {
+    border: 1px solid var(--filebank-border);
+    border-radius: var(--filebank-radius);
     padding: .65rem .85rem;
 }
 
-.coursefiles-browser summary, .coursefiles-admin summary, .coursefiles-log summary {
+.filebank-browser summary, .filebank-admin summary, .filebank-log summary {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -18,16 +18,16 @@
     cursor: pointer;
 }
 
-.coursefiles-browser summary::-webkit-details-marker,
-.coursefiles-admin summary::-webkit-details-marker, .coursefiles-log summary::-webkit-details-marker {
+.filebank-browser summary::-webkit-details-marker,
+.filebank-admin summary::-webkit-details-marker, .filebank-log summary::-webkit-details-marker {
     display: none;
 }
 
-.coursefiles-disclosure-icon {
+.filebank-disclosure-icon {
     display: inline-flex;
     width: 1.8rem;
     height: 1.8rem;
-    border: 1px solid var(--coursefiles-border);
+    border: 1px solid var(--filebank-border);
     border-radius: .5rem;
     align-items: center;
     justify-content: center;
@@ -39,7 +39,7 @@
     }
 }
 
-details[open] > summary > .coursefiles-disclosure-icon .icon {
+details[open] > summary > .filebank-disclosure-icon .icon {
     transform: rotate(90deg);
 }
 
