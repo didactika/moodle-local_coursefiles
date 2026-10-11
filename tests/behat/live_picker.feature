@@ -21,6 +21,14 @@ Feature: Stable native selection with the configured repository name
     When I press FileBank action "Clear selection"
     Then FileBank should have "0" selected files
 
+  @picker_presentation
+  Scenario: Switching repositories restores the native header and content size
+    Then FileBank presentation should follow the active native repository
+    When I press FileBank action "Select all"
+    And I press FileBank action "Review selection"
+    Then the FileBank review should use compact selectable rows
+    And FileBank should retain its expanded review panel
+
   Scenario: Typing remains active and the modal does not resize while results reload
     When I filter FileBank while its results are loading
     Then I should see "1" FileBank file cards named "notes2025.txt"
