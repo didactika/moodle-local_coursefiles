@@ -30,6 +30,20 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
  */
 class behat_local_filebank extends behat_base {
     /**
+     * Upload generated test data through Moodle's actual upload repository.
+     *
+     * @When /^I upload a generated FileBank profile to "([^"\\]*)" filemanager$/
+     * @param string $field Native filemanager label.
+     */
+    public function upload_profile_fixture(string $field): void {
+        $generator = testing_util::get_data_generator()->get_plugin_generator('local_filebank');
+        $directory = make_request_directory();
+        $path = $directory . '/test-profile.json';
+        file_put_contents($path, json_encode($generator->create_profile_config()));
+        $this->execute('behat_repository_upload::i_upload_file_to_filemanager', [$path, $field]);
+    }
+
+    /**
      * Native repository changes restore the header and size before reopening the embedded chooser.
      * @Then /^FileBank presentation should follow the active native repository$/
      */
@@ -233,10 +247,11 @@ class behat_local_filebank extends behat_base {
                 . 'const fits=controls.every(control=>{const rect=control.getBoundingClientRect();'
                 . 'return rect.width>0&&rect.left>=bounds.left-1&&rect.right<=bounds.right+1;});'
                 . 'const aligned=[...editor.querySelectorAll("tbody tr")].every(row=>{'
-                . 'if(getComputedStyle(row).display!=="grid"||getComputedStyle(row).gridTemplateColumns.split(" ").length!==2)'
-                . '{return true;}const fields=[...row.querySelectorAll("[data-field]")];'
-                . 'return fields.every((input,index)=>index%2===1||!fields[index+1]||'
-                . 'Math.abs(input.getBoundingClientRect().bottom-fields[index+1].getBoundingClientRect().bottom)<2);});'
+                . 'const columns=getComputedStyle(row).gridTemplateColumns.split(" ").length;'
+                . 'const fields=[...row.querySelectorAll("[data-field]")];'
+                . 'return fields.every((input,index)=>index%columns===0||'
+                . 'Math.abs(input.getBoundingClientRect().bottom-'
+                . 'fields[index-index%columns].getBoundingClientRect().bottom)<2);});'
                 . 'return JSON.stringify({fits,aligned,'
                 . 'page:document.documentElement.scrollWidth-document.documentElement.clientWidth,'
                 . 'overflow:editor.scrollWidth-editor.clientWidth,width:innerWidth,'
@@ -311,7 +326,10 @@ class behat_local_filebank extends behat_base {
             . 'const menu=toggle.querySelector(".filebank-filter-menu");'
             . 'const bounded=menu.getBoundingClientRect().height<=353'
             . '&&doc.defaultView.getComputedStyle(menu).overflowY==="auto";'
-            . 'toggle.open=false;return aligned&&centered&&bounded;})()'
+            . 'const input=doc.querySelector("#mpq"),summary=toggle.querySelector("summary");'
+            . 'const filtersAligned=Math.abs(input.getBoundingClientRect().bottom'
+            . '-summary.getBoundingClientRect().bottom)<2;'
+            . 'toggle.open=false;return aligned&&centered&&bounded&&filtersAligned;})()'
         );
         if (!$correct) {
             throw new \Exception('Native card names, folder navigation or filter menu do not follow the compact layout.');
@@ -1132,7 +1150,6 @@ class behat_local_filebank extends behat_base {
         $this->back_to_selection();
     }
 
-
     /**
      * Navigate an actual source folder without changing its selection.
      *
@@ -1232,7 +1249,6 @@ class behat_local_filebank extends behat_base {
         );
         $this->wait_for_browser();
     }
-
 
     /**
      * Use a real native instance name before rendering the owning activity.

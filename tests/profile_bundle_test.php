@@ -128,6 +128,6 @@ final class profile_bundle_test extends \advanced_testcase {
     private function config(): array {
         $this->resetAfterTest();
         $this->setAdminUser();
-        return json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        return $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
     }
 }

@@ -160,12 +160,12 @@ final class profile_config_test extends \advanced_testcase {
     }
 
     /**
-     * Load the institutional preset.
+     * Build the matching test configuration.
      *
      * @return array Document.
      */
     private function config(): array {
-        return json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        return $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
     }
 
     /**

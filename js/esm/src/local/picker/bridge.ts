@@ -24,11 +24,11 @@
 
 import type {ApprovedFile} from '@moodle/lms/local_filebank/local/contracts';
 import Selectors from '@moodle/lms/local_filebank/local/selectors';
-import {listen, eventElement} from '@moodle/lms/local_filebank/local/listeners';
+import {eventElement} from '@moodle/lms/local_filebank/local/listeners';
 
 type HostObject = HTMLObjectElement & {filebankPresentationCleanup?: () => void};
 
-let hostObject: HostObject | null = null;
+
 
 /**
  * Apply native host styling only while this embedded chooser owns its panel.
@@ -45,49 +45,17 @@ export const presentation = () => {
     const object = [...parent.document.querySelectorAll<HostObject>(Selectors.hostObjects)]
         .find(element => element.contentDocument?.defaultView === window);
     const picker = object?.closest('.file-picker');
-    if (!object || !picker || hostObject === object) {
+    if (!object || !picker) {
         return;
     }
-    // Only the connected embedded chooser owns this presentation marker.
-    object.filebankPresentationCleanup?.();
-    picker.classList.add('filebank-native-host');
+    window.parent.require(['local_filebank/local/picker_host'], (adapter: {mount(object: HTMLObjectElement): void}) => adapter.mount(object));
     document.body.classList.add('filebank-embedded');
     const surface = picker.querySelector<HTMLElement>(Selectors.pickerSurface)!;
     const background = parent.getComputedStyle(surface).backgroundColor;
     if (background !== 'rgba(0, 0, 0, 0)') {
         document.body.style.setProperty('--filebank-host-background', background);
     }
-    const repositories = picker.querySelector<HTMLElement>(Selectors.repositories)!;
-    const active = repositories?.querySelector<HTMLElement>(Selectors.activeRepository);
-    const revealRepository = () => {
-        if (active && parent.innerWidth < 576) {
-            repositories.scrollLeft = active.offsetLeft - repositories.offsetLeft;
-        }
-    };
-    revealRepository();
-    listen(parent, 'resize', revealRepository);
-    hostObject = object;
-    // Observe from the parent realm: removing an object may unload its document before its observer runs.
-    const observer = new parent.MutationObserver(() => {
-        if (!object.isConnected) {
-            release();
-        }
-    });
-    const release = () => {
-        observer.disconnect();
-        parent.removeEventListener('resize', revealRepository);
-        picker.classList.remove('filebank-native-host');
-        hostObject = null;
-        delete object.filebankPresentationCleanup;
-    };
-    object.filebankPresentationCleanup = release;
-    observer.observe(surface, {childList: true});
-    listen(window, 'pagehide', () => {
-        parent.removeEventListener('resize', revealRepository);
-        if (!object.isConnected) {
-            release();
-        }
-    }, {once: true});
+
 };
 
 /**
