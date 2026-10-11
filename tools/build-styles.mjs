@@ -19,14 +19,67 @@ if (!core) {
     throw new Error('Usage: node tools/build-styles.mjs <Moodle checkout> [--check]');
 }
 const require = createRequire(resolve(core, 'package.json'));
-const sass = require('sass');
 const plugin = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const compiled = sass.compile(resolve(plugin, 'styles.scss'), {style: 'expanded', charset: false});
-const output = '/* Generated from styles.scss. Edit the SCSS component sources and rebuild. */\n' + compiled.css + '\n';
+let compiled;
+try {
+    compiled = require('sass').compile(resolve(plugin, 'styles.scss'), {style: 'expanded', charset: false}).css;
+} catch (error) {
+    if (error.code !== 'MODULE_NOT_FOUND') {
+        throw error;
+    }
+    compiled = require('node-sass').renderSync({file: resolve(plugin, 'styles.scss'), outputStyle: 'expanded'}).css.toString();
+}
+// LibSass treats lowercase min() as Sass arithmetic; source CSS uses Min() to preserve mixed units.
+compiled = compiled.replace(/\bMin\(/g, 'min(');
+const postcss = require('postcss');
+const tree = postcss.parse(compiled);
+tree.walkDecls(declaration => {
+    declaration.value = declaration.value.replace(/(^|[\s,(])(-?)\.(\d+)/g,
+        (_match, prefix, sign, digits) => prefix + sign + '0.' + digits);
+    if (declaration.prop === 'grid-column') {
+        declaration.value = declaration.value.replace(/\s*\/\s*/g, ' / ');
+    }
+});
+tree.walk(node => {
+    if (node.type === 'rule' || node.type === 'atrule') {
+        node.raws.before = node.prev()?.type === 'comment' && node.prev().text.includes('stylelint-disable-next-line')
+            ? '\n' : '\n\n';
+    }
+});
+compiled = tree.toString();
 const target = resolve(plugin, 'styles.css');
+const result = await require('stylelint').lint({
+    code: '/* Generated from styles.scss. Edit the SCSS component sources and rebuild. */\n'
+        + '/* Moodle 4.0 and later cores disagree on decimal formatting; use the current leading-zero style. */\n'
+        + '/* stylelint-disable number-leading-zero */\n' + compiled + '\n',
+    codeFilename: target, configFile: resolve(core, '.stylelintrc'), fix: true,
+});
+if (result.errored) {
+    throw new Error('Generated styles do not pass Moodle stylelint: ' + JSON.stringify(result.results.map(item => item.warnings)));
+}
+const output = result.code ?? result.output;
+const fingerprint = css => {
+    const nodeData = node => {
+        const data = {};
+        for (const field of ['type', 'name', 'params', 'selector', 'prop', 'value', 'important']) {
+            if (node[field] !== undefined) {
+                data[field] = node[field];
+            }
+        }
+        if (node.nodes) {
+            data.nodes = node.nodes.filter(child => child.type !== 'comment').map(nodeData);
+        }
+        return data;
+    };
+    return JSON.stringify(nodeData(postcss.parse(css)));
+};
 if (args.includes('--check')) {
-    if (readFileSync(target, 'utf8') !== output) {
+    if (fingerprint(readFileSync(target, 'utf8')) !== fingerprint(output)) {
         throw new Error('styles.css is out of date. Run tools/build-styles.mjs without --check.');
+    }
+    const shipped = await require('stylelint').lint({files: target, configFile: resolve(core, '.stylelintrc')});
+    if (shipped.errored || shipped.results.some(item => item.warnings.length)) {
+        throw new Error('Shipped styles do not pass Moodle stylelint: ' + JSON.stringify(shipped.results.map(item => item.warnings)));
     }
 } else {
     writeFileSync(target, output);

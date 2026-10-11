@@ -78,6 +78,8 @@
             box-shadow: none;
         }
         .filebank-card .card-body {
+            /* Tree layout must override the shared Boost card utilities. */
+            /* stylelint-disable-next-line declaration-no-important */
             align-items: center !important;
         }
         .filebank-card input {
@@ -95,6 +97,8 @@
             gap: .5rem;
         }
         .filebank-card-kind {
+            /* Tree layout must override the shared Boost card utilities. */
+            /* stylelint-disable-next-line declaration-no-important */
             margin-bottom: 0 !important;
         }
         .filebank-card-kind .filebank-chip {
@@ -104,8 +108,14 @@
             margin-bottom: 0;
         }
         .filebank-card-meta {
+            /* Tree layout must override the shared Boost card utilities. */
+            /* stylelint-disable-next-line declaration-no-important */
             border-top: 0 !important;
+            /* Tree layout must override the shared Boost card utilities. */
+            /* stylelint-disable-next-line declaration-no-important */
             margin-top: 0 !important;
+            /* Tree layout must override the shared Boost card utilities. */
+            /* stylelint-disable-next-line declaration-no-important */
             padding-top: 0 !important;
             min-height: 0;
         }

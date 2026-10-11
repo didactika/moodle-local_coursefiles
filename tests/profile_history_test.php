@@ -38,6 +38,10 @@ use local_filebank\local\selection\selection_limits;
  * @covers \local_filebank\local\migration\plan_history
  * @covers \local_filebank\local\selection\selection_limits
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\profile\profile_history::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\profile\profile_bundle::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\plan_history::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\selection\selection_limits::class)]
 final class profile_history_test extends \advanced_testcase {
     /**
      * Restore one identity and transport all retained versions with their dates.

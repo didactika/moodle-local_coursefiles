@@ -74,6 +74,8 @@
 }
 
 .filebank-row-editor {
+    /* Valid modern CSS is absent from older Moodle validator grammars. */
+    /* stylelint-disable-next-line csstree/validator, property-no-unknown */
     container-type: inline-size;
     width: 100%;
     min-width: 0;
@@ -108,7 +110,9 @@
     }
     tbody tr {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+        /* Valid modern CSS is absent from older Moodle validator grammars. */
+        /* stylelint-disable-next-line csstree/validator */
+        grid-template-columns: repeat(auto-fit, minmax(Min(100%, 10rem), 1fr));
         gap: .5rem;
         padding: .75rem 0;
         border-bottom: 1px solid var(--filebank-border);
@@ -189,10 +193,12 @@
     position: absolute;
     inset-inline-end: 0;
     top: calc(100% + .4rem);
-    width: min(24rem, 85vw);
+    /* Valid modern CSS is absent from older Moodle validator grammars. */
+    /* stylelint-disable-next-line csstree/validator */
+    width: Min(24rem, 85vw);
     border: 1px solid var(--filebank-border);
     border-radius: .5rem;
-    box-shadow: 0 .3rem 1rem #0002;
+    box-shadow: 0 .3rem 1rem rgba(0, 0, 0, .13);
     padding: 1rem;
     background: var(--filebank-surface);
     z-index: 5;

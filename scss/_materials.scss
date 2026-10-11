@@ -6,7 +6,9 @@
 
 .filebank-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    /* Valid modern CSS is absent from older Moodle validator grammars. */
+    /* stylelint-disable-next-line csstree/validator */
+    grid-template-columns: repeat(auto-fit, minmax(Min(100%, 12rem), 1fr));
     gap: .5rem;
     align-content: start;
 }
@@ -20,6 +22,8 @@
     }
     input[type=checkbox] {
         margin-top: .3rem;
+        /* The native checkbox uses the theme color where supported. */
+        /* stylelint-disable-next-line csstree/validator, property-no-unknown */
         accent-color: var(--filebank-primary);
         width: 1.1rem;
         height: 1.1rem;
@@ -151,8 +155,12 @@
         border: 0;
     }
     &-filters .filebank-filter-menu {
-        width: min(38rem, 100%);
-        max-height: min(55vh, 22rem);
+        /* Valid modern CSS is absent from older Moodle validator grammars. */
+        /* stylelint-disable-next-line csstree/validator */
+        width: Min(38rem, 100%);
+        /* Valid modern CSS is absent from older Moodle validator grammars. */
+        /* stylelint-disable-next-line csstree/validator */
+        max-height: Min(55vh, 22rem);
         overflow: auto;
         top: 100%;
         background: var(--filebank-host-background, #fff);
