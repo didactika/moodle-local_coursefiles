@@ -365,6 +365,37 @@ final class draft_import_test extends \advanced_testcase {
     }
 
     /**
+     * Long source names fit the native path field without separating a parent from ordinary subfolders.
+     */
+    public function test_long_paths_are_compacted_before_native_copy(): void {
+        global $DB, $USER;
+        [$profileid, $target, $folder, , $draftid] = $this->fixture();
+        $DB->set_field('folder', 'name', str_repeat('Materials ', 24), ['id' => $folder->id]);
+        $base = '/' . str_repeat('Destination ', 15) . '/';
+        get_file_storage()->create_directory(\context_user::instance($USER->id)->id, 'user', 'draft', $draftid, $base);
+        $items = [['cmid' => $folder->cmid, 'filepath' => '/']];
+        $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS, $base, 'folder');
+        $this->assertCount(2, $review['operations']);
+        foreach ($review['operations'] as $operation) {
+            $this->assertLessThanOrEqual(255, \core_text::strlen($operation['filepath']));
+            $this->assertStringStartsWith($base, $operation['filepath']);
+        }
+        $this->assertStringStartsWith($review['operations'][0]['filepath'], $review['operations'][1]['filepath']);
+        draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest'], $base, 'folder');
+        foreach ($review['operations'] as $operation) {
+            $file = get_file_storage()->get_file(
+                \context_user::instance($USER->id)->id,
+                'user',
+                'draft',
+                $draftid,
+                $operation['filepath'],
+                $operation['filename']
+            );
+            $this->assertSame($operation['filename'], $file->get_content());
+        }
+    }
+
+    /**
      * Create real source folders and an existing native destination draft.
      *
      * @return array Profile, target, source module, files, draft and destination module.
