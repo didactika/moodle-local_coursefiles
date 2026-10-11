@@ -734,13 +734,15 @@ class behat_local_filebank extends behat_base {
         if (
             !$this->getSession()->wait(
                 10000,
-                '!!document.querySelector("button[data-mce-name=tiny_link_link],button.atto_link_button")'
+                '!!document.querySelector("button[data-mce-name=tiny_link_link],button.tox-tbtn[aria-label^=Link],'
+                . 'button.atto_link_button")'
             )
         ) {
             throw new \Exception('The native editor did not initialize.');
         }
         $this->getSession()->getDriver()->executeScript(
-            'const button=document.querySelector("button[data-mce-name=tiny_link_link],button.atto_link_button");'
+            'const button=document.querySelector("button[data-mce-name=tiny_link_link],button.tox-tbtn[aria-label^=Link],'
+            . 'button.atto_link_button");'
             . 'if(!button){throw new Error("Native Link toolbar action unavailable");}button.click();'
         );
         if (!$this->getSession()->wait(10000, '!!document.querySelector(".openlinkbrowser")')) {
