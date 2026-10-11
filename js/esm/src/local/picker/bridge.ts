@@ -26,8 +26,9 @@ import type {ApprovedFile} from '@moodle/lms/local_filebank/local/contracts';
 import Selectors from '@moodle/lms/local_filebank/local/selectors';
 import {listen, eventElement} from '@moodle/lms/local_filebank/local/listeners';
 
-let hostObject: HTMLObjectElement | null = null;
-let hostObserver: MutationObserver | null = null;
+type HostObject = HTMLObjectElement & {filebankPresentationCleanup?: () => void};
+
+let hostObject: HostObject | null = null;
 
 /**
  * Apply native host styling only while this embedded chooser owns its panel.
@@ -40,46 +41,52 @@ export const presentation = () => {
     if (window.parent === window) {
         return;
     }
-    const object = [...window.parent.document.querySelectorAll<HTMLObjectElement>(Selectors.hostObjects)]
+    const parent = window.parent as Window & typeof globalThis;
+    const object = [...parent.document.querySelectorAll<HostObject>(Selectors.hostObjects)]
         .find(element => element.contentDocument?.defaultView === window);
     const picker = object?.closest('.file-picker');
     if (!object || !picker || hostObject === object) {
         return;
     }
+    // Only the connected embedded chooser owns this presentation marker.
+    object.filebankPresentationCleanup?.();
     picker.classList.add('filebank-native-host');
     document.body.classList.add('filebank-embedded');
     const surface = picker.querySelector<HTMLElement>(Selectors.pickerSurface)!;
-    const background = window.parent.getComputedStyle(surface).backgroundColor;
+    const background = parent.getComputedStyle(surface).backgroundColor;
     if (background !== 'rgba(0, 0, 0, 0)') {
         document.body.style.setProperty('--filebank-host-background', background);
     }
     const repositories = picker.querySelector<HTMLElement>(Selectors.repositories)!;
     const active = repositories?.querySelector<HTMLElement>(Selectors.activeRepository);
     const revealRepository = () => {
-        if (active && window.parent.innerWidth < 576) {
+        if (active && parent.innerWidth < 576) {
             repositories.scrollLeft = active.offsetLeft - repositories.offsetLeft;
         }
     };
     revealRepository();
-    listen(window.parent, 'resize', revealRepository);
-    // Keep styling across browser/review navigation, but release it when another repository takes over.
-    hostObserver?.disconnect();
+    listen(parent, 'resize', revealRepository);
     hostObject = object;
-    hostObserver = new MutationObserver(() => {
+    // Observe from the parent realm: removing an object may unload its document before its observer runs.
+    const observer = new parent.MutationObserver(() => {
         if (!object.isConnected) {
-            picker.classList.remove('filebank-native-host');
-            hostObserver?.disconnect();
-            hostObject = null;
-            window.parent.removeEventListener('resize', revealRepository);
+            release();
         }
     });
-    hostObserver.observe(picker, {childList: true, subtree: true});
+    const release = () => {
+        observer.disconnect();
+        parent.removeEventListener('resize', revealRepository);
+        picker.classList.remove('filebank-native-host');
+        hostObject = null;
+        delete object.filebankPresentationCleanup;
+    };
+    object.filebankPresentationCleanup = release;
+    observer.observe(surface, {childList: true});
     listen(window, 'pagehide', () => {
+        parent.removeEventListener('resize', revealRepository);
         if (!object.isConnected) {
-            picker.classList.remove('filebank-native-host');
+            release();
         }
-        hostObserver?.disconnect();
-        window.parent.removeEventListener('resize', revealRepository);
     }, {once: true});
 };
 
