@@ -13,7 +13,7 @@
 import Common from 'local_filebank/local/selectors';
 
 export default {
-    continue: Common.continue,
+    "continue": Common.continue,
     digest: Common.digest,
     empty: Common.empty,
     excluded: Common.excluded,

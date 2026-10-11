@@ -24,8 +24,6 @@
 
 import Selectors from 'local_filebank/local/selectors';
 
-
-
 /**
  * Apply native host styling only while this embedded chooser owns its panel.
  */

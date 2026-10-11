@@ -22,7 +22,7 @@ import Fragment from 'core/fragment';
  * @returns {Promise<Object>} Rendered HTML and template JavaScript.
  */
 export const loadFragment = (name, contextid, args) => new Promise((resolve, reject) => {
-    Fragment.loadFragment('local_filebank', name, contextid, args)
+    return Fragment.loadFragment('local_filebank', name, contextid, args)
         .then((html, js) => resolve({html, js: js || ''}), reject);
 });
 

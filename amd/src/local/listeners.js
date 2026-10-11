@@ -17,5 +17,6 @@
  * @param {string} type Native event name.
  * @param {Function} handler Controller handler retaining its local state.
  * @param {Object|boolean} options Native listener options.
+ * @returns {undefined} Native event registration result.
  */
 export const listen = (root, type, handler, options) => root.addEventListener(type, handler, options);

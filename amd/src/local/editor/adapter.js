@@ -35,8 +35,8 @@ export const resolve = async editorid => {
     if (legacy) {
         return legacy;
     }
-    return new Promise(resolveEditor => {
-        window.require(['editor_tiny/editor'], module => resolveEditor(module.getInstanceForElementId(editorid)),
-            () => resolveEditor(null));
+    return new Promise(resolve => {
+        window.require(['editor_tiny/editor'], module => resolve(module.getInstanceForElementId(editorid)),
+            () => resolve(null));
     });
 };

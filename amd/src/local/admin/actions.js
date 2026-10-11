@@ -30,10 +30,11 @@ import {getStrings} from 'local_filebank/local/strings';
  * Create state and actions for one bulk form.
  *
  * @param {HTMLFormElement} form Owning native form.
+ * @returns {Object|undefined} Scoped actions, or undefined when already initialized.
  */
 export const createBulkActions = (form) => {
     if (form.dataset.ready) {
-        return;
+        return undefined;
     }
     form.dataset.ready = 'true';
     const all = form.querySelector(Selectors.selectAll);
@@ -142,6 +143,7 @@ export const createBulkActions = (form) => {
  * Create state and actions for one version history.
  *
  * @param {HTMLElement} history Version history container.
+ * @returns {Object} Scoped version comparison actions.
  */
 export const createHistoryActions = (history) => {
     const comparison = document.getElementById('filebank-compare');

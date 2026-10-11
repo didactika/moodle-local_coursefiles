@@ -20,8 +20,10 @@ import ModalSaveCancel from 'core/modal_save_cancel';
  */
 export const createSaveCancel = async(title, body) => {
     if (typeof ModalSaveCancel.create === 'function') {
-        const modal = await ModalSaveCancel.create({title, body: body.html, show: true, removeOnClose: true});
-        modal.setTemplateJS(body.js);
+        const modal = await ModalSaveCancel.create({title, show: false, removeOnClose: true});
+        // The create() API predates setTemplateJS(); setBodyContent() exists on all supported cores.
+        await modal.setBodyContent(Promise.resolve(body));
+        modal.show();
         return modal;
     }
     // Load the legacy factory only on cores that require it.

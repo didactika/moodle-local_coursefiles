@@ -12,5 +12,7 @@
 - Align filename/filter controls and responsive correspondence inputs with native theme components.
 - Validate generated CSS without automatic corrections and complete Mustache validation contexts.
 - Keep profile examples in the central documentation and generate portable test data inside Moodle's test environment.
-
 - Bound native import paths before storage writes, retaining stable parent folders and source metadata when folder labels exceed the native path budget.
+- Match CI stylesheet compilation to the installed Moodle Node runtime and support legacy Tiny toolbar controls in native acceptance tests.
+- Correct shared AMD promise/return contracts and strict lint warnings without suppressing checks.
+- Install rendered Save/Cancel modal content through the cross-version API before showing it, fixing rename dialogs on Moodle 4.3.

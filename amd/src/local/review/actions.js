@@ -32,6 +32,7 @@ import Notification from 'core/notification';
 /**
  * Bind pencil actions without making every filename an editable field.
  * @param {HTMLFormElement} form Owning native form.
+ * @returns {Object} Scoped review and rename actions.
  */
 export const createActions = (form) => {
     const update = () => {

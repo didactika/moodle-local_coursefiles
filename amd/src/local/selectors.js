@@ -26,7 +26,7 @@ export default {
     choice: '[data-filebank-choice]',
     clearFilters: '[data-filebank-clear-filters]',
     confirm: '[data-filebank-confirm]',
-    continue: '[data-filebank-continue]',
+    "continue": '[data-filebank-continue]',
     count: '[data-filebank-count]',
     courseToggle: '[data-filebank-course-toggle]',
     datalist: 'datalist',

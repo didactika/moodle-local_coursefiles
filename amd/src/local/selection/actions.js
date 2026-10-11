@@ -32,6 +32,7 @@ import Notification from 'core/notification';
 /**
  * Keep selection visible, apply filters automatically and provide functional card/list layouts.
  * @param {HTMLFormElement} form Owning native form.
+ * @returns {Object} Scoped selection and navigation actions.
  */
 export const createActions = (form) => {
     let timer;
@@ -135,7 +136,7 @@ export const createActions = (form) => {
         getString('filterloading', 'local_filebank').then(text => {
             form.querySelector(Selectors.loading).textContent = text;
             return text;
-        }).catch(() => {});
+        }).catch(error => Notification.exception(error));
         try {
             const {html} = await loadFragment('browser', Number(form.dataset.contextid), {
                 scope: raw.scope, state: JSON.stringify(raw),
@@ -349,7 +350,7 @@ export const createActions = (form) => {
         getString('filterloading', 'local_filebank').then(text => {
             form.querySelector(Selectors.loading).textContent = text;
             return text;
-        }).catch(() => {});
+        }).catch(error => Notification.exception(error));
     };
     const changeLayout = event => {
         const button = event.target.closest(Selectors.layouts);

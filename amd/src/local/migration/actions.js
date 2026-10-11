@@ -116,7 +116,7 @@ export const createActions = async(root) => {
         continuation();
         queue = queue.then(async() => {
             if (failed) {
-                return;
+                return undefined;
             }
             const payload = {...state, planid: root.dataset.planid, digest: root.dataset.digest, sesskey: root.dataset.sesskey};
             const result = await loadFragment('migration', Number(root.dataset.contextid), {
@@ -128,7 +128,7 @@ export const createActions = async(root) => {
                 patch(JSON.parse(selection.dataset.filebankSelectionState));
             } else {
                 if (state.action === 'view' && sequence !== viewSequence) {
-                    return;
+                    return undefined;
                 }
                 const next = document.querySelector(Selectors.migration);
                 const open = new Map([...root.querySelectorAll('details[data-filebank-group],'
@@ -169,6 +169,7 @@ export const createActions = async(root) => {
                 ['q', 'page', 'decision', 'issuepage', 'perpage'].forEach(key => url.searchParams.set(key, form[key]));
                 window.history.replaceState(null, '', url);
             }
+            return undefined;
         }).catch(error => {
             failed = true;
             Notification.exception(error);

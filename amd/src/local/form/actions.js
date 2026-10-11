@@ -31,17 +31,18 @@ import Notification from 'core/notification';
  * Enhance a native textarea with bounded, editable form rows.
  *
  * @param {string} id Native field ID.
+ * @returns {Promise<Object|undefined>} Scoped row actions when the field is available.
  */
 export const createRows = async id => {
     const field = document.getElementById(id);
     if (!field || field.dataset.filebankRows) {
-        return;
+        return undefined;
     }
     try {
         const {columns, maximum} = JSON.parse(field.dataset.filebankSchema);
         const values = JSON.parse(field.value || '[]');
         if (!Array.isArray(values) || values.length > maximum) {
-            return;
+            return undefined;
         }
         const [add, remove] = await getStrings([
             {key: 'addrow', component: 'local_filebank'}, {key: 'delete', component: 'core'},
@@ -89,8 +90,11 @@ export const createRows = async id => {
                         }
                     }
                 }
-                input.className = column.type === 'checkbox' ? 'filebank-row-check'
-                    : (column.options ? 'custom-select custom-select-sm' : 'form-control form-control-sm');
+                if (column.type === 'checkbox') {
+                    input.className = 'filebank-row-check';
+                } else {
+                    input.className = column.options ? 'custom-select custom-select-sm' : 'form-control form-control-sm';
+                }
                 if (column.type !== 'checkbox') {
                     input.value = value[column.key] || column.options?.[0]?.value || '';
                 }
@@ -131,16 +135,18 @@ export const createRows = async id => {
         return {wrapper, synchronize, addRow, removeRow};
     } catch (error) {
         Notification.exception(error);
+        return undefined;
     }
 };
 
 /**
  * Advanced rules replace the guided sections, including their native legends.
+ * @returns {Object|undefined} Scoped profile actions when the editor is present.
  */
 export const createProfile = () => {
     const mode = document.getElementById('id_editmode');
     if (!mode) {
-        return;
+        return undefined;
     }
     const update = () => {
         for (const name of ['identitysettings', 'capturefilters', 'sourcesettings', 'rules']) {
