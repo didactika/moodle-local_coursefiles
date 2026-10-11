@@ -12,3 +12,5 @@
 - Align filename/filter controls and responsive correspondence inputs with native theme components.
 - Validate generated CSS without automatic corrections and complete Mustache validation contexts.
 - Keep profile examples in the central documentation and generate portable test data inside Moodle's test environment.
+
+- Bound native import paths before storage writes, retaining stable parent folders and source metadata when folder labels exceed the native path budget.
