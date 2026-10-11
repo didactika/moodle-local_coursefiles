@@ -4,6 +4,8 @@
 
 /* Editable native rows adapt to their actual form-column width, including side drawers. */
 
+/* Valid modern CSS is absent from older Moodle validator grammars. */
+/* stylelint-disable-next-line csstree/validator */
 @container (max-width: 48rem) {
     .filebank-row-editor {
         tbody tr {
@@ -29,6 +31,8 @@
     }
 }
 
+/* Valid modern CSS is absent from older Moodle validator grammars. */
+/* stylelint-disable-next-line csstree/validator */
 @container (max-width: 24rem) {
     .filebank-row-editor {
         tbody tr {
@@ -48,6 +52,8 @@
         .fp-repo-area {
             width: 100%;
             max-width: 100%;
+            /* Override native Boost layout utilities at compact widths. */
+            /* stylelint-disable-next-line declaration-no-important */
             flex-direction: row !important;
             flex-wrap: nowrap;
             overflow-x: auto;
@@ -69,6 +75,8 @@
         }
     }
     .filebank-browser {
+        /* Override native Boost layout utilities at compact widths. */
+        /* stylelint-disable-next-line declaration-no-important */
         padding: .75rem !important;
     }
     .filebank-filterbar {

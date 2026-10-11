@@ -28,7 +28,7 @@
                 <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="digest" value="{{digest}}"><input type="hidden" name="kind" value="issue"><input type="hidden" name="id" value="{{id}}"><input type="hidden" name="action" value="resolve">
                 <label class="small" for="mp-issue-{{id}}">{{#str}}resolvemigration, local_filebank{{/str}} </label> {{{help}}}
                 <select id="mp-issue-{{id}}" name="choice" class="custom-select custom-select-sm" data-filebank-resolve><option value="">{{#str}}choose_resolution, local_filebank{{/str}}</option>{{#choices}}<option value="{{value}}">{{label}}</option>{{/choices}}</select>
-                <noscript><button class="btn btn-sm btn-primary">{{#str}}apply, core{{/str}}</button></noscript>
+                <noscript><button class="btn btn-sm btn-primary">{{#str}}filter, core{{/str}}</button></noscript>
             </form>{{/resolvable}}
         </div>{{/issues}}
         {{{issuepagination}}}

@@ -65,7 +65,6 @@ $capabilities = [
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_PERSONAL,
-        'clonepermissionsfrom' => 'local/filebank:viewaudit',
     ],
     'local/filebank:managecoursepolicy' => [
         'captype' => 'write',

@@ -23,7 +23,7 @@
  */
 
 import Selectors from 'local_filebank/local/form/selectors';
-import {getStrings} from 'core/str';
+import {getStrings} from 'local_filebank/local/strings';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
 

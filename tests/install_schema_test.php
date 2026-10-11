@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Install FileBank and preserve an existing CourseBridge installation.
+ * Initial XMLDB schema validation.
  *
  * @package local_filebank
  * @copyright 2026 Didactika.org
@@ -23,11 +23,23 @@
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_filebank;
+
 /**
-
- * Import legacy metadata only when an old installation exists.
-
+ * Check the first-release schema using Moodle's native XMLDB parser.
+ * @coversNothing
  */
-function xmldb_local_filebank_install(): void {
-    \local_filebank\local\upgrade\legacy_import::execute();
+final class install_schema_test extends \advanced_testcase {
+    /**
+     * Required character fields must not declare an empty default.
+     */
+    public function test_install_schema_loads_without_invalid_char_defaults(): void {
+        $this->resetAfterTest();
+        $file = new \xmldb_file(__DIR__ . '/../db/install.xml');
+        $this->assertTrue($file->loadXMLStructure());
+        $structure = $file->getStructure();
+        $field = $structure->getTable('local_filebank_author')->getField('parentuuid');
+        $this->assertNull($field->getDefault());
+        $this->assertTrue($field->getNotNull());
+    }
 }

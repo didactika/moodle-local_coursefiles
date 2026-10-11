@@ -6,117 +6,85 @@
 
 *Find and reuse public course files across related courses*
 
-[![Release](https://img.shields.io/github/v/release/didactika/moodle-local_filebank?style=flat-square)](https://github.com/didactika/moodle-local_filebank/releases)
+[![Release](https://img.shields.io/github/v/release/didactika/moodle-local_filebank?filter=v4.0.*&style=flat-square)](https://github.com/didactika/moodle-local_filebank/releases)
 [![Moodle](https://img.shields.io/badge/Moodle-4.0%E2%80%935.2-f98012?style=flat-square&logo=moodle&logoColor=white)](https://moodle.org)
-[![PHP](https://img.shields.io/badge/PHP-8.1+-777bb4?style=flat-square&logo=php&logoColor=white)](https://www.php.net)
+[![PHP](https://img.shields.io/badge/PHP-8.0+-777bb4?style=flat-square&logo=php&logoColor=white)](https://www.php.net)
 [![License](https://img.shields.io/badge/License-GPL_v3-blue?style=flat-square)](LICENSE)
-[![CI](https://github.com/didactika/moodle-local_filebank/actions/workflows/ci.yml/badge.svg?branch=MOODLE_400_STABLE)](https://github.com/didactika/moodle-local_filebank/actions/workflows/ci.yml)
 
-[Overview](#overview) · [Installation](#installation) · [Usage](#usage) · [Configuration](#configuration) · [Troubleshooting](#troubleshooting)
+[Overview](#overview) • [Installation](#installation) • [Usage](#usage) • [Configuration](#configuration) • [Troubleshooting](#troubleshooting)
 
 </div>
 
-FileBank (`local_filebank`) manages related-course profiles, a public-file catalog, original authorship and reviewed background migrations.
+FileBank (**local_filebank**) organizes public course files into a reusable library. Configurable profiles identify related courses, and teachers select material from those courses inside Moodle’s normal file picker. Administrators can also migrate complete sets of material between courses.
 
 > [!IMPORTANT]
-> Install both [FileBank local](https://github.com/didactika/moodle-local_filebank) and [FileBank repository](https://github.com/didactika/moodle-repository_filebank) from the same maintenance line. The standalone MultiPicker repository is a separate plugin.
+> **Install both [FileBank local](https://github.com/didactika/moodle-local_filebank) and [FileBank repository](https://github.com/didactika/moodle-repository_filebank).** Choose the same Moodle maintenance line for both plugins.
 
 ## Overview
 
-The local component owns profiles, their version history, a searchable metadata catalog, publication policies, original author provenance and migration jobs. repository_filebank exposes that library in native activity forms. Moodle’s File API stores all binaries; the plugin does not create another file store.
+Profiles define which courses belong together using named regular-expression captures. The same captures can become search filters, so institutions can describe their own groups without fixed year or semester rules.
 
-## Features
-
-| Feature | Behavior |
+| Feature | What it provides |
 |---|---|
-| Related courses | Named regular-expression captures define course groups and up to nine configurable search filters. |
-| Public material library | Folder, File, public Assignment attachments and other declared public providers; private user material remains excluded. |
-| Multi-file selection | Grid, list and lazy recursive tree views share checks and unique-content counts. Clear filters retains selected material and copy options. Existing destination content is excluded before pagination. |
-| Native review | Resulting-file tree, folder removal checks and pencil rename dialogs before importing into the native draft. |
-| Native limits | Accepted types, remaining file count, directory support and byte limits are enforced again at import. |
-| Profiles | Guided forms, bulk state actions, portable export/import, version comparison and restoration. |
-| Migrations | Public source activity types mapped to Folder destinations; paginated review, automatic selection saving, explicit conflict choices and background execution without maintenance. |
-| Retention | Configurable logs, migration history and inactive profile-version retention. |
-
-## Requirements
-
-| Requirement | This distribution |
-|---|---|
-| Moodle | 4.0–5.2 (qualification matrix) |
-| Maintenance line | MOODLE_400_STABLE |
-| Release / maturity | 4.5.0 / stable |
-| PHP and database | Moodle’s requirements for the selected release; local checks include Moodle 4.0/PHP 8.0 and Moodle 4.5/PHP 8.3 with PostgreSQL 17. |
-| Companion | [repository_filebank](https://github.com/didactika/moodle-repository_filebank/tree/MOODLE_400_STABLE) from the same maintenance line. |
-
-The shared AMD/Mustache distribution targets Moodle 4.0–5.2 with PHP 8.0 or newer, subject to each core release’s PHP requirements. Moodle 5.3 has a separate TypeScript/ESM distribution on main. The declared range is validated by CI; a supported range is not evidence that every matrix job has passed.
+| Public files | Supported public material from Folder, File, Assignment handouts and other registered providers |
+| File picker | Cards, list and lazy tree views with recursive multiple selection |
+| Existing content | Material already used in the destination is excluded before browsing |
+| Review | Resulting-file tree, removal checks and pencil dialogs for destination names |
+| Profiles | Guided editing, import/export, retained versions, comparison and restoration |
+| Migrations | Source filters and activity correspondences, paginated review, conflict choices and background execution |
+| Authorship | Original declarations preserved at copy time, with configurable protection and provenance |
+| History | Bounded log, migration and inactive profile-version retention |
 
 ## Installation
 
-Install the local companion first, then the repository component. Download the reviewed release ZIP and use Site administration → Plugins → Install plugins, or copy this repository into **local/filebank** beneath the actual Moodle application directory. Moodle 5.3’s checked layout places that directory beneath public/.
+**Requirements:** Moodle 4.0–5.2, PHP 8.0 or newer, and the database requirements of the selected Moodle release. This distribution’s release is **4.0.0**.
 
-Run the administrator upgrade screen or the native CLI upgrade:
+**From a release:** download the matching release ZIPs of both FileBank components, open **Site administration → Plugins → Install plugins**, upload the packages and follow the prompts.
 
-```sh
+**From Git:**
+
+```bash
+cd /path/to/moodle
+git clone --branch MOODLE_400_STABLE https://github.com/didactika/moodle-local_filebank.git local/filebank
+git clone --branch MOODLE_400_STABLE https://github.com/didactika/moodle-repository_filebank.git repository/filebank
 php admin/cli/upgrade.php --non-interactive
 ```
 
-Existing CourseBridge installations require a component rename: retain their records, policies and repository identities, migrate scheduled and queued task registrations, then remove the retired directories. Follow the detailed workspace rename procedure before upgrading an existing installation.
+> [!IMPORTANT]
+> Run [cron](https://docs.moodle.org/en/Cron) regularly to refresh the FileBank catalog, process queued migrations and clean expired history.
 
 ## Usage
 
-1. Open Site administration → Plugins → Local plugins → FileBank.
-2. Create and activate a profile defining related courses and supported public source areas.
-3. Set the publication and author policy, then refresh the catalog through cron or course actions.
-4. Enable the repository and use its native picker entry from an activity’s Add files action.
-5. For site migrations, choose source/destination filters and activity correspondences, review the complete included set and queue the background job.
+1. Administrators open **Site administration → Plugins → Local plugins → FileBank**, create a profile and activate it.
+2. Enable the FileBank repository and configure publication and authorship permissions.
+3. Teachers open **Add files**, choose FileBank, filter the public library and select material.
+4. Review the resulting files, import them and save the owning activity form.
+5. For a site migration, open **Migrations**, configure source and destination rules, resolve conflicts and queue the reviewed set.
 
 ## Configuration
 
-Guided profile forms expose course identification, grouping and dynamic named-capture filters. An advanced document editor remains available for supported rules. Migration correspondences belong to the migration wizard and select the source activity type separately from its matching rules. Site/course policy controls publication and authorship; retention settings bound inactive history.
+Settings are located at **Site administration → Plugins → Local plugins → FileBank**. Native tabs provide access to configuration, profiles, migrations and the log.
 
-Strict author protection refuses workflows where later native author changes cannot be prevented. Editable-with-provenance allows copying with the original declaration retained in the log. The original author and licence are preserved at copy time.
+| Area | Purpose |
+|---|---|
+| Course profiles | Identify related courses and configure up to nine named-capture search filters |
+| Publication | Choose which supported public file areas are available |
+| Authorship | Preserve the original declaration, or block workflows that cannot enforce the selected protection |
+| Migration wizard | Choose source activity types, folder correspondences, missing-destination creation and conflict handling |
+| Retention | Limit the lifetime of logs, migration history and inactive profile versions |
 
-## Documentation and testing
-
-Detailed explanations, the RUP UML catalogue, rendered diagrams and the exact validation matrix are maintained outside this plugin repository in the services workspace:
-
-`projects/docs/in-progress/suite-filebank/moodle-local_filebank/`
-
-That local collection covers both maintenance lines and is not published online. This README, [CHANGELOG](CHANGELOG.md) and [LICENSE](LICENSE) remain in each distribution. The package ships English language strings only; Moodle language packs can provide translations.
-
-Run the packaged PHPUnit and native Behat tests in a disposable Moodle checkout with both companions installed and independent test databases. Build frontend assets with the exact supported core tooling. This distribution organizes AMD feature modules by controller, actions, listeners and selectors; six root entry modules preserve native Moodle calls. Nested SCSS component sources generate the shipped styles.css; use `node tools/build-styles.mjs /path/to/moodle` to rebuild it. Local validation distinguishes completed checks from pending remote pipelines; it does not claim untested runtime combinations.
-
-## Security and privacy
-
-Session-bound scopes, capabilities, live publication checks and native draft ownership are verified server-side. Private submissions, feedback and personal files are not public providers. Interactive selection is bounded to 200 source occurrences; oversized requests are refused rather than truncated. Migration destinations are native Folders; the plugin copies public files rather than recreating whole activities.
-
-## Support and contributions
-
-Report reproducible issues through [GitHub Issues](https://github.com/didactika/moodle-local_filebank/issues), including the Moodle version, plugin release and steps without private data. Submit changes against the correct maintenance line and keep companion contracts aligned. Review [the changelog](CHANGELOG.md) and the documented test evidence before upgrading.
-
-## License
-
-Copyright © 2026 Didactika.org — Hector Arrechea <hectorlazaroarrechea@gmail.com>.
-
-Licensed under the GNU General Public License v3 or later. See [LICENSE](LICENSE).
+The repository instance’s visible name is also used as the browser heading. Editable-with-provenance permits copying while retaining the original author in the history. Strict protection blocks workflows where later native author edits cannot be prevented.
 
 ## Troubleshooting
 
 | Problem | Check |
 |---|---|
-| No materials appear | Enable a matching profile, confirm source visibility and run catalog reconciliation. |
-| Old component names remain after upgrading | Follow the component adoption procedure below before installing the standalone MultiPicker. |
-| Import is unavailable | Check destination permissions, native file limits and unresolved review conflicts. |
+| No material appears | Check the active profile, matching course identifiers, publication rules and source permissions |
+| An expected file is absent | It may already be used in the destination, or the native control may reject its type |
+| Locked material cannot be copied | The selected author policy requires protection that the workflow cannot enforce |
+| A migration is blocked | Resolve the reported course, destination or file conflict in its review screen |
+| A queued migration does not run | Check cron and the scheduled/ad hoc task log |
 
-## Existing MultiPicker installations
+## Getting help
 
-Back up the database and plugin directories. Place FileBank in `local/filebank` and `repository/filebank`, then inspect and apply the metadata adoption:
-
-```bash
-php local/filebank/cli/adopt_multipicker.php
-php local/filebank/cli/adopt_multipicker.php --execute
-# Move the retired local/multipicker and repository/multipicker directories outside Moodle.
-php admin/cli/upgrade.php --non-interactive
-```
-
-The procedure preserves table rows and IDs, settings, permissions, repository instances and supported queued work. It does not copy or delete course file binaries. Finish adoption before installing the new independent `repository_multipicker`.
+Open an [issue](https://github.com/didactika/moodle-local_filebank/issues) with your Moodle and PHP versions, the source activity, the destination form and the expected and actual behavior.

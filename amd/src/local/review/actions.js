@@ -23,9 +23,9 @@
  */
 
 import Selectors from 'local_filebank/local/review/selectors';
-import ModalSaveCancel from 'core/modal_save_cancel';
+import {createSaveCancel} from 'local_filebank/local/modal';
 import ModalEvents from 'core/modal_events';
-import {getString} from 'core/str';
+import {getString} from 'local_filebank/local/strings';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
 
@@ -76,8 +76,7 @@ export const createActions = (form) => {
             const {html, js} = await Templates.renderForPromise('local_filebank/local/selection/rename', {
                 name: name.value, label: title,
             });
-            const modal = await ModalSaveCancel.create({title, body: html, show: true, removeOnClose: true});
-            modal.setTemplateJS(js);
+            const modal = await createSaveCancel(title, {html, js});
             modal.getRoot().on(ModalEvents.save, event => {
                 const input = modal.getBody()[0].querySelector(Selectors.filename);
                 if (!input.reportValidity()) {

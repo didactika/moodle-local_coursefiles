@@ -63,6 +63,8 @@
         padding-block: .75rem;
     }
     [hidden] {
+        /* Boost utilities must retain accessible hidden states. */
+        /* stylelint-disable-next-line declaration-no-important */
         display: none !important;
     }
 }
@@ -76,6 +78,8 @@
 }
 
 .filebank-visually-hidden {
+    /* Boost utilities must retain accessible hidden states. */
+    /* stylelint-disable-next-line declaration-no-important */
     position: absolute !important;
     width: 1px;
     height: 1px;

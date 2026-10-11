@@ -24,7 +24,7 @@ import Selectors from 'local_filebank/local/migration/selectors';
 import {loadFragment} from 'local_filebank/local/repository';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
-import {getStrings} from 'core/str';
+import {getStrings} from 'local_filebank/local/strings';
 
 /**
  * Enhance an existing review while preserving its native forms and authorization.

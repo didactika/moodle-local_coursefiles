@@ -4,7 +4,7 @@
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 -->
-<XMLDB PATH="local/filebank/db" VERSION="20261008" COMMENT="FileBank metadata schema">
+<XMLDB PATH="local/filebank/db" VERSION="2026101102" COMMENT="FileBank metadata schema">
   <TABLES>
     <TABLE NAME="local_filebank" COMMENT="Relationship profiles">
       <FIELDS>

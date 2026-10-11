@@ -9,7 +9,11 @@
         display: none;
     }
     .fp-content {
-        height: min(72vh, 48rem) !important;
+        /* Native sizing and valid modern CSS. */
+        /* stylelint-disable-next-line csstree/validator, declaration-no-important */
+        height: Min(72vh, 48rem) !important;
+        /* Override the height constraints applied by the native YUI picker. */
+        /* stylelint-disable-next-line declaration-no-important */
         max-height: none !important;
     }
     .fp-object-container {
@@ -30,6 +34,9 @@ body.filebank-embedded, .filebank-embedded #page,
         padding: 0;
     }
     .filebank-browser {
+        height: calc(100vh - .5rem);
+        /* Valid modern CSS is absent from older Moodle validator grammars. */
+        /* stylelint-disable-next-line csstree/validator, unit-no-unknown, declaration-block-no-duplicate-properties */
         height: calc(100dvh - .5rem);
         display: flex;
         flex-direction: column;

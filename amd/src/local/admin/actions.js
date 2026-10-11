@@ -24,7 +24,7 @@ import Selectors from 'local_filebank/local/admin/selectors';
 import Notification from 'core/notification';
 import {loadFragment} from 'local_filebank/local/repository';
 import {add as addToast} from 'core/toast';
-import {getStrings} from 'core/str';
+import {getStrings} from 'local_filebank/local/strings';
 
 /**
  * Create state and actions for one bulk form.

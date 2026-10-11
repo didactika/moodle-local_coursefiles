@@ -26,7 +26,7 @@ import {appendLinks} from 'local_filebank/local/editor/actions';
 import {getImportStatus} from 'local_filebank/local/repository';
 import {resolve} from 'local_filebank/local/editor/adapter';
 import Notification from 'core/notification';
-import {getString} from 'core/str';
+import {getString} from 'local_filebank/local/strings';
 
 /**
  * Insert remaining approved links after Tiny's native callback inserts the first one.

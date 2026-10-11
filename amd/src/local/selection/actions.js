@@ -23,7 +23,7 @@
  */
 
 import Selectors from 'local_filebank/local/selection/selectors';
-import {getString} from 'core/str';
+import {getString} from 'local_filebank/local/strings';
 import {loadFragment} from 'local_filebank/local/repository';
 import Templates from 'core/templates';
 import Notification from 'core/notification';
