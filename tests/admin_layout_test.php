@@ -67,7 +67,7 @@ final class admin_layout_test extends \advanced_testcase {
         global $CFG, $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $json = file_get_contents($CFG->dirroot . '/local/filebank/examples/institutional-profile.json');
+        $json = json_encode($this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config());
         $document = profile_form::document(['configjson' => $json, 'profilename' => 'Preview only']);
         $this->assertSame('Preview only', $document['name']);
         $this->assertSame(0, $DB->count_records('local_filebank_revision'));
@@ -86,7 +86,7 @@ final class admin_layout_test extends \advanced_testcase {
         global $CFG, $DB, $USER;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/filebank/examples/institutional-profile.json'), true);
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $profileid = profiles::save(json_encode($config));
         [$profile, $revision] = profiles::load($profileid);
         $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026', 'issues' => []]);

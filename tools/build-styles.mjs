@@ -45,19 +45,31 @@ tree.walk(node => {
         node.raws.before = node.prev()?.type === 'comment' && node.prev().text.includes('stylelint-disable-next-line')
             ? '\n' : '\n\n';
     }
+    // Sass engines emit different indentation; serialize the same four-space CSS on each core.
+    let depth = 0;
+    for (let parent = node.parent; parent && parent.type !== 'root'; parent = parent.parent) {
+        depth++;
+    }
+    node.raws.before = (node.raws.before || '').replace(/[ \t]*$/, ' '.repeat(depth * 4));
+    if (node.type === 'rule') {
+        node.selector = postcss.list.comma(node.selector).join(',\n' + ' '.repeat(depth * 4));
+    }
+    if (node.nodes) {
+        node.raws.after = (node.raws.after || '\n').replace(/[ \t]*$/, ' '.repeat(depth * 4));
+    }
 });
 compiled = tree.toString();
 const target = resolve(plugin, 'styles.css');
-const result = await require('stylelint').lint({
-    code: '/* Generated from styles.scss. Edit the SCSS component sources and rebuild. */\n'
+const output = '/* Generated from styles.scss. Edit the SCSS component sources and rebuild. */\n'
         + '/* Moodle 4.0 and later cores disagree on decimal formatting; use the current leading-zero style. */\n'
-        + '/* stylelint-disable number-leading-zero */\n' + compiled + '\n',
-    codeFilename: target, configFile: resolve(core, '.stylelintrc'), fix: true,
+        + '/* stylelint-disable number-leading-zero */\n' + compiled + '\n';
+const result = await require('stylelint').lint({
+    code: output,
+    codeFilename: target, configFile: resolve(core, '.stylelintrc'),
 });
 if (result.errored) {
     throw new Error('Generated styles do not pass Moodle stylelint: ' + JSON.stringify(result.results.map(item => item.warnings)));
 }
-const output = result.code ?? result.output;
 const fingerprint = css => {
     const nodeData = node => {
         const data = {};

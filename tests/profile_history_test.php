@@ -46,7 +46,7 @@ final class profile_history_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $id = profiles::save(json_encode($config));
         $first = $DB->get_field('local_filebank', 'activeid', ['id' => $id]);
         $original = $DB->get_record('local_filebank_revision', ['id' => $first]);
@@ -89,7 +89,7 @@ final class profile_history_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         require_once(__DIR__ . '/../lib.php');
-        $config = file_get_contents(__DIR__ . '/../examples/institutional-profile.json');
+        $config = json_encode($this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config());
         $id = profiles::save($config);
         $args = ['context' => \context_system::instance(),
             'state' => json_encode(['ids' => [$id], 'action' => 'disable', 'sesskey' => sesskey()])];

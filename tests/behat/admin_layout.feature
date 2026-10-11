@@ -133,11 +133,11 @@ Feature: Clear administration tabs and immutable migration previews
     Given I log in as "admin"
     When I open FileBank administration "profiles"
     And I follow "Import profiles"
-    And I upload "local/filebank/examples/institutional-profile.json" file to "File" filemanager
+    And I upload a generated FileBank profile to "File" filemanager
     And I press "Import profiles"
     And I capture FileBank administration "profile-import-result"
     Then I should see "Imported 1 new profiles"
-    And I should see "UUID course families with optional annual editions"
+    And I should see "Test course collection"
     And I should see "Migration acceptance"
 
   Scenario: Material reuse logs are available as a native report

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Published course edition fixtures for browser acceptance.
+ * Course material fixtures for browser acceptance.
  *
  * @package local_filebank
  * @copyright 2026 Didactika.org
@@ -31,6 +31,95 @@ use local_filebank\local\catalog\material_source;
  * Native folder form fixtures, isolated by Moodle's test environment.
  */
 final class local_filebank_generator extends component_generator_base {
+    /**
+     * Build consistent matching, publication and placement data for isolated tests.
+     *
+     * @return array Test profile configuration.
+     */
+    public function create_profile_config(): array {
+        return [
+            'schema_version' => 1,
+            'name' => 'Test course collection',
+            'scope' => [
+                'campus' => 'current',
+                'category_ids' => [],
+            ],
+            'relationship' => [
+                'ambiguity_policy' => 'block',
+                'parsers' => [
+                    [
+                        'name' => 'uuid-code-optional-year',
+                        'field' => 'idnumber',
+                        'pattern' => '~^(?<family>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}'
+                            . '-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\\|\\|(?<code>[^|]+)(?:\\|\\|(?<edition>\\d{4}))?$~u',
+                        'required_captures' => [
+                            'family',
+                            'code',
+                        ],
+                        'normalizers' => [
+                            'family' => [
+                                'trim',
+                                'lowercase',
+                            ],
+                            'code' => [
+                                'trim',
+                            ],
+                        ],
+                    ],
+                ],
+                'family_key' => '${family}',
+                'display_label' => '${code}',
+                'edition' => [
+                    'capture' => 'edition',
+                    'optional' => true,
+                    'comparison' => 'string',
+                ],
+                'pair_dimensions' => [],
+            ],
+            'publication' => [
+                'mode' => 'source-access-only',
+                'allowed_sources' => [
+                    'mod_folder/content',
+                    'mod_resource/content',
+                    'mod_page/content',
+                    'mod_book/chapter',
+                    'mod_assign/introattachment',
+                    'mod_assign/activityattachment',
+                    'mod_*/intro',
+                ],
+                'allow_hidden' => false,
+                'allow_restricted' => false,
+            ],
+            'migration' => [
+                'source_edition' => '2025',
+                'target_edition' => '2026',
+                'source_module' => [
+                    'type' => 'folder',
+                    'field' => 'name',
+                    'equals' => 'materiales_de_clase.module',
+                ],
+                'target_module' => [
+                    'type' => 'folder',
+                    'field' => 'name',
+                    'equals' => 'materiales_de_clase.module',
+                ],
+                'section_match' => [
+                    'strategy' => 'ordinal',
+                    'require_layout_review' => true,
+                ],
+                'missing_target' => 'block',
+                'ambiguous_target' => 'block',
+                'same_path_same_content' => 'skip',
+                'same_path_different_content' => 'block',
+                'same_content_different_path' => 'skip-and-report',
+                'preserve_relative_paths' => true,
+                'preserve_source' => true,
+                'preserve_target_visibility' => true,
+                'on_item_failure' => 'continue-unaffected',
+            ],
+        ];
+    }
+
     /**
      * Create more than one native page for administration and whole-plan selection.
      * @param array $record Named fixture.
@@ -105,8 +194,7 @@ final class local_filebank_generator extends component_generator_base {
         $previoususer = $USER;
         $this->set_user(get_admin());
         try {
-            $example = $CFG->dirroot . '/local/filebank/examples/institutional-profile.json';
-            $config = json_decode(file_get_contents($example), true);
+            $config = $this->create_profile_config();
             $config['name'] = $record['name'];
             $config['publication']['mode'] = 'explicit-family-publication';
             $profileid = profiles::save(json_encode($config));

@@ -547,7 +547,7 @@ final class draft_scope_test extends \advanced_testcase {
         require_once($CFG->libdir . '/formslib.php');
         require_once(__DIR__ . '/fixtures/scoped_form.php');
         set_config('author_policy', 'editable_with_provenance', 'local_filebank');
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/filebank/examples/institutional-profile.json'), true);
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $config['publication']['mode'] = 'explicit-family-publication';
         $profileid = profiles::save(json_encode($config));
         $uuid = '550e8400-e29b-41d4-a716-446655440000';

@@ -371,7 +371,8 @@ final class draft_import_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         require_once($CFG->libdir . '/filelib.php');
-        $profileid = profiles::save(file_get_contents($CFG->dirroot . '/local/filebank/examples/institutional-profile.json'));
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
+        $profileid = profiles::save(json_encode($config));
         set_config('author_policy', 'editable_with_provenance', 'local_filebank');
         $uuid = '550e8400-e29b-41d4-a716-446655440000';
         $source = $this->getDataGenerator()->create_course(['idnumber' => $uuid . '||MATH||2025']);

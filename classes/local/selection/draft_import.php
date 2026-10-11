@@ -101,10 +101,7 @@ final class draft_import {
             [$file, $cm] = material_source::resolve($hash, $courseid, $profileid);
             author_policy::require_native_copy($file, (int)$cm->course, $courseid);
             $source = copy_decision::snapshot($file);
-            $path = $basepath . ltrim($mapping[$hash], '/');
-            if (\core_text::strlen($path) > 255) {
-                throw new \moodle_exception('invalidselection', 'local_filebank');
-            }
+            $path = destination_path::make($basepath, $mapping[$hash]);
             $filename = $renames[$hash] ?? $file->get_filename();
             if (!is_string($filename)) {
                 throw new \moodle_exception('invalidselection', 'local_filebank');

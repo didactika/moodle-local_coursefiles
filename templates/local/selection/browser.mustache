@@ -16,7 +16,7 @@
         <span class="small text-muted" role="status" data-filebank-loading></span>
     </div>
     {{#locked}}<div class="alert alert-warning" role="status">{{#str}}browserlocked, local_filebank{{/str}}</div>{{/locked}}
-    <div class="filebank-toolbar filebank-browser-filters d-flex align-items-center justify-content-between flex-wrap my-2">
+    <div class="filebank-toolbar filebank-browser-filters d-flex align-items-end justify-content-between flex-wrap my-2">
         <div class="filebank-search"><label for="mpq" class="small">{{#str}}filenamefilter, local_filebank{{/str}}</label> {{{filenamehelp}}}
             <div class="input-group input-group-sm"><span class="input-group-text">{{#pix}}a/search, core{{/pix}}</span>
                 <input type="search" name="q" id="mpq" value="{{filters.q}}" class="form-control form-control-sm" data-filebank-filter autocomplete="off">

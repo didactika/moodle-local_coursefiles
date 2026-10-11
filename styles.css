@@ -812,7 +812,18 @@ body.filebank-embedded,
 }
 
 .filebank-row-editor .table td {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
+}
+
+.filebank-row-editor .filebank-row-label {
+    flex-grow: 1;
+    margin-bottom: 0.2rem;
+}
+
+.filebank-row-editor .filebank-row-remove {
+    justify-content: flex-end;
 }
 
 .filebank-row-editor input:not([type=checkbox]),

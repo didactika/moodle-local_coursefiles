@@ -118,7 +118,16 @@
         border-bottom: 1px solid var(--filebank-border);
     }
     .table td {
+        display: flex;
+        flex-direction: column;
         min-width: 0;
+    }
+    .filebank-row-label {
+        flex-grow: 1;
+        margin-bottom: .2rem;
+    }
+    .filebank-row-remove {
+        justify-content: flex-end;
     }
 }
 

@@ -51,7 +51,7 @@ final class capture_filters_test extends \advanced_testcase {
     public function test_guided_profile_document_preserves_advanced_rules(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = file_get_contents(__DIR__ . '/../examples/institutional-profile.json');
+        $config = json_encode($this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config());
         $original = json_decode($config, true);
         $document = \local_filebank\form\profile_form::document([
             'configjson' => $config, 'profilename' => 'Guided profile', 'editmode' => 'guided',
@@ -74,7 +74,7 @@ final class capture_filters_test extends \advanced_testcase {
     public function test_guided_sources_preserve_unrepresented_areas(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        $original = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        $original = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $original['publication']['allowed_sources'] = ['mod_folder/content', 'mod_url/intro'];
         $document = \local_filebank\form\profile_form::document([
             'configjson' => json_encode($original), 'profilename' => 'Public handouts', 'editmode' => 'guided',
@@ -142,7 +142,7 @@ final class capture_filters_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $config['relationship']['parsers'][0] = ['field' => 'idnumber',
             'pattern' => '~^(?<family>[^|]+)\|(?<year>\d{4})\|(?<semester>[12])$~'];
         $config['relationship']['display_label'] = '${family}';

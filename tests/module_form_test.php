@@ -263,7 +263,7 @@ final class module_form_test extends \advanced_testcase {
         require_once($CFG->dirroot . '/course/modlib.php');
         require_once($CFG->dirroot . '/mod/folder/mod_form.php');
         require_once($CFG->dirroot . '/mod/resource/mod_form.php');
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/filebank/examples/institutional-profile.json'), true);
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $config['publication']['mode'] = 'explicit-family-publication';
         $profileid = profiles::save(json_encode($config));
         set_config('author_policy', 'editable_with_provenance', 'local_filebank');

@@ -23,9 +23,8 @@
  */
 
 import Selectors from 'local_filebank/local/selectors';
-import {listen} from 'local_filebank/local/listeners';
 
-let hostObject;
+
 
 /**
  * Apply native host styling only while this embedded chooser owns its panel.
@@ -42,49 +41,17 @@ export const presentation = () => {
     const object = [...parent.document.querySelectorAll(Selectors.hostObjects)]
         .find(element => element.contentDocument?.defaultView === window);
     const picker = object?.closest('.file-picker');
-    if (!picker || hostObject === object) {
+    if (!picker) {
         return;
     }
-    // Only the connected embedded chooser owns this presentation marker.
-    object.filebankPresentationCleanup?.();
-    picker.classList.add('filebank-native-host');
+    window.parent.require(['local_filebank/local/picker_host'], adapter => adapter.mount(object));
     document.body.classList.add('filebank-embedded');
     const surface = picker.querySelector(Selectors.pickerSurface);
     const background = parent.getComputedStyle(surface).backgroundColor;
     if (background !== 'rgba(0, 0, 0, 0)') {
         document.body.style.setProperty('--filebank-host-background', background);
     }
-    const repositories = picker.querySelector(Selectors.repositories);
-    const active = repositories?.querySelector('.fp-repo.active');
-    const revealRepository = () => {
-        if (active && parent.innerWidth < 576) {
-            repositories.scrollLeft = active.offsetLeft - repositories.offsetLeft;
-        }
-    };
-    revealRepository();
-    listen(parent, 'resize', revealRepository);
-    hostObject = object;
-    // Observe from the parent realm: removing an object may unload its document before its observer runs.
-    const observer = new parent.MutationObserver(() => {
-        if (!object.isConnected) {
-            release();
-        }
-    });
-    const release = () => {
-        observer.disconnect();
-        parent.removeEventListener('resize', revealRepository);
-        picker.classList.remove('filebank-native-host');
-        hostObject = null;
-        delete object.filebankPresentationCleanup;
-    };
-    object.filebankPresentationCleanup = release;
-    observer.observe(surface, {childList: true});
-    listen(window, 'pagehide', () => {
-        parent.removeEventListener('resize', revealRepository);
-        if (!object.isConnected) {
-            release();
-        }
-    }, {once: true});
+
 };
 
 /**
