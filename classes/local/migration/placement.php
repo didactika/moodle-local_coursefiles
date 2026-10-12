@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,14 +17,15 @@
 /**
  * Configurable unique course section and folder placement.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\migration;
+namespace local_filebank\local\migration;
 
-use local_multipicker\local\profile\profile_config;
-use local_multipicker\local\policy\author_policy;
+use local_filebank\local\profile\profile_config;
+use local_filebank\local\policy\author_policy;
 
 /**
  * Selects exact destinations without guessing across course-local IDs.
@@ -39,12 +40,13 @@ final class placement {
      * @return array|null Captures or no match.
      */
     public static function match(\cm_info $cm, array $predicate, array $captures = []): ?array {
+
         if ($cm->modname !== ($predicate['type'] ?? 'folder')) {
             return null;
         }
         $field = $predicate['field'] ?? 'name';
         if (!in_array($field, ['name', 'idnumber'], true)) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         $value = (string)$cm->{$field};
         if (isset($predicate['equals'])) {
@@ -53,19 +55,7 @@ final class placement {
         if (isset($predicate['template'])) {
             return $value === profile_config::template($predicate['template'], $captures) ? [] : null;
         }
-        if (
-            isset($predicate['pattern']) && strlen($predicate['pattern']) <= 2048
-                && in_array($predicate['pattern'][0], ['~', '#', '/'], true)
-        ) {
-            $pattern = $predicate['pattern'][0] . '(*LIMIT_MATCH=100000)(*LIMIT_DEPTH=1000)'
-                . substr($predicate['pattern'], 1);
-            $result = @preg_match($pattern, $value, $matches, PREG_UNMATCHED_AS_NULL);
-            if ($result === false) {
-                throw new \moodle_exception('regexfailed', 'local_multipicker');
-            }
-            return $result ? array_filter($matches, static fn($key) => is_string($key), ARRAY_FILTER_USE_KEY) : null;
-        }
-        throw new \moodle_exception('invalidprofile', 'local_multipicker');
+        return self::pattern($predicate, $value);
     }
 
     /**
@@ -93,10 +83,10 @@ final class placement {
         } else if ($strategy === 'ordinal') {
             $matches = $DB->get_records('course_sections', ['course' => $targetcourse, 'section' => $section->section]);
         } else {
-            throw new \moodle_exception('placementambiguous', 'local_multipicker');
+            throw new \moodle_exception('placementambiguous', 'local_filebank');
         }
         if (count($matches) !== 1) {
-            throw new \moodle_exception('placementambiguous', 'local_multipicker');
+            throw new \moodle_exception('placementambiguous', 'local_filebank');
         }
         return (int)reset($matches)->id;
     }
@@ -118,5 +108,28 @@ final class placement {
             'availability' => $cm->availability, 'sectionvisible' => (int)$section->visible,
             'sectionavailability' => $section->availability,
             'authorlocked' => author_policy::locked($cm->course)];
+    }
+
+    /**
+     * Pattern.
+     *
+     * @param array $predicate Predicate.
+     * @param string $value Value.
+     * @return ?array Result.
+     */
+    private static function pattern(array $predicate, string $value): ?array {
+        if (
+            isset($predicate['pattern']) && strlen($predicate['pattern']) <= 2048
+                && in_array($predicate['pattern'][0], ['~', '#', '/'], true)
+        ) {
+            $pattern = $predicate['pattern'][0] . '(*LIMIT_MATCH=100000)(*LIMIT_DEPTH=1000)'
+                . substr($predicate['pattern'], 1);
+            $result = @preg_match($pattern, $value, $matches, PREG_UNMATCHED_AS_NULL);
+            if ($result === false) {
+                throw new \moodle_exception('regexfailed', 'local_filebank');
+            }
+            return $result ? array_filter($matches, static fn($key) => is_string($key), ARRAY_FILTER_USE_KEY) : null;
+        }
+        throw new \moodle_exception('invalidprofile', 'local_filebank');
     }
 }

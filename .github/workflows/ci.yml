@@ -1,3 +1,6 @@
+# @copyright 2026 Didactika.org
+# @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+# @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 name: Moodle Plugin CI
 
 # Adapted from didactika/template-moodle-plugin.
@@ -8,8 +11,12 @@ on:
     branches:
       - main
       - master
-      - 'support/moodle-*'
+      - 'MOODLE_*_STABLE'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   setup:
@@ -36,10 +43,18 @@ jobs:
           # https://moodledev.io/general/releases/4.5
           # https://moodledev.io/general/releases/5.3
           MOODLE_PHP_TABLE='{
-            "405": ["8.1", "8.2", "8.3"],
+            "400": ["8.0"],
+            "401": ["8.0"],
+            "402": ["8.0"],
+            "403": ["8.0"],
+            "404": ["8.1"],
+            "405": ["8.1", "8.3"],
+            "500": ["8.2"],
+            "501": ["8.2"],
+            "502": ["8.3"],
             "503": ["8.3", "8.4"]
           }'
-          # Each distribution declares one exact Moodle release as its supported range.
+          # Expand supported lower/upper bounds across existing release codes, including the 4.x/5.x gap.
           supported_raw=$(grep -oP '\$plugin->supported\s*=\s*\[\K[^\]]+' version.php || true)
           if [ -z "$supported_raw" ]; then
             echo "::error::Could not find \$plugin->supported = [...] in version.php."
@@ -57,9 +72,12 @@ jobs:
           # GitHub Actions' own matrix schema, not jq's, and unaffected by
           # this rename.
           entries='[]'
-          supported_raw=$(echo "$supported_raw" | tr ',' '\n' | tr -d '[:space:]' | sort -u | paste -sd,)
+          supported_raw=$(echo "$supported_raw" | tr -d '[:space:]' | tr ',' '\n' | sort -u | paste -sd,)
 
-          IFS=',' read -ra versions <<< "$supported_raw"
+          lower=$(echo "$supported_raw" | cut -d, -f1)
+          upper=$(echo "$supported_raw" | awk -F, '{print $NF}')
+          expanded=$(echo "$MOODLE_PHP_TABLE" | jq -r --argjson lower "$lower" --argjson upper "$upper" 'keys[] | select((tonumber >= $lower) and (tonumber <= $upper))')
+          mapfile -t versions <<< "$expanded"
           for raw in "${versions[@]}"; do
             v=$(echo "$raw" | tr -d '[:space:]')
             [ -z "$v" ] && continue
@@ -97,10 +115,11 @@ jobs:
         image: postgres:17
         env:
           POSTGRES_USER: 'postgres'
-          POSTGRES_HOST_AUTH_METHOD: 'trust'
+          POSTGRES_PASSWORD: 'postgres'
+          POSTGRES_INITDB_ARGS: '--auth-local=scram-sha-256 --auth-host=scram-sha-256'
         ports:
           - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+        options: --health-cmd="pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 3
 
       mariadb:
         image: mariadb:11.4
@@ -111,7 +130,7 @@ jobs:
           MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval 10s --health-timeout 5s --health-retries 3
 
     strategy:
       fail-fast: false
@@ -139,37 +158,64 @@ jobs:
 
       - name: Initialise moodle-plugin-ci
         run: |
-          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
-          echo $(cd ci/bin; pwd) >> $GITHUB_PATH
-          echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
+          mkdir -p ci/bin
+          curl --fail --location --retry 3 https://github.com/moodlehq/moodle-plugin-ci/releases/download/4.5.11/moodle-plugin-ci.phar --output ci/bin/moodle-plugin-ci.phar
+          echo "39b5d0d71f5ab88fac1c3f5fc1166b8673bc0a488b29cd8c56a8bca56a8f8bca  ci/bin/moodle-plugin-ci.phar" | sha256sum --check --strict
+          chmod +x ci/bin/moodle-plugin-ci.phar
+          # Child PHP processes need the .phar suffix to resolve archive URLs.
+          ln -s moodle-plugin-ci.phar ci/bin/moodle-plugin-ci
+          echo "$(pwd)/ci/bin" >> "$GITHUB_PATH"
           sudo locale-gen en_AU.UTF-8
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
       - name: Register the native repository test integration
+        env:
+          COMPANION_PR_HEAD: ${{ github.head_ref || github.ref_name }}
         run: |
-          branch="${{ github.base_ref || github.ref_name }}"
-          case "$branch" in
-            support/moodle-5|feat/*-5) dependency=support/moodle-5 ;;
-            *) dependency=support/moodle-45 ;;
+          case "${{ matrix.moodle-branch }}" in
+            MOODLE_40[0-5]_STABLE|MOODLE_50[0-2]_STABLE) dependency=MOODLE_400_STABLE ;;
+            MOODLE_503_STABLE) dependency=main ;;
+            *) echo "Unsupported distribution"; exit 1 ;;
           esac
-          moodle-plugin-ci add-plugin --branch="$dependency" didactika/moodle-repository_multipicker
+          candidate="$COMPANION_PR_HEAD"
+          if [ -n "$candidate" ] && git ls-remote --exit-code --heads https://github.com/didactika/moodle-repository_filebank.git "refs/heads/$candidate" >/dev/null 2>&1; then
+            dependency="$candidate"
+          fi
+          moodle-plugin-ci add-plugin --branch="$dependency" didactika/moodle-repository_filebank
 
       - name: Install moodle-plugin-ci
-        run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
+        run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1 --db-pass="$DB_PASS"
         env:
           DB: ${{ matrix.database }}
+          DB_PASS: ${{ matrix.database == 'pgsql' && 'postgres' || '' }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
           # Uncomment this to run Behat tests using the Moodle App.
           # MOODLE_APP: 'true'
+
+      - name: Update browser compatibility data
+        if: ${{ !cancelled() }}
+        working-directory: moodle
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          # Refresh metadata with a supported updater runtime, then restore the core build runtime.
+          nvm install 22
+          nvm use 22
+          npx --yes update-browserslist-db@latest
+          nvm use "$(cat .nvmrc)"
 
       - name: PHP Lint
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phplint
 
       - name: PHP Mess Detector
-        continue-on-error: true # This step will show errors but will not fail
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci phpmd
+        run: |
+          set -o pipefail
+          moodle-plugin-ci phpmd 2>&1 | tee phpmd.log
+          if grep -Eq '(^|[[:space:]|])(VIOLATION|WARNING)([[:space:]|]|$)' phpmd.log; then
+            echo "::error::PHP Mess Detector reported violations or warnings."
+            exit 1
+          fi
 
       - name: Moodle Code Checker
         if: ${{ !cancelled() }}
@@ -189,11 +235,33 @@ jobs:
 
       - name: Mustache Lint
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci mustache
+        run: |
+          set -o pipefail
+          moodle-plugin-ci mustache 2>&1 | tee mustache.log
+          if grep -Eiq '(^|[[:space:]|])(warning|error|violation)([[:space:]|:]|$)|##\[(warning|error)\]' mustache.log; then
+            echo "::error::Mustache validation reported errors, warnings or violations."
+            exit 1
+          fi
 
       - name: Grunt
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci grunt --max-lint-warnings 0
+
+      - name: Moodle 5.3 React and TypeScript
+        if: ${{ !cancelled() && matrix.moodle-branch == 'MOODLE_503_STABLE' }}
+        working-directory: moodle
+        run: |
+          npx grunt jsconfig
+          npx tsc --project public/local/filebank/tsconfig.json
+          npx grunt esm
+
+      - name: Check generated component styles
+        if: ${{ !cancelled() }}
+        run: |
+          # Match the installed core's Node runtime, including legacy Node Sass bindings.
+          source "$NVM_DIR/nvm.sh"
+          nvm use "$(cat moodle/.nvmrc)"
+          node plugin/tools/build-styles.mjs moodle --check
 
       - name: PHPUnit tests
         if: ${{ !cancelled() }}

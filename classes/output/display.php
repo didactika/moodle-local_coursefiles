@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,12 +17,13 @@
 /**
  * Shared native presentation labels and options.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\output;
+namespace local_filebank\output;
 
 /**
  * Provides plain localized choices and outcomes without reading business data.
@@ -72,7 +73,7 @@ final class display {
      */
     public static function filetypes(): array {
         return [
-            '' => get_string('alltypes', 'local_multipicker'),
+            '' => get_string('alltypes', 'local_filebank'),
             'application/pdf' => 'PDF',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'Word (.docx)',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'Excel (.xlsx)',
@@ -81,7 +82,7 @@ final class display {
             'image/png' => 'PNG',
             'video/mp4' => 'MP4',
             'application/zip' => 'ZIP',
-            'text/plain' => get_string('plaintext', 'local_multipicker'),
+            'text/plain' => get_string('plaintext', 'local_filebank'),
         ];
     }
 
@@ -93,8 +94,8 @@ final class display {
      */
     public static function outcome(string $value): string {
         $key = 'outcome_' . $value;
-        return get_string_manager()->string_exists($key, 'local_multipicker')
-            ? get_string($key, 'local_multipicker') : get_string('operationfailed', 'local_multipicker');
+        return get_string_manager()->string_exists($key, 'local_filebank')
+            ? get_string($key, 'local_filebank') : get_string('operationfailed', 'local_filebank');
     }
 
     /**
@@ -104,7 +105,7 @@ final class display {
      * @return string User-facing explanation.
      */
     public static function reason(string $value): string {
-        return get_string_manager()->string_exists($value, 'local_multipicker')
-            ? get_string($value, 'local_multipicker') : get_string('operationfailed', 'local_multipicker');
+        return get_string_manager()->string_exists($value, 'local_filebank')
+            ? get_string($value, 'local_filebank') : get_string('operationfailed', 'local_filebank');
     }
 }

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,9 +17,10 @@
 /**
  * Course material invalidation events.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 $observers = [];
@@ -29,10 +30,10 @@ foreach (
 ) {
     $observers[] = [
         'eventname' => '\core\event\\' . $event,
-        'callback' => '\local_multipicker\observer::changed',
+        'callback' => '\local_filebank\observer::changed',
     ];
 }
 $observers[] = [
     'eventname' => '\mod_folder\event\folder_updated',
-    'callback' => '\local_multipicker\observer::changed',
+    'callback' => '\local_filebank\observer::changed',
 ];

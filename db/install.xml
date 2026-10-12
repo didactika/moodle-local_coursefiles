@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XMLDB PATH="local/multipicker/db" VERSION="20261008" COMMENT="MultiPicker metadata schema">
+<!--
+    @copyright 2026 Didactika.org
+    @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+    @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+-->
+<XMLDB PATH="local/filebank/db" VERSION="2026101102" COMMENT="FileBank metadata schema">
   <TABLES>
-    <TABLE NAME="local_multipicker" COMMENT="Relationship profiles">
+    <TABLE NAME="local_filebank" COMMENT="Relationship profiles">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
@@ -17,7 +22,7 @@
         <INDEX NAME="uuid" UNIQUE="true" FIELDS="uuid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_revision" COMMENT="Immutable profile revisions">
+    <TABLE NAME="local_filebank_revision" COMMENT="Immutable profile revisions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -29,14 +34,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_multipicker" REFFIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_filebank" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="profileid-revision" UNIQUE="true" FIELDS="profileid, revision" />
         <INDEX NAME="timecreated-id" UNIQUE="false" FIELDS="timecreated, id" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_course" COMMENT="Rebuildable course family memberships">
+    <TABLE NAME="local_filebank_course" COMMENT="Rebuildable course family memberships">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -50,8 +55,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_multipicker" REFFIELDS="id" />
-        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_multipicker_revision" REFFIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_filebank" REFFIELDS="id" />
+        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_filebank_revision" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="profileid-courseid" UNIQUE="true" FIELDS="profileid, courseid" />
@@ -59,7 +64,7 @@
         <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_file" COMMENT="Rebuildable supported material occurrences">
+    <TABLE NAME="local_filebank_file" COMMENT="Rebuildable supported material occurrences">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -80,7 +85,7 @@
         <INDEX NAME="cmid" UNIQUE="false" FIELDS="cmid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_coursepolicy" COMMENT="Tighten-only course authorship policies">
+    <TABLE NAME="local_filebank_policy" COMMENT="Tighten-only course authorship policies">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -96,7 +101,7 @@
         <INDEX NAME="courseid" UNIQUE="true" FIELDS="courseid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_publication" COMMENT="Explicit module publication grants">
+    <TABLE NAME="local_filebank_publish" COMMENT="Explicit module publication grants">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -107,13 +112,13 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_multipicker" REFFIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_filebank" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="profileid-cmid" UNIQUE="true" FIELDS="profileid, cmid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_attribution" COMMENT="Durable original attribution declarations">
+    <TABLE NAME="local_filebank_author" COMMENT="Durable original attribution declarations">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
@@ -134,7 +139,7 @@
         <INDEX NAME="sourcehash" UNIQUE="false" FIELDS="sourcehash" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_origin" COMMENT="Verified destination lineage bindings">
+    <TABLE NAME="local_filebank_origin" COMMENT="Verified destination lineage bindings">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="pathnamehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" />
@@ -145,13 +150,13 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="attributionid" TYPE="foreign" FIELDS="attributionid" REFTABLE="local_multipicker_attribution" REFFIELDS="id" />
+        <KEY NAME="attributionid" TYPE="foreign" FIELDS="attributionid" REFTABLE="local_filebank_author" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="pathnamehash" UNIQUE="true" FIELDS="pathnamehash" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_plan" COMMENT="Reviewed immutable migration specifications">
+    <TABLE NAME="local_filebank_plan" COMMENT="Reviewed immutable migration specifications">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="uuid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" />
@@ -165,15 +170,15 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_multipicker" REFFIELDS="id" />
-        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_multipicker_revision" REFFIELDS="id" />
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="local_filebank" REFFIELDS="id" />
+        <KEY NAME="revisionid" TYPE="foreign" FIELDS="revisionid" REFTABLE="local_filebank_revision" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="timecreated-id" UNIQUE="false" FIELDS="timecreated, id" />
         <INDEX NAME="uuid" UNIQUE="true" FIELDS="uuid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_target" COMMENT="Reviewed destination folder creation and native binding">
+    <TABLE NAME="local_filebank_target" COMMENT="Reviewed destination folder creation and native binding">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -184,11 +189,11 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_multipicker_plan" REFFIELDS="id" />
+        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_filebank_plan" REFFIELDS="id" />
       </KEYS>
       <INDEXES><INDEX NAME="planid-targetkey" UNIQUE="true" FIELDS="planid, targetkey" /></INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_operation" COMMENT="Deterministic file copy decisions and snapshots">
+    <TABLE NAME="local_filebank_operation" COMMENT="Deterministic file copy decisions and snapshots">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -207,7 +212,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_multipicker_plan" REFFIELDS="id" />
+        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_filebank_plan" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="planid-course-folder" UNIQUE="false" FIELDS="planid, sourcecourseid, sourcecmid" />
@@ -216,7 +221,7 @@
         <INDEX NAME="planid-included-state" UNIQUE="false" FIELDS="planid, included, state" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_run" COMMENT="Accountable migration execution attempts">
+    <TABLE NAME="local_filebank_run" COMMENT="Accountable migration execution attempts">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -228,14 +233,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" />
-        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_multipicker_plan" REFFIELDS="id" />
+        <KEY NAME="planid" TYPE="foreign" FIELDS="planid" REFTABLE="local_filebank_plan" REFFIELDS="id" />
       </KEYS>
       <INDEXES>
         <INDEX NAME="planid-state-time" UNIQUE="false" FIELDS="planid, state, timemodified" />
         <INDEX NAME="planid" UNIQUE="false" FIELDS="planid" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_log" COMMENT="MultiPicker action log">
+    <TABLE NAME="local_filebank_log" COMMENT="FileBank action log">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -254,7 +259,7 @@
         <INDEX NAME="entityid" UNIQUE="false" FIELDS="entityuuid,id" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_multipicker_value" COMMENT="Indexed configurable capture filter values">
+    <TABLE NAME="local_filebank_value" COMMENT="Indexed configurable capture filter values">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
         <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />

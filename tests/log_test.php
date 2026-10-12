@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,20 +17,21 @@
 /**
  * Action log permissions, pagination and privacy tests.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_filebank;
 
-use local_multipicker\local\logging\log;
-use local_multipicker\privacy\provider;
+use local_filebank\local\logging\log;
+use local_filebank\privacy\provider;
 
 /**
  * Exercises actual stored actions rather than synthetic UI counts.
- * @covers \local_multipicker\local\logging\log
- * @covers \local_multipicker\privacy\provider
+ * @covers \local_filebank\local\logging\log
+ * @covers \local_filebank\privacy\provider
  */
 final class log_test extends \advanced_testcase {
     /**
@@ -41,7 +42,7 @@ final class log_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         foreach ([100, 200, 300, 400] as $timestamp) {
-            $DB->insert_record('local_multipicker_log', (object)[
+            $DB->insert_record('local_filebank_log', (object)[
                 'userid' => 0, 'action' => 'migration_batch', 'entityuuid' => 'date-filter',
                 'details' => '{}', 'timecreated' => $timestamp,
             ]);
@@ -62,12 +63,12 @@ final class log_test extends \advanced_testcase {
         $reader = $this->getDataGenerator()->create_user();
         $role = $this->getDataGenerator()->create_role();
         $system = \context_system::instance();
-        assign_capability('local/multipicker:viewlog', CAP_ALLOW, $role, $system->id);
+        assign_capability('local/filebank:viewlog', CAP_ALLOW, $role, $system->id);
         role_assign($role, $reader->id, $system->id);
         $this->setUser($reader);
         $this->assertCount(1, log::page()['records']);
-        $this->assertFalse(has_capability('local/multipicker:manageprofiles', $system));
-        $this->assertFalse(has_capability('local/multipicker:planmigration', $system));
+        $this->assertFalse(has_capability('local/filebank:manageprofiles', $system));
+        $this->assertFalse(has_capability('local/filebank:planmigration', $system));
     }
 
     /**
@@ -122,11 +123,11 @@ final class log_test extends \advanced_testcase {
         $this->assertEquals([$system->id], $contexts->get_contextids());
         provider::delete_data_for_user(new \core_privacy\local\request\approved_contextlist(
             $actor,
-            'local_multipicker',
+            'local_filebank',
             [$system->id]
         ));
-        $this->assertFalse($DB->record_exists('local_multipicker_log', ['userid' => $actor->id]));
-        $this->assertTrue($DB->record_exists('local_multipicker_log', ['userid' => $other->id]));
+        $this->assertFalse($DB->record_exists('local_filebank_log', ['userid' => $actor->id]));
+        $this->assertTrue($DB->record_exists('local_filebank_log', ['userid' => $other->id]));
         $this->assertEmpty(provider::get_contexts_for_userid($actor->id)->get_contextids());
     }
 }

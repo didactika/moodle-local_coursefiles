@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
 /**
  * Readable relationship and placement rules.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\output;
+namespace local_filebank\output;
 
 /**
  * Exports rule descriptions without HTML or configuration changes.
@@ -34,30 +35,41 @@ final class profile_summary {
      * @param bool $placement Include migration placement rules.
      * @return array Template context.
      */
-    public static function data(array $config, bool $placement = true): array {
+    public static function data(array $config, bool $placement): array {
         $migration = $config['migration'] ?? [];
         $rows = [];
         foreach ($migration['correspondences'] ?? [$migration] as $correspondence) {
             foreach (['source_module', 'target_module'] as $name) {
                 $selector = $correspondence[$name] ?? [];
-                $rows[] = ['label' => get_string($name, 'local_multipicker'),
-                'value' => implode(' / ', array_filter([
-                    $selector['type'] ?? 'folder', $selector['field'] ?? 'name',
-                    $selector['equals'] ?? $selector['template'] ?? $selector['pattern']
-                        ?? get_string('nomatchcondition', 'local_multipicker'),
-                ]))];
+                $rows[] = ['label' => get_string($name, 'local_filebank'),
+                'value' => implode(
+                    ' / ',
+                    array_filter(
+                        [
+                            $selector['type'] ?? 'folder', $selector['field'] ?? 'name',
+                            $selector['equals'] ?? $selector['template'] ?? $selector['pattern']
+                                ?? get_string('nomatchcondition', 'local_filebank'),
+                        ]
+                    )
+                )];
             }
         }
         $strategy = $migration['section_match']['strategy'] ?? 'ordinal';
-        $rows[] = ['label' => get_string('sectionmatch', 'local_multipicker'),
-            'value' => get_string('sectionstrategy_' . $strategy, 'local_multipicker')];
-        $rows[] = ['label' => get_string('duplicaterule', 'local_multipicker'),
-            'value' => get_string(($migration['same_content_different_path'] ?? 'skip-and-report') === 'keep'
-                ? 'duplicatekeep' : 'duplicateskip', 'local_multipicker')];
-        $rows[] = ['label' => get_string('conflictrule', 'local_multipicker'),
-            'value' => get_string(($migration['same_path_different_content'] ?? 'block') === 'overwrite'
-                ? 'conflictoverwrite' : 'conflictblock', 'local_multipicker')];
-        $rules = new \local_multipicker\local\profile\profile_config($config);
+        $rows[] = ['label' => get_string('sectionmatch', 'local_filebank'),
+            'value' => get_string('sectionstrategy_' . $strategy, 'local_filebank')];
+        $rows[] = ['label' => get_string('duplicaterule', 'local_filebank'),
+            'value' => get_string(
+                ($migration['same_content_different_path'] ?? 'skip-and-report') === 'keep'
+                    ? 'duplicatekeep' : 'duplicateskip',
+                'local_filebank'
+            )];
+        $rows[] = ['label' => get_string('conflictrule', 'local_filebank'),
+            'value' => get_string(
+                ($migration['same_path_different_content'] ?? 'block') === 'overwrite'
+                    ? 'conflictoverwrite' : 'conflictblock',
+                'local_filebank'
+            )];
+        $rules = new \local_filebank\local\profile\profile_config($config);
         $filters = [];
         foreach ($rules->filter_definitions() as $definition) {
             $filters[] = ['label' => display::label($definition['label']), 'capture' => $definition['capture']];

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 /**
  * Incremental reconstructible material catalog.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\catalog;
+namespace local_filebank\local\catalog;
 
-use local_multipicker\local\profile\profiles;
+use local_filebank\local\profile\profiles;
 
 /**
  * Refreshes one course at a time under a shared metadata lock.
@@ -35,66 +36,98 @@ final class indexer {
      * @param int $courseid Course.
      */
     public static function refresh(int $courseid): void {
+
         global $DB;
-        $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('index:' . $courseid, 10);
+        $lock = \core\lock\lock_config::get_lock_factory('local_filebank')->get_lock('index:' . $courseid, 10);
         if (!$lock) {
-            throw new \moodle_exception('lockfailed', 'local_multipicker');
+            throw new \moodle_exception('lockfailed', 'local_filebank');
         }
         try {
             $course = $DB->get_record('course', ['id' => $courseid]);
             $transaction = $DB->start_delegated_transaction();
-            $DB->delete_records('local_multipicker_value', ['courseid' => $courseid]);
-            $DB->delete_records('local_multipicker_course', ['courseid' => $courseid]);
-            $DB->delete_records('local_multipicker_file', ['courseid' => $courseid]);
+            $DB->delete_records('local_filebank_value', ['courseid' => $courseid]);
+            $DB->delete_records('local_filebank_course', ['courseid' => $courseid]);
+            $DB->delete_records('local_filebank_file', ['courseid' => $courseid]);
             if ($course && $courseid != SITEID) {
-                foreach ($DB->get_records('local_multipicker', ['enabled' => 1]) as $profile) {
-                    [$profile, $revision, $rules] = profiles::load($profile->id);
-                    try {
-                        $identity = $rules->resolve($course);
-                    } catch (\moodle_exception $exception) {
-                        $identity = null;
-                    }
-                    if (!$identity) {
-                        continue;
-                    }
-                    $DB->insert_record('local_multipicker_course', (object)[
-                        'profileid' => $profile->id, 'revisionid' => $revision->id, 'courseid' => $courseid,
-                        'familykey' => $identity['familykey'], 'familyhash' => $identity['familyhash'],
-                        'edition' => $identity['edition'], 'dimensions' => json_encode($identity['dimensions']),
-                        'timemodified' => time(),
-                    ]);
-                    foreach ($identity['filters'] as $name => $value) {
-                        if ($value !== '') {
-                            $DB->insert_record('local_multipicker_value', (object)[
-                                'profileid' => $profile->id, 'revisionid' => $revision->id,
-                                'courseid' => $courseid, 'name' => $name, 'value' => $value,
-                            ]);
-                        }
-                    }
-                }
-                foreach (get_fast_modinfo($courseid)->get_cms() as $cm) {
-                    if (
-                        !source_registry::provider($cm->modname)
-                            || !$course->visible || !$cm->visible || !empty($cm->availability)
-                    ) {
-                        continue;
-                    }
-                    $files = source_registry::provider($cm->modname)->files($cm);
-                    foreach ($files as $file) {
-                        if (!$file->is_external_file()) {
-                            $DB->insert_record('local_multipicker_file', (object)[
-                                'courseid' => $courseid, 'cmid' => $cm->id, 'pathnamehash' => $file->get_pathnamehash(),
-                                'contenthash' => $file->get_contenthash(), 'filesize' => $file->get_filesize(),
-                                'filename' => $file->get_filename(), 'mimetype' => $file->get_mimetype(),
-                                'timemodified' => time(),
-                            ]);
-                        }
-                    }
-                }
+                self::memberships($course, $courseid);
+                self::materials($course, $courseid);
             }
             $transaction->allow_commit();
         } finally {
             $lock->release();
+        }
+    }
+
+    /**
+     * Resolve each enabled profile and index its nonempty captures.
+     *
+     * @param \stdClass $course Current course record.
+     * @param int $courseid Indexed course.
+     */
+    private static function memberships(\stdClass $course, int $courseid): void {
+        global $DB;
+        foreach ($DB->get_records('local_filebank', ['enabled' => 1]) as $profile) {
+            [$profile, $revision, $rules] = profiles::load($profile->id);
+            try {
+                $identity = $rules->resolve($course);
+            } catch (\moodle_exception $exception) {
+                $identity = null;
+            }
+            if (!$identity) {
+                continue;
+            }
+            $DB->insert_record(
+                'local_filebank_course',
+                (object)[
+                    'profileid' => $profile->id, 'revisionid' => $revision->id, 'courseid' => $courseid,
+                    'familykey' => $identity['familykey'], 'familyhash' => $identity['familyhash'],
+                    'edition' => $identity['edition'], 'dimensions' => json_encode($identity['dimensions']),
+                    'timemodified' => time(),
+                ]
+            );
+            foreach ($identity['filters'] as $name => $value) {
+                if ($value !== '') {
+                    $DB->insert_record(
+                        'local_filebank_value',
+                        (object)[
+                            'profileid' => $profile->id, 'revisionid' => $revision->id,
+                            'courseid' => $courseid, 'name' => $name, 'value' => $value,
+                        ]
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Index readable native teaching files without expanding unsupported module areas.
+     *
+     * @param \stdClass $course Current course record.
+     * @param int $courseid Indexed course.
+     */
+    private static function materials(\stdClass $course, int $courseid): void {
+        global $DB;
+        foreach (get_fast_modinfo($courseid)->get_cms() as $cm) {
+            if (
+                !source_registry::provider($cm->modname)
+                    || !$course->visible || !$cm->visible || !empty($cm->availability)
+            ) {
+                continue;
+            }
+            $files = source_registry::provider($cm->modname)->files($cm);
+            foreach ($files as $file) {
+                if (!$file->is_external_file()) {
+                    $DB->insert_record(
+                        'local_filebank_file',
+                        (object)[
+                            'courseid' => $courseid, 'cmid' => $cm->id, 'pathnamehash' => $file->get_pathnamehash(),
+                            'contenthash' => $file->get_contenthash(), 'filesize' => $file->get_filesize(),
+                            'filename' => $file->get_filename(), 'mimetype' => $file->get_mimetype(),
+                            'timemodified' => time(),
+                        ]
+                    );
+                }
+            }
         }
     }
 }

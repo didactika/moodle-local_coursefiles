@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,26 +15,27 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * FileBank native material import integration.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
-use local_multipicker\local\selection\browser_controller;
+use local_filebank\local\selection\browser_controller;
 
 $token = required_param('scope', PARAM_ALPHANUM);
 require_login();
-$scope = \local_multipicker\local\selection\draft_scope::describe($token, sesskey());
+$scope = \local_filebank\local\selection\draft_scope::describe($token, sesskey());
 $PAGE->set_course(get_course($scope['courseid']));
 $PAGE->set_context(context::instance_by_id($scope['contextid']));
-$PAGE->set_url('/local/multipicker/selection/index.php', ['scope' => $token]);
+$PAGE->set_url('/local/filebank/selection/index.php', ['scope' => $token]);
 $PAGE->set_pagelayout('embedded');
-$PAGE->set_title(get_string('importmaterials', 'local_multipicker'));
+$PAGE->set_title(get_string('importmaterials', 'local_filebank'));
 $input = null;
 if (data_submitted()) {
     require_sesskey();
@@ -42,13 +43,13 @@ if (data_submitted()) {
 }
 $result = browser_controller::data($token, $input);
 if ($result['review']) {
-    redirect(new moodle_url('/local/multipicker/selection/review.php', ['scope' => $token]));
+    redirect(new moodle_url('/local/filebank/selection/review.php', ['scope' => $token]));
 }
 $PAGE->set_heading($PAGE->course->fullname);
-$PAGE->requires->js_call_amd('local_multipicker/browser', 'selection');
+$PAGE->requires->js_call_amd('local_filebank/browser', 'selection');
 echo $OUTPUT->header();
-echo html_writer::start_div('', ['data-multipicker-panel' => '']);
+echo html_writer::start_div('', ['data-filebank-panel' => '']);
 echo $result['message'];
-echo $OUTPUT->render_from_template('local_multipicker/local/selection/browser', $result['data']);
+echo $OUTPUT->render_from_template('local_filebank/local/selection/browser', $result['data']);
 echo html_writer::end_div();
 echo $OUTPUT->footer();

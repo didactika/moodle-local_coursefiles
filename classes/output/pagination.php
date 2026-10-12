@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_multipicker\output;
+namespace local_filebank\output;
 
 /**
  * One bounded pagination contract for administration lists and review pages.
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class pagination {
     /**
@@ -59,11 +60,11 @@ final class pagination {
         $url = new \moodle_url($url, ['perpage' => $size]);
         $data = ['id' => \html_writer::random_id('mp-page-'), 'url' => $url->out(false),
             'pageparameter' => $parameter, 'sizes' => [],
-            'help' => $OUTPUT->help_icon('pagesize', 'local_multipicker'),
-            'summary' => get_string('paginationrange', 'local_multipicker', (object)[
+            'help' => $OUTPUT->help_icon('pagesize', 'local_filebank'),
+            'summary' => get_string('paginationrange', 'local_filebank', (object)[
                 'first' => $total ? $page * $size + 1 : 0, 'last' => min($total, ($page + 1) * $size), 'total' => $total,
             ]),
-            'pagelabel' => get_string('paginationpage', 'local_multipicker', (object)[
+            'pagelabel' => get_string('paginationpage', 'local_filebank', (object)[
                 'page' => $page + 1, 'pages' => max(1, (int)ceil($total / $size)),
             ]),
         ];
@@ -75,6 +76,6 @@ final class pagination {
                 $data[$key . 'url'] = (new \moodle_url($url, [$parameter => $number]))->out(false);
             }
         }
-        return $OUTPUT->render_from_template('local_multipicker/local/navigation/pagination', $data);
+        return $OUTPUT->render_from_template('local_filebank/local/navigation/pagination', $data);
     }
 }

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
 /**
  * Bounded course/module event observers.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker;
+namespace local_filebank;
 
 /**
  * Enqueues work without walking course contents inside event handlers.
@@ -35,7 +36,7 @@ final class observer {
     public static function changed(\core\event\base $event): void {
         $courseid = (int)$event->courseid;
         if ($courseid && $courseid != SITEID) {
-            $task = new \local_multipicker\task\refresh_course();
+            $task = new \local_filebank\task\refresh_course();
             $task->set_custom_data(['courseid' => $courseid]);
             \core\task\manager::queue_adhoc_task($task, true);
         }

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
 /**
  * Bounded course catalog refresh task.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\task;
+namespace local_filebank\task;
 
 /**
  * Refreshes one dirty course independently of migration execution.
@@ -31,6 +32,6 @@ final class refresh_course extends \core\task\adhoc_task {
      * Execute a refresh.
      */
     public function execute(): void {
-        \local_multipicker\local\catalog\indexer::refresh((int)$this->get_custom_data()->courseid);
+        \local_filebank\local\catalog\indexer::refresh((int)$this->get_custom_data()->courseid);
     }
 }

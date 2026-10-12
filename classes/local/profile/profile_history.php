@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,11 +16,12 @@
 
 /**
  * Profile version comparison, restoration and retention.
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\profile;
+namespace local_filebank\local\profile;
 
 /**
  * Owns historical configurations under one profile identity.
@@ -34,16 +35,16 @@ final class profile_history {
      */
     public static function restore(int $profileid, int $versionid): int {
         global $DB;
-        require_capability('local/multipicker:manageprofiles', \context_system::instance());
-        $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('profile:' . $profileid, 10);
+        require_capability('local/filebank:manageprofiles', \context_system::instance());
+        $lock = \core\lock\lock_config::get_lock_factory('local_filebank')->get_lock('profile:' . $profileid, 10);
         if (!$lock) {
-            throw new \moodle_exception('lockfailed', 'local_multipicker');
+            throw new \moodle_exception('lockfailed', 'local_filebank');
         }
         try {
             $transaction = $DB->start_delegated_transaction();
-            $profile = $DB->get_record('local_multipicker', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
+            $profile = $DB->get_record('local_filebank', ['id' => $profileid, 'deleted' => 0], '*', MUST_EXIST);
             $version = $DB->get_record(
-                'local_multipicker_revision',
+                'local_filebank_revision',
                 ['id' => $versionid, 'profileid' => $profileid],
                 '*',
                 MUST_EXIST
@@ -52,16 +53,16 @@ final class profile_history {
             new profile_config($config);
             if ((int)$profile->activeid !== $versionid) {
                 $previousid = (int)$profile->activeid;
-                $previous = $DB->get_record('local_multipicker_revision', ['id' => $previousid], '*', MUST_EXIST);
+                $previous = $DB->get_record('local_filebank_revision', ['id' => $previousid], '*', MUST_EXIST);
                 $oldconfig = json_decode($previous->configjson, true);
                 $profile->activeid = $versionid;
                 $profile->name = $config['name'];
-                $DB->update_record('local_multipicker', $profile);
+                $DB->update_record('local_filebank', $profile);
                 if (
                     $oldconfig['relationship'] === $config['relationship']
                         && ($oldconfig['scope'] ?? []) === ($config['scope'] ?? [])
                 ) {
-                    foreach (['local_multipicker_course', 'local_multipicker_value'] as $table) {
+                    foreach (['local_filebank_course', 'local_filebank_value'] as $table) {
                         $DB->set_field(
                             $table,
                             'revisionid',
@@ -71,8 +72,8 @@ final class profile_history {
                     }
                 }
                 // Rebuild derived catalog metadata; historical migration snapshots remain unchanged.
-                \local_multipicker\task\refresh_profile::queue($profileid, $versionid);
-                \local_multipicker\local\logging\log::record(
+                \local_filebank\task\refresh_profile::queue($profileid, $versionid);
+                \local_filebank\local\logging\log::record(
                     'profile_activated',
                     $profile->uuid,
                     ['revision' => $version->revision, 'restored' => true]
@@ -123,41 +124,28 @@ final class profile_history {
      * @return int Removed versions.
      */
     public static function clean(int $now): int {
+
         global $DB;
-        $days = (int)get_config('local_multipicker', 'versionretentiondays');
-        $max = (int)get_config('local_multipicker', 'versionretentionmax');
+        $days = (int)get_config('local_filebank', 'versionretentiondays');
+        $max = (int)get_config('local_filebank', 'versionretentionmax');
         if (!$days && !$max) {
             return 0;
         }
-        $expired = [];
-        $params = [];
-        if ($days > 0) {
-            $expired[] = 'r.timecreated < ?';
-            $params[] = $now - $days * DAYSECS;
-        }
-        if ($max > 0) {
-            $expired[] = '(SELECT COUNT(1) FROM {local_multipicker_revision} n
-                WHERE n.profileid = r.profileid AND n.revision > r.revision) >= ?';
-            $params[] = $max;
-        }
-        $records = $DB->get_records_sql('SELECT r.id, r.profileid FROM {local_multipicker_revision} r
-            JOIN {local_multipicker} p ON p.id = r.profileid WHERE p.activeid <> r.id
-            AND NOT EXISTS (SELECT 1 FROM {local_multipicker_plan} m WHERE m.revisionid = r.id)
-            AND (' . implode(' OR ', $expired) . ') ORDER BY r.timecreated, r.id', $params, 0, 100);
+        $records = self::expired($now, $days, $max);
         $count = 0;
         foreach ($records as $record) {
-            $lock = \core\lock\lock_config::get_lock_factory('local_multipicker')->get_lock('profile:' . $record->profileid, 0);
+            $lock = \core\lock\lock_config::get_lock_factory('local_filebank')->get_lock('profile:' . $record->profileid, 0);
             if (!$lock) {
                 continue;
             }
             try {
                 $transaction = $DB->start_delegated_transaction();
                 if (
-                    !$DB->record_exists('local_multipicker', ['activeid' => $record->id])
-                        && !$DB->record_exists('local_multipicker_plan', ['revisionid' => $record->id])
+                    !$DB->record_exists('local_filebank', ['activeid' => $record->id])
+                        && !$DB->record_exists('local_filebank_plan', ['revisionid' => $record->id])
                 ) {
-                    foreach (['local_multipicker_value', 'local_multipicker_course', 'local_multipicker_revision'] as $table) {
-                        $DB->delete_records($table, [$table === 'local_multipicker_revision' ? 'id' : 'revisionid' => $record->id]);
+                    foreach (['local_filebank_value', 'local_filebank_course', 'local_filebank_revision'] as $table) {
+                        $DB->delete_records($table, [$table === 'local_filebank_revision' ? 'id' : 'revisionid' => $record->id]);
                     }
                     $count++;
                 }
@@ -167,5 +155,38 @@ final class profile_history {
             }
         }
         return $count;
+    }
+
+    /**
+     * Expired.
+     *
+     * @param int $now Now.
+     * @param int $days Days.
+     * @param int $max Max.
+     * @return array Result.
+     */
+    private static function expired(int $now, int $days, int $max): array {
+        global $DB;
+        $expired = [];
+        $params = [];
+        if ($days > 0) {
+            $expired[] = 'r.timecreated < ?';
+            $params[] = $now - $days * DAYSECS;
+        }
+        if ($max > 0) {
+            $expired[] = '(SELECT COUNT(1) FROM {local_filebank_revision} n
+                WHERE n.profileid = r.profileid AND n.revision > r.revision) >= ?';
+            $params[] = $max;
+        }
+        $records = $DB->get_records_sql(
+            'SELECT r.id, r.profileid FROM {local_filebank_revision} r
+                JOIN {local_filebank} p ON p.id = r.profileid WHERE p.activeid <> r.id
+                AND NOT EXISTS (SELECT 1 FROM {local_filebank_plan} m WHERE m.revisionid = r.id)
+                AND (' . implode(' OR ', $expired) . ') ORDER BY r.timecreated, r.id',
+            $params,
+            0,
+            100
+        );
+        return $records;
     }
 }

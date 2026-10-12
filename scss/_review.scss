@@ -1,0 +1,108 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* Resulting-file review keeps names readable until the native rename modal opens. */
+
+.filebank-review {
+    &-form {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+    &-name {
+        flex: 1 1 70%;
+        min-width: 0;
+        gap: .4rem;
+        margin-inline-end: .75rem;
+    }
+}
+
+.filebank-tree {
+    list-style: none;
+    margin: 0;
+    padding-left: 1rem;
+    border-left: 1px solid var(--filebank-border);
+    &-root {
+        padding: .75rem;
+        border: 1px solid var(--filebank-border);
+        border-radius: var(--filebank-radius);
+    }
+    &-node {
+        padding: .35rem 0;
+    }
+    &-node summary {
+        padding: .25rem;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+    .filebank-disclosure-icon {
+        width: 1.4rem;
+        height: 1.4rem;
+        border: 0;
+    }
+}
+
+.filebank-tree-file {
+    padding: .5rem;
+    border-radius: .25rem;
+    cursor: pointer;
+    &:hover {
+        background: color-mix(in srgb, var(--filebank-primary) 5%, var(--filebank-surface));
+    }
+    .badge {
+        margin: .25rem 0;
+        white-space: normal;
+        flex-shrink: 0;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+}
+
+.filebank-review {
+    &-name [data-filebank-file-name] {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        flex: 0 1 auto;
+    }
+    &-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+        gap: .35rem;
+    }
+    &-actions {
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+    }
+    &-actions .badge {
+        white-space: normal;
+        max-width: 8rem;
+    }
+}
+
+.filebank-pencil {
+    &.btn {
+        border: 0;
+        background: transparent;
+        padding: .25rem;
+        box-shadow: none;
+        flex-shrink: 0;
+    }
+}
+
+.filebank-pencil.btn:hover, .filebank-pencil.btn:active, .filebank-pencil.btn:focus {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.filebank-pencil {
+    &.btn:focus-visible {
+        outline: 2px solid var(--filebank-primary);
+        outline-offset: 2px;
+    }
+}
+

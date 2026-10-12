@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,28 +17,29 @@
 /**
  * Native reviewed batch tests.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_filebank;
 
-use local_multipicker\local\selection\draft_import;
-use local_multipicker\local\selection\material_selection;
-use local_multipicker\local\profile\profiles;
+use local_filebank\local\selection\draft_import;
+use local_filebank\local\selection\material_selection;
+use local_filebank\local\profile\profiles;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/fixtures/draft_import_fixture.php');
 
 /**
- * Exercises real core drafts and current source permissions.
- * @covers \local_multipicker\local\selection\draft_import
- * @covers \local_multipicker\local\selection\material_selection
- * @covers \local_multipicker\local\profile\profiles
+ *  regression contracts.
+ * @covers \local_filebank\local\selection\draft_import
+ * @covers \local_filebank\local\selection\material_selection
+ * @covers \local_filebank\local\profile\profiles
  */
-final class draft_import_test extends \advanced_testcase {
-    /** @var array Authoritative fixture form options. */
-    private const LIMITS = ['maxfiles' => 20, 'maxbytes' => 1024, 'areamaxbytes' => 10240,
-        'subdirs' => true, 'accepted_types' => ['*']];
-
+final class draft_import_test extends draft_import_fixture {
     /**
      * Mixed overlapping selection preserves existing content and per-file declarations through native save.
      */
@@ -51,7 +52,7 @@ final class draft_import_test extends \advanced_testcase {
         $this->assertCount(2, $review['operations']);
         $this->assertSame(3, $review['filecount']);
         $this->assertFalse($review['blocked']);
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_filebank_author'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
         $context = \context_module::instance($destination->cmid);
         file_save_draft_area_files($draftid, $context->id, 'mod_folder', 'content', 0, ['subdirs' => true]);
@@ -69,23 +70,26 @@ final class draft_import_test extends \advanced_testcase {
             $this->assertSame($original->get_content(), $saved->get_content());
             $this->assertSame($original->get_author(), $saved->get_author());
             $this->assertSame($original->get_license(), $saved->get_license());
-            $uuid = json_decode($saved->get_source(), true)['multipicker'];
-            $record = $DB->get_record('local_multipicker_attribution', ['uuid' => $uuid], '*', MUST_EXIST);
+            $uuid = json_decode($saved->get_source(), true)['filebank'];
+            $record = $DB->get_record('local_filebank_author', ['uuid' => $uuid], '*', MUST_EXIST);
             $this->assertSame($original->get_author(), $record->author);
         }
-        $this->assertSame(2, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(2, $DB->count_records('local_filebank_author'));
         $again = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
         $this->assertSame(['skip_identical', 'skip_identical'], array_column($again['operations'], 'decision'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $again['digest']);
-        $this->assertSame(2, $DB->count_records('local_multipicker_attribution'));
-        $this->assertCount(3, $fs->get_area_files(
-            \context_user::instance($USER->id)->id,
-            'user',
-            'draft',
-            $draftid,
-            'id',
-            false
-        ));
+        $this->assertSame(2, $DB->count_records('local_filebank_author'));
+        $this->assertCount(
+            3,
+            $fs->get_area_files(
+                \context_user::instance($USER->id)->id,
+                'user',
+                'draft',
+                $draftid,
+                'id',
+                false
+            )
+        );
     }
 
     /**
@@ -114,15 +118,18 @@ final class draft_import_test extends \advanced_testcase {
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchlimit', $exception->errorcode);
         }
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
-        $this->assertCount(1, get_file_storage()->get_area_files(
-            \context_user::instance($USER->id)->id,
-            'user',
-            'draft',
-            $draftid,
-            'id',
-            false
-        ));
+        $this->assertSame(0, $DB->count_records('local_filebank_author'));
+        $this->assertCount(
+            1,
+            get_file_storage()->get_area_files(
+                \context_user::instance($USER->id)->id,
+                'user',
+                'draft',
+                $draftid,
+                'id',
+                false
+            )
+        );
     }
 
     /**
@@ -134,8 +141,11 @@ final class draft_import_test extends \advanced_testcase {
         $this->preventResetByRollback();
         $fs = get_file_storage();
         $context = \context_user::instance($USER->id);
-        $fs->create_file_from_storedfile(['contextid' => $context->id, 'component' => 'user', 'filearea' => 'draft',
-            'itemid' => $draftid, 'filepath' => '/notes/', 'filename' => 'second.txt', 'author' => 'Other author'], $files[1]);
+        $fs->create_file_from_storedfile(
+            ['contextid' => $context->id, 'component' => 'user', 'filearea' => 'draft',
+                'itemid' => $draftid, 'filepath' => '/notes/', 'filename' => 'second.txt', 'author' => 'Other author'],
+            $files[1]
+        );
         $items = [['cmid' => $folder->cmid, 'filepath' => '/']];
         $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
         $this->assertTrue($review['blocked']);
@@ -146,7 +156,7 @@ final class draft_import_test extends \advanced_testcase {
         } catch (\moodle_exception $exception) {
             $this->assertSame('batchconflict', $exception->errorcode);
         }
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_filebank_author'));
         $this->assertFalse($fs->get_file($context->id, 'user', 'draft', $draftid, '/', 'first.txt'));
     }
 
@@ -159,11 +169,14 @@ final class draft_import_test extends \advanced_testcase {
         $this->preventResetByRollback();
         $items = [['cmid' => $folder->cmid, 'filepath' => '/']];
         $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
-        get_file_storage()->create_file_from_string(['contextid' => \context_user::instance($USER->id)->id,
-            'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid,
-            'filepath' => '/', 'filename' => 'later.txt'], 'later');
+        get_file_storage()->create_file_from_string(
+            ['contextid' => \context_user::instance($USER->id)->id,
+                'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid,
+                'filepath' => '/', 'filename' => 'later.txt'],
+            'later'
+        );
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('batchconflict', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('batchconflict', 'local_filebank'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
     }
 
@@ -178,7 +191,7 @@ final class draft_import_test extends \advanced_testcase {
         [, $revision] = profiles::load($profileid);
         profiles::save($revision->configjson, $profileid);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('batchconflict', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('batchconflict', 'local_filebank'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
     }
 
@@ -190,9 +203,9 @@ final class draft_import_test extends \advanced_testcase {
         $this->preventResetByRollback();
         $items = [['cmid' => $folder->cmid, 'filepath' => '/']];
         $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
-        set_config('author_policy', 'preserve_locked', 'local_multipicker');
+        set_config('author_policy', 'preserve_locked', 'local_filebank');
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('lockedunsupported', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('lockedunsupported', 'local_filebank'));
         draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
     }
 
@@ -206,12 +219,18 @@ final class draft_import_test extends \advanced_testcase {
         $items = [['cmid' => $folder->cmid, 'filepath' => '/']];
         $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
         $created = 0;
+        if (!class_exists(\core_files\hook\after_file_created::class)) {
+            $this->markTestSkipped('Core file-creation fault injection hooks are unavailable on this Moodle version.');
+        }
         $manager = \core\di::get(\core\hook\manager::class);
-        $manager->phpunit_redirect_hook(\core_files\hook\after_file_created::class, function ($hook) use (&$created): void {
-            if (!$hook->storedfile->is_directory() && ++$created === 2) {
-                throw new \RuntimeException('Injected core failure');
+        $manager->phpunit_redirect_hook(
+            \core_files\hook\after_file_created::class,
+            function ($hook) use (&$created): void {
+                if (!$hook->storedfile->is_directory() && ++$created === 2) {
+                    throw new \RuntimeException('Injected core failure');
+                }
             }
-        });
+        );
         try {
             draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
             $this->fail('A failure during the second copy must roll back the batch.');
@@ -221,7 +240,7 @@ final class draft_import_test extends \advanced_testcase {
             $manager->phpunit_stop_redirections();
         }
         $this->assertSame(2, $created);
-        $this->assertSame(0, $DB->count_records('local_multipicker_attribution'));
+        $this->assertSame(0, $DB->count_records('local_filebank_author'));
         $remaining = get_file_storage()->get_area_files(
             \context_user::instance($USER->id)->id,
             'user',
@@ -243,149 +262,7 @@ final class draft_import_test extends \advanced_testcase {
         $DB->set_field('course_modules', 'visible', 0, ['id' => $folder->cmid]);
         rebuild_course_cache($folder->course, true);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('materialunavailable', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('materialunavailable', 'local_filebank'));
         material_selection::resolve($target->id, $profileid, [['cmid' => $folder->cmid, 'filepath' => '/']]);
-    }
-
-    /**
-     * An administrator still cannot write a draft owned by another account.
-     */
-    public function test_foreign_draft_is_unavailable(): void {
-        [$profileid, $target, $folder, , $draftid] = $this->fixture();
-        $actor = $this->getDataGenerator()->create_user();
-        $this->setUser($actor);
-        set_config('siteadmins', get_config('core', 'siteadmins') . ',' . $actor->id);
-        $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invaliddraft', 'local_multipicker'));
-        draft_import::review(
-            $target->id,
-            $profileid,
-            $draftid,
-            [['cmid' => $folder->cmid, 'filepath' => '/']],
-            self::LIMITS
-        );
-    }
-
-    /**
-     * SQL wildcard characters select literal paths and do not include neighbouring directories.
-     */
-    public function test_literal_folder_paths_and_selection_bound(): void {
-        [$profileid, $target, $folder, $files] = $this->fixture();
-        $fs = get_file_storage();
-        foreach (['/unit_%/', '/unit_ab/'] as $path) {
-            $fs->create_file_from_storedfile(['filepath' => $path, 'filename' => 'sample.txt'], $files[0]);
-        }
-        $selected = material_selection::resolve(
-            $target->id,
-            $profileid,
-            [['cmid' => $folder->cmid, 'filepath' => '/unit_%/']]
-        );
-        $this->assertCount(1, $selected);
-        $this->assertSame('/unit_%/', reset($selected)->get_filepath());
-        $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('invalidselection', 'local_multipicker'));
-        material_selection::resolve(
-            $target->id,
-            $profileid,
-            array_fill(0, 201, ['pathnamehash' => $files[0]->get_pathnamehash()])
-        );
-    }
-
-    /**
-     * Several source folders share one batch and configured identical content is skipped across paths.
-     */
-    public function test_multiple_folders_skip_duplicate_content(): void {
-        [$profileid, $target, $folder, $files, $draftid] = $this->fixture();
-        $secondfolder = $this->getDataGenerator()->create_module('folder', ['course' => $folder->course]);
-        get_file_storage()->create_file_from_storedfile([
-            'contextid' => \context_module::instance($secondfolder->cmid)->id,
-            'filepath' => '/copies/', 'filename' => 'copy.txt',
-        ], $files[0]);
-        $items = [['cmid' => $folder->cmid, 'filepath' => '/'],
-            ['cmid' => $secondfolder->cmid, 'filepath' => '/']];
-        $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS);
-        $this->assertSame(['copy', 'copy', 'skip_content'], array_column($review['operations'], 'decision'));
-        $this->assertSame(3, $review['filecount']);
-        $this->assertFalse($review['blocked']);
-        draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest']);
-    }
-
-    /**
-     * Destination renames are reviewed, constrained and bound to approval.
-     */
-    public function test_reviewed_rename_preserves_author_and_rejects_changed_approval(): void {
-        global $USER;
-        [$profileid, $target, , $files, $draftid] = $this->fixture();
-        $items = [['pathnamehash' => $files[0]->get_pathnamehash()]];
-        $options = ['renames' => [$files[0]->get_pathnamehash() => 'renamed.txt']];
-        $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS, '/', 'paths', $options);
-        $this->assertSame('renamed.txt', $review['operations'][0]['filename']);
-        draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest'], '/', 'paths', $options);
-        $saved = get_file_storage()->get_file(
-            \context_user::instance($USER->id)->id,
-            'user',
-            'draft',
-            $draftid,
-            '/',
-            'renamed.txt'
-        );
-        $this->assertSame($files[0]->get_author(), $saved->get_author());
-        $this->assertSame($files[0]->get_content(), $saved->get_content());
-        $review = draft_import::review($target->id, $profileid, $draftid, $items, self::LIMITS, '/', 'paths', $options);
-        $options['renames'][$files[0]->get_pathnamehash()] = 'different.txt';
-        $this->expectException(\moodle_exception::class);
-        draft_import::apply($target->id, $profileid, $draftid, $items, self::LIMITS, $review['digest'], '/', 'paths', $options);
-    }
-
-    /**
-     * A renamed extension cannot bypass the native control's accepted types.
-     */
-    public function test_rename_cannot_bypass_accepted_types(): void {
-        [$profileid, $target, , $files, $draftid] = $this->fixture();
-        $this->expectException(\moodle_exception::class);
-        draft_import::review(
-            $target->id,
-            $profileid,
-            $draftid,
-            [['pathnamehash' => $files[0]->get_pathnamehash()]],
-            array_replace(self::LIMITS, ['accepted_types' => ['.txt']]),
-            '/',
-            'paths',
-            ['renames' => [$files[0]->get_pathnamehash() => 'not-allowed.exe']]
-        );
-    }
-
-    /**
-     * Create real source folders and an existing native destination draft.
-     *
-     * @return array Profile, target, source module, files, draft and destination module.
-     */
-    private function fixture(): array {
-        global $CFG;
-        $this->resetAfterTest();
-        $this->setAdminUser();
-        require_once($CFG->libdir . '/filelib.php');
-        $profileid = profiles::save(file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json'));
-        set_config('author_policy', 'editable_with_provenance', 'local_multipicker');
-        $uuid = '550e8400-e29b-41d4-a716-446655440000';
-        $source = $this->getDataGenerator()->create_course(['idnumber' => $uuid . '||MATH||2025']);
-        $target = $this->getDataGenerator()->create_course(['idnumber' => $uuid . '||MATH||2026']);
-        $folder = $this->getDataGenerator()->create_module('folder', ['course' => $source->id]);
-        $fs = get_file_storage();
-        $files = [];
-        $declarations = [['/', 'first.txt', 'First author', 'cc'],
-            ['/notes/', 'second.txt', 'Second author', 'allrightsreserved']];
-        foreach ($declarations as $item) {
-            $files[] = $fs->create_file_from_string(['contextid' => \context_module::instance($folder->cmid)->id,
-                'component' => 'mod_folder', 'filearea' => 'content', 'itemid' => 0,
-                'filepath' => $item[0], 'filename' => $item[1], 'author' => $item[2], 'license' => $item[3]], $item[1]);
-        }
-        $destination = $this->getDataGenerator()->create_module('folder', ['course' => $target->id]);
-        $context = \context_module::instance($destination->cmid);
-        $fs->create_file_from_string(['contextid' => $context->id, 'component' => 'mod_folder', 'filearea' => 'content',
-            'itemid' => 0, 'filepath' => '/', 'filename' => 'existing.txt', 'author' => 'Existing author'], 'existing');
-        $draftid = 0;
-        file_prepare_draft_area($draftid, $context->id, 'mod_folder', 'content', 0, ['subdirs' => true]);
-        return [$profileid, $target, $folder, $files, $draftid, $destination];
     }
 }

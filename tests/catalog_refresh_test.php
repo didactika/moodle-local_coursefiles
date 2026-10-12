@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,22 +17,23 @@
 /**
  * Catalogue availability across activated profile revisions.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker;
+namespace local_filebank;
 
-use local_multipicker\local\catalog\catalog;
-use local_multipicker\local\profile\profiles;
-use local_multipicker\task\refresh_profile;
+use local_filebank\local\catalog\catalog;
+use local_filebank\local\profile\profiles;
+use local_filebank\task\refresh_profile;
 
 /**
  * Exercises immediate metadata reuse and bounded background reconciliation.
  *
- * @covers \local_multipicker\local\profile\profiles
- * @covers \local_multipicker\local\catalog\catalog
- * @covers \local_multipicker\task\refresh_profile
+ * @covers \local_filebank\local\profile\profiles
+ * @covers \local_filebank\local\catalog\catalog
+ * @covers \local_filebank\task\refresh_profile
  */
 final class catalog_refresh_test extends \advanced_testcase {
     /**
@@ -42,17 +43,17 @@ final class catalog_refresh_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_folder_fixture(['name' => 'Available catalogue']);
         [, , $rules] = profiles::load($fixture['profileid']);
         $config = $rules->get_config();
         $before = catalog::search($fixture['targetcourse'], $fixture['profileid']);
         $this->assertNotEmpty($before['assets']);
-        $files = $DB->get_records_menu('local_multipicker_file', [], 'id', 'id, pathnamehash');
+        $files = $DB->get_records_menu('local_filebank_file', [], 'id', 'id, pathnamehash');
         $config['name'] = 'Renamed catalogue';
         profiles::save(json_encode($config), $fixture['profileid']);
         $this->assertSame($before, catalog::search($fixture['targetcourse'], $fixture['profileid']));
-        $this->assertSame($files, $DB->get_records_menu('local_multipicker_file', [], 'id', 'id, pathnamehash'));
+        $this->assertSame($files, $DB->get_records_menu('local_filebank_file', [], 'id', 'id, pathnamehash'));
         $config['publication']['allowed_sources'] = [];
         profiles::save(json_encode($config), $fixture['profileid']);
         $this->assertEmpty(catalog::search($fixture['targetcourse'], $fixture['profileid'])['assets']);
@@ -65,7 +66,7 @@ final class catalog_refresh_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_folder_fixture(['name' => 'Changed captures']);
         [, $oldrevision, $rules] = profiles::load($fixture['profileid']);
         $config = $rules->get_config();
@@ -74,7 +75,7 @@ final class catalog_refresh_test extends \advanced_testcase {
         [, $revision] = profiles::load($fixture['profileid']);
         $this->assertEmpty(catalog::search($fixture['targetcourse'], $fixture['profileid'])['assets']);
         $queued = array_filter(
-            $DB->get_records('task_adhoc', ['classname' => '\\local_multipicker\\task\\refresh_profile']),
+            $DB->get_records('task_adhoc', ['classname' => '\\local_filebank\\task\\refresh_profile']),
             static fn($record) => json_decode($record->customdata)->revisionid === (int)$revision->id
         );
         $this->assertCount(1, $queued);
@@ -88,8 +89,8 @@ final class catalog_refresh_test extends \advanced_testcase {
         )['assets']);
         $task->set_custom_data(['profileid' => $fixture['profileid'], 'revisionid' => (int)$oldrevision->id, 'after' => 0]);
         $task->execute();
-        $this->assertFalse($DB->record_exists('local_multipicker_course', ['revisionid' => $oldrevision->id]));
-        $this->assertTrue($DB->record_exists('local_multipicker_value', ['revisionid' => $revision->id, 'name' => 'period']));
+        $this->assertFalse($DB->record_exists('local_filebank_course', ['revisionid' => $oldrevision->id]));
+        $this->assertTrue($DB->record_exists('local_filebank_value', ['revisionid' => $revision->id, 'name' => 'period']));
     }
 
     /**
@@ -99,7 +100,7 @@ final class catalog_refresh_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_folder_fixture(['name' => 'Large catalogue']);
         for ($i = 0; $i < 25; $i++) {
             $this->getDataGenerator()->create_course();
@@ -110,16 +111,16 @@ final class catalog_refresh_test extends \advanced_testcase {
         $task = new refresh_profile();
         $task->set_custom_data(['profileid' => $fixture['profileid'], 'revisionid' => (int)$revision->id, 'after' => 0]);
         $task->execute();
-        $this->assertFalse($DB->record_exists('local_multipicker_course', ['courseid' => $last->id]));
+        $this->assertFalse($DB->record_exists('local_filebank_course', ['courseid' => $last->id]));
         $successors = array_filter(
-            $DB->get_records('task_adhoc', ['classname' => '\\local_multipicker\\task\\refresh_profile']),
+            $DB->get_records('task_adhoc', ['classname' => '\\local_filebank\\task\\refresh_profile']),
             static fn($record) => json_decode($record->customdata)->after > 0
         );
         $this->assertCount(1, $successors);
         $task->set_custom_data(json_decode(reset($successors)->customdata));
         $task->execute();
         $this->assertTrue($DB->record_exists(
-            'local_multipicker_course',
+            'local_filebank_course',
             ['courseid' => $last->id, 'revisionid' => $revision->id]
         ));
     }

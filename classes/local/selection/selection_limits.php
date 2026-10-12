@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,11 +16,12 @@
 
 /**
  * Native owning-field selection capacity.
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\selection;
+namespace local_filebank\local\selection;
 
 /**
  * Enforces server-owned file count limits before persisting a selection.
@@ -56,7 +57,7 @@ final class selection_limits {
      */
     public static function require_capacity(array $scope, array $selected): void {
         if (count(array_unique($selected)) > self::capacity($scope)) {
-            throw new \moodle_exception('selectionfull', 'local_multipicker');
+            throw new \moodle_exception('selectionfull', 'local_filebank');
         }
     }
 }

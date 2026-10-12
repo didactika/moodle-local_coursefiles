@@ -1,9 +1,1 @@
-# Files excluded from `git archive` output (the release package built by
-# .github/workflows/release.yml). These are development/CI/VCS-only files
-# that should not ship inside the installable plugin zip.
 * text=auto eol=lf
-/.github        export-ignore
-/.gitignore     export-ignore
-/.gitattributes export-ignore
-/AGENTS.md export-ignore
-/.phpcs.xml export-ignore

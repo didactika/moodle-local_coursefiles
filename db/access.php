@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,62 +17,62 @@
 /**
  * Capability definitions.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-    'local/multipicker:browse' => [
+    'local/filebank:browse' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
     ],
-    'local/multipicker:reuse' => [
+    'local/filebank:reuse' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:publish' => [
+    'local/filebank:publish' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:manageprofiles' => [
+    'local/filebank:manageprofiles' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:planmigration' => [
+    'local/filebank:planmigration' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:executemigration' => [
+    'local/filebank:executemigration' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:viewlog' => [
+    'local/filebank:viewlog' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_PERSONAL,
-        'clonepermissionsfrom' => 'local/multipicker:viewaudit',
     ],
-    'local/multipicker:managecoursepolicy' => [
+    'local/filebank:managecoursepolicy' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],
         'riskbitmask' => RISK_CONFIG,
     ],
-    'local/multipicker:correctattribution' => [
+    'local/filebank:correctattribution' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => ['manager' => CAP_ALLOW],

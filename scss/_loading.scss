@@ -1,0 +1,52 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* Light result placeholders leave surrounding controls and dimensions intact. */
+
+.filebank-loading {
+    pointer-events: none;
+}
+
+.filebank-skeleton {
+    display: none;
+}
+
+.filebank-loading > .filebank-cards, .filebank-loading > .filebank-empty,
+.filebank-loading > .filebank-pagination {
+    display: none;
+}
+
+.filebank-loading {
+    > .filebank-skeleton {
+        display: grid;
+        height: 100%;
+        align-content: start;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .5rem;
+    }
+}
+
+.filebank-skeleton {
+    span {
+        border-radius: var(--filebank-radius);
+        min-height: 7rem;
+        background: color-mix(in srgb, var(--filebank-border) 35%, var(--filebank-surface));
+        animation: filebank-pulse 1s ease-in-out infinite alternate;
+    }
+}
+
+.filebank-browser {
+    &[data-layout=list] {
+        .filebank-skeleton {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+@keyframes filebank-pulse {
+    to {
+        opacity: .45;
+    }
+}
+

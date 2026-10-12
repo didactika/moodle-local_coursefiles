@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,25 +17,26 @@
 /**
  * Administration authorization and bounded review tests.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker;
+namespace local_filebank;
 
-use local_multipicker\form\profile_form;
-use local_multipicker\local\profile\profiles;
-use local_multipicker\output\migration_report;
-use local_multipicker\output\navigation;
+use local_filebank\form\profile_form;
+use local_filebank\local\profile\profiles;
+use local_filebank\output\migration_report;
+use local_filebank\output\navigation;
 
 /**
  * Tests the real presentation contracts and permissions.
  *
- * @covers \local_multipicker\output\migration_report
- * @covers \local_multipicker\output\navigation
- * @covers \local_multipicker\form\profile_form
- * @covers \local_multipicker\output\profile_summary
+ * @covers \local_filebank\output\migration_report
+ * @covers \local_filebank\output\navigation
+ * @covers \local_filebank\form\profile_form
+ * @covers \local_filebank\output\profile_summary
  */
 final class admin_layout_test extends \advanced_testcase {
     /**
@@ -46,11 +47,11 @@ final class admin_layout_test extends \advanced_testcase {
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();
         $roleid = create_role('Profile manager', 'profilemanager', '');
-        assign_capability('local/multipicker:manageprofiles', CAP_ALLOW, $roleid, \context_system::instance()->id);
+        assign_capability('local/filebank:manageprofiles', CAP_ALLOW, $roleid, \context_system::instance()->id);
         role_assign($roleid, $user->id, \context_system::instance()->id);
         $this->setUser($user);
         $PAGE->set_context(\context_system::instance());
-        $PAGE->set_url('/local/multipicker/admin/profiles.php');
+        $PAGE->set_url('/local/filebank/admin/profiles.php');
         $tabs = navigation::site('profiles')->export_for_template($PAGE->get_renderer('core'));
         $this->assertCount(1, $tabs['tabs']);
         $this->assertTrue($tabs['tabs'][0]['active']);
@@ -63,16 +64,17 @@ final class admin_layout_test extends \advanced_testcase {
      * Unsaved editor preview validates rules without activating a revision.
      */
     public function test_profile_preview_does_not_write(): void {
-        global $CFG, $DB;
+
+        global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $json = file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json');
+        $json = json_encode($this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config());
         $document = profile_form::document(['configjson' => $json, 'profilename' => 'Preview only']);
         $this->assertSame('Preview only', $document['name']);
-        $this->assertSame(0, $DB->count_records('local_multipicker_revision'));
-        $summary = \local_multipicker\output\profile_summary::data($document, false);
-        $html = $GLOBALS['OUTPUT']->render_from_template('local_multipicker/local/profile/summary', $summary);
-        $this->assertStringNotContainsString(get_string('rulesinuse', 'local_multipicker'), $html);
+        $this->assertSame(0, $DB->count_records('local_filebank_revision'));
+        $summary = \local_filebank\output\profile_summary::data($document, false);
+        $html = $GLOBALS['OUTPUT']->render_from_template('local_filebank/local/profile/summary', $summary);
+        $this->assertStringNotContainsString(get_string('rulesinuse', 'local_filebank'), $html);
         $this->assertStringContainsString('Preview only', $html);
         $this->expectException(\moodle_exception::class);
         profile_form::document(['configjson' => 'null', 'profilename' => 'Invalid']);
@@ -82,30 +84,40 @@ final class admin_layout_test extends \advanced_testcase {
      * Decision filtering and page counts use the complete immutable preview.
      */
     public function test_review_pages_preserve_revision_and_whole_plan_counts(): void {
-        global $CFG, $DB, $USER;
+
+        global $DB, $USER;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = json_decode(file_get_contents($CFG->dirroot . '/local/multipicker/examples/institutional-profile.json'), true);
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $profileid = profiles::save(json_encode($config));
-        [$profile, $revision] = profiles::load($profileid);
+        [, $revision] = profiles::load($profileid);
         $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026', 'issues' => []]);
-        $planid = $DB->insert_record('local_multipicker_plan', (object)[
-            'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
-            'userid' => $USER->id, 'configjson' => $document, 'digest' => hash('sha256', $document),
-            'state' => 'blocked', 'timecreated' => time(),
-        ]);
+        $planid = $DB->insert_record(
+            'local_filebank_plan',
+            (object)[
+                'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
+                'userid' => $USER->id, 'configjson' => $document, 'digest' => hash('sha256', $document),
+                'state' => 'blocked', 'timecreated' => time(),
+            ]
+        );
         $source = $this->getDataGenerator()->create_course();
         $target = $this->getDataGenerator()->create_course();
         for ($index = 0; $index < 58; $index++) {
-            $DB->insert_record('local_multipicker_operation', (object)[
-                'planid' => $planid, 'opkey' => hash('sha256', (string)$index), 'sourcehash' => sha1((string)$index),
-                'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
-                'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),
-                'snapshot' => json_encode(['sourcecourse' => $source->id,
-                    'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/',
-                        'author' => 'Original', 'license' => 'cc'],
-                    'target' => ['courseid' => $target->id, 'name' => 'Materials', 'sectionname' => 'Topic', 'sectionnum' => 1]]),
-            ]);
+            $DB->insert_record(
+                'local_filebank_operation',
+                (object)[
+                    'planid' => $planid, 'opkey' => hash('sha256', (string)$index), 'sourcehash' => sha1((string)$index),
+                    'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
+                    'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),
+                    'snapshot' => json_encode(
+                        ['sourcecourse' => $source->id,
+                            'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/',
+                                'author' => 'Original', 'license' => 'cc'],
+                            'target' => ['courseid' => $target->id, 'name' => 'Materials',
+                            'sectionname' => 'Topic', 'sectionnum' => 1]]
+                    ),
+                ]
+            );
         }
         $config['migration']['source_module']['equals'] = 'Changed after preview';
         profiles::save(json_encode($config), $profileid);
@@ -127,15 +139,20 @@ final class admin_layout_test extends \advanced_testcase {
         $search = migration_report::data($planid, '', 0, 'file57.txt');
         $this->assertCount(1, $search['groups'][0]['operations']);
         $this->assertSame('file57.txt', $search['groups'][0]['operations'][0]['filename']);
-        $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026',
-            'issues' => array_fill(0, 61, ['reason' => 'ambiguous_course_pair'])]);
-        $DB->update_record('local_multipicker_plan', (object)[
-            'id' => $planid, 'configjson' => $document, 'digest' => hash('sha256', $document),
-        ]);
+        $document = json_encode(
+            ['sourceedition' => '2025', 'targetedition' => '2026',
+                'issues' => array_fill(0, 61, ['reason' => 'ambiguous_course_pair'])]
+        );
+        $DB->update_record(
+            'local_filebank_plan',
+            (object)[
+                'id' => $planid, 'configjson' => $document, 'digest' => hash('sha256', $document),
+            ]
+        );
         $firstissues = migration_report::data($planid);
         $this->assertCount(50, $firstissues['issues']);
         $this->assertArrayHasKey('issuenexturl', $firstissues);
-        $lastissues = migration_report::data($planid, '', 0, '', false, 999);
+        $lastissues = migration_report::data($planid, '', 0, '', 'review', 999);
         $this->assertCount(11, $lastissues['issues']);
         $this->assertSame(1, $lastissues['issuepage']);
         $this->assertArrayHasKey('issuepreviousurl', $lastissues);

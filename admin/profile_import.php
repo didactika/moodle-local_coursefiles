@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,35 +17,36 @@
 /**
  * Import portable profiles using Moodle's native upload form.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-admin_externalpage_setup('local_multipicker_profiles', '', [], new moodle_url('/local/multipicker/admin/profile_import.php'));
-$listurl = new moodle_url('/local/multipicker/admin/profiles.php');
-$form = new \local_multipicker\form\profile_import_form();
+admin_externalpage_setup('local_filebank_profiles', '', [], new moodle_url('/local/filebank/admin/profile_import.php'));
+$listurl = new moodle_url('/local/filebank/admin/profiles.php');
+$form = new \local_filebank\form\profile_import_form();
 if ($form->is_cancelled()) {
     redirect($listurl);
 }
 if ($form->get_data()) {
-    $ids = \local_multipicker\local\profile\profile_bundle::import($form->get_file_content('bundle'));
+    $ids = \local_filebank\local\profile\profile_bundle::import($form->get_file_content('bundle'));
     redirect(
         $listurl,
-        get_string('profilesimported', 'local_multipicker', count($ids)),
+        get_string('profilesimported', 'local_filebank', count($ids)),
         null,
         \core\output\notification::NOTIFY_SUCCESS
     );
 }
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
-echo $PAGE->get_renderer('local_multipicker')->render(\local_multipicker\output\navigation::site('profiles'));
-echo $OUTPUT->heading(get_string('importprofiles', 'local_multipicker'), 3);
-echo html_writer::tag('p', get_string('profileimporthelp', 'local_multipicker'), ['class' => 'text-muted']);
-echo html_writer::start_div('multipicker-admin multipicker-panel');
+echo $OUTPUT->heading(get_string('pluginname', 'local_filebank'));
+echo $PAGE->get_renderer('local_filebank')->render(\local_filebank\output\navigation::site('profiles'));
+echo $OUTPUT->heading(get_string('importprofiles', 'local_filebank'), 3);
+echo html_writer::tag('p', get_string('profileimporthelp', 'local_filebank'), ['class' => 'text-muted']);
+echo html_writer::start_div('filebank-admin filebank-panel');
 $form->display();
 echo html_writer::end_div();
 echo $OUTPUT->footer();
