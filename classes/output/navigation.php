@@ -31,9 +31,8 @@ final class navigation {
     /**
      * Open the first permitted page directly from the native plugin category.
      *
-     * @param \core\hook\output\before_http_headers|null $hook Native output hook; null on legacy cores.
      */
-    public static function open_category(?\core\hook\output\before_http_headers $hook = null): void {
+    public static function open_category(): void {
         global $PAGE, $CFG;
         static $redirecting = false;
         if (

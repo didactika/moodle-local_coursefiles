@@ -60,16 +60,16 @@ final class profile_history_test extends \advanced_testcase {
         $this->assertEquals($original, $DB->get_record('local_filebank_revision', ['id' => $first]));
         profile_history::restore($id, $first);
         $this->assertSame(2, $DB->count_records('local_filebank_revision', ['profileid' => $id]));
-        $bundle = profile_bundle::export([$id]);
+        $bundle = profile_bundle::export([$id], false);
         $document = json_decode($bundle, true);
         $this->assertSame(2, $document['version']);
         $imported = profile_bundle::import($bundle);
-        $copy = json_decode(profile_bundle::export($imported), true);
+        $copy = json_decode(profile_bundle::export($imported, false), true);
         $this->assertSame($document['profiles'], $copy['profiles']);
         $legacy = $document;
         $legacy['format'] = 'multipicker-profiles';
         $legacyids = profile_bundle::import(json_encode($legacy));
-        $legacycopy = json_decode(profile_bundle::export($legacyids), true);
+        $legacycopy = json_decode(profile_bundle::export($legacyids, false), true);
         $this->assertSame($document['profiles'], $legacycopy['profiles']);
         $diff = array_filter(
             profile_history::compare(['name' => '<b>Old</b>', 'removed' => 1], ['name' => 'New']),
@@ -161,9 +161,12 @@ final class profile_history_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $draftid = file_get_unused_draft_itemid();
-        get_file_storage()->create_file_from_string(['contextid' => \context_user::instance($USER->id)->id,
-            'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid, 'filepath' => '/',
-            'filename' => 'existing.txt'], 'Existing material');
+        get_file_storage()->create_file_from_string(
+            ['contextid' => \context_user::instance($USER->id)->id,
+                'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid, 'filepath' => '/',
+                'filename' => 'existing.txt'],
+            'Existing material'
+        );
         $scope = ['draftid' => $draftid, 'limits' => ['maxfiles' => 2, 'selectionlimit' => 200]];
         $this->assertSame(1, selection_limits::capacity($scope));
         selection_limits::require_capacity($scope, ['file:first']);

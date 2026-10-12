@@ -69,14 +69,18 @@ if (data_submitted()) {
             $action === 'selection' ? 'page' : $action
         );
         $message = get_string('selectionupdated', 'local_filebank');
-        $url->params(['q' => optional_param('q', '', PARAM_TEXT), 'page' => optional_param('page', 0, PARAM_INT),
-            'decision' => optional_param('decision', '', PARAM_ALPHA),
-            'issuepage' => optional_param('issuepage', 0, PARAM_INT)]);
+        $url->params(
+            ['q' => optional_param('q', '', PARAM_TEXT), 'page' => optional_param('page', 0, PARAM_INT),
+                'decision' => optional_param('decision', '', PARAM_ALPHA),
+                'issuepage' => optional_param('issuepage', 0, PARAM_INT)]
+        );
         if (optional_param('navigate', false, PARAM_BOOL)) {
-            $url->params(['q' => optional_param('nextq', '', PARAM_TEXT), 'page' => optional_param('nextpage', 0, PARAM_INT),
-                'decision' => optional_param('nextdecision', '', PARAM_ALPHA),
-                'issuepage' => optional_param('nextissuepage', 0, PARAM_INT),
-                'step' => optional_param('nextstep', '', PARAM_ALPHA) === 'execute' ? 'execute' : '']);
+            $url->params(
+                ['q' => optional_param('nextq', '', PARAM_TEXT), 'page' => optional_param('nextpage', 0, PARAM_INT),
+                    'decision' => optional_param('nextdecision', '', PARAM_ALPHA),
+                    'issuepage' => optional_param('nextissuepage', 0, PARAM_INT),
+                    'step' => optional_param('nextstep', '', PARAM_ALPHA) === 'execute' ? 'execute' : '']
+            );
         }
     } else if ($action === 'cancel') {
         $runid = required_param('runid', PARAM_INT);
@@ -93,7 +97,7 @@ $data = migration_report::data(
     optional_param('decision', '', PARAM_ALPHA),
     optional_param('page', 0, PARAM_INT),
     optional_param('q', '', PARAM_TEXT),
-    optional_param('step', '', PARAM_ALPHA) === 'execute',
+    optional_param('step', 'review', PARAM_ALPHA),
     optional_param('issuepage', 0, PARAM_INT),
     \local_filebank\output\pagination::size(50)
 );

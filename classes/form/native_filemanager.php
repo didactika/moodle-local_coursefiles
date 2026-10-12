@@ -34,9 +34,8 @@ class native_filemanager extends scoped_filemanager {
     /**
      * Register the native subclass through Moodle's public element factory.
      *
-     * @param \core\hook\after_config|null $hook Bootstrap hook; null on legacy callback cores.
      */
-    public static function register_native(?\core\hook\after_config $hook = null): void {
+    public static function register_native(): void {
         global $CFG;
         require_once($CFG->libdir . '/formslib.php');
         \MoodleQuickForm::registerElementType(
@@ -58,16 +57,10 @@ class native_filemanager extends scoped_filemanager {
      * @return string Native HTML.
      */
     public function toHtml() {
-        global $PAGE, $DB, $CFG, $USER;
+
+        global $PAGE, $USER;
         $html = parent::toHtml();
-        $basepath = (new \moodle_url($CFG->wwwroot))->get_path();
-        $path = substr($PAGE->url->get_path(), strlen(rtrim($basepath, '/')));
-        $content = $path === '/mod/folder/edit.php' && $this->getName() === 'files_filemanager';
-        $settings = $path === '/course/modedit.php';
-        if ((!$content && !$settings) || $this->isFrozen() || !isloggedin() || isguestuser()) {
-            return $html;
-        }
-        if (!$DB->record_exists('local_filebank', ['enabled' => 1])) {
+        if (!$this->can_import()) {
             return $html;
         }
         try {
@@ -95,4 +88,24 @@ class native_filemanager extends scoped_filemanager {
         return $html;
     }
     // phpcs:enable moodle.NamingConventions.ValidFunctionName
+
+    /**
+     * Bind only editable supported native routes with an enabled profile.
+     *
+     * @return bool Result.
+     */
+    private function can_import(): bool {
+        global $PAGE, $DB, $CFG;
+        $basepath = (new \moodle_url($CFG->wwwroot))->get_path();
+        $path = substr($PAGE->url->get_path(), strlen(rtrim($basepath, '/')));
+        $content = $path === '/mod/folder/edit.php' && $this->getName() === 'files_filemanager';
+        $settings = $path === '/course/modedit.php';
+        if ((!$content && !$settings) || $this->isFrozen() || !isloggedin() || isguestuser()) {
+            return false;
+        }
+        if (!$DB->record_exists('local_filebank', ['enabled' => 1])) {
+            return false;
+        }
+        return true;
+    }
 }

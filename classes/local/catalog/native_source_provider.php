@@ -91,18 +91,19 @@ final class native_source_provider implements source_provider {
      * @return bool Public teaching material.
      */
     public function allows(\cm_info $cm, \stored_file $file): bool {
+
         global $DB, $CFG;
-        if (
-            $file->get_contextid() != $cm->context->id || $file->get_component() !== 'mod_' . $cm->modname
-                || $cm->modname !== $this->module || !in_array($file->get_filearea(), $this->areas, true)
-                || $file->is_directory() || $file->is_external_file()
-        ) {
+        if (!$this->owns_file($cm, $file)) {
             return false;
         }
+
         if ($this->module === 'book' && $file->get_filearea() === 'chapter') {
-            return $DB->record_exists('book_chapters', [
-                'id' => $file->get_itemid(), 'bookid' => $cm->instance, 'hidden' => 0,
-            ]);
+            return $DB->record_exists(
+                'book_chapters',
+                [
+                    'id' => $file->get_itemid(), 'bookid' => $cm->instance, 'hidden' => 0,
+                ]
+            );
         }
         if ($file->get_itemid() != 0) {
             return false;
@@ -149,5 +150,23 @@ final class native_source_provider implements source_provider {
             $file->get_filename()
         );
         return $info && $info->is_readable();
+    }
+
+    /**
+     * Check native context, component, area and storage ownership.
+     *
+     * @param \cm_info $cm Current source activity.
+     * @param \stored_file $file Candidate native file.
+     * @return bool Result.
+     */
+    private function owns_file(\cm_info $cm, \stored_file $file): bool {
+        if (
+            $file->get_contextid() != $cm->context->id || $file->get_component() !== 'mod_' . $cm->modname
+                || $cm->modname !== $this->module || !in_array($file->get_filearea(), $this->areas, true)
+                || $file->is_directory() || $file->is_external_file()
+        ) {
+            return false;
+        }
+        return true;
     }
 }

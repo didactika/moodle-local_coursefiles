@@ -32,6 +32,7 @@ final class plan_history {
      * @param array $ids Explicit plan IDs.
      */
     public static function delete_many(array $ids): void {
+
         global $DB;
         require_capability('local/filebank:planmigration', \context_system::instance());
         $ids = array_values(array_unique(array_map('intval', $ids)));
@@ -60,14 +61,7 @@ final class plan_history {
             }
             $transaction = $DB->start_delegated_transaction();
             foreach ($ids as $id) {
-                $plan = $DB->get_record('local_filebank_plan', ['id' => $id], '*', MUST_EXIST);
-                foreach (
-                    ['local_filebank_target', 'local_filebank_operation', 'local_filebank_run',
-                    'local_filebank_plan'] as $table
-                ) {
-                    $DB->delete_records($table, [$table === 'local_filebank_plan' ? 'id' : 'planid' => $id]);
-                }
-                \local_filebank\local\logging\log::record('migration_deleted', $plan->uuid, []);
+                self::remove_plan($id);
             }
             $transaction->allow_commit();
         } finally {
@@ -97,5 +91,22 @@ final class plan_history {
             'planid = ? AND included = 1 AND state = ? AND (decision = ? OR decision = ?)',
             [$planid, 'pending', 'copy', 'overwrite']
         );
+    }
+
+    /**
+     * Remove plan.
+     *
+     * @param int $id Id.
+     */
+    private static function remove_plan(int $id): void {
+        global $DB;
+        $plan = $DB->get_record('local_filebank_plan', ['id' => $id], '*', MUST_EXIST);
+        foreach (
+            ['local_filebank_target', 'local_filebank_operation', 'local_filebank_run',
+            'local_filebank_plan'] as $table
+        ) {
+            $DB->delete_records($table, [$table === 'local_filebank_plan' ? 'id' : 'planid' => $id]);
+        }
+        \local_filebank\local\logging\log::record('migration_deleted', $plan->uuid, []);
     }
 }

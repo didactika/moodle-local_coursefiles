@@ -64,7 +64,8 @@ final class admin_layout_test extends \advanced_testcase {
      * Unsaved editor preview validates rules without activating a revision.
      */
     public function test_profile_preview_does_not_write(): void {
-        global $CFG, $DB;
+
+        global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
         $json = json_encode($this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config());
@@ -83,30 +84,40 @@ final class admin_layout_test extends \advanced_testcase {
      * Decision filtering and page counts use the complete immutable preview.
      */
     public function test_review_pages_preserve_revision_and_whole_plan_counts(): void {
-        global $CFG, $DB, $USER;
+
+        global $DB, $USER;
         $this->resetAfterTest();
         $this->setAdminUser();
         $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $profileid = profiles::save(json_encode($config));
-        [$profile, $revision] = profiles::load($profileid);
+        [, $revision] = profiles::load($profileid);
         $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026', 'issues' => []]);
-        $planid = $DB->insert_record('local_filebank_plan', (object)[
-            'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
-            'userid' => $USER->id, 'configjson' => $document, 'digest' => hash('sha256', $document),
-            'state' => 'blocked', 'timecreated' => time(),
-        ]);
+        $planid = $DB->insert_record(
+            'local_filebank_plan',
+            (object)[
+                'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
+                'userid' => $USER->id, 'configjson' => $document, 'digest' => hash('sha256', $document),
+                'state' => 'blocked', 'timecreated' => time(),
+            ]
+        );
         $source = $this->getDataGenerator()->create_course();
         $target = $this->getDataGenerator()->create_course();
         for ($index = 0; $index < 58; $index++) {
-            $DB->insert_record('local_filebank_operation', (object)[
-                'planid' => $planid, 'opkey' => hash('sha256', (string)$index), 'sourcehash' => sha1((string)$index),
-                'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
-                'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),
-                'snapshot' => json_encode(['sourcecourse' => $source->id,
-                    'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/',
-                        'author' => 'Original', 'license' => 'cc'],
-                    'target' => ['courseid' => $target->id, 'name' => 'Materials', 'sectionname' => 'Topic', 'sectionnum' => 1]]),
-            ]);
+            $DB->insert_record(
+                'local_filebank_operation',
+                (object)[
+                    'planid' => $planid, 'opkey' => hash('sha256', (string)$index), 'sourcehash' => sha1((string)$index),
+                    'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
+                    'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),
+                    'snapshot' => json_encode(
+                        ['sourcecourse' => $source->id,
+                            'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/',
+                                'author' => 'Original', 'license' => 'cc'],
+                            'target' => ['courseid' => $target->id, 'name' => 'Materials',
+                            'sectionname' => 'Topic', 'sectionnum' => 1]]
+                    ),
+                ]
+            );
         }
         $config['migration']['source_module']['equals'] = 'Changed after preview';
         profiles::save(json_encode($config), $profileid);
@@ -128,15 +139,20 @@ final class admin_layout_test extends \advanced_testcase {
         $search = migration_report::data($planid, '', 0, 'file57.txt');
         $this->assertCount(1, $search['groups'][0]['operations']);
         $this->assertSame('file57.txt', $search['groups'][0]['operations'][0]['filename']);
-        $document = json_encode(['sourceedition' => '2025', 'targetedition' => '2026',
-            'issues' => array_fill(0, 61, ['reason' => 'ambiguous_course_pair'])]);
-        $DB->update_record('local_filebank_plan', (object)[
-            'id' => $planid, 'configjson' => $document, 'digest' => hash('sha256', $document),
-        ]);
+        $document = json_encode(
+            ['sourceedition' => '2025', 'targetedition' => '2026',
+                'issues' => array_fill(0, 61, ['reason' => 'ambiguous_course_pair'])]
+        );
+        $DB->update_record(
+            'local_filebank_plan',
+            (object)[
+                'id' => $planid, 'configjson' => $document, 'digest' => hash('sha256', $document),
+            ]
+        );
         $firstissues = migration_report::data($planid);
         $this->assertCount(50, $firstissues['issues']);
         $this->assertArrayHasKey('issuenexturl', $firstissues);
-        $lastissues = migration_report::data($planid, '', 0, '', false, 999);
+        $lastissues = migration_report::data($planid, '', 0, '', 'review', 999);
         $this->assertCount(11, $lastissues['issues']);
         $this->assertSame(1, $lastissues['issuepage']);
         $this->assertArrayHasKey('issuepreviousurl', $lastissues);

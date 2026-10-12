@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Database upgrade entry point for the initial public distribution.
+ * Administration authorization and bounded review tests.
  *
  * @package local_filebank
  * @copyright 2026 Didactika.org
@@ -23,12 +23,17 @@
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_filebank;
+
+use local_filebank\local\catalog\indexer;
+use local_filebank\local\maintenance\retention;
+use local_filebank\local\migration\migration_executor;
+use local_filebank\local\migration\migration_planner;
+use local_filebank\local\migration\plan_selection;
+use local_filebank\local\profile\profiles;
+
 /**
- * No schema upgrades are required before the first public release.
- *
- * @param int $oldversion Installed version.
- * @return bool Upgrade completed.
+ * Shared native fixture setup for focused acceptance contracts.
  */
-function xmldb_local_filebank_upgrade(int $oldversion): bool {
-    return true;
+abstract class workflow_fixture extends \advanced_testcase {
 }

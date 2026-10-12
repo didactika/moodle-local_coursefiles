@@ -43,18 +43,11 @@ class native_editor extends \MoodleQuickForm_editor {
      * @return string Native editor HTML.
      */
     public function toHtml() {
-        global $PAGE, $DB, $USER, $CFG;
+
+        global $PAGE, $USER, $CFG;
         $html = parent::toHtml();
         $context = $this->_options['context'];
-        $editor = editors_get_preferred_editor($this->_values['format']);
-        $supported = $editor instanceof \editor_tiny\editor || $editor instanceof \atto_texteditor
-            || $editor instanceof \tinymce_texteditor;
-        if (
-            $this->isFrozen() || !isloggedin() || isguestuser() || !$this->getMaxfiles()
-                || !($this->_options['return_types'] & FILE_INTERNAL)
-                || !$supported
-                || !$DB->record_exists('local_filebank', ['enabled' => 1])
-        ) {
+        if (!$this->can_import()) {
             return $html;
         }
         try {
@@ -63,20 +56,23 @@ class native_editor extends \MoodleQuickForm_editor {
             get_file_storage()->create_directory(\context_user::instance($USER->id)->id, 'user', 'draft', $draftid, '/');
             if (!draft_scope::find($context, $draftid, sesskey())) {
                 $course = get_course($context->get_course_context()->instanceid);
-                draft_scope::open_contract([
-                    'field' => $this->getName(), 'draftid' => $draftid,
-                    'module' => $context->contextlevel === CONTEXT_COURSE ? ($PAGE->url->get_param('add') ?? '') : '',
-                    'editorid' => $this->getAttribute('id'), 'environment' => 'editor',
-                    'limits' => ['maxfiles' => (int)$this->getMaxfiles(),
-                        'maxbytes' => get_user_max_upload_file_size(
-                            $context,
-                            $CFG->maxbytes,
-                            $course->maxbytes,
-                            (int)$this->getMaxbytes()
-                        ),
-                        'areamaxbytes' => (int)$this->getAreamaxbytes(), 'subdirs' => (bool)$this->getSubdirs(),
-                        'accepted_types' => ['*']],
-                ], $context);
+                draft_scope::open_contract(
+                    [
+                        'field' => $this->getName(), 'draftid' => $draftid,
+                        'module' => $context->contextlevel === CONTEXT_COURSE ? ($PAGE->url->get_param('add') ?? '') : '',
+                        'editorid' => $this->getAttribute('id'), 'environment' => 'editor',
+                        'limits' => ['maxfiles' => (int)$this->getMaxfiles(),
+                            'maxbytes' => get_user_max_upload_file_size(
+                                $context,
+                                $CFG->maxbytes,
+                                $course->maxbytes,
+                                (int)$this->getMaxbytes()
+                            ),
+                            'areamaxbytes' => (int)$this->getAreamaxbytes(), 'subdirs' => (bool)$this->getSubdirs(),
+                            'accepted_types' => ['*']],
+                    ],
+                    $context
+                );
             }
         } catch (\moodle_exception $exception) {
             return $html;
@@ -84,4 +80,27 @@ class native_editor extends \MoodleQuickForm_editor {
         return $html;
     }
     // phpcs:enable moodle.NamingConventions.ValidFunctionName
+
+    /**
+     * Check the native control contract before creating a session scope.
+     *
+     * @return bool Result.
+     */
+    private function can_import(): bool {
+        global $DB;
+        return !$this->isFrozen() && isloggedin() && !isguestuser() && $this->getMaxfiles()
+            && ($this->_options['return_types'] & FILE_INTERNAL) && $this->supported_editor()
+            && $DB->record_exists('local_filebank', ['enabled' => 1]);
+    }
+
+    /**
+     * Use only native editors with the verified file-picker integration.
+     *
+     * @return bool Result.
+     */
+    private function supported_editor(): bool {
+        $editor = editors_get_preferred_editor($this->_values['format']);
+        return $editor instanceof \editor_tiny\editor || $editor instanceof \atto_texteditor
+            || $editor instanceof \tinymce_texteditor;
+    }
 }

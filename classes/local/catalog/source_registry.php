@@ -40,13 +40,14 @@ final class source_registry {
      * @return array Providers keyed by installed module name.
      */
     private static function providers(): array {
+
         if (self::$providers !== null) {
             return self::$providers;
         }
         $providers = [];
         $content = ['folder' => ['content'], 'resource' => ['content'], 'page' => ['content'],
             'book' => ['chapter'], 'assign' => ['introattachment', 'activityattachment']];
-        foreach (\core_component::get_plugin_list('mod') as $module => $directory) {
+        foreach (array_keys(\core_component::get_plugin_list('mod')) as $module) {
             $areas = $content[$module] ?? [];
             if (plugin_supports('mod', $module, FEATURE_MOD_INTRO, false)) {
                 $areas[] = 'intro';
@@ -55,16 +56,7 @@ final class source_registry {
                 $providers[$module] = new native_source_provider($module, $areas);
             }
         }
-        foreach (get_plugins_with_function('filebank_source_providers', 'lib.php') as $plugins) {
-            foreach ($plugins as $callback) {
-                foreach ($callback() as $module => $provider) {
-                    if (!\core_component::get_plugin_directory('mod', $module) || !$provider instanceof source_provider) {
-                        throw new \coding_exception('FileBank source callbacks must return installed module providers.');
-                    }
-                    $providers[$module] = $provider;
-                }
-            }
-        }
+        $providers = array_replace($providers, self::community_providers());
         return self::$providers = $providers;
     }
 
@@ -117,5 +109,25 @@ final class source_registry {
         }
         asort($names, SORT_NATURAL | SORT_FLAG_CASE);
         return $names;
+    }
+
+    /**
+     * Validate providers declared by installed community plugins.
+     *
+     * @return array Result.
+     */
+    private static function community_providers(): array {
+        $providers = [];
+        foreach (get_plugins_with_function('filebank_source_providers', 'lib.php') as $plugins) {
+            foreach ($plugins as $callback) {
+                foreach ($callback() as $module => $provider) {
+                    if (!\core_component::get_plugin_directory('mod', $module) || !$provider instanceof source_provider) {
+                        throw new \coding_exception('FileBank source callbacks must return installed module providers.');
+                    }
+                    $providers[$module] = $provider;
+                }
+            }
+        }
+        return $providers;
     }
 }

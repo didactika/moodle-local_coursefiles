@@ -38,6 +38,7 @@ final class profiles {
      * @return int Profile.
      */
     public static function save(string $json, int $profileid = 0): int {
+
         global $DB, $USER;
         require_capability('local/filebank:manageprofiles', \context_system::instance());
         try {
@@ -53,10 +54,13 @@ final class profiles {
         try {
             $transaction = $DB->start_delegated_transaction();
             if (!$profileid) {
-                $profileid = $DB->insert_record('local_filebank', (object)[
-                    'uuid' => \core\uuid::generate(), 'name' => $config['name'] ?? 'FileBank',
-                    'activeid' => 0, 'enabled' => 1,
-                ]);
+                $profileid = $DB->insert_record(
+                    'local_filebank',
+                    (object)[
+                        'uuid' => \core\uuid::generate(), 'name' => $config['name'] ?? 'FileBank',
+                        'activeid' => 0, 'enabled' => 1,
+                    ]
+                );
             }
             $profile = $DB->get_record('local_filebank', ['id' => $profileid], '*', MUST_EXIST);
             if ($profile->deleted) {
@@ -69,29 +73,16 @@ final class profiles {
                 [$profileid]
             );
             $canonical = json_encode($config, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-            $profile->activeid = $DB->insert_record('local_filebank_revision', (object)[
-                'profileid' => $profileid, 'revision' => $number, 'configjson' => $canonical,
-                'digest' => hash('sha256', $canonical), 'userid' => $USER->id, 'timecreated' => time(),
-            ]);
+            $profile->activeid = $DB->insert_record(
+                'local_filebank_revision',
+                (object)[
+                    'profileid' => $profileid, 'revision' => $number, 'configjson' => $canonical,
+                    'digest' => hash('sha256', $canonical), 'userid' => $USER->id, 'timecreated' => time(),
+                ]
+            );
             $profile->name = $config['name'] ?? $profile->name;
             $DB->update_record('local_filebank', $profile);
-            if ($previous) {
-                $oldconfig = json_decode($previous->configjson, true);
-                if (
-                    $oldconfig['relationship'] === $config['relationship']
-                        && ($oldconfig['scope'] ?? []) === ($config['scope'] ?? [])
-                ) {
-                    // Reuse matching metadata for presentation/publication edits; access is still checked live.
-                    foreach (['local_filebank_course', 'local_filebank_value'] as $table) {
-                        $DB->set_field(
-                            $table,
-                            'revisionid',
-                            $profile->activeid,
-                            ['profileid' => $profileid, 'revisionid' => $previousid]
-                        );
-                    }
-                }
-            }
+            self::reuse_catalog($profile, $previous, $config);
             \local_filebank\task\refresh_profile::queue($profileid, (int)$profile->activeid);
             $transaction->allow_commit();
             log::record('profile_activated', $profile->uuid, ['revision' => $number]);
@@ -108,6 +99,7 @@ final class profiles {
      * @param string $action enable, disable or delete.
      */
     public static function change_state(array $ids, string $action): void {
+
         global $DB;
         require_capability('local/filebank:manageprofiles', \context_system::instance());
         $ids = array_values(array_unique(array_map('intval', $ids)));
@@ -126,21 +118,7 @@ final class profiles {
             }
             $transaction = $DB->start_delegated_transaction();
             foreach ($ids as $id) {
-                $profile = $DB->get_record('local_filebank', ['id' => $id, 'deleted' => 0], '*', MUST_EXIST);
-                if (
-                    $DB->record_exists_sql('SELECT r.id FROM {local_filebank_run} r
-                    JOIN {local_filebank_plan} p ON p.id = r.planid
-                    WHERE p.profileid = ? AND (r.state = ? OR r.state = ?)', [$id, 'queued', 'running'])
-                ) {
-                    throw new \moodle_exception('profileinuse', 'local_filebank');
-                }
-                $profile->enabled = $action === 'enable' ? 1 : 0;
-                $profile->deleted = $action === 'delete' ? 1 : 0;
-                $DB->update_record('local_filebank', $profile);
-                if ($action === 'enable') {
-                    \local_filebank\task\refresh_profile::queue((int)$profile->id, (int)$profile->activeid);
-                }
-                log::record('profile_state_changed', $profile->uuid, ['action' => $action]);
+                self::update_state($id, $action);
             }
             $transaction->allow_commit();
         } finally {
@@ -161,5 +139,61 @@ final class profiles {
         $profile = $DB->get_record('local_filebank', ['id' => $profileid, 'enabled' => 1, 'deleted' => 0], '*', MUST_EXIST);
         $revision = $DB->get_record('local_filebank_revision', ['id' => $profile->activeid], '*', MUST_EXIST);
         return [$profile, $revision, new profile_config(json_decode($revision->configjson, true))];
+    }
+
+    /**
+     * Reuse catalog.
+     *
+     * @param \stdClass $profile Profile.
+     * @param \stdClass|false $previous Previously active version, if any.
+     * @param array $config Config.
+     */
+    private static function reuse_catalog(\stdClass $profile, $previous, array $config): void {
+        global $DB;
+        if ($previous) {
+            $oldconfig = json_decode($previous->configjson, true);
+            if (
+                $oldconfig['relationship'] === $config['relationship']
+                    && ($oldconfig['scope'] ?? []) === ($config['scope'] ?? [])
+            ) {
+                // Reuse matching metadata for presentation/publication edits; access is still checked live.
+                foreach (['local_filebank_course', 'local_filebank_value'] as $table) {
+                    $DB->set_field(
+                        $table,
+                        'revisionid',
+                        $profile->activeid,
+                        ['profileid' => $profile->id, 'revisionid' => $previous->id]
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Update state.
+     *
+     * @param int $id Id.
+     * @param string $action Action.
+     */
+    private static function update_state(int $id, string $action): void {
+        global $DB;
+        $profile = $DB->get_record('local_filebank', ['id' => $id, 'deleted' => 0], '*', MUST_EXIST);
+        if (
+            $DB->record_exists_sql(
+                'SELECT r.id FROM {local_filebank_run} r
+                JOIN {local_filebank_plan} p ON p.id = r.planid
+                WHERE p.profileid = ? AND (r.state = ? OR r.state = ?)',
+                [$id, 'queued', 'running']
+            )
+        ) {
+            throw new \moodle_exception('profileinuse', 'local_filebank');
+        }
+        $profile->enabled = $action === 'enable' ? 1 : 0;
+        $profile->deleted = $action === 'delete' ? 1 : 0;
+        $DB->update_record('local_filebank', $profile);
+        if ($action === 'enable') {
+            \local_filebank\task\refresh_profile::queue((int)$profile->id, (int)$profile->activeid);
+        }
+        log::record('profile_state_changed', $profile->uuid, ['action' => $action]);
     }
 }

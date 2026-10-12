@@ -63,6 +63,7 @@ final class guided_config {
      * @return array Updated document.
      */
     public static function apply(array $config, array $data): array {
+
         if (array_key_exists('displaytemplate', $data)) {
             $label = trim($data['displaytemplate']);
             if ($label === '') {
@@ -80,15 +81,7 @@ final class guided_config {
                     'optional' => !empty($data['editionoptional']), 'comparison' => 'string'];
             }
         }
-        if (array_key_exists('pairdimensions', $data)) {
-            $dimensions = array_values(array_unique(array_filter(array_map('trim', explode(',', $data['pairdimensions'])))));
-            foreach ($dimensions as $dimension) {
-                if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/', $dimension)) {
-                    throw new \moodle_exception('invalidprofile', 'local_filebank');
-                }
-            }
-            $config['relationship']['pair_dimensions'] = $dimensions;
-        }
+        self::dimensions($config, $data);
         if (!empty($data['guidedsettings'])) {
             $config['scope']['category_ids'] = array_values(array_unique(array_map('intval', $data['categoryids'] ?? [])));
             foreach (
@@ -107,5 +100,23 @@ final class guided_config {
             }
         }
         return $config;
+    }
+
+    /**
+     * Dimensions.
+     *
+     * @param array $config Config.
+     * @param array $data Data.
+     */
+    private static function dimensions(array &$config, array $data): void {
+        if (array_key_exists('pairdimensions', $data)) {
+            $dimensions = array_values(array_unique(array_filter(array_map('trim', explode(',', $data['pairdimensions'])))));
+            foreach ($dimensions as $dimension) {
+                if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/', $dimension)) {
+                    throw new \moodle_exception('invalidprofile', 'local_filebank');
+                }
+            }
+            $config['relationship']['pair_dimensions'] = $dimensions;
+        }
     }
 }

@@ -71,7 +71,7 @@ if (!class_exists(\core\hook\output\before_http_headers::class)) {
  * @return string Themeable browser fragment.
  */
 function local_filebank_output_fragment_browser(array $args): string {
-    global $PAGE, $OUTPUT;
+    global $OUTPUT;
     $token = clean_param($args['scope'] ?? '', PARAM_ALPHANUM);
     $scope = \local_filebank\local\selection\draft_scope::describe($token, sesskey());
     if (
@@ -135,11 +135,18 @@ function local_filebank_output_fragment_browser_tree(array $args): string {
     $state['after'] = clean_param($args['after'] ?? '', PARAM_ALPHANUM);
     $listing = \local_filebank\local\selection\browser_listing::page($scope, $state);
     $view = $scope['view'];
-    $view['treefolders'] = array_slice(array_values(array_unique(array_merge(
-        $view['treefolders'],
-        array_column(array_filter($listing['cards'], static fn($card) => $card['isfolder']), 'value')
-    ))), -\local_filebank\local\selection\material_selection::MAX_FILES);
-    \local_filebank\local\selection\draft_scope::remember_view($token, $view, sesskey());
+    $view['treefolders'] = array_slice(
+        array_values(
+            array_unique(
+                array_merge(
+                    $view['treefolders'],
+                    array_column(array_filter($listing['cards'], static fn($card) => $card['isfolder']), 'value')
+                )
+            )
+        ),
+        -\local_filebank\local\selection\material_selection::MAX_FILES
+    );
+    \local_filebank\local\selection\draft_state::remember_view($token, $view, sesskey());
     return $OUTPUT->render_from_template(
         'local_filebank/local/selection/tree_children',
         ['cards' => $listing['cards'], 'folder' => $folder, 'next' => $listing['next']]
@@ -154,20 +161,7 @@ function local_filebank_output_fragment_browser_tree(array $args): string {
 function local_filebank_output_fragment_migration(array $args): string {
     global $OUTPUT;
     require_capability('local/filebank:planmigration', context_system::instance());
-    if (
-        $args['context']->id !== context_system::instance()->id || !is_string($args['state'] ?? null)
-        || strlen($args['state']) > 131072
-    ) {
-        throw new invalid_parameter_exception('Invalid migration request');
-    }
-    try {
-        $state = json_decode($args['state'], true, 8, JSON_THROW_ON_ERROR);
-    } catch (JsonException $exception) {
-        throw new invalid_parameter_exception('Invalid migration document');
-    }
-    if (!is_array($state) || !confirm_sesskey($state['sesskey'] ?? '')) {
-        throw new moodle_exception('invalidsesskey');
-    }
+    $state = \local_filebank\local\fragment_request::state($args, 131072, 8);
     $planid = clean_param($state['planid'] ?? 0, PARAM_INT);
     $action = $state['action'] ?? 'view';
     if ($action === 'resolve') {
@@ -198,7 +192,7 @@ function local_filebank_output_fragment_migration(array $args): string {
         clean_param($state['decision'] ?? '', PARAM_ALPHA),
         (int)($state['page'] ?? 0),
         clean_param($state['q'] ?? '', PARAM_TEXT),
-        false,
+        'review',
         (int)($state['issuepage'] ?? 0),
         (int)($state['perpage'] ?? 50)
     );
@@ -214,20 +208,7 @@ function local_filebank_output_fragment_migration(array $args): string {
 function local_filebank_output_fragment_profiles(array $args): string {
     global $DB, $OUTPUT;
     require_capability('local/filebank:manageprofiles', context_system::instance());
-    if (
-        $args['context']->id !== context_system::instance()->id || !is_string($args['state'] ?? null)
-            || strlen($args['state']) > 16384
-    ) {
-        throw new invalid_parameter_exception('Invalid profile request');
-    }
-    try {
-        $state = json_decode($args['state'], true, 4, JSON_THROW_ON_ERROR);
-    } catch (JsonException $exception) {
-        throw new invalid_parameter_exception('Invalid profile document');
-    }
-    if (!is_array($state) || !confirm_sesskey($state['sesskey'] ?? '')) {
-        throw new moodle_exception('invalidsesskey');
-    }
+    $state = \local_filebank\local\fragment_request::state($args, 16384, 4);
     $ids = $state['ids'] ?? [];
     $action = $state['action'] ?? '';
     if (!is_array($ids) || count($ids) > 50 || !in_array($action, ['enable', 'disable'], true)) {

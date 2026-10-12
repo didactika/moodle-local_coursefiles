@@ -27,6 +27,7 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
 use local_filebank\local\selection\draft_scope;
+use local_filebank\local\selection\draft_state;
 use local_filebank\local\selection\selection_options;
 use local_filebank\output\display;
 use local_filebank\output\review_tree;
@@ -50,10 +51,12 @@ if (data_submitted()) {
     if ($removed !== '') {
         $removeditems[] = str_starts_with($removed, 'file:') ? substr($removed, 5) : $removed;
     }
-    $state['selected'] = array_values(array_diff(
-        $state['selected'] ?? [],
-        array_map(static fn($hash) => 'file:' . $hash, $removeditems)
-    ));
+    $state['selected'] = array_values(
+        array_diff(
+            $state['selected'] ?? [],
+            array_map(static fn($hash) => 'file:' . $hash, $removeditems)
+        )
+    );
     $renames = optional_param_array('renames', [], PARAM_RAW);
     $hashes = array_map(static fn($value) => substr($value, 5), $state['selected']);
     $state['renames'] = array_intersect_key($renames, array_flip($hashes));
@@ -61,7 +64,7 @@ if (data_submitted()) {
         foreach ($state['renames'] as $filename) {
             selection_options::filename($filename);
         }
-        draft_scope::remember_view($token, $state, sesskey());
+        draft_state::remember_view($token, $state, sesskey());
         redirect($PAGE->url);
     } catch (moodle_exception $exception) {
         $renameerror = display::reason($exception->errorcode);
@@ -72,7 +75,7 @@ $data = ['backurl' => (new moodle_url('/local/filebank/selection/index.php', ['s
 $data += ['renameerror' => $renameerror];
 $data += ['action' => $PAGE->url->out(false), 'sesskey' => sesskey(), 'scope' => $token];
 try {
-    $review = draft_scope::review(
+    $review = draft_state::review(
         $token,
         (int)($state['profileid'] ?? 0),
         selection_options::parse($state['selected'] ?? []),

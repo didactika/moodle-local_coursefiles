@@ -57,9 +57,10 @@ final class draft_import {
         string $mode = 'paths',
         array $options = []
     ): array {
+
         global $USER;
         destination_access::require($courseid);
-        self::validate_limits($limits);
+        draft_limits::contract($limits);
         $basepath = material_selection::path($basepath);
         $fs = get_file_storage();
         $context = \context_user::instance($USER->id);
@@ -67,89 +68,55 @@ final class draft_import {
             throw new \moodle_exception('invaliddraft', 'local_filebank');
         }
         $current = $fs->get_area_files($context->id, 'user', 'draft', $draftid, 'id', false);
-        $paths = [];
-        $content = [];
-        $count = count($current);
-        $bytes = 0;
-        $draftsnapshot = [];
-        foreach ($current as $file) {
-            $snapshot = copy_decision::snapshot($file);
-            $draftsnapshot[] = $snapshot;
-            $paths[$file->get_filepath() . $file->get_filename()] = $snapshot;
-            $content[$file->get_contenthash()][] = $snapshot;
-            $bytes += $file->get_filesize();
-        }
+        $draft = draft_review::current($current);
+        $paths = $draft['paths'];
+        $content = $draft['content'];
+        $count = $draft['count'];
+        $bytes = $draft['bytes'];
+        $draftsnapshot = $draft['draftsnapshot'];
         [, $revision, $rules] = profiles::load($profileid);
         $contentpolicy = $rules->get_config()['migration']['same_content_different_path'] ?? 'skip-and-report';
         $skipcontent = $contentpolicy === 'skip-and-report';
         $operations = [];
         $blocked = false;
         $files = material_selection::resolve($courseid, $profileid, $items);
-        if (count($files) > ($limits['selectionlimit'] ?? material_selection::MAX_FILES)) {
-            throw new \moodle_exception('batchlimit', 'local_filebank');
-        }
+        draft_limits::selection($files, $limits);
         $mapping = material_selection::map_paths(
             $files,
             array_merge($items, selection_options::parse($options['roots'] ?? [])),
             $mode
         );
         $renames = $options['renames'] ?? [];
-        if (!is_array($renames) || count($renames) > material_selection::MAX_FILES || array_diff_key($renames, $files)) {
-            throw new \moodle_exception('invalidselection', 'local_filebank');
-        }
-        foreach ($files as $hash => $file) {
-            [$file, $cm] = material_source::resolve($hash, $courseid, $profileid);
-            author_policy::require_native_copy($file, (int)$cm->course, $courseid);
-            $source = copy_decision::snapshot($file);
-            $path = destination_path::make($basepath, $mapping[$hash]);
-            $filename = $renames[$hash] ?? $file->get_filename();
-            if (!is_string($filename)) {
-                throw new \moodle_exception('invalidselection', 'local_filebank');
-            }
-            $filename = selection_options::filename($filename);
-            $key = $path . $filename;
-            $decision = copy_decision::classify($source, $paths[$key] ?? null);
-            if ($decision === 'copy' && $skipcontent) {
-                foreach ($content[$file->get_contenthash()] ?? [] as $existing) {
-                    $decision = copy_decision::classify($source, $existing) === 'skip_identical'
-                        ? 'skip_content' : 'blocked_attribution';
-                    if ($decision === 'blocked_attribution') {
-                        break;
-                    }
-                }
-            }
-            if (!$limits['subdirs'] && $path !== '/') {
-                throw new \moodle_exception('batchlimit', 'local_filebank');
-            }
-            if (
-                !in_array('*', $limits['accepted_types'], true)
-                    && (!file_extension_in_typegroup($filename, $limits['accepted_types'], true)
-                        || !file_extension_in_typegroup($file->get_filename(), $limits['accepted_types'], true))
-            ) {
-                throw new \moodle_exception('batchlimit', 'local_filebank');
-            }
-            if ($limits['maxbytes'] > 0 && $file->get_filesize() > $limits['maxbytes']) {
-                throw new \moodle_exception('batchlimit', 'local_filebank');
-            }
+        draft_limits::renames($files, $renames);
+        foreach (array_keys($files) as $hash) {
+            $context = compact('courseid', 'profileid', 'basepath', 'paths', 'content', 'limits', 'skipcontent');
+            $context['relativepath'] = $mapping[$hash];
+            $context['rename'] = $renames[$hash] ?? null;
+            $operation = draft_review::leaf($hash, $context);
+            $decision = $operation['decision'];
+            $source = $operation['snapshot'];
+            $key = $operation['filepath'] . $operation['filename'];
             if ($decision === 'copy') {
                 $count++;
-                $bytes += $file->get_filesize();
+                $bytes += $operation['filesize'];
                 $paths[$key] = $source;
-                $content[$file->get_contenthash()][] = $source;
+                $content[$operation['contenthash']][] = $source;
             }
             $blocked = $blocked || str_starts_with($decision, 'blocked_');
-            $operations[] = ['pathnamehash' => $hash, 'filepath' => $path, 'filename' => $filename,
-                'decision' => $decision, 'snapshot' => $source];
+            unset($operation['contenthash'], $operation['filesize']);
+            $operations[] = $operation;
         }
-        if (
-            ($limits['maxfiles'] >= 0 && $count > $limits['maxfiles'])
-                || ($limits['areamaxbytes'] >= 0 && $bytes > $limits['areamaxbytes'])
-        ) {
-            throw new \moodle_exception('batchlimit', 'local_filebank');
-        }
-        $digest = hash('sha256', json_encode([
-            $USER->id, $courseid, $profileid, $revision->id, $draftid, $basepath, $mode, $limits, $draftsnapshot, $operations,
-        ], JSON_THROW_ON_ERROR));
+        draft_limits::total($limits, $count, $bytes);
+        $digest = hash(
+            'sha256',
+            json_encode(
+                [
+                    $USER->id, $courseid, $profileid, $revision->id, $draftid, $basepath, $mode, $limits,
+                    $draftsnapshot, $operations,
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
         return ['operations' => $operations, 'filecount' => $count, 'bytes' => $bytes,
             'blocked' => $blocked, 'digest' => $digest];
     }
@@ -179,6 +146,7 @@ final class draft_import {
         string $mode = 'paths',
         array $options = []
     ): array {
+
         global $DB, $USER;
         $lock = \core\lock\lock_config::get_lock_factory('local_filebank')
             ->get_lock('draft:' . $USER->id . ':' . $draftid, 10);
@@ -196,21 +164,7 @@ final class draft_import {
                 if ($operation['decision'] !== 'copy') {
                     continue;
                 }
-                [$file, $cm] = material_source::resolve($operation['pathnamehash'], $courseid, $profileid);
-                author_policy::require_native_copy($file, (int)$cm->course, $courseid);
-                if (copy_decision::snapshot($file) !== $operation['snapshot']) {
-                    throw new \moodle_exception('batchconflict', 'local_filebank');
-                }
-                $attributionid = author_policy::capture($file);
-                $uuid = $DB->get_field('local_filebank_author', 'uuid', ['id' => $attributionid], MUST_EXIST);
-                get_file_storage()->create_file_from_storedfile([
-                    'contextid' => $context->id, 'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid,
-                    'filepath' => $operation['filepath'], 'filename' => $operation['filename'], 'userid' => $USER->id,
-                    'author' => $file->get_author(), 'license' => $file->get_license(),
-                    // A source activity's main-file choice must not replace the destination's choice.
-                    'sortorder' => 0,
-                    'source' => serialize((object)['source' => json_encode(['filebank' => $uuid])]),
-                ], $file);
+                draft_writer::copy($courseid, $profileid, $draftid, $context, $operation);
             }
             $transaction->allow_commit();
             return $review;
@@ -221,31 +175,6 @@ final class draft_import {
             throw $exception;
         } finally {
             $lock->release();
-        }
-    }
-
-    /**
-     * Reject incomplete control contracts rather than falling back to unlimited uploads.
-     *
-     * @param array $limits Server-side options.
-     */
-    private static function validate_limits(array $limits): void {
-        foreach (['maxfiles', 'maxbytes', 'areamaxbytes'] as $name) {
-            if (!isset($limits[$name]) || !is_int($limits[$name]) || $limits[$name] < -1) {
-                throw new \moodle_exception('batchlimit', 'local_filebank');
-            }
-        }
-        if (
-            !isset($limits['subdirs'], $limits['accepted_types'])
-                || !in_array($limits['subdirs'], [true, false, 0, 1], true)
-                || !is_array($limits['accepted_types']) || !$limits['accepted_types']
-        ) {
-            throw new \moodle_exception('batchlimit', 'local_filebank');
-        }
-        foreach ($limits['accepted_types'] as $type) {
-            if (!is_string($type) || $type === '') {
-                throw new \moodle_exception('batchlimit', 'local_filebank');
-            }
         }
     }
 }

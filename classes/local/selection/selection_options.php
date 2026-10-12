@@ -38,6 +38,7 @@ final class selection_options {
      * @return array File/folder selectors.
      */
     public static function parse(array $values): array {
+
         foreach ($values as $value) {
             if (!is_string($value)) {
                 throw new \moodle_exception('invalidselection', 'local_filebank');
@@ -50,20 +51,10 @@ final class selection_options {
         }
         $items = [];
         foreach ($values as $value) {
-            if (!is_string($value)) {
-                throw new \moodle_exception('invalidselection', 'local_filebank');
-            }
             if (preg_match('/^file:([a-f0-9]{40})$/', $value, $match)) {
                 $items[] = ['pathnamehash' => $match[1]];
             } else if (preg_match('/^folder:([1-9][0-9]*):([A-Za-z0-9+\/=]+)$/', $value, $match)) {
-                $path = base64_decode($match[2], true);
-                if (
-                    $path === false || \core_text::strlen($path) > 255 || base64_encode($path) !== $match[2]
-                        || (string)(int)$match[1] !== $match[1]
-                ) {
-                    throw new \moodle_exception('invalidselection', 'local_filebank');
-                }
-                $items[] = ['cmid' => (int)$match[1], 'filepath' => material_selection::path($path)];
+                $items[] = self::folder($match);
             } else {
                 throw new \moodle_exception('invalidselection', 'local_filebank');
             }
@@ -106,6 +97,7 @@ final class selection_options {
         string $after,
         array $selected
     ): array {
+
         self::parse($selected);
         $result = catalog::search($courseid, $profileid, $filters, $after, 50);
         $folders = [];
@@ -124,20 +116,7 @@ final class selection_options {
                     $chosen = true;
                 }
                 if ($origin['module'] === 'folder') {
-                    $path = $origin['filepath'];
-                    do {
-                        if (count($folders) >= 150) {
-                            $limited = true;
-                            break;
-                        }
-                        $value = 'folder:' . $origin['cmid'] . ':' . base64_encode($path);
-                        $folders[$value] = get_string('batchfolder', 'local_filebank') . ': ' . $label . $path;
-                        $parent = dirname(rtrim($path, '/'));
-                        $path = $parent === '/' || $parent === '.' ? '/' : $parent . '/';
-                    } while (
-                        $origin['filepath'] !== '/'
-                        && !isset($folders['folder:' . $origin['cmid'] . ':' . base64_encode($path)])
-                    );
+                    self::folder_choices($origin, $label, $folders, $limited);
                 }
             }
         }
@@ -150,5 +129,47 @@ final class selection_options {
             }
         }
         return ['choices' => $choices, 'next' => $result['next'], 'limited' => $limited];
+    }
+
+    /**
+     * Folder.
+     *
+     * @param array $match Match.
+     * @return array Result.
+     */
+    private static function folder(array $match): array {
+        $path = base64_decode($match[2], true);
+        if (
+            $path === false || \core_text::strlen($path) > 255 || base64_encode($path) !== $match[2]
+                || (string)(int)$match[1] !== $match[1]
+        ) {
+            throw new \moodle_exception('invalidselection', 'local_filebank');
+        }
+        return ['cmid' => (int)$match[1], 'filepath' => material_selection::path($path)];
+    }
+
+    /**
+     * Folder choices.
+     *
+     * @param array $origin Origin.
+     * @param string $label Label.
+     * @param array $folders Folders.
+     * @param bool $limited Limited.
+     */
+    private static function folder_choices(array $origin, string $label, array &$folders, bool &$limited): void {
+        $path = $origin['filepath'];
+        do {
+            if (count($folders) >= 150) {
+                $limited = true;
+                break;
+            }
+            $value = 'folder:' . $origin['cmid'] . ':' . base64_encode($path);
+            $folders[$value] = get_string('batchfolder', 'local_filebank') . ': ' . $label . $path;
+            $parent = dirname(rtrim($path, '/'));
+            $path = $parent === '/' || $parent === '.' ? '/' : $parent . '/';
+        } while (
+            $origin['filepath'] !== '/'
+            && !isset($folders['folder:' . $origin['cmid'] . ':' . base64_encode($path)])
+        );
     }
 }

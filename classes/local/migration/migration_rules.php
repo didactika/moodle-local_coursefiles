@@ -37,35 +37,13 @@ final class migration_rules {
      * @return array Validated migration rules.
      */
     public static function from_form(array $data): array {
+
         $config = ['identical_content' => 'skip', 'section_match' => ['strategy' => $data['sectionstrategy'] ?? 'ordinal'],
             'same_content_different_path' => $data['duplicatepolicy'] ?? 'skip-and-report',
             'missing_target' => $data['missingtarget'] ?? 'block',
             'same_path_different_content' => $data['conflictpolicy'] ?? 'block', 'correspondences' => []];
         foreach (row_data::decode($data['correspondencesjson'] ?? '[]', 20) as $row) {
-            $rule = [];
-            foreach (['source', 'target'] as $side) {
-                $field = $row[$side . 'field'] ?? '';
-                $method = $row[$side . 'method'] ?? '';
-                $value = $row[$side . 'value'] ?? '';
-                if (
-                    !is_string($value) || trim($value) === '' || strlen($value) > 2048
-                    || !in_array($field, ['name', 'idnumber'], true)
-                    || !in_array($method, ['equals', 'pattern', 'template'], true)
-                ) {
-                    throw new \moodle_exception('invalidprofile', 'local_filebank');
-                }
-                if (
-                    $method === 'pattern' && (!in_array($value[0], ['~', '#', '/'], true)
-                    || @preg_match($value, '') === false)
-                ) {
-                    throw new \moodle_exception('invalidprofile', 'local_filebank');
-                }
-                $type = $side === 'source' ? ($row['sourcetype'] ?? 'folder') : 'folder';
-                if (!is_string($type) || !\local_filebank\local\catalog\source_registry::provider($type)) {
-                    throw new \moodle_exception('invalidprofile', 'local_filebank');
-                }
-                $rule[$side . '_module'] = ['type' => $type, 'field' => $field, $method => trim($value)];
-            }
+            $rule = self::correspondence($row);
             $config['correspondences'][] = $rule;
         }
         if (
@@ -76,20 +54,87 @@ final class migration_rules {
         ) {
             throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
-        if ($config['section_match']['strategy'] === 'mapping') {
-            $config['section_match']['map'] = [];
-            foreach (row_data::decode($data['sectionmapjson'] ?? '[]', 200) as $row) {
-                $source = $row['source'] ?? '';
-                $target = $row['target'] ?? '';
-                if (
-                    !ctype_digit((string)$source) || !ctype_digit((string)$target) || (int)$source <= 0 || (int)$target <= 0
-                    || isset($config['section_match']['map'][(string)$source])
-                ) {
-                    throw new \moodle_exception('invalidprofile', 'local_filebank');
-                }
-                $config['section_match']['map'][(string)$source] = (int)$target;
-            }
-        }
+        self::mapping($config, $data);
         return $config;
+    }
+
+    /**
+     * Correspondence.
+     *
+     * @param array $row Row.
+     * @return array Result.
+     */
+    private static function correspondence(array $row): array {
+        $rule = [];
+        foreach (['source', 'target'] as $side) {
+            $rule[$side . '_module'] = self::module($row, $side);
+        }
+        return $rule;
+    }
+
+    /**
+     * Module.
+     *
+     * @param array $row Row.
+     * @param string $side Side.
+     * @return array Result.
+     */
+    private static function module(array $row, string $side): array {
+
+        $field = $row[$side . 'field'] ?? '';
+        $method = $row[$side . 'method'] ?? '';
+        $value = $row[$side . 'value'] ?? '';
+        if (
+            !is_string($value) || trim($value) === '' || strlen($value) > 2048
+            || !in_array($field, ['name', 'idnumber'], true)
+            || !in_array($method, ['equals', 'pattern', 'template'], true)
+        ) {
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
+        }
+        self::pattern($method, $value);
+        $type = $side === 'source' ? ($row['sourcetype'] ?? 'folder') : 'folder';
+        if (!is_string($type) || !\local_filebank\local\catalog\source_registry::provider($type)) {
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
+        }
+        return ['type' => $type, 'field' => $field, $method => trim($value)];
+    }
+
+    /**
+     * Mapping.
+     *
+     * @param array $config Config.
+     * @param array $data Data.
+     */
+    private static function mapping(array &$config, array $data): void {
+        if ($config['section_match']['strategy'] !== 'mapping') {
+            return;
+        }
+        $config['section_match']['map'] = [];
+        foreach (row_data::decode($data['sectionmapjson'] ?? '[]', 200) as $row) {
+            $source = $row['source'] ?? '';
+            $target = $row['target'] ?? '';
+            if (
+                !ctype_digit((string)$source) || !ctype_digit((string)$target) || (int)$source <= 0 || (int)$target <= 0
+                || isset($config['section_match']['map'][(string)$source])
+            ) {
+                throw new \moodle_exception('invalidprofile', 'local_filebank');
+            }
+            $config['section_match']['map'][(string)$source] = (int)$target;
+        }
+    }
+
+    /**
+     * Pattern.
+     *
+     * @param string $method Method.
+     * @param string $value Value.
+     */
+    private static function pattern(string $method, string $value): void {
+        if (
+            $method === 'pattern' && (!in_array($value[0], ['~', '#', '/'], true)
+            || @preg_match($value, '') === false)
+        ) {
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
+        }
     }
 }

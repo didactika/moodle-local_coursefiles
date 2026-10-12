@@ -48,44 +48,31 @@ final class material_source {
         ?array $profiledata = null,
         ?array &$scope = null
     ): array {
+
         global $DB, $USER;
         \local_filebank\local\selection\destination_access::require($targetcourse);
-        if (!preg_match('/^[a-f0-9]{40}$/', $pathnamehash)) {
-            throw new \moodle_exception('materialunavailable', 'local_filebank');
-        }
-        $file = get_file_storage()->get_file_by_hash($pathnamehash);
-        if (
-            !$file || $file->is_directory() || $file->is_external_file()
-        ) {
-            throw new \moodle_exception('materialunavailable', 'local_filebank');
-        }
-        $context = \context::instance_by_id($file->get_contextid());
-        if ($context->contextlevel !== CONTEXT_MODULE) {
-            throw new \moodle_exception('materialunavailable', 'local_filebank');
-        }
-        [$profile, $revision, $rules] = $profiledata ?? profiles::load($profileid);
-        if (!isset($scope[$context->instanceid])) {
-            $cm = get_coursemodule_from_id(null, $context->instanceid, 0, false, MUST_EXIST);
-            $course = get_course($cm->course);
-            $section = $DB->get_record('course_sections', ['id' => $cm->section], '*', MUST_EXIST);
-            $scope[$context->instanceid] = [$cm, $course, $section, $rules->resolve($course),
-                $rules->resolve(get_course($targetcourse))];
-        }
-        [$cm, $course, $section, $sourceidentity, $targetidentity] = $scope[$context->instanceid];
+        [$file, $context] = self::file($pathnamehash);
+        [$profile, , $rules] = $profiledata ?? profiles::load($profileid);
+        [$cm, $course, $section, $sourceidentity, $targetidentity] = self::course_scope(
+            $context,
+            $rules,
+            $targetcourse,
+            $scope
+        );
         $cminfo = get_fast_modinfo($course)->get_cm($cm->id);
         $provider = source_registry::provider($cm->modname);
         if (!$provider || !$provider->allows($cminfo, $file)) {
             throw new \moodle_exception('materialunavailable', 'local_filebank');
         }
-        $allowedareas = $rules->get_config()['publication']['allowed_sources'] ?? ['mod_folder/content', 'mod_resource/content'];
-        if (
-            !$sourceidentity || !$targetidentity || $sourceidentity['familykey'] !== $targetidentity['familykey']
-                || !source_registry::enabled($allowedareas, $file)
-                || !$course->visible || !$cm->visible || !empty($cm->availability)
-                || !$section->visible || !empty($section->availability)
-        ) {
-            throw new \moodle_exception('materialunavailable', 'local_filebank');
-        }
+        self::require_eligible(
+            $file,
+            $course,
+            $cm,
+            $section,
+            $sourceidentity,
+            $targetidentity,
+            $rules->get_config()['publication']['allowed_sources'] ?? ['mod_folder/content', 'mod_resource/content']
+        );
         $ordinary = can_access_course($course, $USER, '', true) && $provider->readable($cminfo, $file);
         $grant = ($rules->get_config()['publication']['mode'] ?? 'source-access-only') === 'explicit-family-publication'
             && $DB->record_exists(
@@ -106,8 +93,9 @@ final class material_source {
      * @param bool $revoked Revoke flag.
      */
     public static function publish(int $profileid, int $cmid, bool $revoked): void {
+
         global $DB, $USER;
-        [$profile, $revision, $rules] = profiles::load($profileid);
+        [, , $rules] = profiles::load($profileid);
         $cm = get_coursemodule_from_id(null, $cmid, 0, false, MUST_EXIST);
         $course = get_course($cm->course);
         $section = $DB->get_record('course_sections', ['id' => $cm->section], '*', MUST_EXIST);
@@ -115,8 +103,7 @@ final class material_source {
         require_capability('moodle/course:manageactivities', \context_course::instance($cm->course));
         if (
             !source_registry::provider($cm->modname)
-                || (!$revoked && (!$course->visible || !$cm->visible || !empty($cm->availability)
-                    || !$section->visible || !empty($section->availability)
+                || (!$revoked && (!self::visible($course, $cm, $section)
                     || ($rules->get_config()['publication']['mode'] ?? 'source-access-only')
                         !== 'explicit-family-publication'))
         ) {
@@ -132,5 +119,96 @@ final class material_source {
             $DB->insert_record('local_filebank_publish', $data);
         }
         log::record($revoked ? 'publication_revoked' : 'publication_granted', '', ['profileid' => $profileid, 'cmid' => $cmid]);
+    }
+
+    /**
+     * Resolve only native non-directory module files with an existing module context.
+     *
+     * @param string $pathnamehash Requested native pathname hash.
+     * @return array Result.
+     */
+    private static function file(string $pathnamehash): array {
+        if (!preg_match('/^[a-f0-9]{40}$/', $pathnamehash)) {
+            throw new \moodle_exception('materialunavailable', 'local_filebank');
+        }
+        $file = get_file_storage()->get_file_by_hash($pathnamehash);
+        if (
+            !$file || $file->is_directory() || $file->is_external_file()
+        ) {
+            throw new \moodle_exception('materialunavailable', 'local_filebank');
+        }
+        $context = \context::instance_by_id($file->get_contextid());
+        if ($context->contextlevel !== CONTEXT_MODULE) {
+            throw new \moodle_exception('materialunavailable', 'local_filebank');
+        }
+        return [$file, $context];
+    }
+
+    /**
+     * Cache live source and destination identities for one authorization request.
+     *
+     * @param \context $context Current module context.
+     * @param \local_filebank\local\profile\profile_config $rules Validated relationship rules.
+     * @param int $targetcourse Owning destination course.
+     * @param array|null $scope Per-request source authorization cache.
+     * @return array Result.
+     */
+    private static function course_scope(
+        \context $context,
+        \local_filebank\local\profile\profile_config $rules,
+        int $targetcourse,
+        ?array &$scope
+    ): array {
+        global $DB;
+        if (!isset($scope[$context->instanceid])) {
+            $cm = get_coursemodule_from_id(null, $context->instanceid, 0, false, MUST_EXIST);
+            $course = get_course($cm->course);
+            $section = $DB->get_record('course_sections', ['id' => $cm->section], '*', MUST_EXIST);
+            $scope[$context->instanceid] = [$cm, $course, $section, $rules->resolve($course),
+                $rules->resolve(get_course($targetcourse))];
+        }
+        return $scope[$context->instanceid];
+    }
+
+    /**
+     * Exclude hidden or restricted native course materials.
+     *
+     * @param \stdClass $course Current source course.
+     * @param \stdClass $cm Current source module.
+     * @param \stdClass $section Current source section.
+     * @return bool Result.
+     */
+    private static function visible(\stdClass $course, \stdClass $cm, \stdClass $section): bool {
+        return $course->visible && $cm->visible && empty($cm->availability)
+            && $section->visible && empty($section->availability);
+    }
+
+    /**
+     * Require eligible.
+     *
+     * @param \stored_file $file Native source leaf.
+     * @param \stdClass $course Native course.
+     * @param \stdClass $cm Native source module.
+     * @param \stdClass $section Native section.
+     * @param array|null $sourceidentity Resolved source identity.
+     * @param array|null $targetidentity Resolved target identity.
+     * @param array $allowedareas Configured public source areas.
+     */
+    private static function require_eligible(
+        \stored_file $file,
+        \stdClass $course,
+        \stdClass $cm,
+        \stdClass $section,
+        ?array $sourceidentity,
+        ?array $targetidentity,
+        array $allowedareas
+    ): void {
+        if (
+            !$sourceidentity || !$targetidentity || $sourceidentity['familykey'] !== $targetidentity['familykey']
+                || !source_registry::enabled($allowedareas, $file)
+                || !self::visible($course, $cm, $section)
+        ) {
+            throw new \moodle_exception('materialunavailable', 'local_filebank');
+        }
     }
 }

@@ -32,12 +32,12 @@ final class native_integration {
     /**
      * Keep unrelated requests and form factories on their normal core implementation.
      *
-     * @param \core\hook\after_config|null $hook Bootstrap hook; null on legacy callback cores.
      */
-    public static function register(?\core\hook\after_config $hook = null): void {
+    public static function register(): void {
         global $SCRIPT;
+        // Both legacy callbacks and hooks register the same payload-independent native elements.
         if (in_array($SCRIPT, ['/mod/folder/edit.php', '/course/modedit.php'], true)) {
-            \local_filebank\form\native_filemanager::register_native($hook);
+            \local_filebank\form\native_filemanager::register_native();
         }
     }
 }
