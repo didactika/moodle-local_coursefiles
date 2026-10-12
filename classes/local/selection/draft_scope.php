@@ -75,67 +75,6 @@ final class draft_scope {
     }
 
     /**
-     * Store bounded browser state while invalidating changed visible selections.
-     *
-     * @param string $token Form scope.
-     * @param array $view Validated browser state.
-     * @param string $sesskey Session key.
-     */
-    public static function remember_view(string $token, array $view, string $sesskey): void {
-        global $SESSION;
-        $scope = self::resolve($token, $sesskey);
-        if (isset($scope['review']) && ($scope['view'] ?? []) !== $view) {
-            unset($SESSION->local_filebank_drafts[$token]['review']);
-        }
-        $SESSION->local_filebank_drafts[$token]['view'] = $view;
-    }
-
-    /**
-     * Use the name of the native repository instance that opened this scope.
-     *
-     * @param string $token Actual form scope.
-     * @param string $name Server-loaded repository instance name.
-     * @param string $sesskey Session key.
-     */
-    public static function select_repository(string $token, string $name, string $sesskey): void {
-        global $SESSION;
-        self::resolve($token, $sesskey);
-        $SESSION->local_filebank_drafts[$token]['repositoryname'] = $name;
-    }
-
-    /**
-     * Narrow an editor subpicker to its requested types while retaining the native form ceilings.
-     *
-     * @param string $token Actual form scope.
-     * @param array $types Core subpicker extensions; these may only restrict an editor's wildcard contract.
-     * @param string $environment Actual native picker environment.
-     * @param string $sesskey Session key.
-     */
-    public static function select_picker(string $token, array $types, string $environment, string $sesskey): void {
-        global $SESSION;
-        $scope = self::resolve($token, $sesskey);
-        if (($scope['environment'] ?? '') !== 'editor') {
-            return;
-        }
-        $types = (new \core_form\filetypes_util())->normalize_file_types($types) ?: ['*'];
-        $links = $environment === 'editor' && in_array('*', $types, true);
-        $limit = $environment === 'editor' && !$links ? 1 : material_selection::MAX_FILES;
-        if (
-            $scope['limits']['accepted_types'] !== $types || ($scope['limits']['selectionlimit'] ?? 0) !== $limit
-                || ($scope['editorlinks'] ?? false) !== $links
-        ) {
-            unset(
-                $SESSION->local_filebank_drafts[$token]['review'],
-                $SESSION->local_filebank_drafts[$token]['view'],
-                $SESSION->local_filebank_drafts[$token]['imported']
-            );
-        }
-        $SESSION->local_filebank_drafts[$token]['limits']['accepted_types'] = $types;
-        $SESSION->local_filebank_drafts[$token]['limits']['selectionlimit'] = $limit;
-        $SESSION->local_filebank_drafts[$token]['editorlinks'] = $links;
-    }
-
-    /**
      * Revalidate an approved selection before handing it to the native repository transfer.
      *
      * @param string $token Form scope.
@@ -166,25 +105,6 @@ final class draft_scope {
     }
 
     /**
-     * Change folder placement only after invalidating any old approval.
-     *
-     * @param string $token Form scope.
-     * @param string $mode Folder mapping mode.
-     * @param string $sesskey Session key.
-     */
-    public static function select_mode(string $token, string $mode, string $sesskey): void {
-        global $SESSION;
-        $scope = self::resolve($token, $sesskey);
-        if (!in_array($mode, ['paths', 'folder', 'contents'], true)) {
-            throw new \moodle_exception('invalidselection', 'local_filebank');
-        }
-        if (($scope['copymode'] ?? 'paths') !== $mode) {
-            unset($SESSION->local_filebank_drafts[$token]['review']);
-            $SESSION->local_filebank_drafts[$token]['copymode'] = $mode;
-        }
-    }
-
-    /**
      * Register a real native form element, never browser-provided options.
      *
      * @param \MoodleQuickForm_filemanager $element Actual owning control.
@@ -193,7 +113,8 @@ final class draft_scope {
      * @return string Random session-local token.
      */
     public static function open(\MoodleQuickForm_filemanager $element, \context $context, string $basepath = '/'): string {
-        global $SESSION, $USER;
+
+        global $USER;
         self::require_context($context, $element->getName());
         $basepath = material_selection::path($basepath);
         $contract = scoped_filemanager::read_contract($element, $context);
@@ -232,6 +153,7 @@ final class draft_scope {
      * @return string Random session-local binding.
      */
     public static function open_contract(array $contract, \context $context, string $basepath = '/'): string {
+
         global $SESSION, $USER;
         self::require_context($context, $contract['field']);
         $basepath = material_selection::path($basepath);
@@ -247,19 +169,7 @@ final class draft_scope {
         ) {
             throw new \moodle_exception('invaliddraft', 'local_filebank');
         }
-        $scopes = $SESSION->local_filebank_drafts ?? [];
-        foreach ($scopes as $key => $scope) {
-            if (
-                $scope['expires'] <= time() || $scope['userid'] !== (int)$USER->id
-                    || ($scope['contextid'] === $context->id && $scope['field'] === $contract['field']
-                        && $scope['draftid'] === $contract['draftid'])
-            ) {
-                unset($scopes[$key]);
-            }
-        }
-        while (count($scopes) >= self::MAX_SCOPES) {
-            array_shift($scopes);
-        }
+        $scopes = self::prune($contract, $context);
         $token = bin2hex(random_bytes(32));
         $contract['module'] = $context->contextlevel === CONTEXT_MODULE
             ? get_coursemodule_from_id(null, $context->instanceid)->modname : ($contract['module'] ?? '');
@@ -292,143 +202,6 @@ final class draft_scope {
         ) {
             throw new \moodle_exception('formscopeunavailable', 'local_filebank');
         }
-    }
-
-    /**
-     * List existing directories in this actor's bound draft, respecting the native subdirectory option.
-     *
-     * @param string $token Form scope.
-     * @param string $sesskey Current session key.
-     * @return array Directory paths indexed by path.
-     */
-    public static function destinations(string $token, string $sesskey): array {
-        global $DB, $USER;
-        $scope = self::resolve($token, $sesskey);
-        $conditions = ['contextid' => \context_user::instance($USER->id)->id, 'component' => 'user',
-            'filearea' => 'draft', 'itemid' => $scope['draftid'], 'filename' => '.'];
-        if (!$scope['limits']['subdirs']) {
-            $conditions['filepath'] = '/';
-        }
-        $directories = $DB->get_records('files', $conditions, 'filepath', 'id, filepath');
-        $paths = array_column($directories, 'filepath');
-        return array_combine($paths, $paths);
-    }
-
-    /**
-     * Bind an existing destination and discard approval whenever that destination changes.
-     *
-     * @param string $token Form scope.
-     * @param string $basepath Submitted destination directory.
-     * @param string $sesskey Current session key.
-     */
-    public static function select_destination(string $token, string $basepath, string $sesskey): void {
-        global $SESSION, $USER;
-        $scope = self::resolve($token, $sesskey);
-        $basepath = material_selection::path($basepath);
-        if (!$scope['limits']['subdirs'] && $basepath !== '/') {
-            throw new \moodle_exception('batchlimit', 'local_filebank');
-        }
-        if (
-            !get_file_storage()->get_file(
-                \context_user::instance($USER->id)->id,
-                'user',
-                'draft',
-                $scope['draftid'],
-                $basepath,
-                '.'
-            )
-        ) {
-            throw new \moodle_exception('invaliddraft', 'local_filebank');
-        }
-        if ($scope['basepath'] !== $basepath) {
-            unset($SESSION->local_filebank_drafts[$token]['review']);
-            $SESSION->local_filebank_drafts[$token]['basepath'] = $basepath;
-        }
-    }
-
-    /**
-     * Require the current form fields to describe exactly the approved profile and selection.
-     *
-     * @param string $token Form scope.
-     * @param int $profileid Current profile field.
-     * @param array $items Current normalized selection.
-     * @param string $digest Submitted approval.
-     * @param string $sesskey Current session key.
-     */
-    public static function assert_review(string $token, int $profileid, array $items, string $digest, string $sesskey): void {
-        global $SESSION;
-        $scope = self::resolve($token, $sesskey);
-        $review = $scope['review'] ?? null;
-        if (
-            !$review || $review['profileid'] !== $profileid || $review['items'] !== $items
-                || !hash_equals($review['digest'], $digest)
-        ) {
-            unset($SESSION->local_filebank_drafts[$token]['review']);
-            throw new \moodle_exception('batchconflict', 'local_filebank');
-        }
-    }
-
-    /**
-     * Review selectors against the stored form contract and remember only the resulting approval.
-     *
-     * @param string $token Form scope.
-     * @param int $profileid Enabled relationship profile.
-     * @param array $items Source selection.
-     * @param string $sesskey Current session key.
-     * @return array Batch decisions and digest.
-     */
-    public static function review(string $token, int $profileid, array $items, string $sesskey): array {
-        global $SESSION;
-        $scope = self::resolve($token, $sesskey);
-        unset($SESSION->local_filebank_drafts[$token]['review'], $SESSION->local_filebank_drafts[$token]['imported']);
-        $review = draft_import::review(
-            $scope['courseid'],
-            $profileid,
-            $scope['draftid'],
-            $items,
-            $scope['limits'],
-            $scope['basepath'],
-            $scope['copymode'] ?? 'paths',
-            ['roots' => $scope['view']['roots'] ?? [], 'renames' => $scope['view']['renames'] ?? []]
-        );
-        $SESSION->local_filebank_drafts[$token]['review'] = [
-            'profileid' => $profileid, 'items' => $items, 'digest' => $review['digest'],
-        ];
-        return $review;
-    }
-
-    /**
-     * Apply exactly the session's reviewed selection without accepting destination or limit overrides.
-     *
-     * @param string $token Form scope.
-     * @param string $digest Approved review.
-     * @param string $sesskey Current session key.
-     * @return array Applied decisions.
-     */
-    public static function apply(string $token, string $digest, string $sesskey): array {
-        global $SESSION;
-        $scope = self::resolve($token, $sesskey);
-        $review = $scope['review'] ?? null;
-        unset($SESSION->local_filebank_drafts[$token]['review']);
-        if (!$review || !hash_equals($review['digest'], $digest)) {
-            throw new \moodle_exception('batchconflict', 'local_filebank');
-        }
-        $result = draft_import::apply(
-            $scope['courseid'],
-            $review['profileid'],
-            $scope['draftid'],
-            $review['items'],
-            $scope['limits'],
-            $digest,
-            $scope['basepath'],
-            $scope['copymode'] ?? 'paths',
-            ['roots' => $scope['view']['roots'] ?? [], 'renames' => $scope['view']['renames'] ?? []]
-        );
-        $SESSION->local_filebank_drafts[$token]['imported'] = array_map(static fn($operation) => [
-            'filepath' => $operation['filepath'], 'filename' => $operation['filename'],
-            'contenthash' => $operation['snapshot']['contenthash'],
-        ], $result['operations']);
-        return $result;
     }
 
     /**
@@ -491,5 +264,32 @@ final class draft_scope {
             throw new \moodle_exception('formscopeunavailable', 'local_filebank');
         }
         destination_access::require((int)$context->get_course_context()->instanceid, $context, $field);
+    }
+
+    /**
+     * Remove expired, replaced and excess session bindings.
+     *
+     * @param array $contract Live native control contract.
+     * @param \context $context Owning form context.
+     * @return array Result.
+     */
+    private static function prune(array $contract, \context $context): array {
+        global $SESSION, $USER;
+        $scopes = $SESSION->local_filebank_drafts ?? [];
+        foreach ($scopes as $key => $scope) {
+            if (
+                $scope['expires'] <= time() || $scope['userid'] !== (int)$USER->id
+                    || ($scope['contextid'] === $context->id && $scope['field'] === $contract['field']
+                        && $scope['draftid'] === $contract['draftid'])
+            ) {
+                unset($scopes[$key]);
+            }
+        }
+        $count = count($scopes);
+        while ($count >= self::MAX_SCOPES) {
+            array_shift($scopes);
+            $count--;
+        }
+        return $scopes;
     }
 }

@@ -34,6 +34,7 @@ final class plan_resolution {
      * @return int New plan, without writing any native material.
      */
     public static function apply(int $planid, string $digest, string $kind, int $id, string $choice): int {
+
         global $DB;
         require_capability('local/filebank:planmigration', \context_system::instance());
         $lock = \core\lock\lock_config::get_lock_factory('local_filebank')->get_lock('plan:' . $planid, 10);
@@ -60,67 +61,8 @@ final class plan_resolution {
             ) {
                 throw new \moodle_exception('planstale', 'local_filebank');
             }
-            if ($kind === 'issue') {
-                $issue = $document['issues'][$id] ?? null;
-                if (!$issue || !($issue['blocking'] ?? true)) {
-                    throw new \invalid_parameter_exception('Invalid migration issue');
-                }
-                if ($choice === 'exclude') {
-                    if (!empty($issue['sourcecmid']) && !empty($issue['targetcourseid'])) {
-                        $document['placements'][$issue['sourcecmid'] . ':' . $issue['targetcourseid']] = ['exclude' => true];
-                    } else {
-                        $document['ignoredissues'][] = hash('sha256', json_encode($issue));
-                    }
-                } else {
-                    if (
-                        !in_array($issue['reason'], ['placementambiguous', 'creationnamerequired'], true)
-                        || empty($issue['sourcecmid']) || empty($issue['targetcourseid'])
-                        || !preg_match('/^(folder|create):([1-9][0-9]*)$/', $choice, $matches)
-                    ) {
-                        throw new \invalid_parameter_exception('Invalid destination resolution');
-                    }
-                    $courseid = (int)$issue['targetcourseid'];
-                    require_capability('moodle/course:manageactivities', \context_course::instance($courseid));
-                    if ($matches[1] === 'folder') {
-                        $cm = get_coursemodule_from_id('folder', (int)$matches[2], $courseid, false, MUST_EXIST);
-                        $override = ['cmid' => (int)$cm->id, 'sectionid' => (int)$cm->section];
-                    } else {
-                        require_capability('mod/folder:addinstance', \context_course::instance($courseid));
-                        $section = $DB->get_record(
-                            'course_sections',
-                            ['id' => (int)$matches[2], 'course' => $courseid],
-                            '*',
-                            MUST_EXIST
-                        );
-                        $override = ['create' => true, 'sectionid' => (int)$section->id];
-                    }
-                    $document['placements'][$issue['sourcecmid'] . ':' . $courseid] = $override;
-                }
-            } else if ($kind === 'file') {
-                $operation = $DB->get_record('local_filebank_operation', ['id' => $id, 'planid' => $planid], '*', MUST_EXIST);
-                if ($choice !== 'overwrite' || $operation->decision !== 'blocked_content') {
-                    throw new \invalid_parameter_exception('Invalid file conflict resolution');
-                }
-                $document['filechoices'][$operation->sourcehash . ':' . $operation->targetcourseid] = 'overwrite';
-            } else {
-                throw new \invalid_parameter_exception('Unknown conflict kind');
-            }
-            $excluded = array_fill_keys($document['excluded'] ?? [], true);
-            $records = $DB->get_recordset(
-                'local_filebank_operation',
-                ['planid' => $planid],
-                'id',
-                'id, sourcehash, targetcourseid, included'
-            );
-            foreach ($records as $record) {
-                $key = $record->sourcehash . ':' . $record->targetcourseid;
-                if ($record->included) {
-                    unset($excluded[$key]);
-                } else {
-                    $excluded[$key] = true;
-                }
-            }
-            $records->close();
+            self::choose($planid, $document, $kind, $id, $choice);
+            $excluded = self::excluded($planid, $document);
             $transaction = $DB->start_delegated_transaction();
             $newplan = migration_planner::preview(
                 $plan->profileid,
@@ -130,7 +72,7 @@ final class plan_resolution {
                 $document['scopekey'] ?? 'edition',
                 [
                     'migration' => $document['migration'], 'filters' => $document['filters'] ?? null,
-                    'placements' => $document['placements'] ?? [], 'excluded' => array_keys($excluded),
+                    'placements' => $document['placements'] ?? [], 'excluded' => $excluded,
                     'filechoices' => $document['filechoices'] ?? [], 'ignoredissues' => $document['ignoredissues'] ?? [],
                 ]
             );
@@ -144,5 +86,114 @@ final class plan_resolution {
         } finally {
             $lock->release();
         }
+    }
+
+    /**
+     * Choose.
+     *
+     * @param int $planid Planid.
+     * @param array $document Document.
+     * @param string $kind Kind.
+     * @param int $id Id.
+     * @param string $choice Choice.
+     */
+    private static function choose(int $planid, array &$document, string $kind, int $id, string $choice): void {
+        global $DB;
+        if ($kind === 'issue') {
+            self::issue($document, $id, $choice);
+        } else if ($kind === 'file') {
+            $operation = $DB->get_record('local_filebank_operation', ['id' => $id, 'planid' => $planid], '*', MUST_EXIST);
+            if ($choice !== 'overwrite' || $operation->decision !== 'blocked_content') {
+                throw new \invalid_parameter_exception('Invalid file conflict resolution');
+            }
+            $document['filechoices'][$operation->sourcehash . ':' . $operation->targetcourseid] = 'overwrite';
+        } else {
+            throw new \invalid_parameter_exception('Unknown conflict kind');
+        }
+    }
+
+    /**
+     * Issue.
+     *
+     * @param array $document Document.
+     * @param int $id Id.
+     * @param string $choice Choice.
+     */
+    private static function issue(array &$document, int $id, string $choice): void {
+        $issue = $document['issues'][$id] ?? null;
+        if (!$issue || !($issue['blocking'] ?? true)) {
+            throw new \invalid_parameter_exception('Invalid migration issue');
+        }
+        if ($choice === 'exclude') {
+            if (!empty($issue['sourcecmid']) && !empty($issue['targetcourseid'])) {
+                $document['placements'][$issue['sourcecmid'] . ':' . $issue['targetcourseid']] = ['exclude' => true];
+            } else {
+                $document['ignoredissues'][] = hash('sha256', json_encode($issue));
+            }
+        } else {
+            $document['placements'][$issue['sourcecmid'] . ':' . $issue['targetcourseid']] = self::destination($issue, $choice);
+        }
+    }
+
+    /**
+     * Destination.
+     *
+     * @param array $issue Issue.
+     * @param string $choice Choice.
+     * @return array Result.
+     */
+    private static function destination(array $issue, string $choice): array {
+        global $DB;
+        if (
+            !in_array($issue['reason'], ['placementambiguous', 'creationnamerequired'], true)
+            || empty($issue['sourcecmid']) || empty($issue['targetcourseid'])
+            || !preg_match('/^(folder|create):([1-9][0-9]*)$/', $choice, $matches)
+        ) {
+            throw new \invalid_parameter_exception('Invalid destination resolution');
+        }
+        $courseid = (int)$issue['targetcourseid'];
+        require_capability('moodle/course:manageactivities', \context_course::instance($courseid));
+        if ($matches[1] === 'folder') {
+            $cm = get_coursemodule_from_id('folder', (int)$matches[2], $courseid, false, MUST_EXIST);
+            $override = ['cmid' => (int)$cm->id, 'sectionid' => (int)$cm->section];
+        } else {
+            require_capability('mod/folder:addinstance', \context_course::instance($courseid));
+            $section = $DB->get_record(
+                'course_sections',
+                ['id' => (int)$matches[2], 'course' => $courseid],
+                '*',
+                MUST_EXIST
+            );
+            $override = ['create' => true, 'sectionid' => (int)$section->id];
+        }
+        return $override;
+    }
+
+    /**
+     * Excluded.
+     *
+     * @param int $planid Planid.
+     * @param array $document Document.
+     * @return array Result.
+     */
+    private static function excluded(int $planid, array $document): array {
+        global $DB;
+        $excluded = array_fill_keys($document['excluded'] ?? [], true);
+        $records = $DB->get_recordset(
+            'local_filebank_operation',
+            ['planid' => $planid],
+            'id',
+            'id, sourcehash, targetcourseid, included'
+        );
+        foreach ($records as $record) {
+            $key = $record->sourcehash . ':' . $record->targetcourseid;
+            if ($record->included) {
+                unset($excluded[$key]);
+            } else {
+                $excluded[$key] = true;
+            }
+        }
+        $records->close();
+        return array_keys($excluded);
     }
 }

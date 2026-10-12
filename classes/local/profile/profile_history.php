@@ -124,27 +124,14 @@ final class profile_history {
      * @return int Removed versions.
      */
     public static function clean(int $now): int {
+
         global $DB;
         $days = (int)get_config('local_filebank', 'versionretentiondays');
         $max = (int)get_config('local_filebank', 'versionretentionmax');
         if (!$days && !$max) {
             return 0;
         }
-        $expired = [];
-        $params = [];
-        if ($days > 0) {
-            $expired[] = 'r.timecreated < ?';
-            $params[] = $now - $days * DAYSECS;
-        }
-        if ($max > 0) {
-            $expired[] = '(SELECT COUNT(1) FROM {local_filebank_revision} n
-                WHERE n.profileid = r.profileid AND n.revision > r.revision) >= ?';
-            $params[] = $max;
-        }
-        $records = $DB->get_records_sql('SELECT r.id, r.profileid FROM {local_filebank_revision} r
-            JOIN {local_filebank} p ON p.id = r.profileid WHERE p.activeid <> r.id
-            AND NOT EXISTS (SELECT 1 FROM {local_filebank_plan} m WHERE m.revisionid = r.id)
-            AND (' . implode(' OR ', $expired) . ') ORDER BY r.timecreated, r.id', $params, 0, 100);
+        $records = self::expired($now, $days, $max);
         $count = 0;
         foreach ($records as $record) {
             $lock = \core\lock\lock_config::get_lock_factory('local_filebank')->get_lock('profile:' . $record->profileid, 0);
@@ -168,5 +155,38 @@ final class profile_history {
             }
         }
         return $count;
+    }
+
+    /**
+     * Expired.
+     *
+     * @param int $now Now.
+     * @param int $days Days.
+     * @param int $max Max.
+     * @return array Result.
+     */
+    private static function expired(int $now, int $days, int $max): array {
+        global $DB;
+        $expired = [];
+        $params = [];
+        if ($days > 0) {
+            $expired[] = 'r.timecreated < ?';
+            $params[] = $now - $days * DAYSECS;
+        }
+        if ($max > 0) {
+            $expired[] = '(SELECT COUNT(1) FROM {local_filebank_revision} n
+                WHERE n.profileid = r.profileid AND n.revision > r.revision) >= ?';
+            $params[] = $max;
+        }
+        $records = $DB->get_records_sql(
+            'SELECT r.id, r.profileid FROM {local_filebank_revision} r
+                JOIN {local_filebank} p ON p.id = r.profileid WHERE p.activeid <> r.id
+                AND NOT EXISTS (SELECT 1 FROM {local_filebank_plan} m WHERE m.revisionid = r.id)
+                AND (' . implode(' OR ', $expired) . ') ORDER BY r.timecreated, r.id',
+            $params,
+            0,
+            100
+        );
+        return $records;
     }
 }

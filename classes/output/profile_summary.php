@@ -35,29 +35,40 @@ final class profile_summary {
      * @param bool $placement Include migration placement rules.
      * @return array Template context.
      */
-    public static function data(array $config, bool $placement = true): array {
+    public static function data(array $config, bool $placement): array {
         $migration = $config['migration'] ?? [];
         $rows = [];
         foreach ($migration['correspondences'] ?? [$migration] as $correspondence) {
             foreach (['source_module', 'target_module'] as $name) {
                 $selector = $correspondence[$name] ?? [];
                 $rows[] = ['label' => get_string($name, 'local_filebank'),
-                'value' => implode(' / ', array_filter([
-                    $selector['type'] ?? 'folder', $selector['field'] ?? 'name',
-                    $selector['equals'] ?? $selector['template'] ?? $selector['pattern']
-                        ?? get_string('nomatchcondition', 'local_filebank'),
-                ]))];
+                'value' => implode(
+                    ' / ',
+                    array_filter(
+                        [
+                            $selector['type'] ?? 'folder', $selector['field'] ?? 'name',
+                            $selector['equals'] ?? $selector['template'] ?? $selector['pattern']
+                                ?? get_string('nomatchcondition', 'local_filebank'),
+                        ]
+                    )
+                )];
             }
         }
         $strategy = $migration['section_match']['strategy'] ?? 'ordinal';
         $rows[] = ['label' => get_string('sectionmatch', 'local_filebank'),
             'value' => get_string('sectionstrategy_' . $strategy, 'local_filebank')];
         $rows[] = ['label' => get_string('duplicaterule', 'local_filebank'),
-            'value' => get_string(($migration['same_content_different_path'] ?? 'skip-and-report') === 'keep'
-                ? 'duplicatekeep' : 'duplicateskip', 'local_filebank')];
+            'value' => get_string(
+                ($migration['same_content_different_path'] ?? 'skip-and-report') === 'keep'
+                    ? 'duplicatekeep' : 'duplicateskip',
+                'local_filebank'
+            )];
         $rows[] = ['label' => get_string('conflictrule', 'local_filebank'),
-            'value' => get_string(($migration['same_path_different_content'] ?? 'block') === 'overwrite'
-                ? 'conflictoverwrite' : 'conflictblock', 'local_filebank')];
+            'value' => get_string(
+                ($migration['same_path_different_content'] ?? 'block') === 'overwrite'
+                    ? 'conflictoverwrite' : 'conflictblock',
+                'local_filebank'
+            )];
         $rules = new \local_filebank\local\profile\profile_config($config);
         $filters = [];
         foreach ($rules->filter_definitions() as $definition) {

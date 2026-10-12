@@ -64,6 +64,7 @@ final class target_binding {
      * @return array Native placement snapshot.
      */
     public static function resolve(int $planid, string $key, array $definition): array {
+
         global $CFG, $DB;
         if (!hash_equals($key, hash('sha256', json_encode($definition)))) {
             throw new \moodle_exception('planstale', 'local_filebank');
@@ -81,25 +82,8 @@ final class target_binding {
             return $actual;
         }
         require_capability('mod/folder:addinstance', \context_course::instance($definition['courseid']));
-        $section = $DB->get_record('course_sections', ['id' => $definition['sectionid'],
-            'course' => $definition['courseid']], '*', MUST_EXIST);
-        if (
-            $section->name !== $definition['sectionname'] || (int)$section->section !== $definition['sectionnum']
-            || (int)$section->visible !== $definition['sectionvisible']
-            || $section->availability !== $definition['sectionavailability']
-                || \local_filebank\local\policy\author_policy::locked($definition['courseid']) !== $definition['authorlocked']
-        ) {
-            throw new \moodle_exception('planstale', 'local_filebank');
-        }
-        foreach (get_fast_modinfo($definition['courseid'])->get_cms() as $cm) {
-            if (
-                $cm->modname === 'folder' && (int)$cm->section === $definition['sectionid']
-                && ($definition['idnumber'] !== '' ? $cm->idnumber === $definition['idnumber']
-                    : $cm->name === $definition['name'])
-            ) {
-                throw new \moodle_exception('planstale', 'local_filebank');
-            }
-        }
+        self::require_current_section($definition);
+        self::require_unique($definition);
         require_once($CFG->dirroot . '/course/modlib.php');
         $transaction = $DB->start_delegated_transaction();
         $module = (object)['modulename' => 'folder', 'module' => $DB->get_field('modules', 'id', ['name' => 'folder'], MUST_EXIST),
@@ -114,5 +98,70 @@ final class target_binding {
         $DB->update_record('local_filebank_target', $binding);
         $transaction->allow_commit();
         return $actual;
+    }
+
+    /**
+     * Require current section.
+     *
+     * @param array $definition Definition.
+     */
+    private static function require_current_section(array $definition): void {
+        global $DB;
+        $section = $DB->get_record(
+            'course_sections',
+            ['id' => $definition['sectionid'],
+                'course' => $definition['courseid']],
+            '*',
+            MUST_EXIST
+        );
+        if (
+            $section->name !== $definition['sectionname'] || (int)$section->section !== $definition['sectionnum']
+            || (int)$section->visible !== $definition['sectionvisible']
+            || $section->availability !== $definition['sectionavailability']
+                || \local_filebank\local\policy\author_policy::locked($definition['courseid']) !== $definition['authorlocked']
+        ) {
+            throw new \moodle_exception('planstale', 'local_filebank');
+        }
+    }
+
+    /**
+     * Require unique.
+     *
+     * @param array $definition Definition.
+     */
+    private static function require_unique(array $definition): void {
+        foreach (get_fast_modinfo($definition['courseid'])->get_cms() as $cm) {
+            if (
+                $cm->modname === 'folder' && (int)$cm->section === $definition['sectionid']
+                && ($definition['idnumber'] !== '' ? $cm->idnumber === $definition['idnumber']
+                    : $cm->name === $definition['name'])
+            ) {
+                throw new \moodle_exception('planstale', 'local_filebank');
+            }
+        }
+    }
+
+    /**
+     * Destination lock.
+     *
+     * @param int $targetcmid Targetcmid.
+     * @param array $target Target.
+     * @return \core\lock\lock Acquired and revalidated destination lock.
+     */
+    public static function lock_destination(int $targetcmid, array $target): \core\lock\lock {
+        $destinationlock = \core\lock\lock_config::get_lock_factory('local_filebank')
+            ->get_lock('destination:' . $targetcmid, 10);
+        if (!$destinationlock) {
+            throw new \moodle_exception('lockfailed', 'local_filebank');
+        }
+        try {
+            if (placement::snapshot($targetcmid) !== $target) {
+                throw new \moodle_exception('planstale', 'local_filebank');
+            }
+            return $destinationlock;
+        } catch (\Throwable $exception) {
+            $destinationlock->release();
+            throw $exception;
+        }
     }
 }

@@ -35,8 +35,46 @@ final class migration_form extends \moodleform {
      * Define the reviewed migration scope and destination behavior.
      */
     public function definition(): void {
-        global $PAGE, $OUTPUT;
         $form = $this->_form;
+        $this->scope_fields($form);
+        $rows = $this->correspondence_rows($form);
+        $this->correspondence_fields($form, $rows);
+        $this->destination_fields($form);
+        $this->action_fields($form);
+    }
+
+    /**
+     * Validate the complete migration document before saving a review.
+     *
+     * @param array $data Native form values.
+     * @param array $files Uploaded files.
+     * @return array Field errors.
+     */
+    public function validation($data, $files): array {
+        $errors = parent::validation($data, $files);
+        try {
+            \local_filebank\local\migration\migration_rules::from_form($data);
+        } catch (\moodle_exception $exception) {
+            $errors['correspondencesjson'] = $exception->getMessage();
+        }
+        if (($data['sectionstrategy'] ?? '') === 'ordinal' && empty($data['layoutconfirmed'])) {
+            $errors['layoutconfirmed'] = get_string('layoutrequired', 'local_filebank');
+        }
+        if (
+            $this->_customdata['dimensions'] && empty(array_filter($data['sourcefilters'] ?? []))
+            && empty(array_filter($data['targetfilters'] ?? []))
+        ) {
+            $errors['correspondencesjson'] = get_string('migrationscoperequired', 'local_filebank');
+        }
+        return $errors;
+    }
+
+    /**
+     * Define the scope fields controls.
+     *
+     * @param \MoodleQuickForm $form Native form element factory.
+     */
+    private function scope_fields(\MoodleQuickForm $form): void {
         $form->addElement('hidden', 'profileid', $this->_customdata['profileid']);
         $form->setType('profileid', PARAM_INT);
         $form->addElement('hidden', 'step', 'scope');
@@ -54,6 +92,15 @@ final class migration_form extends \moodleform {
                 $form->addHelpButton($name, 'migrationfilter', 'local_filebank');
             }
         }
+    }
+
+    /**
+     * Define the correspondence rows controls.
+     *
+     * @param \MoodleQuickForm $form Native form element factory.
+     * @return array Initial correspondence rows.
+     */
+    private function correspondence_rows(\MoodleQuickForm $form): array {
         $form->addElement('header', 'placementreview', get_string('migrationrules', 'local_filebank'));
         $form->setExpanded('placementreview', true);
         $migration = $this->_customdata['migration'] ?? [];
@@ -77,6 +124,16 @@ final class migration_form extends \moodleform {
             }
             $rows[] = $row;
         }
+        return $rows;
+    }
+
+    /**
+     * Define the correspondence fields controls.
+     *
+     * @param \MoodleQuickForm $form Native form element factory.
+     * @param array $rows Initial correspondence rows.
+     */
+    private function correspondence_fields(\MoodleQuickForm $form, array $rows): void {
         $form->addElement(
             'textarea',
             'correspondencesjson',
@@ -103,6 +160,16 @@ final class migration_form extends \moodleform {
                 'type' => 'text', 'maxlength' => 2048];
         }
         row_data::enhance($form, 'correspondencesjson', $columns, 20);
+    }
+
+    /**
+     * Define the destination fields controls.
+     *
+     * @param \MoodleQuickForm $form Native form element factory.
+     */
+    private function destination_fields(\MoodleQuickForm $form): void {
+        $migration = $this->_customdata['migration'] ?? [];
+
         $choices = [
             'sectionstrategy' => ['ordinal' => 'section_ordinal', 'name' => 'section_name', 'mapping' => 'section_mapping'],
             'duplicatepolicy' => ['skip-and-report' => 'duplicateskip', 'keep' => 'duplicatekeep'],
@@ -132,13 +199,26 @@ final class migration_form extends \moodleform {
             $sectionrows[] = ['source' => (string)$source, 'target' => (string)$target];
         }
         $form->setDefault('sectionmapjson', json_encode($sectionrows));
-        row_data::enhance($form, 'sectionmapjson', [
-            ['key' => 'source', 'label' => get_string('sourcesectionid', 'local_filebank'), 'type' => 'text'],
-            ['key' => 'target', 'label' => get_string('targetsectionid', 'local_filebank'), 'type' => 'text'],
-        ], 200);
+        row_data::enhance(
+            $form,
+            'sectionmapjson',
+            [
+                ['key' => 'source', 'label' => get_string('sourcesectionid', 'local_filebank'), 'type' => 'text'],
+                ['key' => 'target', 'label' => get_string('targetsectionid', 'local_filebank'), 'type' => 'text'],
+            ],
+            200
+        );
         $form->hideIf('sectionmapjson', 'sectionstrategy', 'neq', 'mapping');
         $form->addElement('advcheckbox', 'layoutconfirmed', get_string('layoutconfirmed', 'local_filebank'));
         $form->hideIf('layoutconfirmed', 'sectionstrategy', 'neq', 'ordinal');
+    }
+
+    /**
+     * Define the action fields controls.
+     *
+     * @param \MoodleQuickForm $form Native form element factory.
+     */
+    private function action_fields(\MoodleQuickForm $form): void {
         $buttons = [
             $form->createElement('submit', 'submitbutton', get_string('createpreview', 'local_filebank')),
         ];
@@ -150,31 +230,5 @@ final class migration_form extends \moodleform {
         ) {
             $form->addHelpButton($name, $name, 'local_filebank');
         }
-    }
-
-    /**
-     * Validate the complete migration document before saving a review.
-     *
-     * @param array $data Native form values.
-     * @param array $files Uploaded files.
-     * @return array Field errors.
-     */
-    public function validation($data, $files): array {
-        $errors = parent::validation($data, $files);
-        try {
-            \local_filebank\local\migration\migration_rules::from_form($data);
-        } catch (\moodle_exception $exception) {
-            $errors['correspondencesjson'] = $exception->getMessage();
-        }
-        if (($data['sectionstrategy'] ?? '') === 'ordinal' && empty($data['layoutconfirmed'])) {
-            $errors['layoutconfirmed'] = get_string('layoutrequired', 'local_filebank');
-        }
-        if (
-            $this->_customdata['dimensions'] && empty(array_filter($data['sourcefilters'] ?? []))
-            && empty(array_filter($data['targetfilters'] ?? []))
-        ) {
-            $errors['correspondencesjson'] = get_string('migrationscoperequired', 'local_filebank');
-        }
-        return $errors;
     }
 }

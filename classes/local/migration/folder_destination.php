@@ -39,7 +39,7 @@ final class folder_destination {
      * @param array|null $expected Reviewed destination snapshot, or null for a new path.
      * @return \stored_file Saved file.
      */
-    public static function copy(\stored_file $source, int $cmid, bool $overwrite = false, ?array $expected = null): \stored_file {
+    public static function copy(\stored_file $source, int $cmid, bool $overwrite, ?array $expected = null): \stored_file {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot . '/mod/folder/lib.php');
         $cm = get_coursemodule_from_id('folder', $cmid, 0, false, MUST_EXIST);

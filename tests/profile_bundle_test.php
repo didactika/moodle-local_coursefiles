@@ -63,7 +63,7 @@ final class profile_bundle_test extends \advanced_testcase {
         $a = profiles::save(json_encode($config));
         $config['name'] = 'Another group';
         $b = profiles::save(json_encode($config));
-        $selected = profile_bundle::export([$b]);
+        $selected = profile_bundle::export([$b], false);
         $this->assertCount(1, profile_bundle::documents($selected));
         $all = profile_bundle::export([], true);
         $ids = profile_bundle::import($all);
@@ -80,8 +80,12 @@ final class profile_bundle_test extends \advanced_testcase {
         global $DB;
         $config = $this->config();
         try {
-            profile_bundle::import(json_encode(['format' => 'filebank-profiles', 'version' => 1,
-                'profiles' => [$config, ['name' => 'Invalid rules']]]));
+            profile_bundle::import(
+                json_encode(
+                    ['format' => 'filebank-profiles', 'version' => 1,
+                        'profiles' => [$config, ['name' => 'Invalid rules']]]
+                )
+            );
             $this->fail('Invalid documents must be rejected before writes.');
         } catch (\moodle_exception $exception) {
             $this->assertSame(0, $DB->count_records('local_filebank'));
@@ -106,10 +110,13 @@ final class profile_bundle_test extends \advanced_testcase {
         global $USER;
         $config = $this->config();
         $draftid = file_get_unused_draft_itemid();
-        get_file_storage()->create_file_from_string([
-            'contextid' => \context_user::instance($USER->id)->id, 'component' => 'user', 'filearea' => 'draft',
-            'itemid' => $draftid, 'filepath' => '/', 'filename' => 'profiles.json',
-        ], json_encode($config));
+        get_file_storage()->create_file_from_string(
+            [
+                'contextid' => \context_user::instance($USER->id)->id, 'component' => 'user', 'filearea' => 'draft',
+                'itemid' => $draftid, 'filepath' => '/', 'filename' => 'profiles.json',
+            ],
+            json_encode($config)
+        );
         $this->assertCount(1, profile_bundle::documents(\local_filebank\form\profile_import_form::uploaded_document($draftid)));
         $other = $this->getDataGenerator()->create_user();
         $role = $this->getDataGenerator()->create_role();

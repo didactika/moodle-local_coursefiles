@@ -42,7 +42,7 @@ final class profile_bundle {
      * @param bool $all Export every profile.
      * @return string Portable JSON.
      */
-    public static function export(array $ids, bool $all = false): string {
+    public static function export(array $ids, bool $all): string {
         global $DB;
         require_capability('local/filebank:manageprofiles', \context_system::instance());
         $ids = array_values(array_unique(array_map('intval', $ids)));
@@ -55,8 +55,11 @@ final class profile_bundle {
             [$condition, $params] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
             $where .= ' AND p.id ' . $condition;
         }
-        $records = $DB->get_recordset_sql('SELECT p.id, p.activeid, p.enabled, r.configjson FROM {local_filebank} p
-            JOIN {local_filebank_revision} r ON r.id = p.activeid' . $where . ' ORDER BY p.name, p.id', $params);
+        $records = $DB->get_recordset_sql(
+            'SELECT p.id, p.activeid, p.enabled, r.configjson FROM {local_filebank} p
+                JOIN {local_filebank_revision} r ON r.id = p.activeid' . $where . ' ORDER BY p.name, p.id',
+            $params
+        );
         $documents = [];
         foreach ($records as $record) {
             $versions = [];
@@ -89,80 +92,12 @@ final class profile_bundle {
      * @return array Complete validated documents.
      */
     public static function documents(string $json): array {
-        if (strlen($json) > self::MAX_BYTES) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-        }
-        try {
-            $document = json_decode($json, true, 64, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $exception) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-        }
-        if (!is_array($document)) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-        }
-        if (isset($document['format'])) {
-            if (
-                !in_array($document['format'], ['filebank-profiles', 'multipicker-profiles'], true)
-                    || !in_array($document['version'] ?? null, [1, 2], true)
-            ) {
-                throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-            }
-            $documents = $document['profiles'] ?? [];
-        } else {
-            $documents = [$document];
-        }
-        if (!is_array($documents) || !compatibility::is_list($documents) || !$documents || count($documents) > 500) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-        }
+        [$document, $documents] = bundle_validation::decode($json);
         if (($document['version'] ?? 1) === 2 && isset($document['format'])) {
-            $configs = [];
-            $total = 0;
-            foreach ($documents as $entry) {
-                if (
-                    !is_array($entry) || !is_int($entry['active'] ?? null) || !is_bool($entry['enabled'] ?? null)
-                        || !is_array($entry['versions'] ?? null) || !compatibility::is_list($entry['versions'])
-                        || !$entry['versions']
-                ) {
-                    throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-                }
-                $last = 0;
-                $active = null;
-                foreach ($entry['versions'] as $version) {
-                    if (
-                        !is_array($version) || !is_int($version['version'] ?? null) || $version['version'] <= $last
-                            || $version['version'] >= 2147483647
-                            || !is_int($version['created'] ?? null) || $version['created'] < 0
-                            || !is_array($version['config'] ?? null) || ++$total > 5000
-                    ) {
-                        throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-                    }
-                    if (
-                        !is_string($version['config']['name'] ?? null) || trim($version['config']['name']) === ''
-                            || \core_text::strlen($version['config']['name']) > 255
-                    ) {
-                        throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-                    }
-                    new profile_config($version['config']);
-                    $last = $version['version'];
-                    if ($last === $entry['active']) {
-                        $active = $version['config'];
-                    }
-                }
-                if ($active === null) {
-                    throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-                }
-                $configs[] = $active;
-            }
-            $documents = $configs;
+            $documents = bundle_validation::versions($documents);
         }
         foreach ($documents as $config) {
-            if (
-                !is_array($config) || !is_string($config['name'] ?? null) || trim($config['name']) === ''
-                    || \core_text::strlen($config['name']) > 255
-            ) {
-                throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
-            }
-            new profile_config($config);
+            bundle_validation::configuration($config);
         }
         return $documents;
     }
@@ -192,18 +127,24 @@ final class profile_bundle {
                 $activeid = 0;
                 foreach ($entry['versions'] as $version) {
                     $canonical = json_encode($version['config'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-                    $versionid = $DB->insert_record('local_filebank_revision', (object)[
-                        'profileid' => $id, 'revision' => $version['version'] + 1, 'configjson' => $canonical,
-                        'digest' => hash('sha256', $canonical), 'userid' => $USER->id,
-                        'timecreated' => $version['created'],
-                    ]);
+                    $versionid = $DB->insert_record(
+                        'local_filebank_revision',
+                        (object)[
+                            'profileid' => $id, 'revision' => $version['version'] + 1, 'configjson' => $canonical,
+                            'digest' => hash('sha256', $canonical), 'userid' => $USER->id,
+                            'timecreated' => $version['created'],
+                        ]
+                    );
                     if ($version['version'] === $entry['active']) {
                         $activeid = $versionid;
                     }
                 }
-                $DB->update_record('local_filebank', (object)[
-                    'id' => $id, 'activeid' => $activeid, 'enabled' => $entry['enabled'],
-                ]);
+                $DB->update_record(
+                    'local_filebank',
+                    (object)[
+                        'id' => $id, 'activeid' => $activeid, 'enabled' => $entry['enabled'],
+                    ]
+                );
                 $DB->delete_records('local_filebank_revision', ['id' => $initial]);
                 foreach ($DB->get_records('local_filebank_revision', ['profileid' => $id], 'revision') as $version) {
                     $DB->set_field('local_filebank_revision', 'revision', $version->revision - 1, ['id' => $version->id]);

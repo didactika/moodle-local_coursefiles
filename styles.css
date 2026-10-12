@@ -768,9 +768,6 @@ body.filebank-embedded,
 }
 
 .filebank-row-editor {
-    /* Valid modern CSS is absent from older Moodle validator grammars. */
-    /* stylelint-disable-next-line csstree/validator, property-no-unknown */
-    container-type: inline-size;
     width: 100%;
     min-width: 0;
     overflow-x: clip;
@@ -802,10 +799,8 @@ body.filebank-embedded,
 }
 
 .filebank-row-editor tbody tr {
-    display: grid;
-    /* Valid modern CSS is absent from older Moodle validator grammars. */
-    /* stylelint-disable-next-line csstree/validator */
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.75rem 0;
     border-bottom: 1px solid var(--filebank-border);
@@ -814,6 +809,8 @@ body.filebank-embedded,
 .filebank-row-editor .table td {
     display: flex;
     flex-direction: column;
+    flex: 1 1 10rem;
+    max-width: 100%;
     min-width: 0;
 }
 
@@ -928,41 +925,7 @@ body.filebank-embedded,
     opacity: 0.45;
 }
 
-/* Editable native rows adapt to their actual form-column width, including side drawers. */
-/* Valid modern CSS is absent from older Moodle validator grammars. */
-/* stylelint-disable-next-line csstree/validator */
-@container (max-width: 48rem) {
-
-    .filebank-row-editor tbody tr {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .filebank-row-editor .table td {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        padding: 0;
-    }
-
-    .filebank-row-label {
-        flex-grow: 1;
-        margin-bottom: 0.2rem;
-    }
-
-    .filebank-row-editor .table .filebank-row-remove {
-        display: block;
-        grid-column: 1 / -1;
-        text-align: end;
-    }
-}
-/* Valid modern CSS is absent from older Moodle validator grammars. */
-/* stylelint-disable-next-line csstree/validator */
-@container (max-width: 24rem) {
-
-    .filebank-row-editor tbody tr {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
+/* Editable rows wrap intrinsically to the available form-column width. */
 
 @media (max-width: 575.98px) {
 

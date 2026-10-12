@@ -74,9 +74,6 @@
 }
 
 .filebank-row-editor {
-    /* Valid modern CSS is absent from older Moodle validator grammars. */
-    /* stylelint-disable-next-line csstree/validator, property-no-unknown */
-    container-type: inline-size;
     width: 100%;
     min-width: 0;
     overflow-x: clip;
@@ -109,10 +106,8 @@
         clip: rect(0, 0, 0, 0);
     }
     tbody tr {
-        display: grid;
-        /* Valid modern CSS is absent from older Moodle validator grammars. */
-        /* stylelint-disable-next-line csstree/validator */
-        grid-template-columns: repeat(auto-fit, minmax(Min(100%, 10rem), 1fr));
+        display: flex;
+        flex-wrap: wrap;
         gap: .5rem;
         padding: .75rem 0;
         border-bottom: 1px solid var(--filebank-border);
@@ -120,6 +115,8 @@
     .table td {
         display: flex;
         flex-direction: column;
+        flex: 1 1 10rem;
+        max-width: 100%;
         min-width: 0;
     }
     .filebank-row-label {

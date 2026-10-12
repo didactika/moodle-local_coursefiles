@@ -2,44 +2,7 @@
 // @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
 // @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 
-/* Editable native rows adapt to their actual form-column width, including side drawers. */
-
-/* Valid modern CSS is absent from older Moodle validator grammars. */
-/* stylelint-disable-next-line csstree/validator */
-@container (max-width: 48rem) {
-    .filebank-row-editor {
-        tbody tr {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        .table td {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            padding: 0;
-        }
-    }
-    .filebank-row-label {
-        flex-grow: 1;
-        margin-bottom: .2rem;
-    }
-    .filebank-row-editor {
-        .table .filebank-row-remove {
-            display: block;
-            grid-column: 1 / -1;
-            text-align: end;
-        }
-    }
-}
-
-/* Valid modern CSS is absent from older Moodle validator grammars. */
-/* stylelint-disable-next-line csstree/validator */
-@container (max-width: 24rem) {
-    .filebank-row-editor {
-        tbody tr {
-            grid-template-columns: minmax(0, 1fr);
-        }
-    }
-}
+/* Editable rows wrap intrinsically to the available form-column width. */
 
 @media (max-width: 575.98px) {
     .filebank-issue {
