@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
 /**
  * Native configuration upload with complete validation.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\form;
+namespace local_filebank\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -40,11 +41,11 @@ final class profile_import_form extends \moodleform {
             'bundle',
             get_string('file'),
             null,
-            ['accepted_types' => ['.json'], 'maxbytes' => \local_multipicker\local\profile\profile_bundle::MAX_BYTES]
+            ['accepted_types' => ['.json'], 'maxbytes' => \local_filebank\local\profile\profile_bundle::MAX_BYTES]
         );
         $form->addRule('bundle', null, 'required');
-        $form->addHelpButton('bundle', 'bundle', 'local_multipicker');
-        $this->add_action_buttons(true, get_string('importprofiles', 'local_multipicker'));
+        $form->addHelpButton('bundle', 'bundle', 'local_filebank');
+        $this->add_action_buttons(true, get_string('importprofiles', 'local_filebank'));
     }
 
     /**
@@ -57,7 +58,7 @@ final class profile_import_form extends \moodleform {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
         try {
-            \local_multipicker\local\profile\profile_bundle::documents(self::uploaded_document((int)($data['bundle'] ?? 0)));
+            \local_filebank\local\profile\profile_bundle::documents(self::uploaded_document((int)($data['bundle'] ?? 0)));
         } catch (\moodle_exception $exception) {
             $errors['bundle'] = $exception->getMessage();
         }
@@ -72,7 +73,7 @@ final class profile_import_form extends \moodleform {
      */
     public static function uploaded_document(int $draftid): string {
         global $USER;
-        require_capability('local/multipicker:manageprofiles', \context_system::instance());
+        require_capability('local/filebank:manageprofiles', \context_system::instance());
         $files = $draftid > 0 ? get_file_storage()->get_area_files(
             \context_user::instance($USER->id)->id,
             'user',
@@ -82,14 +83,14 @@ final class profile_import_form extends \moodleform {
             false
         ) : [];
         if (count($files) !== 1) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
+            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
         }
         $file = reset($files);
         if (
-            $file->get_filesize() > \local_multipicker\local\profile\profile_bundle::MAX_BYTES
+            $file->get_filesize() > \local_filebank\local\profile\profile_bundle::MAX_BYTES
                 || strtolower(pathinfo($file->get_filename(), PATHINFO_EXTENSION)) !== 'json'
         ) {
-            throw new \moodle_exception('invalidprofilebundle', 'local_multipicker');
+            throw new \moodle_exception('invalidprofilebundle', 'local_filebank');
         }
         return $file->get_content();
     }

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,32 +17,40 @@
 /**
  * Configurable native picker filters and persistent selection contracts.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker;
+namespace local_filebank;
 
-use local_multipicker\local\profile\profiles;
-use local_multipicker\local\catalog\catalog;
-use local_multipicker\local\catalog\indexer;
-use local_multipicker\local\selection\selection_basket;
-use local_multipicker\local\selection\browser_listing;
-use local_multipicker\output\capture_filters;
-use local_multipicker\output\display;
+use local_filebank\local\profile\profiles;
+use local_filebank\local\catalog\catalog;
+use local_filebank\local\catalog\indexer;
+use local_filebank\local\selection\selection_basket;
+use local_filebank\local\selection\browser_listing;
+use local_filebank\output\capture_filters;
+use local_filebank\output\display;
 
 /**
 
  * Exercises the real index, live authorization and native names.
 
- * @covers \local_multipicker\local\profile\profiles
- * @covers \local_multipicker\local\catalog\catalog
- * @covers \local_multipicker\local\catalog\indexer
- * @covers \local_multipicker\local\selection\selection_basket
- * @covers \local_multipicker\local\selection\browser_listing
- * @covers \local_multipicker\output\capture_filters
- * @covers \local_multipicker\output\display
+ * @covers \local_filebank\local\profile\profiles
+ * @covers \local_filebank\local\catalog\catalog
+ * @covers \local_filebank\local\catalog\indexer
+ * @covers \local_filebank\local\selection\selection_basket
+ * @covers \local_filebank\local\selection\browser_listing
+ * @covers \local_filebank\output\capture_filters
+ * @covers \local_filebank\output\display
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\profile\profiles::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\catalog\catalog::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\catalog\indexer::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\selection\selection_basket::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\selection\browser_listing::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\output\capture_filters::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\output\display::class)]
 final class capture_filters_test extends \advanced_testcase {
     /**
      * Guided fields retain unrelated advanced rules and produce named capture definitions.
@@ -50,9 +58,9 @@ final class capture_filters_test extends \advanced_testcase {
     public function test_guided_profile_document_preserves_advanced_rules(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = file_get_contents(__DIR__ . '/../examples/institutional-profile.json');
+        $config = json_encode($this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config());
         $original = json_decode($config, true);
-        $document = \local_multipicker\form\profile_form::document([
+        $document = \local_filebank\form\profile_form::document([
             'configjson' => $config, 'profilename' => 'Guided profile', 'editmode' => 'guided',
             'coursefield' => 'idnumber', 'coursepattern' => $original['relationship']['parsers'][0]['pattern'],
             'familytemplate' => '${family}', 'filtercapture' => ['edition', ''],
@@ -73,9 +81,9 @@ final class capture_filters_test extends \advanced_testcase {
     public function test_guided_sources_preserve_unrepresented_areas(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        $original = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        $original = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $original['publication']['allowed_sources'] = ['mod_folder/content', 'mod_url/intro'];
-        $document = \local_multipicker\form\profile_form::document([
+        $document = \local_filebank\form\profile_form::document([
             'configjson' => json_encode($original), 'profilename' => 'Public handouts', 'editmode' => 'guided',
             'coursefield' => 'idnumber', 'coursepattern' => $original['relationship']['parsers'][0]['pattern'],
             'familytemplate' => '${family}', 'filtercapture' => [], 'filterlabel' => [],
@@ -95,7 +103,7 @@ final class capture_filters_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_folder_fixture(['name' => 'Paged materials']);
         $source = $DB->get_record('course', ['shortname' => 'CB2025'], '*', MUST_EXIST);
         $target = $DB->get_record('course', ['shortname' => 'CB2026'], '*', MUST_EXIST);
@@ -141,7 +149,7 @@ final class capture_filters_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $config['relationship']['parsers'][0] = ['field' => 'idnumber',
             'pattern' => '~^(?<family>[^|]+)\|(?<year>\d{4})\|(?<semester>[12])$~'];
         $config['relationship']['display_label'] = '${family}';
@@ -165,14 +173,14 @@ final class capture_filters_test extends \advanced_testcase {
         $controls = capture_filters::data($profileid, ['semester' => '1']);
         $this->assertSame('Academic year', $controls[0]['label']);
         $this->assertSame('1', $controls[1]['value']);
-        $this->assertSame(4, $DB->count_records('local_multipicker_value'));
+        $this->assertSame(4, $DB->count_records('local_filebank_value'));
         $source->idnumber = 'science|2025|2';
         $DB->update_record('course', $source);
         // An old index entry cannot bypass the current course captures.
         $this->assertCount(0, catalog::search($target->id, $profileid, $filters)['assets']);
         indexer::refresh($source->id);
         $this->assertCount(1, catalog::search($target->id, $profileid, ['captures' => ['semester' => '2']])['assets']);
-        $this->assertSame(4, $DB->count_records('local_multipicker_value'));
+        $this->assertSame(4, $DB->count_records('local_filebank_value'));
     }
 
     /**
@@ -183,7 +191,7 @@ final class capture_filters_test extends \advanced_testcase {
     public function test_unknown_capture_filter_is_rejected(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_folder_fixture(['name' => 'Filter authorization']);
         global $DB;
         $target = $DB->get_record('course', ['shortname' => 'CB2026'], '*', MUST_EXIST);
@@ -200,7 +208,7 @@ final class capture_filters_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_folder_fixture(['name' => 'Selection authorization']);
         $target = $DB->get_record('course', ['shortname' => 'CB2026'], '*', MUST_EXIST);
         $source = $DB->get_record('course', ['shortname' => 'CB2025'], '*', MUST_EXIST);
@@ -212,7 +220,7 @@ final class capture_filters_test extends \advanced_testcase {
         $DB->set_field('course_modules', 'visible', 0, ['id' => $cm->id]);
         rebuild_course_cache($source->id, true);
         $rows = selection_basket::data($target->id, $fixture['profileid'], [$value]);
-        $this->assertSame(get_string('selectionunavailable', 'local_multipicker'), $rows[0]['title']);
+        $this->assertSame(get_string('selectionunavailable', 'local_filebank'), $rows[0]['title']);
         $this->assertSame($value, $rows[0]['value']);
     }
 

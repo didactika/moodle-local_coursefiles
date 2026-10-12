@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,14 +17,15 @@
 /**
  * Owning native form scope integration checks.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\fixture;
+namespace local_filebank\fixture;
 
-use local_multipicker\form\scoped_filemanager;
+use local_filebank\form\scoped_filemanager;
 
 /**
  * Owning native form used by integration checks.
@@ -37,7 +38,7 @@ final class scoped_form extends \moodleform {
         scoped_filemanager::register();
         $this->_form->addElement('text', 'title', 'Title');
         $this->_form->setType('title', PARAM_TEXT);
-        $this->_form->addElement('multipickerfilemanager', 'files', 'Files', null, $this->_customdata);
+        $this->_form->addElement('filebankfilemanager', 'files', 'Files', null, $this->_customdata);
         $this->_form->addElement('submit', 'refresh', 'Refresh draft');
         $this->_form->registerNoSubmitButton('refresh');
         $this->add_action_buttons();

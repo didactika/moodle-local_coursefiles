@@ -1,17 +1,22 @@
 {{!
-    @template local_multipicker/local/selection/review_node
+    @copyright 2026 Didactika.org
+    @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+    @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+    @template local_filebank/local/selection/review_node
     Authorized destination tree node.
-    Example context (json): {"name":"notes","folder":true,"children":[]}
+    Example context (json): {"standalone":true,"name":"notes","folder":true,"children":[]}
 }}
-<li class="multipicker-tree-node">
-    {{#folder}}<details open><summary><input type="checkbox" data-multipicker-review-folder aria-label="{{name}}"><span class="multipicker-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}f/folder, core{{/pix}} <span>{{name}}</span></summary>
-        <ul class="multipicker-tree">{{#children}}{{> local_multipicker/local/selection/review_node}}{{/children}}</ul>
+{{#standalone}}<ul class="filebank-tree">{{/standalone}}
+<li class="filebank-tree-node">
+    {{#folder}}<details open><summary><input type="checkbox" data-filebank-review-folder aria-label="{{name}}"><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}f/folder, core{{/pix}} <span>{{name}}</span></summary>
+        <ul class="filebank-tree">{{#children}}{{> local_filebank/local/selection/review_node}}{{/children}}</ul>
     </details>{{/folder}}
-    {{^folder}}<div class="multipicker-tree-file">
-        <div class="multipicker-review-row">
-            <div class="d-flex align-items-center multipicker-review-name"><input type="checkbox" name="removefiles[]" value="{{hash}}" aria-label="{{name}}" class="multipicker-gap-end">{{#pix}}f/document, core{{/pix}}<input type="hidden" name="renames[{{hash}}]" value="{{name}}"><span class="text-break" data-multipicker-file-name>{{name}}</span><button type="button" class="btn btn-sm btn-link multipicker-pencil" data-multipicker-rename aria-label="{{#str}}renamefile, local_multipicker{{/str}}">{{#pix}}t/edit, core{{/pix}}</button></div>
-            <div class="multipicker-review-actions"><span class="badge {{#blocked}}bg-danger{{/blocked}}{{^blocked}}{{#copy}}bg-success{{/copy}}{{^copy}}bg-secondary{{/copy}}{{/blocked}} text-white">{{decision}}</span><button class="btn btn-sm btn-link text-danger" name="removeitem" value="{{hash}}" aria-label="{{#str}}removeselected, local_multipicker{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div>
+    {{^folder}}<div class="filebank-tree-file">
+        <div class="filebank-review-row">
+            <div class="d-flex align-items-center filebank-review-name"><input type="checkbox" name="removefiles[]" value="{{hash}}" aria-label="{{name}}" class="filebank-gap-end">{{#pix}}f/document, core{{/pix}}<input type="hidden" name="renames[{{hash}}]" value="{{name}}"><span class="text-break" data-filebank-file-name>{{name}}</span><button type="button" class="btn btn-sm btn-link filebank-pencil" data-filebank-rename aria-label="{{#str}}renamefile, local_filebank{{/str}}">{{#pix}}t/edit, core{{/pix}}</button></div>
+            <div class="filebank-review-actions"><span class="badge {{#blocked}}bg-danger{{/blocked}}{{^blocked}}{{#copy}}bg-success{{/copy}}{{^copy}}bg-secondary{{/copy}}{{/blocked}} text-white">{{decision}}</span><button class="btn btn-sm btn-link text-danger" name="removeitem" value="{{hash}}" aria-label="{{#str}}removeselected, local_filebank{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div>
         </div>
         <div class="small text-muted">{{#str}}author, repository{{/str}}: {{author}} · {{#str}}license, repository{{/str}}: {{license}}</div>
     </div>{{/folder}}
 </li>
+{{#standalone}}</ul>{{/standalone}}

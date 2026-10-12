@@ -1,16 +1,22 @@
 # Changelog
 
-## [Unreleased]
+## [5.3.0] - 2026-10-11
 
-- Native multi-file selection, configurable relationship profiles and reviewed background migrations on separate Moodle 4.5 and 5.3 distributions.
-- One profile with retained configuration history, two-version checkbox comparison and activation of an existing version when restoring. Version-preserving portable bundles and bounded retention.
-- Grid/list/course-tree views sharing material nodes, recursive folder selection, native file-count limits, stable filtering and scroll, two-line card names and core help popovers.
-- Lazy, initially collapsed folder/subfolder/file tree with branch pagination and selection updates in place.
-- Destination draft byte identity excludes already-used files before catalog pagination and recursive expansion; folder counts use one grouped query.
-- Resulting-file review with native pencil rename dialogs, folder removal checks that preserve import approval and conditional removal beside Import materials.
-- Direct Settings entry, native navigation, grouped coloured row actions and selection-aware profile bulk actions that update in place with core toast notifications.
-- Responsive capture/correspondence rows, bounded administration pagination and automatically saved migration selection/conflict resolution. Execution requires no maintenance mode or extra acknowledgment checkbox.
-- Explicit missing-destination creation, reviewed overwrite, identical-file skips, automatically cancelled empty migrations and inactive-history deletion without removing course files.
-- Catalog refresh after profile activation and reuse of metadata when matching rules are unchanged.
-- Upgrade 2026101001 removes retired CourseBridge scheduled tasks and preserves supported queued work under the new component name.
-- Shared Bootstrap utilities in templates; organized component CSS limited to theme variables, responsive bounds, selection states and embedded picker behavior.
+- Restore the native picker header, size and mobile layout when switching away from FileBank.
+- Initial public FileBank distribution for Moodle 5.3.
+- Related-course profiles with configurable capture filters, version history, comparison and restore.
+- Native public-file selection in cards, list and lazy tree views with recursive folders and destination limits.
+- Reviewed background migrations, conflict choices, original authorship records and configurable history retention.
+- Native TypeScript/ESM frontend with the React browser integration.
+- Own native picker cleanup in the parent document so repository changes also restore presentation in Chrome.
+- Align filename/filter controls and responsive correspondence inputs with native theme components.
+- Validate generated CSS without automatic corrections and complete Mustache validation contexts.
+- Keep profile examples in the central documentation and generate portable test data inside Moodle's test environment.
+- Bound native import paths before storage writes, retaining stable parent folders and source metadata when folder labels exceed the native path budget.
+- Match CI stylesheet compilation to the installed Moodle Node runtime and support legacy Tiny toolbar controls in native acceptance tests.
+- Separate validation, native listing and copy preparation into focused services without removing regression coverage.
+- Enforce clean PHP Mess Detector reports and zero coding/documentation warnings in both maintenance lines.
+- Use the official checksum-verified Moodle Plugin CI 4.5.11 artifact and password-authenticated PostgreSQL initialization.
+- Refresh browser compatibility metadata with Node 22 and restore the core's own frontend build runtime.
+- Install the initial public schema without obsolete upgrade callbacks.
+- Preserve the CI archive suffix behind the command link and fail warning-only Mustache validation instead of accepting skipped child checks.

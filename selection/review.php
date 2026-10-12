@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,29 +15,31 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * FileBank native material import integration.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
-use local_multipicker\local\selection\draft_scope;
-use local_multipicker\local\selection\selection_options;
-use local_multipicker\output\display;
-use local_multipicker\output\review_tree;
+use local_filebank\local\selection\draft_scope;
+use local_filebank\local\selection\draft_state;
+use local_filebank\local\selection\selection_options;
+use local_filebank\output\display;
+use local_filebank\output\review_tree;
 
 $token = required_param('scope', PARAM_ALPHANUM);
 require_login();
 $scope = draft_scope::describe($token, sesskey());
 $PAGE->set_course(get_course($scope['courseid']));
 $PAGE->set_context(context::instance_by_id($scope['contextid']));
-$PAGE->set_url('/local/multipicker/selection/review.php', ['scope' => $token]);
+$PAGE->set_url('/local/filebank/selection/review.php', ['scope' => $token]);
 $PAGE->set_pagelayout('embedded');
-$PAGE->set_title(get_string('batchreview', 'local_multipicker'));
+$PAGE->set_title(get_string('batchreview', 'local_filebank'));
 $PAGE->set_heading($PAGE->course->fullname);
 $state = $scope['view'] ?? [];
 $renameerror = '';
@@ -49,10 +51,12 @@ if (data_submitted()) {
     if ($removed !== '') {
         $removeditems[] = str_starts_with($removed, 'file:') ? substr($removed, 5) : $removed;
     }
-    $state['selected'] = array_values(array_diff(
-        $state['selected'] ?? [],
-        array_map(static fn($hash) => 'file:' . $hash, $removeditems)
-    ));
+    $state['selected'] = array_values(
+        array_diff(
+            $state['selected'] ?? [],
+            array_map(static fn($hash) => 'file:' . $hash, $removeditems)
+        )
+    );
     $renames = optional_param_array('renames', [], PARAM_RAW);
     $hashes = array_map(static fn($value) => substr($value, 5), $state['selected']);
     $state['renames'] = array_intersect_key($renames, array_flip($hashes));
@@ -60,18 +64,18 @@ if (data_submitted()) {
         foreach ($state['renames'] as $filename) {
             selection_options::filename($filename);
         }
-        draft_scope::remember_view($token, $state, sesskey());
+        draft_state::remember_view($token, $state, sesskey());
         redirect($PAGE->url);
     } catch (moodle_exception $exception) {
         $renameerror = display::reason($exception->errorcode);
         $state = $scope['view'] ?? [];
     }
 }
-$data = ['backurl' => (new moodle_url('/local/multipicker/selection/index.php', ['scope' => $token]))->out(false)];
+$data = ['backurl' => (new moodle_url('/local/filebank/selection/index.php', ['scope' => $token]))->out(false)];
 $data += ['renameerror' => $renameerror];
 $data += ['action' => $PAGE->url->out(false), 'sesskey' => sesskey(), 'scope' => $token];
 try {
-    $review = draft_scope::review(
+    $review = draft_state::review(
         $token,
         (int)($state['profileid'] ?? 0),
         selection_options::parse($state['selected'] ?? []),
@@ -86,13 +90,13 @@ try {
             'source' => base64_encode(json_encode(['batch' => $token, 'digest' => $review['digest']])),
             'editorid' => $scope['editorid'] ?? '', 'scope' => $token];
         $file['sourcekey'] = sha1($file['source'] . repository::get_secret_key() . sesskey());
-        $PAGE->requires->js_call_amd('local_multipicker/browser', 'complete', [$file]);
+        $PAGE->requires->js_call_amd('local_filebank/browser', 'complete', [$file]);
     }
 } catch (moodle_exception $exception) {
     $data['error'] = display::reason($exception->errorcode);
 }
-$PAGE->requires->js_call_amd('local_multipicker/browser', 'presentation');
-$PAGE->requires->js_call_amd('local_multipicker/review', 'init');
+$PAGE->requires->js_call_amd('local_filebank/browser', 'presentation');
+$PAGE->requires->js_call_amd('local_filebank/review', 'init');
 echo $OUTPUT->header();
-echo $OUTPUT->render_from_template('local_multipicker/local/selection/review', $data);
+echo $OUTPUT->render_from_template('local_filebank/local/selection/review', $data);
 echo $OUTPUT->footer();

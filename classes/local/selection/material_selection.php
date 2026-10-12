@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,21 +17,24 @@
 /**
  * Bounded file and recursive folder selection.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\selection;
+namespace local_filebank\local\selection;
 
-use local_multipicker\local\catalog\material_source;
-use local_multipicker\local\profile\profiles;
+use local_filebank\local\catalog\material_source;
+use local_filebank\local\profile\profiles;
 
 /**
  * Expands bounded native occurrences without relying on catalog cache freshness.
  */
 final class material_selection {
-    /** @var int Synchronous batch bound, including selected folder contents. */
+    /**
+     * @var int Synchronous batch bound, including selected folder contents.
+     */
     public const MAX_FILES = 200;
 
     /**
@@ -44,54 +47,17 @@ final class material_selection {
      * @return array Authorized stored files keyed by pathname hash.
      */
     public static function resolve(int $courseid, int $profileid, array $items, int $draftid = 0): array {
-        global $DB;
+
         if (!$items || count($items) > self::MAX_FILES) {
-            throw new \moodle_exception('invalidselection', 'local_multipicker');
+            throw new \moodle_exception('invalidselection', 'local_filebank');
         }
         $files = [];
         $profiledata = profiles::load($profileid);
         $scope = [];
         foreach ($items as $item) {
-            if (!is_array($item)) {
-                throw new \moodle_exception('invalidselection', 'local_multipicker');
-            }
-            if (isset($item['pathnamehash'])) {
-                [$file] = material_source::resolve((string)$item['pathnamehash'], $courseid, $profileid, $profiledata, $scope);
-                $files[$file->get_pathnamehash()] = $file;
-            } else if (isset($item['cmid'], $item['filepath'])) {
-                $path = self::path((string)$item['filepath']);
-                $cm = get_coursemodule_from_id('folder', (int)$item['cmid'], 0, false, MUST_EXIST);
-                $context = \context_module::instance($cm->id);
-                $conditions = 'contextid = :contextid AND component = :component AND filearea = :filearea'
-                    . ' AND itemid = 0 AND filename <> :directory AND '
-                    . $DB->sql_like('filepath', ':path', true);
-                $params = ['contextid' => $context->id, 'component' => 'mod_folder', 'filearea' => 'content',
-                    'directory' => '.', 'path' => $DB->sql_like_escape($path) . '%'];
-                [$exclusion, $destinationparams] = destination_content::exclusion('sourcefile', $draftid);
-                $conditions .= $exclusion;
-                $params += $destinationparams;
-                $candidates = $DB->get_records_sql(
-                    'SELECT sourcefile.id, sourcefile.pathnamehash FROM {files} sourcefile WHERE ' . $conditions
-                        . ' ORDER BY sourcefile.filepath, sourcefile.filename, sourcefile.id',
-                    $params,
-                    0,
-                    self::MAX_FILES + 1
-                );
-                if (!$candidates && $draftid > 0) {
-                    continue;
-                }
-                if (!$candidates || count($candidates) > self::MAX_FILES) {
-                    throw new \moodle_exception('invalidselection', 'local_multipicker');
-                }
-                foreach ($candidates as $candidate) {
-                    [$file] = material_source::resolve($candidate->pathnamehash, $courseid, $profileid, $profiledata, $scope);
-                    $files[$file->get_pathnamehash()] = $file;
-                }
-            } else {
-                throw new \moodle_exception('invalidselection', 'local_multipicker');
-            }
+            self::item($courseid, $profileid, $item, $draftid, $profiledata, $scope, $files);
             if (count($files) > self::MAX_FILES) {
-                throw new \moodle_exception('invalidselection', 'local_multipicker');
+                throw new \moodle_exception('invalidselection', 'local_filebank');
             }
         }
         return destination_content::filter($files, $draftid);
@@ -106,8 +72,9 @@ final class material_selection {
      * @return array Relative destination paths indexed by pathname hash.
      */
     public static function map_paths(array $files, array $items, string $mode): array {
+
         if (!in_array($mode, ['paths', 'folder', 'contents'], true)) {
-            throw new \moodle_exception('invalidselection', 'local_multipicker');
+            throw new \moodle_exception('invalidselection', 'local_filebank');
         }
         $folders = array_values(array_filter($items, static fn($item) => isset($item['cmid'])));
         usort($folders, static fn($left, $right) => strlen($left['filepath']) <=> strlen($right['filepath']));
@@ -125,15 +92,7 @@ final class material_selection {
                 }
                 $relative = '/' . substr($file->get_filepath(), strlen($folder['filepath']));
                 if ($mode === 'folder') {
-                    if ($folder['filepath'] === '/') {
-                        $modules[$folder['cmid']] ??= get_coursemodule_from_id('folder', $folder['cmid'], 0, false, MUST_EXIST);
-                        $name = clean_param($modules[$folder['cmid']]->name, PARAM_FILE);
-                    } else {
-                        $name = basename(rtrim($folder['filepath'], '/'));
-                    }
-                    if ($name === '' || $name === '.' || $name === '..') {
-                        throw new \moodle_exception('invalidselection', 'local_multipicker');
-                    }
+                    $name = self::folder_name($folder, $modules);
                     $relative = '/' . $name . $relative;
                 }
                 $paths[$hash] = self::path($relative);
@@ -155,8 +114,102 @@ final class material_selection {
                 || clean_param($path, PARAM_PATH) !== $path
                 || preg_match('~(?:^|/)\.\.?(/|$)|//~', $path)
         ) {
-            throw new \moodle_exception('invalidselection', 'local_multipicker');
+            throw new \moodle_exception('invalidselection', 'local_filebank');
         }
         return $path;
+    }
+
+    /**
+     * Folder candidates.
+     *
+     * @param array $item Item.
+     * @param int $draftid Draftid.
+     * @return array Result.
+     */
+    private static function folder_candidates(array $item, int $draftid): array {
+
+        global $DB;
+        $path = self::path((string)$item['filepath']);
+        $cm = get_coursemodule_from_id('folder', (int)$item['cmid'], 0, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+        $conditions = 'contextid = :contextid AND component = :component AND filearea = :filearea'
+            . ' AND itemid = 0 AND filename <> :directory AND '
+            . $DB->sql_like('filepath', ':path', true);
+        $params = ['contextid' => $context->id, 'component' => 'mod_folder', 'filearea' => 'content',
+            'directory' => '.', 'path' => $DB->sql_like_escape($path) . '%'];
+        [$exclusion, $destinationparams] = destination_content::exclusion('sourcefile', $draftid);
+        $conditions .= $exclusion;
+        $params += $destinationparams;
+        $candidates = $DB->get_records_sql(
+            'SELECT sourcefile.id, sourcefile.pathnamehash FROM {files} sourcefile WHERE ' . $conditions
+                . ' ORDER BY sourcefile.filepath, sourcefile.filename, sourcefile.id',
+            $params,
+            0,
+            self::MAX_FILES + 1
+        );
+        if (!$candidates && $draftid > 0) {
+            return [];
+        }
+        if (!$candidates || count($candidates) > self::MAX_FILES) {
+            throw new \moodle_exception('invalidselection', 'local_filebank');
+        }
+        return $candidates;
+    }
+
+    /**
+     * Folder name.
+     *
+     * @param array $folder Folder.
+     * @param array $modules Modules.
+     * @return string Result.
+     */
+    private static function folder_name(array $folder, array &$modules): string {
+        if ($folder['filepath'] === '/') {
+            $modules[$folder['cmid']] ??= get_coursemodule_from_id('folder', $folder['cmid'], 0, false, MUST_EXIST);
+            $name = clean_param($modules[$folder['cmid']]->name, PARAM_FILE);
+        } else {
+            $name = basename(rtrim($folder['filepath'], '/'));
+        }
+        if ($name === '' || $name === '.' || $name === '..') {
+            throw new \moodle_exception('invalidselection', 'local_filebank');
+        }
+        return $name;
+    }
+
+    /**
+     * Item.
+     *
+     * @param int $courseid Courseid.
+     * @param int $profileid Profileid.
+     * @param mixed $item One submitted leaf or folder selector.
+     * @param int $draftid Draftid.
+     * @param array $profiledata Profiledata.
+     * @param array $scope Scope.
+     * @param array $files Files.
+     */
+    private static function item(
+        int $courseid,
+        int $profileid,
+        $item,
+        int $draftid,
+        array $profiledata,
+        array &$scope,
+        array &$files
+    ): void {
+        if (!is_array($item)) {
+            throw new \moodle_exception('invalidselection', 'local_filebank');
+        }
+        if (isset($item['pathnamehash'])) {
+            [$file] = material_source::resolve((string)$item['pathnamehash'], $courseid, $profileid, $profiledata, $scope);
+            $files[$file->get_pathnamehash()] = $file;
+        } else if (isset($item['cmid'], $item['filepath'])) {
+            $candidates = self::folder_candidates($item, $draftid);
+            foreach ($candidates as $candidate) {
+                [$file] = material_source::resolve($candidate->pathnamehash, $courseid, $profileid, $profiledata, $scope);
+                $files[$file->get_pathnamehash()] = $file;
+            }
+        } else {
+            throw new \moodle_exception('invalidselection', 'local_filebank');
+        }
     }
 }

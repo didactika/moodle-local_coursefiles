@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,14 +15,15 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * FileBank native material import integration.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\selection;
+namespace local_filebank\local\selection;
 
 /**
  * Load the native field extension only on supported owning controller routes.
@@ -31,12 +32,12 @@ final class native_integration {
     /**
      * Keep unrelated requests and form factories on their normal core implementation.
      *
-     * @param \core\hook\after_config $hook Bootstrap hook.
      */
-    public static function register(\core\hook\after_config $hook): void {
+    public static function register(): void {
         global $SCRIPT;
+        // Both legacy callbacks and hooks register the same payload-independent native elements.
         if (in_array($SCRIPT, ['/mod/folder/edit.php', '/course/modedit.php'], true)) {
-            \local_multipicker\form\native_filemanager::register_native($hook);
+            \local_filebank\form\native_filemanager::register_native();
         }
     }
 }

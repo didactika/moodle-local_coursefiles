@@ -1,17 +1,20 @@
 {{!
-    @template local_multipicker/local/navigation/pagination
+    @copyright 2026 Didactika.org
+    @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+    @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+    @template local_filebank/local/navigation/pagination
     Bounded shared pagination with native controls and preserved search parameters.
     Example context (json): {"id":"mp-page-1","summary":"1–25 / 100","pagelabel":"Page 1 of 4","sizes":[]}
 }}
-<nav class="multipicker-pagination my-3 d-flex align-items-center justify-content-between flex-wrap" aria-label="{{#str}}pagination, local_multipicker{{/str}}">
-    <div class="d-flex align-items-center multipicker-actionbar flex-wrap">
-        <label for="{{id}}" class="small mb-0">{{#str}}pagesize, local_multipicker{{/str}} </label> {{{help}}}
-        <select id="{{id}}" class="custom-select custom-select-sm multipicker-page-size" data-multipicker-pagesize data-url="{{url}}" data-pageparameter="{{pageparameter}}">
+<nav class="filebank-pagination my-3 d-flex align-items-center justify-content-between flex-wrap" aria-label="{{#str}}pagination, local_filebank{{/str}}">
+    <div class="d-flex align-items-center filebank-actionbar flex-wrap">
+        <label for="{{id}}" class="small mb-0">{{#str}}pagesize, local_filebank{{/str}} </label> {{{help}}}
+        <select id="{{id}}" class="form-select form-select-sm filebank-page-size" data-filebank-pagesize data-url="{{url}}" data-pageparameter="{{pageparameter}}">
             {{#sizes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{value}}</option>{{/sizes}}
         </select>
     </div>
-    <div class="multipicker-actionbar d-flex align-items-center flex-wrap"><span class="small text-muted" aria-live="polite">{{summary}} · {{pagelabel}}</span>
-        <div class="btn-group multipicker-row-actions" role="group" aria-label="{{#str}}pagination, local_multipicker{{/str}}">
+    <div class="filebank-actionbar d-flex align-items-center flex-wrap"><span class="small text-muted" aria-live="polite">{{summary}} · {{pagelabel}}</span>
+        <div class="btn-group filebank-row-actions" role="group" aria-label="{{#str}}pagination, local_filebank{{/str}}">
             {{#previousurl}}<a href="{{previousurl}}" class="btn btn-sm btn-outline-secondary" title="{{#str}}previous, core{{/str}}" aria-label="{{#str}}previous, core{{/str}}">{{#pix}}t/left, core{{/pix}}</a>{{/previousurl}}
             {{^previousurl}}<button type="button" class="btn btn-sm btn-outline-secondary" disabled aria-label="{{#str}}previous, core{{/str}}">{{#pix}}t/left, core{{/pix}}</button>{{/previousurl}}
             {{#nexturl}}<a href="{{nexturl}}" class="btn btn-sm btn-outline-secondary" title="{{#str}}next, core{{/str}}" aria-label="{{#str}}next, core{{/str}}">{{#pix}}t/right, core{{/pix}}</a>{{/nexturl}}

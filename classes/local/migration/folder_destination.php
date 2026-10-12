@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 /**
  * Additive native folder file lifecycle adapter.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\migration;
+namespace local_filebank\local\migration;
 
-use local_multipicker\local\policy\author_policy;
+use local_filebank\local\policy\author_policy;
 
 /**
  * Applies additive file copies without replacing an unrelated file or rebuilding the file area.
@@ -38,14 +39,14 @@ final class folder_destination {
      * @param array|null $expected Reviewed destination snapshot, or null for a new path.
      * @return \stored_file Saved file.
      */
-    public static function copy(\stored_file $source, int $cmid, bool $overwrite = false, ?array $expected = null): \stored_file {
+    public static function copy(\stored_file $source, int $cmid, bool $overwrite, ?array $expected = null): \stored_file {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot . '/mod/folder/lib.php');
         $cm = get_coursemodule_from_id('folder', $cmid, 0, false, MUST_EXIST);
         require_capability('moodle/course:manageactivities', \context_module::instance($cmid));
         $sourcecontext = \context::instance_by_id($source->get_contextid())->get_course_context(false);
         if (!$sourcecontext) {
-            throw new \moodle_exception('materialunavailable', 'local_multipicker');
+            throw new \moodle_exception('materialunavailable', 'local_filebank');
         }
         author_policy::require_native_copy($source, (int)$sourcecontext->instanceid, (int)$cm->course);
         $context = \context_module::instance($cmid);
@@ -60,11 +61,11 @@ final class folder_destination {
             $source->get_filename()
         );
         if (($existing ? copy_decision::snapshot($existing) : null) !== $expected) {
-            throw new \moodle_exception('planstale', 'local_multipicker');
+            throw new \moodle_exception('planstale', 'local_filebank');
         }
         if ($existing) {
             if (!$overwrite) {
-                throw new \moodle_exception('planstale', 'local_multipicker');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
             author_policy::capture($existing);
             $existing->delete();
@@ -95,7 +96,7 @@ final class folder_destination {
                 copy_decision::snapshot($saved)
             ) !== 'skip_identical'
         ) {
-            throw new \moodle_exception('verificationfailed', 'local_multipicker');
+            throw new \moodle_exception('verificationfailed', 'local_filebank');
         }
         return $saved;
     }

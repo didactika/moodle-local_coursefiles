@@ -1,0 +1,178 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* Compact material cards retain native icons and selection controls. */
+
+.filebank-cards {
+    display: grid;
+    /* Valid modern CSS is absent from older Moodle validator grammars. */
+    /* stylelint-disable-next-line csstree/validator */
+    grid-template-columns: repeat(auto-fit, minmax(Min(100%, 12rem), 1fr));
+    gap: .5rem;
+    align-content: start;
+}
+
+.filebank-card {
+    border-radius: var(--filebank-radius);
+    cursor: pointer;
+    transition: border-color .15s ease;
+    .card-body {
+        gap: .5rem;
+    }
+    input[type=checkbox] {
+        margin-top: .3rem;
+        /* The native checkbox uses the theme color where supported. */
+        /* stylelint-disable-next-line csstree/validator, property-no-unknown */
+        accent-color: var(--filebank-primary);
+        width: 1.1rem;
+        height: 1.1rem;
+        flex-shrink: 0;
+    }
+    &-content {
+        min-width: 0;
+        flex-grow: 1;
+        display: grid;
+        grid-template-rows: 1.5rem 2.6rem 2.1rem auto;
+    }
+    &-title {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        margin-bottom: .25rem;
+        font-size: .9rem;
+        font-weight: 600;
+        cursor: pointer;
+        overflow-wrap: anywhere;
+        line-height: 1.3rem;
+        max-height: 2.6rem;
+    }
+    &-kind {
+        gap: .4rem;
+    }
+    &-kind .icon {
+        height: 1.1rem;
+        width: 1.1rem;
+        margin: 0;
+    }
+}
+
+.filebank-origin {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: .75rem;
+    line-height: 1rem;
+    max-height: 2rem;
+}
+
+.filebank-card {
+    &-meta {
+        gap: .35rem;
+        font-size: .7rem;
+        min-height: 2rem;
+        align-content: start;
+    }
+}
+
+.filebank-chip {
+    display: inline-block;
+    border-radius: 1rem;
+    padding: .15rem .5rem;
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--filebank-primary);
+    background: color-mix(in srgb, var(--filebank-primary) 10%, var(--filebank-surface));
+}
+
+.filebank-card:hover, .filebank-card:focus-within, .filebank-selected {
+    border-color: var(--filebank-primary);
+    box-shadow: 0 0 0 1px var(--filebank-primary);
+}
+
+.filebank-card {
+    &:hover {
+        background: color-mix(in srgb, var(--filebank-primary) 5%, var(--filebank-surface));
+    }
+}
+
+.filebank-selected {
+    background: color-mix(in srgb, var(--filebank-primary) 8%, var(--filebank-surface));
+}
+
+.filebank-browser {
+    .filebank-open.btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.8rem;
+        height: 1.8rem;
+        min-width: 1.8rem;
+        padding: 0;
+        flex-shrink: 0;
+        border: 0;
+        border-radius: .5rem;
+        line-height: 1;
+        color: var(--filebank-primary);
+        background: color-mix(in srgb, var(--filebank-primary) 12%, #fff);
+    }
+}
+
+.filebank-open .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: .85rem;
+    height: .85rem;
+    line-height: 1;
+    margin: 0;
+}
+
+.filebank-back .icon, .filebank-toolbar .btn-group .icon {
+    margin: 0;
+}
+
+.filebank-browser {
+    &[data-layout=list] {
+        .filebank-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+    &-filters {
+        position: relative;
+        gap: .5rem;
+    }
+    &-filters .filebank-search {
+        flex: 1 1 12rem;
+        max-width: 24rem;
+    }
+    &-filters .filebank-filter-popover {
+        position: static;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+    &-filters .filebank-filter-menu {
+        /* Valid modern CSS is absent from older Moodle validator grammars. */
+        /* stylelint-disable-next-line csstree/validator */
+        width: Min(38rem, 100%);
+        /* Valid modern CSS is absent from older Moodle validator grammars. */
+        /* stylelint-disable-next-line csstree/validator */
+        max-height: Min(55vh, 22rem);
+        overflow: auto;
+        top: 100%;
+        background: var(--filebank-host-background, #fff);
+        z-index: 10;
+    }
+    .filebank-open.btn:hover {
+        background: color-mix(in srgb, var(--filebank-primary) 22%, #fff);
+        color: var(--filebank-primary);
+    }
+    .filebank-open.btn:focus-visible {
+        outline: 2px solid var(--filebank-primary);
+        outline-offset: 2px;
+    }
+}
+

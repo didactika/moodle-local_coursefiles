@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 /**
  * Configurable source and destination course dimensions.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\migration;
+namespace local_filebank\local\migration;
 
-use local_multipicker\local\profile\profile_config;
+use local_filebank\local\profile\profile_config;
 
 /**
  * Resolves the selected dimension from the exact profile revision.
@@ -39,7 +40,7 @@ final class course_scope {
         $choices = [];
         foreach ($rules->filter_definitions() as $key => $definition) {
             if (!isset($choices[$key])) {
-                $choices[$key] = \local_multipicker\output\display::label($definition['label']);
+                $choices[$key] = \local_filebank\output\display::label($definition['label']);
             }
         }
         return $choices;
@@ -58,7 +59,7 @@ final class course_scope {
         }
         $definitions = $rules->filter_definitions();
         if (!isset($definitions[$key])) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         return $definitions[$key]['capture'];
     }

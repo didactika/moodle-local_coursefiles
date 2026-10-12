@@ -1,0 +1,72 @@
+// @copyright 2026 Didactika.org
+// @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+/* Editable rows wrap intrinsically to the available form-column width. */
+
+@media (max-width: 575.98px) {
+    .filebank-issue {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .filebank-metrics .card-body {
+        padding-inline: .5rem;
+    }
+    .filebank-native-host {
+        .fp-repo-area {
+            width: 100%;
+            max-width: 100%;
+            /* Override native Boost layout utilities at compact widths. */
+            /* stylelint-disable-next-line declaration-no-important */
+            flex-direction: row !important;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: .5rem;
+        }
+        .fp-repo {
+            flex-shrink: 0;
+        }
+        .fp-repo a {
+            white-space: nowrap;
+        }
+        .fp-repo-area + div {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+        .fp-repo-items {
+            width: 100%;
+        }
+    }
+    .filebank-browser {
+        /* Override native Boost layout utilities at compact widths. */
+        /* stylelint-disable-next-line declaration-no-important */
+        padding: .75rem !important;
+    }
+    .filebank-filterbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .filebank-steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        li {
+            padding: .5rem;
+        }
+    }
+}
+
+@media (max-width: 359.98px) {
+    .filebank-filterbar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .filebank-card {
+        transition: none;
+    }
+    .filebank-skeleton {
+        span {
+            animation: none;
+        }
+    }
+}
+

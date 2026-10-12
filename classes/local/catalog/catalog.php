@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 /**
  * Authorized asset grouping with keyset pagination.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\catalog;
+namespace local_filebank\local\catalog;
 
-use local_multipicker\local\profile\profiles;
+use local_filebank\local\profile\profiles;
 
 /**
  * Groups current permitted occurrences rather than global unfiltered results.
@@ -48,12 +49,13 @@ final class catalog {
         int $limit = 20,
         int $draftid = 0
     ): array {
+
         global $DB;
-        require_capability('local/multipicker:browse', \context_course::instance($targetcourse));
-        require_capability('local/multipicker:reuse', \context_course::instance($targetcourse));
-        \local_multipicker\local\selection\destination_access::require($targetcourse);
+        require_capability('local/filebank:browse', \context_course::instance($targetcourse));
+        require_capability('local/filebank:reuse', \context_course::instance($targetcourse));
+        \local_filebank\local\selection\destination_access::require($targetcourse);
         if ($after !== '' && !preg_match('/^[a-f0-9]{40}$/', $after)) {
-            throw new \moodle_exception('invalidcursor', 'local_multipicker');
+            throw new \moodle_exception('invalidcursor', 'local_filebank');
         }
         [$profile, $revision, $rules] = profiles::load($profileid);
         $identity = $rules->resolve(get_course($targetcourse));
@@ -61,67 +63,39 @@ final class catalog {
             return ['assets' => [], 'next' => ''];
         }
         $limit = max(1, min(50, $limit));
-        $params = ['revisionid' => $revision->id, 'familyhash' => $identity['familyhash'], 'after' => $after];
-        $where = 'c.revisionid = :revisionid AND c.familyhash = :familyhash AND f.contenthash > :after';
-        [$exclusion, $destinationparams] = \local_multipicker\local\selection\destination_content::exclusion('n', $draftid);
-        $where .= $exclusion;
-        $params += $destinationparams;
-        if (!empty($filters['excludedcontext'])) {
-            $where .= ' AND n.contextid <> :excludedcontext';
-            $params['excludedcontext'] = (int)$filters['excludedcontext'];
-        }
-        if (!empty($filters['cmid'])) {
-            $where .= ' AND f.cmid = :cmid';
-            $params['cmid'] = (int)$filters['cmid'];
-        }
-        if (!empty($filters['sourcepath'])) {
-            $sourcepath = \local_multipicker\local\selection\material_selection::path($filters['sourcepath']);
-            $where .= ' AND ' . $DB->sql_like('n.filepath', ':sourcepath', true);
-            $params['sourcepath'] = $DB->sql_like_escape($sourcepath) . '%';
-        }
-        foreach (['edition' => 'c.edition', 'q' => 'f.filename', 'mimetype' => 'f.mimetype'] as $key => $field) {
-            if (!empty($filters[$key])) {
-                if ($key === 'q') {
-                    $where .= ' AND ' . $DB->sql_like($field, ':' . $key, false);
-                    $params[$key] = '%' . $DB->sql_like_escape($filters[$key]) . '%';
-                } else {
-                    $where .= ' AND ' . $field . ' = :' . $key;
-                    $params[$key] = $filters[$key];
-                }
-            }
-        }
-        if (!empty($filters['module'])) {
-            $where .= ' AND mo.name = :module';
-            $params['module'] = $filters['module'];
-        }
-        if (!empty($filters['shortname'])) {
-            $where .= ' AND sc.shortname = :shortname';
-            $params['shortname'] = $filters['shortname'];
-        }
-        $capturefilters = $filters['captures'] ?? [];
-        if (!is_array($capturefilters) || array_diff(array_keys($capturefilters), array_keys($rules->filter_definitions()))) {
-            throw new \invalid_parameter_exception('Unknown capture filter');
-        }
-        foreach ($capturefilters as $name => $value) {
-            if (!is_string($value) || strlen($value) > 255) {
-                throw new \invalid_parameter_exception('Invalid capture filter value');
-            }
-            if ($value !== '') {
-                $i = count($params);
-                $where .= ' AND EXISTS (SELECT 1 FROM {local_multipicker_value} v WHERE v.courseid = c.courseid'
-                    . ' AND v.revisionid = c.revisionid AND v.name = :capturekey' . $i . ' AND v.value = :capturevalue' . $i . ')';
-                $params['capturekey' . $i] = $name;
-                $params['capturevalue' . $i] = $value;
-            }
-        }
-        $sql = 'SELECT f.*, c.edition FROM {local_multipicker_file} f
-                  JOIN {local_multipicker_course} c ON c.courseid = f.courseid
-                  JOIN {files} n ON n.pathnamehash = f.pathnamehash
-                  JOIN {course_modules} mc ON mc.id = f.cmid AND mc.course = f.courseid
-                  JOIN {modules} mo ON mo.id = mc.module
-                  JOIN {course} sc ON sc.id = f.courseid
-                 WHERE ' . $where . ' ORDER BY f.contenthash, f.id';
+        [$sql, $params, $capturefilters] = catalog_query::build(
+            $revision->id,
+            $identity['familyhash'],
+            $filters,
+            $rules->filter_definitions(),
+            $after,
+            $draftid
+        );
         $records = $DB->get_recordset_sql($sql, $params);
+        return self::collect($records, $targetcourse, $profileid, [$profile, $revision, $rules], $filters, $capturefilters, $limit);
+    }
+
+    /**
+     * Collect deduplicated occurrences while retaining the content cursor and authorization cache.
+     *
+     * @param \moodle_recordset $records Bounded indexed candidates.
+     * @param int $targetcourse Owning destination course.
+     * @param int $profileid Active profile.
+     * @param array $profiledata Validated active profile and revision.
+     * @param array $filters Search values.
+     * @param array $capturefilters Validated capture values.
+     * @param int $limit Bounded result count.
+     * @return array Result.
+     */
+    private static function collect(
+        \moodle_recordset $records,
+        int $targetcourse,
+        int $profileid,
+        array $profiledata,
+        array $filters,
+        array $capturefilters,
+        int $limit
+    ): array {
         $assets = [];
         $next = '';
         $currenthash = '';
@@ -142,32 +116,14 @@ final class catalog {
                         $record->pathnamehash,
                         $targetcourse,
                         $profileid,
-                        [$profile, $revision, $rules],
+                        $profiledata,
                         $scope
                     );
                 } catch (\moodle_exception $exception) {
                     continue;
                 }
-                if (
-                    $file->get_contenthash() !== $record->contenthash
-                        || (!empty($filters['edition']) && $filters['edition'] !== $sourceidentity['edition'])
-                        || (!empty($filters['module']) && $filters['module'] !== $cm->modname)
-                        || (!empty($filters['shortname']) && $filters['shortname'] !== $course->shortname)
-                        || (!empty($filters['mimetype']) && $filters['mimetype'] !== $file->get_mimetype())
-                        || (isset($filters['section']) && $filters['section'] !== ''
-                            && (int)$filters['section'] !== (int)$cm->section)
-                        || (!empty($filters['q'])
-                            && \core_text::strpos(
-                                \core_text::strtolower($file->get_filename()),
-                                \core_text::strtolower($filters['q'])
-                            ) === false)
-                ) {
+                if (!catalog_match::allows($file, $record, $cm, $sourceidentity, $course, $filters, $capturefilters)) {
                     continue;
-                }
-                foreach ($capturefilters as $name => $value) {
-                    if ($value !== '' && ($sourceidentity['filters'][$name] ?? '') !== $value) {
-                        continue 2;
-                    }
                 }
                 $key = $file->get_contenthash() . ':' . $file->get_filesize();
                 if (!isset($assets[$key])) {

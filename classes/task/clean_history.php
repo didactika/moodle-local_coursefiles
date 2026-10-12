@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
 /**
  * Bounded operational history retention.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\task;
+namespace local_filebank\task;
 
 /**
  * Scheduled retention of operational records.
@@ -33,15 +34,15 @@ final class clean_history extends \core\task\scheduled_task {
      * @return string Task name.
      */
     public function get_name(): string {
-        return get_string('cleanhistory', 'local_multipicker');
+        return get_string('cleanhistory', 'local_filebank');
     }
 
     /**
      * Run one bounded cleanup batch.
      */
     public function execute(): void {
-        $counts = \local_multipicker\local\maintenance\retention::clean();
-        mtrace('MultiPicker: removed ' . $counts['logs'] . ' logs and ' . $counts['plans']
+        $counts = \local_filebank\local\maintenance\retention::clean();
+        mtrace('FileBank: removed ' . $counts['logs'] . ' logs and ' . $counts['plans']
             . ' expired plans and ' . $counts['versions'] . ' profile versions.');
     }
 }

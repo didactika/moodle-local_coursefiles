@@ -1,22 +1,25 @@
 {{!
-    @template local_multipicker/local/profile/history
+    @copyright 2026 Didactika.org
+    @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+    @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+    @template local_filebank/local/profile/history
     Paged history and field comparison within a single profile.
-    Example context (json): {"versions":[],"choices":[],"rows":[],"profileid":1}
+    Example context (json): {"versions":[],"choices":[],"rows":[],"profileid":1,"action":"/local/filebank/admin/profile_history.php","backurl":"/local/filebank/admin/profiles.php"}
 }}
-<section class="multipicker-admin" data-multipicker-history>
-<div class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{backurl}}" class="btn btn-sm btn-outline-secondary multipicker-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a></div>
-<div class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap"><h2 class="h4 mb-0">{{#str}}versionhistory, local_multipicker{{/str}}: {{{name}}}</h2></div>
-<p class="text-muted">{{#str}}versionhistoryhelp, local_multipicker{{/str}} {{{historyhelp}}}</p>
-<form id="multipicker-compare" method="get" action="{{action}}" class="multipicker-actionbar mb-3 d-flex align-items-center flex-wrap">
+<section class="filebank-admin" data-filebank-history>
+<div class="filebank-actionbar mb-3 d-flex align-items-center flex-wrap"><a href="{{backurl}}" class="btn btn-sm btn-outline-secondary filebank-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a></div>
+<div class="filebank-actionbar mb-3 d-flex align-items-center flex-wrap"><h2 class="h4 mb-0">{{#str}}versionhistory, local_filebank{{/str}}: {{{name}}}</h2></div>
+<p class="text-muted">{{#str}}versionhistoryhelp, local_filebank{{/str}} {{{historyhelp}}}</p>
+<form id="filebank-compare" method="get" action="{{action}}" class="filebank-actionbar mb-3 d-flex align-items-center flex-wrap">
 <input type="hidden" name="profileid" value="{{profileid}}">
 <input type="hidden" name="left" value="0"><input type="hidden" name="right" value="0">
-<label class="mb-0"><input type="checkbox" name="changesonly" value="1" {{#changesonly}}checked{{/changesonly}}> {{#str}}changesonly, local_multipicker{{/str}}</label>
-<button class="btn btn-sm btn-primary">{{#pix}}i/search, core{{/pix}}{{#str}}compareversions, local_multipicker{{/str}}</button>
-{{#offpagechoices}}<label class="mb-0 small"><input type="checkbox" data-multipicker-version value="{{id}}" checked> {{#str}}version, core{{/str}} {{number}}</label>{{/offpagechoices}}
+<label class="mb-0"><input type="checkbox" name="changesonly" value="1" {{#changesonly}}checked{{/changesonly}}> {{#str}}changesonly, local_filebank{{/str}}</label>
+<button class="btn btn-sm btn-primary">{{#pix}}i/search, core{{/pix}}{{#str}}compareversions, local_filebank{{/str}}</button>
+{{#offpagechoices}}<label class="mb-0 small"><input type="checkbox" data-filebank-version value="{{id}}" checked> {{#str}}version, core{{/str}} {{number}}</label>{{/offpagechoices}}
 </form>
-{{#comparing}}<div class="table-responsive"><table class="table table-bordered multipicker-version-diff"><thead><tr><th>{{#str}}configfield, local_multipicker{{/str}}</th><th>{{#str}}version, core{{/str}} {{leftnumber}}</th><th>{{#str}}version, core{{/str}} {{rightnumber}}</th></tr></thead><tbody>{{#rows}}<tr {{#changed}}class="table-warning"{{/changed}}><th>{{field}}</th><td><code>{{before}}</code></td><td><code>{{after}}</code></td></tr>{{/rows}}</tbody></table></div>{{/comparing}}
+{{#comparing}}<div class="table-responsive"><table class="table table-bordered filebank-version-diff"><thead><tr><th>{{#str}}configfield, local_filebank{{/str}}</th><th>{{#str}}version, core{{/str}} {{leftnumber}}</th><th>{{#str}}version, core{{/str}} {{rightnumber}}</th></tr></thead><tbody>{{#rows}}<tr {{#changed}}class="table-warning"{{/changed}}><th>{{field}}</th><td><code>{{before}}</code></td><td><code>{{after}}</code></td></tr>{{/rows}}</tbody></table></div>{{/comparing}}
 <form method="post" action="{{action}}"><input type="hidden" name="sesskey" value="{{sesskey}}"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>{{#str}}select, core{{/str}}</th><th>{{#str}}version, core{{/str}}</th><th>{{#str}}date, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}actions, core{{/str}}</th></tr></thead><tbody>
-{{#versions}}<tr><td><input type="checkbox" data-multipicker-version value="{{id}}" {{#selected}}checked{{/selected}} aria-label="{{#str}}version, core{{/str}} {{number}}"></td><td>{{number}}</td><td>{{date}}</td><td>{{#active}}<span class="multipicker-chip">{{#str}}active, core{{/str}}</span>{{/active}}</td><td><div class="btn-group multipicker-row-actions"><a href="{{compareurl}}" class="btn btn-sm btn-outline-primary" title="{{#str}}compareversions, local_multipicker{{/str}}" aria-label="{{#str}}compareversions, local_multipicker{{/str}}">{{#pix}}i/search, core{{/pix}}</a>{{^active}}<button name="restore" value="{{id}}" class="btn btn-sm btn-outline-primary" title="{{#str}}restoreversion, local_multipicker{{/str}}" aria-label="{{#str}}restoreversion, local_multipicker{{/str}}">{{#pix}}i/restore, core{{/pix}}</button>{{/active}}</div></td></tr>{{/versions}}
+{{#versions}}<tr><td><input type="checkbox" data-filebank-version value="{{id}}" {{#selected}}checked{{/selected}} aria-label="{{#str}}version, core{{/str}} {{number}}"></td><td>{{number}}</td><td>{{date}}</td><td>{{#active}}<span class="filebank-chip">{{#str}}active, core{{/str}}</span>{{/active}}</td><td><div class="btn-group filebank-row-actions"><a href="{{compareurl}}" class="btn btn-sm btn-outline-primary" title="{{#str}}compareversions, local_filebank{{/str}}" aria-label="{{#str}}compareversions, local_filebank{{/str}}">{{#pix}}i/search, core{{/pix}}</a>{{^active}}<button name="restore" value="{{id}}" class="btn btn-sm btn-outline-primary" title="{{#str}}restoreversion, local_filebank{{/str}}" aria-label="{{#str}}restoreversion, local_filebank{{/str}}">{{#pix}}i/restore, core{{/pix}}</button>{{/active}}</div></td></tr>{{/versions}}
 </tbody></table></div></form>{{{pagination}}}
 
 </section>

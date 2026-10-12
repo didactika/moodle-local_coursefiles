@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,14 +17,15 @@
 /**
  * Native form control with a trusted batch contract.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\form;
+namespace local_filebank\form;
 
-use local_multipicker\local\selection\draft_scope;
+use local_filebank\local\selection\draft_scope;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -40,8 +41,8 @@ class scoped_filemanager extends \MoodleQuickForm_filemanager {
     public static function register(): void {
         global $CFG;
         \MoodleQuickForm::registerElementType(
-            'multipickerfilemanager',
-            $CFG->dirroot . '/local/multipicker/classes/form/scoped_filemanager.php',
+            'filebankfilemanager',
+            $CFG->dirroot . '/local/filebank/classes/form/scoped_filemanager.php',
             self::class
         );
     }
@@ -66,7 +67,7 @@ class scoped_filemanager extends \MoodleQuickForm_filemanager {
     public static function read_contract(\MoodleQuickForm_filemanager $element, \context $context): array {
         global $CFG, $PAGE;
         if ($element->_flagFrozen || !$element->getName() || !($element->_options['return_types'] & FILE_INTERNAL)) {
-            throw new \moodle_exception('formscopeunavailable', 'local_multipicker');
+            throw new \moodle_exception('formscopeunavailable', 'local_filebank');
         }
         [, $course] = get_context_info_array($context->id);
         $maxbytes = max(0, (int)$element->getMaxbytes());

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 /**
  * Reviewed immutable family migration planning.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\migration;
+namespace local_filebank\local\migration;
 
-use local_multipicker\local\profile\profile_config;
+use local_filebank\local\profile\profile_config;
 
 /**
  * Creates a destination once, from an immutable reviewed definition.
@@ -44,14 +45,14 @@ final class target_binding {
         $value = $predicate['equals'] ?? (isset($predicate['template'])
             ? profile_config::template($predicate['template'], $captures) : null);
         if (!is_string($value) || $value === '' || \core_text::strlen($value) > 255) {
-            throw new \moodle_exception('creationnamerequired', 'local_multipicker');
+            throw new \moodle_exception('creationnamerequired', 'local_filebank');
         }
         $section = $DB->get_record('course_sections', ['id' => $sectionid, 'course' => $courseid], '*', MUST_EXIST);
         return ['cmid' => 0, 'courseid' => $courseid, 'sectionid' => $sectionid, 'sectionname' => $section->name,
             'sectionnum' => (int)$section->section, 'name' => $field === 'name' ? $value : $captures['name'],
             'idnumber' => $field === 'idnumber' ? $value : '', 'visible' => 1, 'availability' => null,
             'sectionvisible' => (int)$section->visible, 'sectionavailability' => $section->availability,
-            'authorlocked' => \local_multipicker\local\policy\author_policy::locked($courseid)];
+            'authorlocked' => \local_filebank\local\policy\author_policy::locked($courseid)];
     }
 
     /**
@@ -63,42 +64,26 @@ final class target_binding {
      * @return array Native placement snapshot.
      */
     public static function resolve(int $planid, string $key, array $definition): array {
+
         global $CFG, $DB;
         if (!hash_equals($key, hash('sha256', json_encode($definition)))) {
-            throw new \moodle_exception('planstale', 'local_multipicker');
+            throw new \moodle_exception('planstale', 'local_filebank');
         }
-        $binding = $DB->get_record('local_multipicker_target', ['planid' => $planid, 'targetkey' => $key], '*', MUST_EXIST);
+        $binding = $DB->get_record('local_filebank_target', ['planid' => $planid, 'targetkey' => $key], '*', MUST_EXIST);
         if (json_decode($binding->definitionjson, true) !== $definition) {
-            throw new \moodle_exception('planstale', 'local_multipicker');
+            throw new \moodle_exception('planstale', 'local_filebank');
         }
         require_capability('moodle/course:manageactivities', \context_course::instance($definition['courseid']));
         if ($binding->cmid) {
             $actual = placement::snapshot((int)$binding->cmid);
             if ($actual !== json_decode($binding->snapshotjson, true)) {
-                throw new \moodle_exception('planstale', 'local_multipicker');
+                throw new \moodle_exception('planstale', 'local_filebank');
             }
             return $actual;
         }
         require_capability('mod/folder:addinstance', \context_course::instance($definition['courseid']));
-        $section = $DB->get_record('course_sections', ['id' => $definition['sectionid'],
-            'course' => $definition['courseid']], '*', MUST_EXIST);
-        if (
-            $section->name !== $definition['sectionname'] || (int)$section->section !== $definition['sectionnum']
-            || (int)$section->visible !== $definition['sectionvisible']
-            || $section->availability !== $definition['sectionavailability']
-                || \local_multipicker\local\policy\author_policy::locked($definition['courseid']) !== $definition['authorlocked']
-        ) {
-            throw new \moodle_exception('planstale', 'local_multipicker');
-        }
-        foreach (get_fast_modinfo($definition['courseid'])->get_cms() as $cm) {
-            if (
-                $cm->modname === 'folder' && (int)$cm->section === $definition['sectionid']
-                && ($definition['idnumber'] !== '' ? $cm->idnumber === $definition['idnumber']
-                    : $cm->name === $definition['name'])
-            ) {
-                throw new \moodle_exception('planstale', 'local_multipicker');
-            }
-        }
+        self::require_current_section($definition);
+        self::require_unique($definition);
         require_once($CFG->dirroot . '/course/modlib.php');
         $transaction = $DB->start_delegated_transaction();
         $module = (object)['modulename' => 'folder', 'module' => $DB->get_field('modules', 'id', ['name' => 'folder'], MUST_EXIST),
@@ -110,8 +95,73 @@ final class target_binding {
         $binding->cmid = $module->coursemodule;
         $actual = placement::snapshot((int)$binding->cmid);
         $binding->snapshotjson = json_encode($actual);
-        $DB->update_record('local_multipicker_target', $binding);
+        $DB->update_record('local_filebank_target', $binding);
         $transaction->allow_commit();
         return $actual;
+    }
+
+    /**
+     * Require current section.
+     *
+     * @param array $definition Definition.
+     */
+    private static function require_current_section(array $definition): void {
+        global $DB;
+        $section = $DB->get_record(
+            'course_sections',
+            ['id' => $definition['sectionid'],
+                'course' => $definition['courseid']],
+            '*',
+            MUST_EXIST
+        );
+        if (
+            $section->name !== $definition['sectionname'] || (int)$section->section !== $definition['sectionnum']
+            || (int)$section->visible !== $definition['sectionvisible']
+            || $section->availability !== $definition['sectionavailability']
+                || \local_filebank\local\policy\author_policy::locked($definition['courseid']) !== $definition['authorlocked']
+        ) {
+            throw new \moodle_exception('planstale', 'local_filebank');
+        }
+    }
+
+    /**
+     * Require unique.
+     *
+     * @param array $definition Definition.
+     */
+    private static function require_unique(array $definition): void {
+        foreach (get_fast_modinfo($definition['courseid'])->get_cms() as $cm) {
+            if (
+                $cm->modname === 'folder' && (int)$cm->section === $definition['sectionid']
+                && ($definition['idnumber'] !== '' ? $cm->idnumber === $definition['idnumber']
+                    : $cm->name === $definition['name'])
+            ) {
+                throw new \moodle_exception('planstale', 'local_filebank');
+            }
+        }
+    }
+
+    /**
+     * Destination lock.
+     *
+     * @param int $targetcmid Targetcmid.
+     * @param array $target Target.
+     * @return \core\lock\lock Acquired and revalidated destination lock.
+     */
+    public static function lock_destination(int $targetcmid, array $target): \core\lock\lock {
+        $destinationlock = \core\lock\lock_config::get_lock_factory('local_filebank')
+            ->get_lock('destination:' . $targetcmid, 10);
+        if (!$destinationlock) {
+            throw new \moodle_exception('lockfailed', 'local_filebank');
+        }
+        try {
+            if (placement::snapshot($targetcmid) !== $target) {
+                throw new \moodle_exception('planstale', 'local_filebank');
+            }
+            return $destinationlock;
+        } catch (\Throwable $exception) {
+            $destinationlock->release();
+            throw $exception;
+        }
     }
 }

@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,14 @@
 /**
  * Profile editor with validated unsaved previews.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\form;
+namespace local_filebank\form;
+
+use local_filebank\local\compatibility;
 
 /**
  * Validates bounded row documents submitted by native forms.
@@ -38,13 +41,13 @@ final class row_data {
     public static function enhance(\MoodleQuickForm $form, string $name, array $columns, int $maximum): void {
         global $PAGE, $OUTPUT;
         foreach ($columns as &$column) {
-            $column['help'] = $OUTPUT->help_icon('rowfield_' . $column['key'], 'local_multipicker');
+            $column['help'] = $OUTPUT->help_icon('rowfield_' . $column['key'], 'local_filebank');
         }
         unset($column);
         $form->getElement($name)->updateAttributes([
-            'data-multipicker-schema' => json_encode(['columns' => $columns, 'maximum' => $maximum], JSON_UNESCAPED_UNICODE),
+            'data-filebank-schema' => json_encode(['columns' => $columns, 'maximum' => $maximum], JSON_UNESCAPED_UNICODE),
         ]);
-        $PAGE->requires->js_call_amd('local_multipicker/row_editor', 'init', ['id_' . $name]);
+        $PAGE->requires->js_call_amd('local_filebank/row_editor', 'init', ['id_' . $name]);
     }
 
     /**
@@ -58,14 +61,14 @@ final class row_data {
         try {
             $rows = json_decode($json, true, 16, JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
-        if (!is_array($rows) || !array_is_list($rows) || count($rows) > $maximum || strlen($json) > 131072) {
-            throw new \moodle_exception('invalidprofile', 'local_multipicker');
+        if (!is_array($rows) || !compatibility::is_list($rows) || count($rows) > $maximum || strlen($json) > 131072) {
+            throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         foreach ($rows as $row) {
             if (!is_array($row)) {
-                throw new \moodle_exception('invalidprofile', 'local_multipicker');
+                throw new \moodle_exception('invalidprofile', 'local_filebank');
             }
         }
         return $rows;

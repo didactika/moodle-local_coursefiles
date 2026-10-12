@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,23 +17,26 @@
 /**
  * Configuration transport and guided editing regression tests.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker;
+namespace local_filebank;
 
-use local_multipicker\form\profile_form;
-use local_multipicker\local\profile\guided_config;
-use local_multipicker\local\profile\profile_bundle;
-use local_multipicker\local\profile\profiles;
+use local_filebank\form\profile_form;
+use local_filebank\local\profile\guided_config;
+use local_filebank\local\profile\profile_bundle;
+use local_filebank\local\profile\profiles;
 
 /**
  * Exercises exported configurations rather than copying site database identities.
  *
- * @covers \local_multipicker\local\profile\profile_bundle
- * @covers \local_multipicker\local\profile\guided_config
+ * @covers \local_filebank\local\profile\profile_bundle
+ * @covers \local_filebank\local\profile\guided_config
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\profile\profile_bundle::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\profile\guided_config::class)]
 final class profile_bundle_test extends \advanced_testcase {
     /**
      * Guided edits use server-loaded rules even when a posted document is invalid.
@@ -60,14 +63,14 @@ final class profile_bundle_test extends \advanced_testcase {
         $a = profiles::save(json_encode($config));
         $config['name'] = 'Another group';
         $b = profiles::save(json_encode($config));
-        $selected = profile_bundle::export([$b]);
+        $selected = profile_bundle::export([$b], false);
         $this->assertCount(1, profile_bundle::documents($selected));
         $all = profile_bundle::export([], true);
         $ids = profile_bundle::import($all);
         $this->assertCount(2, $ids);
         $this->assertEmpty(array_intersect([$a, $b], $ids));
-        $this->assertSame(4, $DB->count_records('local_multipicker'));
-        $this->assertSame(4, $DB->count_records('local_multipicker_revision'));
+        $this->assertSame(4, $DB->count_records('local_filebank'));
+        $this->assertSame(4, $DB->count_records('local_filebank_revision'));
     }
 
     /**
@@ -77,12 +80,16 @@ final class profile_bundle_test extends \advanced_testcase {
         global $DB;
         $config = $this->config();
         try {
-            profile_bundle::import(json_encode(['format' => 'multipicker-profiles', 'version' => 1,
-                'profiles' => [$config, ['name' => 'Invalid rules']]]));
+            profile_bundle::import(
+                json_encode(
+                    ['format' => 'filebank-profiles', 'version' => 1,
+                        'profiles' => [$config, ['name' => 'Invalid rules']]]
+                )
+            );
             $this->fail('Invalid documents must be rejected before writes.');
         } catch (\moodle_exception $exception) {
-            $this->assertSame(0, $DB->count_records('local_multipicker'));
-            $this->assertSame(0, $DB->count_records('local_multipicker_revision'));
+            $this->assertSame(0, $DB->count_records('local_filebank'));
+            $this->assertSame(0, $DB->count_records('local_filebank_revision'));
         }
     }
 
@@ -103,18 +110,21 @@ final class profile_bundle_test extends \advanced_testcase {
         global $USER;
         $config = $this->config();
         $draftid = file_get_unused_draft_itemid();
-        get_file_storage()->create_file_from_string([
-            'contextid' => \context_user::instance($USER->id)->id, 'component' => 'user', 'filearea' => 'draft',
-            'itemid' => $draftid, 'filepath' => '/', 'filename' => 'profiles.json',
-        ], json_encode($config));
-        $this->assertCount(1, profile_bundle::documents(\local_multipicker\form\profile_import_form::uploaded_document($draftid)));
+        get_file_storage()->create_file_from_string(
+            [
+                'contextid' => \context_user::instance($USER->id)->id, 'component' => 'user', 'filearea' => 'draft',
+                'itemid' => $draftid, 'filepath' => '/', 'filename' => 'profiles.json',
+            ],
+            json_encode($config)
+        );
+        $this->assertCount(1, profile_bundle::documents(\local_filebank\form\profile_import_form::uploaded_document($draftid)));
         $other = $this->getDataGenerator()->create_user();
         $role = $this->getDataGenerator()->create_role();
-        assign_capability('local/multipicker:manageprofiles', CAP_ALLOW, $role, \context_system::instance()->id);
+        assign_capability('local/filebank:manageprofiles', CAP_ALLOW, $role, \context_system::instance()->id);
         role_assign($role, $other->id, \context_system::instance()->id);
         $this->setUser($other);
         $this->expectException(\moodle_exception::class);
-        \local_multipicker\form\profile_import_form::uploaded_document($draftid);
+        \local_filebank\form\profile_import_form::uploaded_document($draftid);
     }
 
     /**
@@ -125,6 +135,6 @@ final class profile_bundle_test extends \advanced_testcase {
     private function config(): array {
         $this->resetAfterTest();
         $this->setAdminUser();
-        return json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        return $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
     }
 }

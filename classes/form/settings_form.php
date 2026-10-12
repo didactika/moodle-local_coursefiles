@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
 /**
  * Site policy form.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\form;
+namespace local_filebank\form;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
@@ -51,23 +52,23 @@ final class settings_form extends \moodleform {
         foreach (self::choices() as $name => $values) {
             $options = [];
             foreach ($values as $value) {
-                $options[$value] = get_string($value, 'local_multipicker');
+                $options[$value] = get_string($value, 'local_filebank');
             }
-            $form->addElement('select', $name, get_string($name, 'local_multipicker'), $options);
-            $form->addHelpButton($name, $name, 'local_multipicker');
+            $form->addElement('select', $name, get_string($name, 'local_filebank'), $options);
+            $form->addHelpButton($name, $name, 'local_filebank');
             $form->setDefault($name, $values[0]);
         }
-        $form->addElement('header', 'retention', get_string('retention', 'local_multipicker'));
+        $form->addElement('header', 'retention', get_string('retention', 'local_filebank'));
         foreach (
             [
             'logretentiondays' => 90, 'migrationretentiondays' => 365, 'versionretentiondays' => 0, 'versionretentionmax' => 0,
             ] as $name => $days
         ) {
-            $form->addElement('text', $name, get_string($name, 'local_multipicker'), ['size' => 6]);
+            $form->addElement('text', $name, get_string($name, 'local_filebank'), ['size' => 6]);
             $form->setType($name, PARAM_INT);
             $form->addRule($name, null, 'numeric', null, 'client');
             $form->setDefault($name, $days);
-            $form->addHelpButton($name, $name, 'local_multipicker');
+            $form->addHelpButton($name, $name, 'local_filebank');
         }
         $this->add_action_buttons(false);
     }
@@ -83,12 +84,12 @@ final class settings_form extends \moodleform {
         $errors = parent::validation($data, $files);
         foreach (self::choices() as $name => $values) {
             if (!in_array($data[$name] ?? '', $values, true)) {
-                $errors[$name] = get_string('invalidpolicy', 'local_multipicker');
+                $errors[$name] = get_string('invalidpolicy', 'local_filebank');
             }
         }
         foreach (['logretentiondays', 'migrationretentiondays', 'versionretentiondays', 'versionretentionmax'] as $name) {
             if (!isset($data[$name]) || $data[$name] < 0 || $data[$name] > 36500) {
-                $errors[$name] = get_string('invalidretention', 'local_multipicker');
+                $errors[$name] = get_string('invalidretention', 'local_filebank');
             }
         }
         return $errors;

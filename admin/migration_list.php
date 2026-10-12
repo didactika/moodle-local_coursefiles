@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,9 +17,10 @@
 /**
  * Bulk migration configuration and saved previews.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -31,11 +32,11 @@ if (data_submitted()) {
     if ($single) {
         $ids = [$single];
     }
-    \local_multipicker\local\migration\plan_history::delete_many($ids);
+    \local_filebank\local\migration\plan_history::delete_many($ids);
     redirect($PAGE->url, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 $page = max(0, optional_param('page', 0, PARAM_INT));
-$perpage = \local_multipicker\output\pagination::size();
+$perpage = \local_filebank\output\pagination::size();
 $search = optional_param('q', '', PARAM_TEXT);
 $state = optional_param('state', '', PARAM_ALPHA);
 $conditions = ['1 = 1'];
@@ -52,15 +53,15 @@ if ($state !== '') {
     $conditions[] = 'COALESCE(r.state, p.state) = :state';
     $params['state'] = $state;
 }
-$from = ' FROM {local_multipicker_plan} p JOIN {local_multipicker} f ON f.id = p.profileid
-    LEFT JOIN {local_multipicker_run} r ON r.id = (SELECT MAX(last.id) FROM {local_multipicker_run} last
+$from = ' FROM {local_filebank_plan} p JOIN {local_filebank} f ON f.id = p.profileid
+    LEFT JOIN {local_filebank_run} r ON r.id = (SELECT MAX(last.id) FROM {local_filebank_run} last
         WHERE last.planid = p.id) WHERE ' . implode(' AND ', $conditions);
 $total = $DB->count_records_sql('SELECT COUNT(1)' . $from, $params);
-$page = \local_multipicker\output\pagination::clamp($total, $page, $perpage);
+$page = \local_filebank\output\pagination::clamp($total, $page, $perpage);
 $data = ['records' => [], 'search' => $search, 'states' => [],
     'sesskey' => sesskey(), 'formurl' => $PAGE->url->out(false), 'newurl' => (new moodle_url($PAGE->url, ['new' => 1]))->out(false),
-    'perpage' => $perpage, 'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_multipicker'),
-    'pagination' => \local_multipicker\output\pagination::render(
+    'perpage' => $perpage, 'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_filebank'),
+    'pagination' => \local_filebank\output\pagination::render(
         $total,
         $page,
         $perpage,
@@ -68,30 +69,30 @@ $data = ['records' => [], 'search' => $search, 'states' => [],
     )];
 foreach ($states as $value) {
     $data['states'][] = ['value' => $value, 'selected' => $state === $value,
-        'label' => \local_multipicker\output\display::outcome($value)];
+        'label' => \local_filebank\output\display::outcome($value)];
 }
 foreach (
     $DB->get_records_sql('SELECT p.id, p.profileid, p.uuid, p.configjson, p.timecreated, f.name,
     COALESCE(r.state, p.state) AS status' . $from . ' ORDER BY p.id DESC', $params, $page * $perpage, $perpage) as $plan
 ) {
     $document = json_decode($plan->configjson, true);
-    $data['records'][] = ['name' => \local_multipicker\output\display::name($plan->name),
+    $data['records'][] = ['name' => \local_filebank\output\display::name($plan->name),
         'id' => $plan->id, 'candelete' => !in_array($plan->status, ['queued', 'running'], true),
         'reference' => $plan->id, 'date' => userdate($plan->timecreated),
         'source' => $document['sourceedition'] ?: implode(' / ', $document['filters']['source'] ?? []),
         'target' => $document['targetedition'] ?: implode(' / ', $document['filters']['target'] ?? []),
-        'status' => \local_multipicker\output\display::outcome($plan->status),
-        'editurl' => $plan->status === 'blocked' ? (new moodle_url('/local/multipicker/admin/migration.php', [
+        'status' => \local_filebank\output\display::outcome($plan->status),
+        'editurl' => $plan->status === 'blocked' ? (new moodle_url('/local/filebank/admin/migration.php', [
             'fromplan' => $plan->id, 'profileid' => $plan->profileid, 'step' => 'scope',
         ]))->out(false) : '',
-        'url' => (new moodle_url('/local/multipicker/admin/migration_review.php', ['planid' => $plan->id,
+        'url' => (new moodle_url('/local/filebank/admin/migration_review.php', ['planid' => $plan->id,
             'step' => in_array($plan->status, ['queued', 'running', 'partial', 'completed', 'cancelled'], true)
                 ? 'execute' : '']))->out(false)];
 }
 $data['hasactions'] = (bool)array_filter($data['records'], static fn($row) => $row['editurl'] || $row['candelete']);
-$PAGE->requires->js_call_amd('local_multipicker/administration', 'init');
+$PAGE->requires->js_call_amd('local_filebank/administration', 'init');
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_multipicker'));
-echo $PAGE->get_renderer('local_multipicker')->render(\local_multipicker\output\navigation::site('migration'));
-echo $OUTPUT->render_from_template('local_multipicker/local/migration/list', $data);
+echo $OUTPUT->heading(get_string('pluginname', 'local_filebank'));
+echo $PAGE->get_renderer('local_filebank')->render(\local_filebank\output\navigation::site('migration'));
+echo $OUTPUT->render_from_template('local_filebank/local/migration/list', $data);
 echo $OUTPUT->footer();

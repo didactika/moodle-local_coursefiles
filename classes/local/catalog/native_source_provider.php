@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,22 +15,27 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * MultiPicker native material import integration.
+ * FileBank native material import integration.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_multipicker\local\catalog;
+namespace local_filebank\local\catalog;
 
 /**
  * Adapters for core teaching resources, public activity introductions and assignment handouts.
  */
 final class native_source_provider implements source_provider {
-    /** @var string Activity type. */
+    /**
+     * @var string Activity type.
+     */
     private string $module;
-    /** @var array Declared public areas. */
+    /**
+     * @var array Declared public areas.
+     */
     private array $areas;
 
     /**
@@ -86,18 +91,19 @@ final class native_source_provider implements source_provider {
      * @return bool Public teaching material.
      */
     public function allows(\cm_info $cm, \stored_file $file): bool {
+
         global $DB, $CFG;
-        if (
-            $file->get_contextid() != $cm->context->id || $file->get_component() !== 'mod_' . $cm->modname
-                || $cm->modname !== $this->module || !in_array($file->get_filearea(), $this->areas, true)
-                || $file->is_directory() || $file->is_external_file()
-        ) {
+        if (!$this->owns_file($cm, $file)) {
             return false;
         }
+
         if ($this->module === 'book' && $file->get_filearea() === 'chapter') {
-            return $DB->record_exists('book_chapters', [
-                'id' => $file->get_itemid(), 'bookid' => $cm->instance, 'hidden' => 0,
-            ]);
+            return $DB->record_exists(
+                'book_chapters',
+                [
+                    'id' => $file->get_itemid(), 'bookid' => $cm->instance, 'hidden' => 0,
+                ]
+            );
         }
         if ($file->get_itemid() != 0) {
             return false;
@@ -144,5 +150,23 @@ final class native_source_provider implements source_provider {
             $file->get_filename()
         );
         return $info && $info->is_readable();
+    }
+
+    /**
+     * Check native context, component, area and storage ownership.
+     *
+     * @param \cm_info $cm Current source activity.
+     * @param \stored_file $file Candidate native file.
+     * @return bool Result.
+     */
+    private function owns_file(\cm_info $cm, \stored_file $file): bool {
+        if (
+            $file->get_contextid() != $cm->context->id || $file->get_component() !== 'mod_' . $cm->modname
+                || $cm->modname !== $this->module || !in_array($file->get_filearea(), $this->areas, true)
+                || $file->is_directory() || $file->is_external_file()
+        ) {
+            return false;
+        }
+        return true;
     }
 }

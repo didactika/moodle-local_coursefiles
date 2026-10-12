@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,27 +16,32 @@
 
 /**
  * Version round trips, retention, plan lifecycle and native capacity.
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker;
+namespace local_filebank;
 
-use local_multipicker\local\profile\profiles;
-use local_multipicker\local\profile\profile_history;
-use local_multipicker\local\profile\profile_bundle;
-use local_multipicker\local\migration\migration_planner;
-use local_multipicker\local\migration\migration_executor;
-use local_multipicker\local\migration\plan_history;
-use local_multipicker\local\selection\selection_limits;
+use local_filebank\local\profile\profiles;
+use local_filebank\local\profile\profile_history;
+use local_filebank\local\profile\profile_bundle;
+use local_filebank\local\migration\migration_planner;
+use local_filebank\local\migration\migration_executor;
+use local_filebank\local\migration\plan_history;
+use local_filebank\local\selection\selection_limits;
 
 /**
  * Exercises public service contracts with real Moodle files and profiles.
- * @covers \local_multipicker\local\profile\profile_history
- * @covers \local_multipicker\local\profile\profile_bundle
- * @covers \local_multipicker\local\migration\plan_history
- * @covers \local_multipicker\local\selection\selection_limits
+ * @covers \local_filebank\local\profile\profile_history
+ * @covers \local_filebank\local\profile\profile_bundle
+ * @covers \local_filebank\local\migration\plan_history
+ * @covers \local_filebank\local\selection\selection_limits
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\profile\profile_history::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\profile\profile_bundle::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\plan_history::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\selection\selection_limits::class)]
 final class profile_history_test extends \advanced_testcase {
     /**
      * Restore one identity and transport all retained versions with their dates.
@@ -45,26 +50,31 @@ final class profile_history_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $config = json_decode(file_get_contents(__DIR__ . '/../examples/institutional-profile.json'), true);
+        $config = $this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config();
         $id = profiles::save(json_encode($config));
-        $first = $DB->get_field('local_multipicker', 'activeid', ['id' => $id]);
-        $original = $DB->get_record('local_multipicker_revision', ['id' => $first]);
+        $first = $DB->get_field('local_filebank', 'activeid', ['id' => $id]);
+        $original = $DB->get_record('local_filebank_revision', ['id' => $first]);
         $config['name'] = 'Changed profile';
         profiles::save(json_encode($config), $id);
         $this->assertSame($id, profile_history::restore($id, $first));
-        $this->assertSame(1, $DB->count_records('local_multipicker'));
-        $this->assertSame(2, $DB->count_records('local_multipicker_revision', ['profileid' => $id]));
-        $this->assertEquals($first, $DB->get_field('local_multipicker', 'activeid', ['id' => $id]));
-        $this->assertNotSame('Changed profile', $DB->get_field('local_multipicker', 'name', ['id' => $id]));
-        $this->assertEquals($original, $DB->get_record('local_multipicker_revision', ['id' => $first]));
+        $this->assertSame(1, $DB->count_records('local_filebank'));
+        $this->assertSame(2, $DB->count_records('local_filebank_revision', ['profileid' => $id]));
+        $this->assertEquals($first, $DB->get_field('local_filebank', 'activeid', ['id' => $id]));
+        $this->assertNotSame('Changed profile', $DB->get_field('local_filebank', 'name', ['id' => $id]));
+        $this->assertEquals($original, $DB->get_record('local_filebank_revision', ['id' => $first]));
         profile_history::restore($id, $first);
-        $this->assertSame(2, $DB->count_records('local_multipicker_revision', ['profileid' => $id]));
-        $bundle = profile_bundle::export([$id]);
+        $this->assertSame(2, $DB->count_records('local_filebank_revision', ['profileid' => $id]));
+        $bundle = profile_bundle::export([$id], false);
         $document = json_decode($bundle, true);
         $this->assertSame(2, $document['version']);
         $imported = profile_bundle::import($bundle);
-        $copy = json_decode(profile_bundle::export($imported), true);
+        $copy = json_decode(profile_bundle::export($imported, false), true);
         $this->assertSame($document['profiles'], $copy['profiles']);
+        $legacy = $document;
+        $legacy['format'] = 'multipicker-profiles';
+        $legacyids = profile_bundle::import(json_encode($legacy));
+        $legacycopy = json_decode(profile_bundle::export($legacyids, false), true);
+        $this->assertSame($document['profiles'], $legacycopy['profiles']);
         $diff = array_filter(
             profile_history::compare(['name' => '<b>Old</b>', 'removed' => 1], ['name' => 'New']),
             static fn($row) => $row['changed']
@@ -83,18 +93,18 @@ final class profile_history_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         require_once(__DIR__ . '/../lib.php');
-        $config = file_get_contents(__DIR__ . '/../examples/institutional-profile.json');
+        $config = json_encode($this->getDataGenerator()->get_plugin_generator('local_filebank')->create_profile_config());
         $id = profiles::save($config);
         $args = ['context' => \context_system::instance(),
             'state' => json_encode(['ids' => [$id], 'action' => 'disable', 'sesskey' => sesskey()])];
-        $html = \local_multipicker_output_fragment_profiles($args);
-        $this->assertStringContainsString('data-multipicker-profile-state', $html);
-        $this->assertEquals(0, $DB->get_field('local_multipicker', 'enabled', ['id' => $id]));
-        $this->assertSame(1, $DB->count_records('local_multipicker_revision', ['profileid' => $id]));
+        $html = \local_filebank_output_fragment_profiles($args);
+        $this->assertStringContainsString('data-filebank-profile-state', $html);
+        $this->assertEquals(0, $DB->get_field('local_filebank', 'enabled', ['id' => $id]));
+        $this->assertSame(1, $DB->count_records('local_filebank_revision', ['profileid' => $id]));
         $args['state'] = json_encode(['ids' => [$id], 'action' => 'enable', 'sesskey' => 'invalid']);
         $this->expectException(\moodle_exception::class);
         $this->expectExceptionMessage(get_string('invalidsesskey', 'error'));
-        \local_multipicker_output_fragment_profiles($args);
+        \local_filebank_output_fragment_profiles($args);
     }
 
     /**
@@ -104,7 +114,7 @@ final class profile_history_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Pinned version']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         [, , $rules] = profiles::load($fixture['profileid']);
@@ -113,10 +123,10 @@ final class profile_history_test extends \advanced_testcase {
         profiles::save(json_encode($config), $fixture['profileid']);
         $config['name'] = 'Third name';
         profiles::save(json_encode($config), $fixture['profileid']);
-        set_config('versionretentionmax', 1, 'local_multipicker');
+        set_config('versionretentionmax', 1, 'local_filebank');
         $this->assertGreaterThanOrEqual(1, profile_history::clean(time()));
-        $this->assertTrue($DB->record_exists('local_multipicker_revision', ['id' => $plan->revisionid]));
-        $this->assertSame(2, $DB->count_records('local_multipicker_revision', ['profileid' => $fixture['profileid']]));
+        $this->assertTrue($DB->record_exists('local_filebank_revision', ['id' => $plan->revisionid]));
+        $this->assertSame(2, $DB->count_records('local_filebank_revision', ['profileid' => $fixture['profileid']]));
     }
 
     /**
@@ -126,7 +136,7 @@ final class profile_history_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
-        $fixture = $this->getDataGenerator()->get_plugin_generator('local_multipicker')
+        $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Safe removal']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
         $run = migration_executor::queue($plan->id, $plan->digest);
@@ -143,7 +153,7 @@ final class profile_history_test extends \advanced_testcase {
         $files = $DB->get_records_menu('files', ['component' => 'mod_folder'], 'id', 'id, contenthash');
         plan_history::delete($empty->id);
         plan_history::delete($plan->id);
-        $this->assertFalse($DB->record_exists('local_multipicker_plan', ['id' => $plan->id]));
+        $this->assertFalse($DB->record_exists('local_filebank_plan', ['id' => $plan->id]));
         $this->assertSame($files, $DB->get_records_menu('files', ['component' => 'mod_folder'], 'id', 'id, contenthash'));
     }
 
@@ -155,14 +165,17 @@ final class profile_history_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
         $draftid = file_get_unused_draft_itemid();
-        get_file_storage()->create_file_from_string(['contextid' => \context_user::instance($USER->id)->id,
-            'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid, 'filepath' => '/',
-            'filename' => 'existing.txt'], 'Existing material');
+        get_file_storage()->create_file_from_string(
+            ['contextid' => \context_user::instance($USER->id)->id,
+                'component' => 'user', 'filearea' => 'draft', 'itemid' => $draftid, 'filepath' => '/',
+                'filename' => 'existing.txt'],
+            'Existing material'
+        );
         $scope = ['draftid' => $draftid, 'limits' => ['maxfiles' => 2, 'selectionlimit' => 200]];
         $this->assertSame(1, selection_limits::capacity($scope));
         selection_limits::require_capacity($scope, ['file:first']);
         $this->expectException(\moodle_exception::class);
-        $this->expectExceptionMessage(get_string('selectionfull', 'local_multipicker'));
+        $this->expectExceptionMessage(get_string('selectionfull', 'local_filebank'));
         selection_limits::require_capacity($scope, ['file:first', 'file:second']);
     }
 }

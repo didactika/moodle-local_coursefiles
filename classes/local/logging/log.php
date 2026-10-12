@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,11 +17,12 @@
 /**
  * Structured actor and outcome log.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace local_multipicker\local\logging;
+namespace local_filebank\local\logging;
 
 /**
  * Records actions without credentials or binaries.
@@ -61,7 +62,7 @@ final class log {
         int $page = 0
     ): array {
         global $DB;
-        require_capability('local/multipicker:viewlog', \context_system::instance());
+        require_capability('local/filebank:viewlog', \context_system::instance());
         $limit = max(1, min(100, $limit));
         $where = ['1 = 1'];
         $params = [];
@@ -83,10 +84,10 @@ final class log {
             $where[] = 'timecreated < :untildate';
             $params['untildate'] = $until;
         }
-        $total = $DB->count_records_select('local_multipicker_log', implode(' AND ', $where), $params);
-        $page = \local_multipicker\output\pagination::clamp($total, $page, $limit);
+        $total = $DB->count_records_select('local_filebank_log', implode(' AND ', $where), $params);
+        $page = \local_filebank\output\pagination::clamp($total, $page, $limit);
         $records = array_values($DB->get_records_select(
-            'local_multipicker_log',
+            'local_filebank_log',
             implode(' AND ', $where),
             $params,
             'id DESC',
@@ -109,7 +110,7 @@ final class log {
      */
     public static function record(string $action, string $uuid, array $details): void {
         global $DB, $USER;
-        $DB->insert_record('local_multipicker_log', (object)[
+        $DB->insert_record('local_filebank_log', (object)[
             'userid' => (int)($USER->id ?? 0), 'action' => $action, 'entityuuid' => $uuid,
             'details' => json_encode($details), 'timecreated' => time(),
         ]);

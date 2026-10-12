@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,18 +17,19 @@
 /**
  * Scheduled catalog task registration.
  *
- * @package local_multipicker
- * @copyright 2026 MultiPicker contributors
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package local_filebank
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 $tasks = [
     [
-        'classname' => '\local_multipicker\task\clean_history',
+        'classname' => '\local_filebank\task\clean_history',
         'blocking' => 0, 'minute' => 'R', 'hour' => '*', 'day' => '*', 'month' => '*', 'dayofweek' => '*',
     ],
     [
-        'classname' => '\local_multipicker\task\reconcile_catalog',
+        'classname' => '\local_filebank\task\reconcile_catalog',
         'blocking' => 0, 'minute' => '*/5', 'hour' => '*', 'day' => '*', 'month' => '*', 'dayofweek' => '*',
     ],
 ];
