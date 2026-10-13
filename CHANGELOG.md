@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- Show how many of the filters hidden under "More filters" are applied, as a count on the corner of the funnel icon, the same one the other plugins use.
+
 ## [4.0.1] - 2026-10-13
 
 - Number the version of the plugin with the lowest Moodle version of its line as a suffix, as a numeric string, so each maintenance line has its own and a newer line always has the higher one.
