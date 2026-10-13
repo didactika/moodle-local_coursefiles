@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.3.1] - 2026-10-13
+
+- Number the version of the plugin with the lowest Moodle version of its line as a suffix, as a numeric string, so each maintenance line has its own and a newer line always has the higher one.
+- Publish the releases automatically from `main` and the `MOODLE_*_STABLE` branches, keeping the latest release on `main`.
+- Test the two ends of the supported range and the LTS releases between them, and cancel a run that a newer push supersedes.
+
 ## [5.3.0] - 2026-10-11
 
 - Restore the native picker header, size and mobile layout when switching away from FileBank.
