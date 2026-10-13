@@ -191,6 +191,7 @@ $string['filterkey'] = 'Filter key';
 $string['filterlabel'] = 'Filter label';
 $string['filterloading'] = 'Updating materials…';
 $string['filtermaterials'] = 'Filter materials';
+$string['filtersapplied'] = '{$a} filters applied';
 $string['filteroptional'] = 'Allow courses without this value';
 $string['filtersjson'] = 'Search filters';
 $string['filtersjson_help'] = 'Add up to nine search filters. Each row defines a unique key, a named capture, its visible label and whether a missing value is allowed. Labels use Moodle text formatting.';
