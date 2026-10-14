@@ -39,8 +39,6 @@ require_once(__DIR__ . '/fixtures/draft_scope_fixture.php');
  * @covers \local_filebank\external\get_import_status
  * @covers \local_filebank\local\selection\import_status
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\external\get_import_status::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\selection\import_status::class)]
 final class import_status_test extends draft_scope_fixture {
     /**
      * Nothing is ready before the batch has been imported.
@@ -48,7 +46,7 @@ final class import_status_test extends draft_scope_fixture {
     public function test_receipt_is_not_ready_before_the_import(): void {
         [$form, , , , $context] = $this->fixture();
         $token = $form->control()->open_scope($context);
-        $result = external_api::clean_returnvalue(get_import_status::execute_returns(), get_import_status::execute($token));
+        $result = get_import_status::clean_returnvalue(get_import_status::execute_returns(), get_import_status::execute($token));
         $this->assertFalse($result['ready']);
         $this->assertSame([], $result['files']);
     }
@@ -68,7 +66,7 @@ final class import_status_test extends draft_scope_fixture {
         draft_store::update($token, static function (array &$stored) use ($file): void {
             $stored['imported'] = [['filepath' => '/', 'filename' => 'receipt.txt', 'contenthash' => $file->get_contenthash()]];
         });
-        $result = external_api::clean_returnvalue(get_import_status::execute_returns(), get_import_status::execute($token));
+        $result = get_import_status::clean_returnvalue(get_import_status::execute_returns(), get_import_status::execute($token));
         $this->assertTrue($result['ready']);
         $this->assertSame('receipt.txt', $result['files'][0]['name']);
         $this->assertStringContainsString('/draftfile.php/', $result['files'][0]['url']);
