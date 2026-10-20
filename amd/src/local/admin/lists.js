@@ -70,7 +70,10 @@ export const swapList = async(origin, url) => {
             const select = pager.querySelector('select');
             const nextSelect = nextPager.querySelector('select');
             if (select && nextSelect) {
-                select.innerHTML = nextSelect.innerHTML;
+                // Only when they changed: replacing the options of a select that someone is using makes them stale.
+                if (select.innerHTML !== nextSelect.innerHTML) {
+                    select.innerHTML = nextSelect.innerHTML;
+                }
                 select.value = nextSelect.value;
                 select.dataset.url = nextSelect.dataset.url || '';
             }
