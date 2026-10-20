@@ -155,8 +155,13 @@ final class profile_form extends \moodleform {
             $form->setType($name, PARAM_RAW_TRIMMED);
             $form->hideIf($name, 'editmode', 'eq', 'advanced');
         }
-        $form->addElement('select', 'categoryids', get_string('categories'), \core_course_category::make_categories_list());
-        $form->getElement('categoryids')->setMultiple(true);
+        $form->addElement(
+            'autocomplete',
+            'categoryids',
+            get_string('categories'),
+            \core_course_category::make_categories_list(),
+            ['multiple' => true]
+        );
         $form->hideIf('categoryids', 'editmode', 'eq', 'advanced');
         $form->addElement('hidden', 'guidedsettings', 1);
         $form->setType('guidedsettings', PARAM_BOOL);

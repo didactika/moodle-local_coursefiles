@@ -19,7 +19,7 @@
         <div class="fbm-filterpanel">
             <div class="fbm-filter-head">
                 <h3 class="fbm-filter-heading">{{#str}}filters, core{{/str}}</h3>
-                <a class="btn btn-link btn-icon" href="{{reseturl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
+                {{#advancedcount}}<a class="btn btn-link btn-icon" href="{{reseturl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>{{/advancedcount}}{{^advancedcount}}<span class="btn btn-link btn-icon disabled" aria-disabled="true">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></span>{{/advancedcount}}
             </div>
             {{#multipleprofiles}}<div class="fbm-field">
                 <label for="cb-profile" class="form-label">{{#str}}profile, local_filebank{{/str}}</label>

@@ -2712,6 +2712,31 @@ body.filebank-embedded,
     opacity: 0.75;
 }
 
+.filebank-migration .fbm-filter-head .btn-icon,
+.filebank-ui .fbm-filter-head .btn-icon {
+    color: var(--fbm-primary);
+    text-decoration: none;
+}
+
+.filebank-migration .fbm-filter-head .btn-icon:hover:not(.disabled):not(:disabled),
+.filebank-migration .fbm-filter-head .btn-icon:focus-visible:not(.disabled):not(:disabled),
+.filebank-ui .fbm-filter-head .btn-icon:hover:not(.disabled):not(:disabled),
+.filebank-ui .fbm-filter-head .btn-icon:focus-visible:not(.disabled):not(:disabled) {
+    color: var(--fbm-primary);
+    text-decoration: none;
+}
+
+.filebank-migration .fbm-filter-head .btn-icon.disabled,
+.filebank-migration .fbm-filter-head .btn-icon:disabled,
+.filebank-ui .fbm-filter-head .btn-icon.disabled,
+.filebank-ui .fbm-filter-head .btn-icon:disabled {
+    color: var(--fbm-muted);
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    text-decoration: none;
+}
+
 .filebank-migration .fbm-filter-head,
 .filebank-ui .fbm-filter-head {
     display: flex;
@@ -2916,6 +2941,15 @@ body.filebank-embedded,
     border-radius: var(--fbm-radius);
     background-color: var(--fbm-bg);
     box-shadow: var(--fbm-shadow);
+}
+
+.filebank-migration.filebank-panel .mform .felement > input.form-control,
+.filebank-migration.filebank-panel .mform .felement > .form-autocomplete-selection,
+.filebank-migration.filebank-panel .mform .felement .form-autocomplete-input,
+.filebank-ui.filebank-panel .mform .felement > input.form-control,
+.filebank-ui.filebank-panel .mform .felement > .form-autocomplete-selection,
+.filebank-ui.filebank-panel .mform .felement .form-autocomplete-input {
+    max-width: 30rem;
 }
 
 .filebank-migration .fbm-segment,
@@ -3192,6 +3226,7 @@ body.filebank-embedded,
 
 .filebank-migration .fbm-wizard-scroll,
 .filebank-ui .fbm-wizard-scroll {
+    padding: 0.35rem;
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
@@ -3207,7 +3242,7 @@ body.filebank-embedded,
     .filebank-migration .fbm-stepper,
     .filebank-ui .fbm-stepper {
         position: static;
-        padding-bottom: 3rem;
+        padding-bottom: 12rem;
     }
 
     .filebank-migration .fbm-wizard-panel,

@@ -1549,6 +1549,26 @@
         }
     }
 
+    .fbm-filter-head .btn-icon {
+        color: var(--fbm-primary);
+        text-decoration: none;
+
+        &:hover:not(.disabled):not(:disabled),
+        &:focus-visible:not(.disabled):not(:disabled) {
+            color: var(--fbm-primary);
+            text-decoration: none;
+        }
+
+        &.disabled,
+        &:disabled {
+            color: var(--fbm-muted);
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            text-decoration: none;
+        }
+    }
+
     .fbm-filter-head {
         display: flex;
         align-items: center;
@@ -1722,6 +1742,13 @@
 
     // The forms of Moodle that the plugin shows inside its own pages: the profile editor and the import.
     &.filebank-panel {
+        // Text fields are as wide as what goes in them, not the whole form; textareas and the editors keep the full width.
+        .mform .felement > input.form-control,
+        .mform .felement > .form-autocomplete-selection,
+        .mform .felement .form-autocomplete-input {
+            max-width: 30rem;
+        }
+
         padding: 1.25rem 1.5rem;
         border: 1px solid var(--fbm-border);
         border-radius: var(--fbm-radius);
@@ -1965,6 +1992,7 @@
     }
 
     .fbm-wizard-scroll {
+        padding: 0.35rem;
         flex: 1 1 auto;
         min-height: 0;
         overflow-y: auto;
@@ -1979,7 +2007,7 @@
 
         .fbm-stepper {
             position: static;
-            padding-bottom: 3rem;
+            padding-bottom: 12rem;
         }
 
         .fbm-wizard-panel {
