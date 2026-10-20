@@ -25,7 +25,7 @@
             <div class="fbm-filterpanel">
                 <div class="fbm-filter-head">
                     <h3 class="fbm-filter-heading">{{#str}}filters, core{{/str}}</h3>
-                    <a class="btn btn-link btn-icon" href="{{clearurl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
+                    <span class="fbm-filter-reset" data-filebank-refresh="log-reset">{{#hasactive}}<a class="btn btn-link btn-icon" href="{{clearurl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>{{/hasactive}}{{^hasactive}}<span class="btn btn-link btn-icon disabled" aria-disabled="true">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></span>{{/hasactive}}</span>
                 </div>
                 <fieldset class="fbm-filter-group">
                     <legend class="fbm-filter-title"><label for="filebank-log-action" class="m-0">{{#str}}logaction, local_filebank{{/str}}</label></legend>

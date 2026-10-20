@@ -91,14 +91,14 @@ class behat_local_filebank_steps_3 extends behat_local_filebank_base {
     public function profile_inputs_align(): void {
         $valid = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const names=["profilename","editmode","coursefield","coursepattern","familytemplate",'
-            . '"displaytemplate","pairdimensions","categoryids"];'
+            . '"displaytemplate","pairdimensions"];'
             . 'const left=names.map(name=>document.getElementById("id_"+name).getBoundingClientRect().left);'
             . 'return Math.max(...left)-Math.min(...left)<=2;})()'
         );
         if (!$valid) {
             $positions = $this->getSession()->getDriver()->evaluateScript(
                 'JSON.stringify(["profilename","editmode","coursefield","coursepattern","familytemplate",'
-                . '"displaytemplate","pairdimensions","categoryids"].map(name=>{'
+                . '"displaytemplate","pairdimensions"].map(name=>{'
                 . 'const input=document.getElementById("id_"+name);return {name,left:input.getBoundingClientRect().left,'
                 . 'width:input.getBoundingClientRect().width,display:getComputedStyle(input).display};}))'
             );

@@ -29,6 +29,7 @@ $string['addfilter'] = 'Add a filter';
 $string['addrow'] = 'Add row';
 $string['advancedmode'] = 'Advanced rules';
 $string['advancedprofilerequired'] = 'This profile has multiple parsing rules. Use the advanced editor to preserve them.';
+$string['allcategories'] = 'All categories';
 $string['allcourses'] = 'All courses';
 $string['allmodules'] = 'All supported activities';
 $string['alltypes'] = 'All file types';
