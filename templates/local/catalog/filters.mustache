@@ -3,57 +3,52 @@
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
     @template local_filebank/local/catalog/filters
-    Compact native GET filters with optional advanced fields.
+    The search of the catalog, which applies as it is typed, and the other filters in a drop-down that applies them as they are set.
     Example context (json): {"advancedcount":0,"courseid":2,"profiles":[],"profileid":1,"filters":{},"modules":[],"filetypes":[],"action":"/local/filebank/course/index.php","actionurl":"/local/filebank/course/index.php"}
 }}
-<form method="get" action="{{actionurl}}" class="fbm-filters fbm-filters-catalog" aria-label="{{#str}}filtermaterials, local_filebank{{/str}}">
+<form method="get" action="{{actionurl}}" class="fbm-toolbar" aria-label="{{#str}}filtermaterials, local_filebank{{/str}}" data-filebank-live-filters>
     <input type="hidden" name="courseid" value="{{courseid}}">
     {{^multipleprofiles}}<input type="hidden" name="profileid" value="{{profileid}}">{{/multipleprofiles}}
-    <div class="fbm-field fbm-field-wide">
-        <label for="cb-query" class="fbm-label">{{#str}}filenamefilter, local_filebank{{/str}}</label> {{{filterhelp}}}
-        <input type="search" class="fbm-input" name="q" id="cb-query" value="{{filters.q}}">
+    <div class="fbm-search">
+        <label for="cb-query" class="filebank-visually-hidden">{{#str}}filenamefilter, local_filebank{{/str}}</label>
+        <span class="fbm-search-icon">{{#pix}}a/search, core{{/pix}}</span>
+        <input type="search" class="form-control rounded-pill" name="q" id="cb-query" value="{{filters.q}}" aria-label="{{#str}}filenamefilter, local_filebank{{/str}}" placeholder="{{#str}}filenamefilter, local_filebank{{/str}}" autocomplete="off" data-filebank-live-text>
     </div>
-    <div class="fbm-field">
-        <label for="cb-edition" class="fbm-label">{{#str}}editionfilter, local_filebank{{/str}}</label> {{{filterhelp}}}
-        <input class="fbm-input" name="edition" id="cb-edition" value="{{filters.edition}}">
-    </div>
-    <details class="fbm-filters-more" {{#advancedfilters}}open{{/advancedfilters}}>
-        <summary>
-            <span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>
-            <span class="filebank-filter-glyph" aria-hidden="true">
-                {{#pix}}i/filter, core{{/pix}}
-                {{#advancedcount}}<span class="filebank-count-badge" data-region="filters-count">{{advancedcount}}</span>{{/advancedcount}}
-            </span>
-            {{#str}}morefilters, local_filebank{{/str}}
-            {{#advancedcount}}<span class="sr-only visually-hidden">{{#str}}filtersapplied, local_filebank, {{advancedcount}}{{/str}}</span>{{/advancedcount}}
-        </summary>
-        <div class="fbm-filters-grid">
+    <details class="fbm-filterbox fbm-filter-end"{{#advancedcount}} data-active{{/advancedcount}}>
+        <summary class="btn btn-outline-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}{{#advancedcount}}<span class="badge rounded-pill fbm-count" data-region="filters-count">{{advancedcount}}</span><span class="filebank-visually-hidden">{{#str}}filtersapplied, local_filebank, {{advancedcount}}{{/str}}</span>{{/advancedcount}}</summary>
+        <div class="fbm-filterpanel">
+            <div class="fbm-filter-head">
+                <h3 class="fbm-filter-heading">{{#str}}filters, core{{/str}}</h3>
+                <a class="btn btn-outline-secondary fbm-iconpill" href="{{reseturl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
+            </div>
             {{#multipleprofiles}}<div class="fbm-field">
-                <label for="cb-profile" class="fbm-label">{{#str}}profile, local_filebank{{/str}}</label> {{{filterhelp}}}
-                <select class="fbm-select fbm-select-fill" name="profileid" id="cb-profile">{{#profiles}}
+                <label for="cb-profile" class="form-label">{{#str}}profile, local_filebank{{/str}}</label>
+                <select class="form-select w-100" name="profileid" id="cb-profile">{{#profiles}}
                     <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                 {{/profiles}}</select>
             </div>{{/multipleprofiles}}
             <div class="fbm-field">
-                <label for="cb-course" class="fbm-label">{{#str}}shortnamecourse, core{{/str}}</label> {{{filterhelp}}}
-                <input class="fbm-input" name="shortname" id="cb-course" value="{{filters.shortname}}">
+                <label for="cb-edition" class="form-label">{{#str}}editionfilter, local_filebank{{/str}}</label>
+                <input class="form-control" name="edition" id="cb-edition" value="{{filters.edition}}" data-filebank-live-text>
             </div>
             <div class="fbm-field">
-                <label for="cb-module" class="fbm-label">{{#str}}modulefilter, local_filebank{{/str}}</label> {{{filterhelp}}}
-                <select class="fbm-select fbm-select-fill" name="module" id="cb-module">{{#modules}}
+                <label for="cb-course" class="form-label">{{#str}}shortnamecourse, core{{/str}}</label>
+                <input class="form-control" name="shortname" id="cb-course" value="{{filters.shortname}}" data-filebank-live-text>
+            </div>
+            <div class="fbm-field">
+                <label for="cb-module" class="form-label">{{#str}}modulefilter, local_filebank{{/str}}</label>
+                <select class="form-select w-100" name="module" id="cb-module">{{#modules}}
                     <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                 {{/modules}}</select>
             </div>
             <div class="fbm-field">
-                <label for="cb-filetype" class="fbm-label">{{#str}}filetypefilter, local_filebank{{/str}}</label> {{{filterhelp}}}
-                <select class="fbm-select fbm-select-fill" name="mimetype" id="cb-filetype">{{#filetypes}}
+                <label for="cb-filetype" class="form-label">{{#str}}filetypefilter, local_filebank{{/str}}</label>
+                <select class="form-select w-100" name="mimetype" id="cb-filetype">{{#filetypes}}
                     <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
                 {{/filetypes}}</select>
             </div>
+            <noscript><button class="btn btn-primary" type="submit">{{#str}}search, core{{/str}}</button></noscript>
         </div>
     </details>
-    <div class="fbm-filters-actions">
-        <button class="fbm-btn fbm-btn-primary" type="submit">{{#str}}search, core{{/str}}</button>
-        <a class="fbm-btn" href="{{reseturl}}">{{#str}}clearfilters, local_filebank{{/str}}</a>
-    </div>
+    {{{filterhelp}}}
 </form>

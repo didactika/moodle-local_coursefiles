@@ -9,6 +9,7 @@
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+import {badgeClasses} from '../../lib/tones';
 import Icon from './Icon';
 import type {Tone} from './StatTile';
 
@@ -55,7 +56,7 @@ interface StatusBadgeProps {
 
 const StatusBadge = ({status, label}: StatusBadgeProps) => {
     const look = lookOf(status);
-    return <span className={`fbm-badge tone-${look.tone}`}>
+    return <span className={badgeClasses(look.tone)}>
         <Icon name={look.icon} gap spin={status === 'running'} />{label}
     </span>;
 };

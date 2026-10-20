@@ -7,14 +7,14 @@
     Context: filename, size, origincount, occurrences.
     Example context (json): {"filename":"slides.pdf","size":"120 KB","origincount":2,"occurrences":[]}
 }}
-<article class="fbm-panel filebank-material" data-region="filebank-material">
-    <header class="fbm-panel-head">
-        <h3 class="fbm-panel-title fbm-break">{{#pix}}i/files, core{{/pix}} {{filename}}</h3>
-        <span class="fbm-small fbm-muted">{{size}} · {{#str}}origincount, local_filebank, {{origincount}}{{/str}}</span>
+<article class="card filebank-material" data-region="filebank-material">
+    <header class="card-header">
+        <h3 class="card-title text-break">{{#pix}}i/files, core{{/pix}} {{filename}}</h3>
+        <span class="small text-muted">{{size}} · {{#str}}origincount, local_filebank, {{origincount}}{{/str}}</span>
     </header>
     <div class="fbm-panel-flush">
-        <div class="fbm-table-wrap fbm-flush">
-            <table class="fbm-table">
+        <div class="table-responsive fbm-flush">
+            <table class="table table-hover">
                 <caption class="filebank-visually-hidden">{{#str}}originscaption, local_filebank, {{filename}}{{/str}}</caption>
                 <thead><tr>
                     <th scope="col">{{#str}}shortnamecourse, core{{/str}}</th>
@@ -25,8 +25,8 @@
                 <tbody>{{#occurrences}}<tr>
                     <td>{{#courseurl}}<a href="{{courseurl}}">{{{shortname}}}</a>{{/courseurl}}{{^courseurl}}{{{shortname}}}{{/courseurl}}</td>
                     <td>{{editionlabel}}</td>
-                    <td>{{{modulename}}}<div class="fbm-small fbm-muted">{{filepath}}</div></td>
-                    <td>{{authorlabel}}<div class="fbm-small fbm-muted">{{license}}</div></td>
+                    <td>{{{modulename}}}<div class="small text-muted">{{filepath}}</div></td>
+                    <td>{{authorlabel}}<div class="small text-muted">{{license}}</div></td>
                 </tr>{{/occurrences}}</tbody>
             </table>
         </div>

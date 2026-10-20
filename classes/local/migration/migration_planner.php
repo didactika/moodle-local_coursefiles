@@ -39,7 +39,7 @@ final class migration_planner {
      * @param string $sourceedition Source label.
      * @param string $targetedition Target label.
      * @param string $scopekey Filter dimension used for the edition-like labels.
-     * @param array $options Reviewed migration, filters, placements, exclusions and file choices.
+     * @param array $options Reviewed migration, filters and exclusions.
      * @return \stdClass Stored plan.
      */
     public static function preview(
@@ -75,8 +75,7 @@ final class migration_planner {
             $document['scopekey'] ?? 'edition',
             [
                 'migration' => $document['migration'], 'filters' => $document['filters'] ?? null,
-                'placements' => $document['placements'] ?? [], 'excluded' => $document['excluded'] ?? [],
-                'filechoices' => $document['filechoices'] ?? [], 'ignoredissues' => $document['ignoredissues'] ?? [],
+                'excluded' => $document['excluded'] ?? [],
             ]
         );
         return planning_store::save(
@@ -96,7 +95,7 @@ final class migration_planner {
      * @param string $sourceedition Source label.
      * @param string $targetedition Target label.
      * @param string $scopekey Filter dimension used for the edition-like labels.
-     * @param array $options Reviewed migration, filters, placements, exclusions and file choices.
+     * @param array $options Reviewed migration, filters and exclusions.
      * @return array What it would copy, overwrite, skip and ask about, and what it leaves out.
      */
     public static function check(
@@ -117,7 +116,7 @@ final class migration_planner {
      * @param string $sourceedition Source label.
      * @param string $targetedition Target label.
      * @param string $scopekey Filter dimension used for the edition-like labels.
-     * @param array $options Reviewed migration, filters, placements, exclusions and file choices.
+     * @param array $options Reviewed migration, filters and exclusions.
      * @return array The revision, the document of the migration, its operations and the destinations to create.
      */
     public static function compute(
@@ -131,32 +130,23 @@ final class migration_planner {
         [$profile, $revision, $rules] = profiles::load($profileid);
         $scopecapture = $scopekey !== '' ? course_scope::capture($rules, $scopekey) : '';
         $config = $options['migration'] ?? $rules->get_config()['migration'] ?? [];
-        $placements = $options['placements'] ?? [];
         $excluded = $options['excluded'] ?? [];
-        $ignoredissues = $options['ignoredissues'] ?? [];
-        $filechoices = $options['filechoices'] ?? [];
         $filters = migration_pairs::filters($options['filters'] ?? null, $rules->filter_definitions());
         if ($filters === null && ($sourceedition === '' || $targetedition === '' || $sourceedition === $targetedition)) {
             throw new \moodle_exception('layoutrequired', 'local_filebank');
         }
         $pairs = migration_pairs::collect($revision, $rules, $scopekey, $scopecapture, $sourceedition, $targetedition, $filters);
         $operations = [];
-        $issues = [];
         $creations = [];
         $notes = new migration_notes();
-        $request = compact('profileid', 'config', 'placements', 'filechoices', 'excluded', 'notes');
+        $request = compact('profileid', 'config', 'excluded', 'notes');
         $request['loaded'] = [$profile, $revision, $rules];
         foreach ($pairs as $pair) {
-            planning_materials::pair($pair, $request, $operations, $issues, $creations);
+            planning_materials::pair($pair, $request, $operations, $creations);
         }
-        $issues = array_values(array_filter(
-            $issues,
-            static fn($issue) => !in_array(hash('sha256', json_encode($issue)), $ignoredissues, true)
-        ));
         $document = ['sourceedition' => $sourceedition, 'targetedition' => $targetedition, 'scopekey' => $scopekey,
             'layoutconfirmed' => true, 'migration' => $config, 'filters' => $filters,
-            'placements' => $placements, 'excluded' => $excluded, 'ignoredissues' => $ignoredissues,
-            'filechoices' => $filechoices, 'issues' => $issues, 'notes' => $notes->counts(),
+            'excluded' => $excluded, 'notes' => $notes->counts(),
             'operationcount' => count($operations)];
         return ['profile' => $profile, 'revision' => $revision, 'document' => $document,
             'operations' => $operations, 'creations' => $creations];

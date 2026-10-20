@@ -48,6 +48,9 @@ final class migration_summary {
             $courses[$operation['snapshot']['sourcecourse']] = true;
             $targets[$operation['snapshot']['target']['courseid']] = true;
             self::count($summary, $operation['decision'], (bool) $operation['included']);
+            if (!empty($operation['snapshot']['different'])) {
+                $summary['different']++;
+            }
         }
         return self::finish($summary, $document, count($folders), count($courses), count($targets));
     }
@@ -93,8 +96,8 @@ final class migration_summary {
      * @return array The counters, all at zero.
      */
     private static function empty(): array {
-        return ['files' => 0, 'tocopy' => 0, 'tooverwrite' => 0, 'existing' => 0, 'conflicts' => 0, 'skipped' => 0,
-            'included' => 0];
+        return ['files' => 0, 'tocopy' => 0, 'tooverwrite' => 0, 'existing' => 0, 'skipped' => 0,
+            'included' => 0, 'different' => 0];
     }
 
     /**
@@ -112,8 +115,6 @@ final class migration_summary {
         }
         if (in_array($decision, ['skip_identical', 'skip_content'], true)) {
             $summary['existing'] += $number;
-        } else if (str_starts_with($decision, 'blocked_')) {
-            $summary['conflicts'] += $number;
         } else if ($included && $decision === 'overwrite') {
             $summary['tooverwrite'] += $number;
         } else if ($included && $decision === 'copy') {
@@ -134,12 +135,10 @@ final class migration_summary {
      * @return array The counters.
      */
     private static function finish(array $summary, array $document, int $folders, int $courses, int $targets): array {
-        $open = array_filter($document['issues'] ?? [], static fn(array $issue): bool => !empty($issue['reason']));
         return $summary + [
             'folders' => $folders,
             'sourcecourses' => $courses,
             'targetcourses' => $targets,
-            'openissues' => count($open),
             'notes' => $document['notes'] ?? [],
             'haswork' => $summary['tocopy'] + $summary['tooverwrite'] > 0,
         ];

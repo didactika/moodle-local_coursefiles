@@ -974,32 +974,19 @@ body.filebank-embedded,
     min-height: 20rem;
 }
 
-.filebank-migration .fbm-sr,
-.filebank-ui .fbm-sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+.filebank-migration .font-monospace,
+.filebank-ui .font-monospace {
+    font-family: var(--bs-font-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace);
 }
 
-.filebank-migration .fbm-muted,
-.filebank-ui .fbm-muted {
+.filebank-migration .text-muted,
+.filebank-ui .text-muted {
     color: var(--fbm-muted);
 }
 
-.filebank-migration .fbm-small,
-.filebank-ui .fbm-small {
+.filebank-migration .small,
+.filebank-ui .small {
     font-size: 0.8125rem;
-}
-
-.filebank-migration .fbm-block,
-.filebank-ui .fbm-block {
-    display: block;
 }
 
 .filebank-migration .fbm-gap,
@@ -1007,24 +994,24 @@ body.filebank-embedded,
     margin-inline-end: 0.4rem;
 }
 
-.filebank-migration .fbm-h2,
-.filebank-ui .fbm-h2 {
+.filebank-migration .h2,
+.filebank-ui .h2 {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 650;
     line-height: 1.25;
 }
 
-.filebank-migration .fbm-h4,
-.filebank-ui .fbm-h4 {
+.filebank-migration .h4,
+.filebank-ui .h4 {
     margin: 0;
     font-size: 1.0625rem;
     font-weight: 650;
     line-height: 1.3;
 }
 
-.filebank-migration .fbm-btn,
-.filebank-ui .fbm-btn {
+.filebank-migration .btn,
+.filebank-ui .btn {
     --fbm-tone: var(--fbm-text);
     display: inline-flex;
     align-items: center;
@@ -1045,105 +1032,106 @@ body.filebank-embedded,
     transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
-.filebank-migration .fbm-btn:hover:not(:disabled),
-.filebank-migration .fbm-btn:focus-visible:not(:disabled),
-.filebank-ui .fbm-btn:hover:not(:disabled),
-.filebank-ui .fbm-btn:focus-visible:not(:disabled) {
+.filebank-migration .btn:hover:not(:disabled),
+.filebank-migration .btn:focus-visible:not(:disabled),
+.filebank-ui .btn:hover:not(:disabled),
+.filebank-ui .btn:focus-visible:not(:disabled) {
     border-color: var(--fbm-tone);
     background-color: var(--fbm-surface);
     color: var(--fbm-tone);
     text-decoration: none;
 }
 
-.filebank-migration .fbm-btn:focus-visible,
-.filebank-ui .fbm-btn:focus-visible {
+.filebank-migration .btn:focus-visible,
+.filebank-ui .btn:focus-visible {
     outline: 2px solid var(--fbm-primary);
     outline-offset: 2px;
 }
 
-.filebank-migration .fbm-btn:active:not(:disabled),
-.filebank-ui .fbm-btn:active:not(:disabled) {
+.filebank-migration .btn:active:not(:disabled),
+.filebank-ui .btn:active:not(:disabled) {
     transform: translateY(1px);
 }
 
-.filebank-migration .fbm-btn:disabled,
-.filebank-ui .fbm-btn:disabled {
+.filebank-migration .btn:disabled,
+.filebank-ui .btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
 }
 
-.filebank-migration .fbm-btn-primary,
-.filebank-migration .fbm-btn-success,
-.filebank-migration .fbm-btn-danger,
-.filebank-migration .fbm-btn-warning,
-.filebank-ui .fbm-btn-primary,
-.filebank-ui .fbm-btn-success,
-.filebank-ui .fbm-btn-danger,
-.filebank-ui .fbm-btn-warning {
+.filebank-migration .btn-primary,
+.filebank-migration .btn-success,
+.filebank-migration .btn-danger,
+.filebank-migration .btn-warning,
+.filebank-ui .btn-primary,
+.filebank-ui .btn-success,
+.filebank-ui .btn-danger,
+.filebank-ui .btn-warning {
     border-color: transparent;
     background-color: var(--fbm-solid);
     color: #fff;
 }
 
-.filebank-migration .fbm-btn-primary:hover:not(:disabled),
-.filebank-migration .fbm-btn-primary:focus-visible:not(:disabled),
-.filebank-migration .fbm-btn-success:hover:not(:disabled),
-.filebank-migration .fbm-btn-success:focus-visible:not(:disabled),
-.filebank-migration .fbm-btn-danger:hover:not(:disabled),
-.filebank-migration .fbm-btn-danger:focus-visible:not(:disabled),
-.filebank-migration .fbm-btn-warning:hover:not(:disabled),
-.filebank-migration .fbm-btn-warning:focus-visible:not(:disabled),
-.filebank-ui .fbm-btn-primary:hover:not(:disabled),
-.filebank-ui .fbm-btn-primary:focus-visible:not(:disabled),
-.filebank-ui .fbm-btn-success:hover:not(:disabled),
-.filebank-ui .fbm-btn-success:focus-visible:not(:disabled),
-.filebank-ui .fbm-btn-danger:hover:not(:disabled),
-.filebank-ui .fbm-btn-danger:focus-visible:not(:disabled),
-.filebank-ui .fbm-btn-warning:hover:not(:disabled),
-.filebank-ui .fbm-btn-warning:focus-visible:not(:disabled) {
+.filebank-migration .btn-primary:hover:not(:disabled),
+.filebank-migration .btn-primary:focus-visible:not(:disabled),
+.filebank-migration .btn-success:hover:not(:disabled),
+.filebank-migration .btn-success:focus-visible:not(:disabled),
+.filebank-migration .btn-danger:hover:not(:disabled),
+.filebank-migration .btn-danger:focus-visible:not(:disabled),
+.filebank-migration .btn-warning:hover:not(:disabled),
+.filebank-migration .btn-warning:focus-visible:not(:disabled),
+.filebank-ui .btn-primary:hover:not(:disabled),
+.filebank-ui .btn-primary:focus-visible:not(:disabled),
+.filebank-ui .btn-success:hover:not(:disabled),
+.filebank-ui .btn-success:focus-visible:not(:disabled),
+.filebank-ui .btn-danger:hover:not(:disabled),
+.filebank-ui .btn-danger:focus-visible:not(:disabled),
+.filebank-ui .btn-warning:hover:not(:disabled),
+.filebank-ui .btn-warning:focus-visible:not(:disabled) {
     border-color: transparent;
     background-color: var(--fbm-solid);
     color: #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 0 0 99px rgba(0, 0, 0, 0.12);
 }
 
-.filebank-migration .fbm-btn-primary,
-.filebank-ui .fbm-btn-primary {
+.filebank-migration .btn-primary,
+.filebank-ui .btn-primary {
     --fbm-solid: var(--fbm-primary);
 }
 
-.filebank-migration .fbm-btn-success,
-.filebank-ui .fbm-btn-success {
+.filebank-migration .btn-success,
+.filebank-ui .btn-success {
     --fbm-solid: var(--fbm-success);
 }
 
-.filebank-migration .fbm-btn-danger,
-.filebank-ui .fbm-btn-danger {
+.filebank-migration .btn-danger,
+.filebank-ui .btn-danger {
     --fbm-solid: var(--fbm-danger);
 }
 
-.filebank-migration .fbm-btn-warning,
-.filebank-ui .fbm-btn-warning {
+.filebank-migration .btn-warning,
+.filebank-ui .btn-warning {
     --fbm-solid: #b26a00;
 }
 
-.filebank-migration .fbm-btn-small,
-.filebank-ui .fbm-btn-small {
+.filebank-migration .btn-sm,
+.filebank-ui .btn-sm {
     min-height: 2rem;
     padding: 0.2rem 0.7rem;
     font-size: 0.8125rem;
 }
 
-.filebank-migration .fbm-btn-large,
-.filebank-ui .fbm-btn-large {
+.filebank-migration .btn-lg,
+.filebank-ui .btn-lg {
     min-height: 2.875rem;
     padding: 0.55rem 1.4rem;
     font-size: 1rem;
 }
 
-.filebank-migration .fbm-iconbtn,
-.filebank-ui .fbm-iconbtn {
+.filebank-migration .btn-icon,
+.filebank-ui .btn-icon {
     display: inline-flex;
+    min-height: 0;
     align-items: center;
     justify-content: center;
     width: 2.125rem;
@@ -1156,27 +1144,27 @@ body.filebank-embedded,
     cursor: pointer;
 }
 
-.filebank-migration .fbm-iconbtn:hover:not(:disabled),
-.filebank-migration .fbm-iconbtn:focus-visible,
-.filebank-ui .fbm-iconbtn:hover:not(:disabled),
-.filebank-ui .fbm-iconbtn:focus-visible {
+.filebank-migration .btn-icon:hover:not(:disabled),
+.filebank-migration .btn-icon:focus-visible,
+.filebank-ui .btn-icon:hover:not(:disabled),
+.filebank-ui .btn-icon:focus-visible {
     background-color: var(--fbm-surface);
     color: var(--fbm-text);
 }
 
-.filebank-migration .fbm-iconbtn.tone-danger:hover,
-.filebank-ui .fbm-iconbtn.tone-danger:hover {
+.filebank-migration .btn-icon.tone-danger:hover,
+.filebank-ui .btn-icon.tone-danger:hover {
     color: var(--fbm-danger);
 }
 
-.filebank-migration .fbm-iconbtn:disabled,
-.filebank-ui .fbm-iconbtn:disabled {
+.filebank-migration .btn-icon:disabled,
+.filebank-ui .btn-icon:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.filebank-migration .fbm-link,
-.filebank-ui .fbm-link {
+.filebank-migration .btn-link,
+.filebank-ui .btn-link {
     padding: 0;
     border: 0;
     background: transparent;
@@ -1186,10 +1174,10 @@ body.filebank-embedded,
     cursor: pointer;
 }
 
-.filebank-migration .fbm-link:hover,
-.filebank-migration .fbm-link:focus-visible,
-.filebank-ui .fbm-link:hover,
-.filebank-ui .fbm-link:focus-visible {
+.filebank-migration .btn-link:hover,
+.filebank-migration .btn-link:focus-visible,
+.filebank-ui .btn-link:hover,
+.filebank-ui .btn-link:focus-visible {
     text-decoration: underline;
 }
 
@@ -1213,43 +1201,8 @@ body.filebank-embedded,
     color: var(--fbm-primary);
 }
 
-.filebank-migration .fbm-pill,
-.filebank-ui .fbm-pill {
-    --fbm-tone: var(--fbm-text);
-    display: inline-flex;
-    align-items: center;
-    padding: 0.4rem 0.95rem;
-    border: 1px solid var(--fbm-tone);
-    border-radius: 2rem;
-    background-color: transparent;
-    color: var(--fbm-tone);
-    font-weight: 550;
-    cursor: pointer;
-}
-
-.filebank-migration .fbm-pill.tone-danger,
-.filebank-ui .fbm-pill.tone-danger {
-    --fbm-tone: var(--fbm-danger);
-}
-
-.filebank-migration .fbm-pill.tone-success,
-.filebank-ui .fbm-pill.tone-success {
-    --fbm-tone: var(--fbm-success);
-}
-
-.filebank-migration .fbm-pill.tone-primary,
-.filebank-ui .fbm-pill.tone-primary {
-    --fbm-tone: var(--fbm-primary);
-}
-
-.filebank-migration .fbm-pill:hover:not(:disabled),
-.filebank-ui .fbm-pill:hover:not(:disabled) {
-    background-color: var(--fbm-tone);
-    color: var(--fbm-bg);
-}
-
-.filebank-migration .fbm-label,
-.filebank-ui .fbm-label {
+.filebank-migration .form-label,
+.filebank-ui .form-label {
     display: inline-block;
     margin-bottom: 0.25rem;
     color: var(--fbm-muted);
@@ -1270,10 +1223,10 @@ body.filebank-embedded,
     gap: 0.75rem;
 }
 
-.filebank-migration .fbm-input,
-.filebank-migration .fbm-select,
-.filebank-ui .fbm-input,
-.filebank-ui .fbm-select {
+.filebank-migration .form-control,
+.filebank-migration .form-select,
+.filebank-ui .form-control,
+.filebank-ui .form-select {
     display: block;
     width: 100%;
     min-height: 2.375rem;
@@ -1285,32 +1238,32 @@ body.filebank-embedded,
     font: inherit;
 }
 
-.filebank-migration .fbm-input:focus,
-.filebank-migration .fbm-select:focus,
-.filebank-ui .fbm-input:focus,
-.filebank-ui .fbm-select:focus {
+.filebank-migration .form-control:focus,
+.filebank-migration .form-select:focus,
+.filebank-ui .form-control:focus,
+.filebank-ui .form-select:focus {
     border-color: var(--fbm-primary);
     outline: 2px solid var(--fbm-primary);
     outline-offset: -1px;
 }
 
-.filebank-migration .fbm-input.is-invalid,
-.filebank-migration .fbm-select.is-invalid,
-.filebank-ui .fbm-input.is-invalid,
-.filebank-ui .fbm-select.is-invalid {
+.filebank-migration .form-control.is-invalid,
+.filebank-migration .form-select.is-invalid,
+.filebank-ui .form-control.is-invalid,
+.filebank-ui .form-select.is-invalid {
     border-color: var(--fbm-danger);
 }
 
-.filebank-migration .fbm-input:disabled,
-.filebank-migration .fbm-select:disabled,
-.filebank-ui .fbm-input:disabled,
-.filebank-ui .fbm-select:disabled {
+.filebank-migration .form-control:disabled,
+.filebank-migration .form-select:disabled,
+.filebank-ui .form-control:disabled,
+.filebank-ui .form-select:disabled {
     background-color: var(--fbm-surface);
     cursor: not-allowed;
 }
 
-.filebank-migration .fbm-select,
-.filebank-ui .fbm-select {
+.filebank-migration .form-select,
+.filebank-ui .form-select {
     width: auto;
     max-width: 100%;
     padding-inline-end: 2rem;
@@ -1430,7 +1383,7 @@ body.filebank-embedded,
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
 }
 
 .filebank-migration .fbm-route,
@@ -1553,8 +1506,8 @@ body.filebank-embedded,
     font-size: 0.8125rem;
 }
 
-.filebank-migration .fbm-panel,
-.filebank-ui .fbm-panel {
+.filebank-migration .card,
+.filebank-ui .card {
     margin-bottom: 1.25rem;
     border: 1px solid var(--fbm-border);
     border-radius: var(--fbm-radius);
@@ -1562,8 +1515,8 @@ body.filebank-embedded,
     box-shadow: var(--fbm-shadow);
 }
 
-.filebank-migration .fbm-panel-head,
-.filebank-ui .fbm-panel-head {
+.filebank-migration .card-header,
+.filebank-ui .card-header {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1573,8 +1526,8 @@ body.filebank-embedded,
     border-bottom: 1px solid var(--fbm-border);
 }
 
-.filebank-migration .fbm-panel-title,
-.filebank-ui .fbm-panel-title {
+.filebank-migration .card-title,
+.filebank-ui .card-title {
     display: flex;
     align-items: center;
     margin: 0;
@@ -1594,8 +1547,8 @@ body.filebank-embedded,
     gap: 0.4rem;
 }
 
-.filebank-migration .fbm-panel-body,
-.filebank-ui .fbm-panel-body {
+.filebank-migration .card-body,
+.filebank-ui .card-body {
     padding: 1rem;
 }
 
@@ -1609,8 +1562,8 @@ body.filebank-embedded,
     margin-top: 0;
 }
 
-.filebank-migration .fbm-count,
-.filebank-ui .fbm-count {
+.filebank-migration .badge.fbm-count,
+.filebank-ui .badge.fbm-count {
     display: inline-block;
     min-width: 1.4rem;
     margin-inline-start: 0.5rem;
@@ -1624,8 +1577,8 @@ body.filebank-embedded,
     text-align: center;
 }
 
-.filebank-migration .fbm-tabs,
-.filebank-ui .fbm-tabs {
+.filebank-migration .nav-tabs,
+.filebank-ui .nav-tabs {
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
@@ -1633,8 +1586,8 @@ body.filebank-embedded,
     border-bottom: 1px solid var(--fbm-border);
 }
 
-.filebank-migration .fbm-tab,
-.filebank-ui .fbm-tab {
+.filebank-migration .nav-link,
+.filebank-ui .nav-link {
     display: inline-flex;
     align-items: center;
     margin-bottom: -1px;
@@ -1648,21 +1601,21 @@ body.filebank-embedded,
     cursor: pointer;
 }
 
-.filebank-migration .fbm-tab:hover,
-.filebank-migration .fbm-tab:focus-visible,
-.filebank-ui .fbm-tab:hover,
-.filebank-ui .fbm-tab:focus-visible {
+.filebank-migration .nav-link:hover,
+.filebank-migration .nav-link:focus-visible,
+.filebank-ui .nav-link:hover,
+.filebank-ui .nav-link:focus-visible {
     color: var(--fbm-text);
 }
 
-.filebank-migration .fbm-tab.is-on,
-.filebank-ui .fbm-tab.is-on {
+.filebank-migration .nav-link.is-on,
+.filebank-ui .nav-link.is-on {
     border-bottom-color: var(--fbm-primary);
     color: var(--fbm-primary);
 }
 
-.filebank-migration .fbm-tab.needs-attention .fbm-count,
-.filebank-ui .fbm-tab.needs-attention .fbm-count {
+.filebank-migration .nav-link.needs-attention .fbm-count,
+.filebank-ui .nav-link.needs-attention .fbm-count {
     background-color: var(--fbm-info);
 }
 
@@ -1671,7 +1624,7 @@ body.filebank-embedded,
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.75rem;
     margin-bottom: 0.75rem;
 }
 
@@ -1693,8 +1646,8 @@ body.filebank-embedded,
     pointer-events: none;
 }
 
-.filebank-migration .fbm-search-input,
-.filebank-ui .fbm-search-input {
+.filebank-migration .fbm-search .form-control,
+.filebank-ui .fbm-search .form-control {
     padding-inline-start: 2.4rem;
     padding-inline-end: 2.2rem;
     border-radius: 2rem;
@@ -1747,15 +1700,15 @@ body.filebank-embedded,
     border-color: var(--fbm-primary);
 }
 
-.filebank-migration .fbm-chip.is-on,
-.filebank-ui .fbm-chip.is-on {
+.filebank-migration .fbm-chip.active,
+.filebank-ui .fbm-chip.active {
     border-color: var(--fbm-primary);
     background-color: var(--fbm-primary);
     color: #fff;
 }
 
-.filebank-migration .fbm-chip-count,
-.filebank-ui .fbm-chip-count {
+.filebank-migration .badge.fbm-chip-count,
+.filebank-ui .badge.fbm-chip-count {
     min-width: 1.25rem;
     padding: 0 0.35rem;
     border-radius: 2rem;
@@ -1765,38 +1718,40 @@ body.filebank-embedded,
     text-align: center;
 }
 
-.filebank-migration .fbm-chip.is-on .fbm-chip-count,
-.filebank-ui .fbm-chip.is-on .fbm-chip-count {
+.filebank-migration .fbm-chip.active .fbm-chip-count,
+.filebank-ui .fbm-chip.active .fbm-chip-count {
     background-color: rgba(255, 255, 255, 0.25);
     color: #fff;
 }
 
-.filebank-migration .fbm-table-wrap,
-.filebank-ui .fbm-table-wrap {
+.filebank-migration .table-responsive,
+.filebank-ui .table-responsive {
     overflow-x: auto;
     border: 1px solid var(--fbm-border);
     border-radius: var(--fbm-radius);
     background-color: var(--fbm-bg);
 }
 
-.filebank-migration .fbm-table,
-.filebank-ui .fbm-table {
+.filebank-migration .table,
+.filebank-ui .table {
     width: 100%;
     margin: 0;
     border-collapse: collapse;
 }
 
-.filebank-migration .fbm-table th,
-.filebank-migration .fbm-table td,
-.filebank-ui .fbm-table th,
-.filebank-ui .fbm-table td {
+.filebank-migration .table th,
+.filebank-migration .table td,
+.filebank-ui .table th,
+.filebank-ui .table td {
     border-inline: 0;
     border-top: 0;
+    border-inline-start: 0;
+    border-inline-end: 0;
 }
 
-.filebank-migration .fbm-table th,
-.filebank-ui .fbm-table th {
-    padding: 0.65rem 0.8rem;
+.filebank-migration .table th,
+.filebank-ui .table th {
+    padding: 0.5rem 0.75rem;
     border-bottom: 1px solid var(--fbm-border);
     background-color: var(--fbm-surface);
     color: var(--fbm-muted);
@@ -1808,26 +1763,34 @@ body.filebank-embedded,
     white-space: nowrap;
 }
 
-.filebank-migration .fbm-table td,
-.filebank-ui .fbm-table td {
-    padding: 0.7rem 0.8rem;
+.filebank-migration .table td,
+.filebank-ui .table td {
+    padding: 0.5rem 0.75rem;
     border-bottom: 1px solid var(--fbm-border);
     vertical-align: middle;
 }
 
-.filebank-migration .fbm-table tbody tr:last-child td,
-.filebank-ui .fbm-table tbody tr:last-child td {
+.filebank-migration .table tbody tr:last-child td,
+.filebank-ui .table tbody tr:last-child td {
     border-bottom: 0;
 }
 
-.filebank-migration .fbm-table tbody tr:hover,
-.filebank-ui .fbm-table tbody tr:hover {
-    background-color: var(--fbm-surface);
+.filebank-migration .table tr.is-out td,
+.filebank-ui .table tr.is-out td {
+    opacity: 0.6;
 }
 
-.filebank-migration .fbm-table tr.is-out td,
-.filebank-ui .fbm-table tr.is-out td {
-    opacity: 0.6;
+.filebank-migration .fbm-col-fit,
+.filebank-ui .fbm-col-fit {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.filebank-migration .fbm-table-meta,
+.filebank-ui .fbm-table-meta {
+    display: block;
+    color: var(--fbm-muted);
+    font-size: 0.8125rem;
 }
 
 .filebank-migration .fbm-col-check,
@@ -1854,8 +1817,8 @@ body.filebank-embedded,
     overflow-wrap: anywhere;
 }
 
-.filebank-migration .fbm-badge,
-.filebank-ui .fbm-badge {
+.filebank-migration .badge,
+.filebank-ui .badge {
     --fbm-tone: var(--fbm-muted);
     display: inline-flex;
     align-items: center;
@@ -1868,89 +1831,33 @@ body.filebank-embedded,
     white-space: nowrap;
 }
 
-.filebank-migration .fbm-badge.tone-primary,
-.filebank-ui .fbm-badge.tone-primary {
+.filebank-migration .badge.tone-primary,
+.filebank-ui .badge.tone-primary {
     --fbm-tone: var(--fbm-primary);
 }
 
-.filebank-migration .fbm-badge.tone-success,
-.filebank-ui .fbm-badge.tone-success {
+.filebank-migration .badge.tone-success,
+.filebank-ui .badge.tone-success {
     --fbm-tone: var(--fbm-success);
 }
 
-.filebank-migration .fbm-badge.tone-warning,
-.filebank-ui .fbm-badge.tone-warning {
+.filebank-migration .badge.tone-warning,
+.filebank-ui .badge.tone-warning {
     --fbm-tone: var(--fbm-warning);
 }
 
-.filebank-migration .fbm-badge.tone-danger,
-.filebank-ui .fbm-badge.tone-danger {
+.filebank-migration .badge.tone-danger,
+.filebank-ui .badge.tone-danger {
     --fbm-tone: var(--fbm-danger);
 }
 
-.filebank-migration .fbm-badge.tone-info,
-.filebank-ui .fbm-badge.tone-info {
+.filebank-migration .badge.tone-info,
+.filebank-ui .badge.tone-info {
     --fbm-tone: var(--fbm-info);
 }
 
-.filebank-migration .fbm-pagination,
-.filebank-ui .fbm-pagination {
-    margin-top: 1rem;
-}
-
-.filebank-migration .fbm-pages,
-.filebank-ui .fbm-pages {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.25rem;
-    margin: 0 0 0.4rem;
-    padding: 0;
-    list-style: none;
-}
-
-.filebank-migration .fbm-page,
-.filebank-ui .fbm-page {
-    min-width: 2.1rem;
-    height: 2.1rem;
-    padding: 0 0.5rem;
-    border: 1px solid var(--fbm-border);
-    border-radius: 0.5rem;
-    background-color: var(--fbm-bg);
-    color: var(--fbm-text);
-    font: inherit;
-    cursor: pointer;
-}
-
-.filebank-migration .fbm-page:hover,
-.filebank-ui .fbm-page:hover {
-    border-color: var(--fbm-primary);
-}
-
-.filebank-migration .fbm-page.is-current,
-.filebank-ui .fbm-page.is-current {
-    border-color: var(--fbm-primary);
-    background-color: var(--fbm-primary);
-    color: #fff;
-}
-
-.filebank-migration .fbm-page.is-gap,
-.filebank-ui .fbm-page.is-gap {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-color: transparent;
-    cursor: default;
-}
-
-.filebank-migration .fbm-pagination-info,
-.filebank-ui .fbm-pagination-info {
-    font-size: 0.8125rem;
-    text-align: center;
-}
-
-.filebank-migration .fbm-alert,
-.filebank-ui .fbm-alert {
+.filebank-migration .alert,
+.filebank-ui .alert {
     --fbm-tone: var(--fbm-info);
     display: flex;
     flex-wrap: wrap;
@@ -1962,25 +1869,26 @@ body.filebank-embedded,
     border-inline-start: 4px solid var(--fbm-tone);
     border-radius: var(--fbm-radius);
     background-color: var(--fbm-surface);
+    color: var(--fbm-text);
 }
 
-.filebank-migration .fbm-alert.tone-success,
-.filebank-ui .fbm-alert.tone-success {
+.filebank-migration .alert.alert-success,
+.filebank-ui .alert.alert-success {
     --fbm-tone: var(--fbm-success);
 }
 
-.filebank-migration .fbm-alert.tone-warning,
-.filebank-ui .fbm-alert.tone-warning {
+.filebank-migration .alert.alert-warning,
+.filebank-ui .alert.alert-warning {
     --fbm-tone: var(--fbm-warning);
 }
 
-.filebank-migration .fbm-alert.tone-danger,
-.filebank-ui .fbm-alert.tone-danger {
+.filebank-migration .alert.alert-danger,
+.filebank-ui .alert.alert-danger {
     --fbm-tone: var(--fbm-danger);
 }
 
-.filebank-migration .fbm-alert.tone-neutral,
-.filebank-ui .fbm-alert.tone-neutral {
+.filebank-migration .alert.alert-secondary,
+.filebank-ui .alert.alert-secondary {
     --fbm-tone: var(--fbm-muted);
 }
 
@@ -1996,8 +1904,8 @@ body.filebank-embedded,
     min-width: 0;
 }
 
-.filebank-migration .fbm-progress,
-.filebank-ui .fbm-progress {
+.filebank-migration .progress,
+.filebank-ui .progress {
     --fbm-tone: var(--fbm-primary);
     height: 0.5rem;
     overflow: hidden;
@@ -2005,23 +1913,17 @@ body.filebank-embedded,
     background-color: var(--fbm-border);
 }
 
-.filebank-migration .fbm-progress.tone-success,
-.filebank-ui .fbm-progress.tone-success {
-    --fbm-tone: var(--fbm-success);
-}
-
-.filebank-migration .fbm-progress-fill,
-.filebank-ui .fbm-progress-fill {
+.filebank-migration .progress-bar,
+.filebank-ui .progress-bar {
     height: 100%;
     border-radius: 1rem;
-    background-color: var(--fbm-tone);
     transition: width 0.4s ease;
 }
 
-.filebank-migration .fbm-files-cell + .fbm-progress,
-.filebank-migration .fbm-badge + .fbm-progress,
-.filebank-ui .fbm-files-cell + .fbm-progress,
-.filebank-ui .fbm-badge + .fbm-progress {
+.filebank-migration .fbm-files-cell + .progress,
+.filebank-migration .badge + .progress,
+.filebank-ui .fbm-files-cell + .progress,
+.filebank-ui .badge + .progress {
     margin-top: 0.4rem;
 }
 
@@ -2230,13 +2132,6 @@ body.filebank-embedded,
     border-bottom: 1px solid var(--fbm-border);
 }
 
-.filebank-migration .fbm-dialog-title,
-.filebank-ui .fbm-dialog-title {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 650;
-}
-
 .filebank-migration .fbm-dialog-scroll,
 .filebank-ui .fbm-dialog-scroll {
     flex: 1 1 auto;
@@ -2277,90 +2172,6 @@ body.filebank-embedded,
 .filebank-migration .fbm-confirm-list li.is-warning,
 .filebank-ui .fbm-confirm-list li.is-warning {
     color: var(--fbm-warning);
-}
-
-.filebank-migration .fbm-steps,
-.filebank-ui .fbm-steps {
-    display: flex;
-    gap: 1.5rem;
-    margin: 0 0 1.25rem;
-    padding: 0;
-    list-style: none;
-}
-
-.filebank-migration .fbm-steps li,
-.filebank-ui .fbm-steps li {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--fbm-muted);
-    font-weight: 600;
-}
-
-.filebank-migration .fbm-steps li > span,
-.filebank-ui .fbm-steps li > span {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.7rem;
-    height: 1.7rem;
-    border-radius: 50%;
-    background-color: var(--fbm-border);
-    color: var(--fbm-text);
-    font-size: 0.8125rem;
-}
-
-.filebank-migration .fbm-steps li.is-current,
-.filebank-ui .fbm-steps li.is-current {
-    color: var(--fbm-primary);
-}
-
-.filebank-migration .fbm-steps li.is-current > span,
-.filebank-migration .fbm-steps li.is-done > span,
-.filebank-ui .fbm-steps li.is-current > span,
-.filebank-ui .fbm-steps li.is-done > span {
-    background-color: var(--fbm-primary);
-    color: #fff;
-}
-
-.filebank-migration .fbm-editor,
-.filebank-ui .fbm-editor {
-    display: grid;
-    gap: 1.25rem;
-}
-
-.filebank-migration .fbm-section,
-.filebank-ui .fbm-section {
-    padding: 1rem 1.1rem;
-    border: 1px solid var(--fbm-border);
-    border-radius: var(--fbm-radius);
-    background-color: var(--fbm-bg);
-}
-
-.filebank-migration .fbm-section-head,
-.filebank-ui .fbm-section-head {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.9rem;
-}
-
-.filebank-migration .fbm-section-icon,
-.filebank-ui .fbm-section-icon {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 0.6rem;
-    background-color: var(--fbm-surface);
-    color: var(--fbm-primary);
-}
-
-.filebank-migration .fbm-section-help,
-.filebank-ui .fbm-section-help {
-    margin: 0.1rem 0 0;
-    font-size: 0.875rem;
 }
 
 .filebank-migration .fbm-sides,
@@ -2465,9 +2276,14 @@ body.filebank-embedded,
 .filebank-migration .fbm-pair,
 .filebank-ui .fbm-pair {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+    grid-template-columns: 1.6rem minmax(0, 12rem) auto minmax(0, 12rem) auto;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.5rem 0.75rem;
+}
+
+.filebank-migration .fbm-pair.fbm-pair-head .form-label,
+.filebank-ui .fbm-pair.fbm-pair-head .form-label {
+    margin: 0;
 }
 
 .filebank-migration .fbm-hint,
@@ -2479,12 +2295,139 @@ body.filebank-embedded,
 .filebank-migration .fbm-policies,
 .filebank-ui .fbm-policies {
     display: grid;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
-.filebank-migration .fbm-policy .fbm-chips,
-.filebank-ui .fbm-policy .fbm-chips {
-    margin-bottom: 0;
+.filebank-migration .fbm-policy,
+.filebank-ui .fbm-policy {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.filebank-migration .fbm-policy-title,
+.filebank-ui .fbm-policy-title {
+    margin-bottom: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.filebank-migration .fbm-choices,
+.filebank-ui .fbm-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 0.75rem;
+}
+
+.filebank-migration .fbm-choice,
+.filebank-ui .fbm-choice {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--fbm-border);
+    border-radius: var(--fbm-radius);
+    background-color: var(--fbm-bg);
+    cursor: pointer;
+    transition: border-color 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.filebank-migration .fbm-choice input,
+.filebank-ui .fbm-choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.filebank-migration .fbm-choice:hover,
+.filebank-ui .fbm-choice:hover {
+    border-color: var(--fbm-primary);
+}
+
+.filebank-migration .fbm-choice:focus-within,
+.filebank-ui .fbm-choice:focus-within {
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--fbm-primary) 25%, transparent);
+}
+
+.filebank-migration .fbm-choice.is-on,
+.filebank-ui .fbm-choice.is-on {
+    border-color: var(--fbm-primary);
+    background-color: color-mix(in srgb, var(--fbm-primary) 8%, var(--fbm-bg));
+}
+
+.filebank-migration .fbm-choice-dot,
+.filebank-ui .fbm-choice-dot {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.15rem;
+    border: 2px solid var(--fbm-border);
+    border-radius: 50%;
+    background-color: var(--fbm-bg);
+}
+
+.filebank-migration .fbm-choice.is-on .fbm-choice-dot,
+.filebank-ui .fbm-choice.is-on .fbm-choice-dot {
+    border-color: var(--fbm-primary);
+    background-color: var(--fbm-primary);
+    box-shadow: inset 0 0 0 3px var(--fbm-bg);
+}
+
+.filebank-migration .fbm-choice-text,
+.filebank-ui .fbm-choice-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.filebank-migration .fbm-choice-title,
+.filebank-ui .fbm-choice-title {
+    font-weight: 600;
+}
+
+.filebank-migration .fbm-choice-hint,
+.filebank-ui .fbm-choice-hint {
+    color: var(--fbm-muted);
+    font-size: 0.8125rem;
+}
+
+.filebank-migration .fbm-picker,
+.filebank-ui .fbm-picker {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 36rem;
+}
+
+.filebank-migration .fbm-picker .fbm-search,
+.filebank-ui .fbm-picker .fbm-search {
+    max-width: none;
+}
+
+.filebank-migration .fbm-picker-list .list-group-item,
+.filebank-ui .fbm-picker-list .list-group-item {
+    text-align: start;
+}
+
+.filebank-migration .fbm-select-auto,
+.filebank-ui .fbm-select-auto {
+    width: auto;
+    max-width: 100%;
+}
+
+.filebank-migration .fbm-conflict,
+.filebank-ui .fbm-conflict {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--fbm-border);
+}
+
+.filebank-migration .fbm-conflict .fbm-hint,
+.filebank-ui .fbm-conflict .fbm-hint {
+    margin-bottom: 0.75rem;
 }
 
 .filebank-migration .fbm-check-result,
@@ -2643,27 +2586,83 @@ body.filebank-embedded,
 .filebank-ui .fbm-actions {
     display: inline-flex;
     align-items: center;
-    gap: 0.15rem;
+    gap: 0.4rem;
 }
 
-.filebank-migration .fbm-actions .fbm-iconbtn,
-.filebank-ui .fbm-actions .fbm-iconbtn {
+.filebank-migration .fbm-actions .btn-icon,
+.filebank-ui .fbm-actions .btn-icon {
     text-decoration: none;
 }
 
-.filebank-migration .fbm-nowrap,
-.filebank-ui .fbm-nowrap {
+.filebank-migration .fbm-iconpill .icon,
+.filebank-migration .btn-icon .icon,
+.filebank-migration .fbm-actions .icon,
+.filebank-ui .fbm-iconpill .icon,
+.filebank-ui .btn-icon .icon,
+.filebank-ui .fbm-actions .icon {
+    margin: 0;
+}
+
+.filebank-migration .fbm-iconpill,
+.filebank-ui .fbm-iconpill {
+    --fbm-tone: var(--fbm-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    min-height: 0;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background-color: color-mix(in srgb, var(--fbm-tone) 14%, var(--fbm-bg));
+    color: var(--fbm-tone);
+}
+
+.filebank-migration .fbm-iconpill.tone-primary,
+.filebank-ui .fbm-iconpill.tone-primary {
+    --fbm-tone: var(--fbm-primary);
+}
+
+.filebank-migration .fbm-iconpill.tone-success,
+.filebank-ui .fbm-iconpill.tone-success {
+    --fbm-tone: var(--fbm-success);
+}
+
+.filebank-migration .fbm-iconpill.tone-warning,
+.filebank-ui .fbm-iconpill.tone-warning {
+    --fbm-tone: var(--fbm-warning);
+}
+
+.filebank-migration .fbm-iconpill.tone-danger,
+.filebank-ui .fbm-iconpill.tone-danger {
+    --fbm-tone: var(--fbm-danger);
+}
+
+.filebank-migration .fbm-iconpill.tone-info,
+.filebank-ui .fbm-iconpill.tone-info {
+    --fbm-tone: var(--fbm-info);
+}
+
+.filebank-migration .fbm-iconpill:hover:not(:disabled),
+.filebank-migration .fbm-iconpill:focus-visible:not(:disabled),
+.filebank-ui .fbm-iconpill:hover:not(:disabled),
+.filebank-ui .fbm-iconpill:focus-visible:not(:disabled) {
+    border-color: var(--fbm-tone);
+    background-color: color-mix(in srgb, var(--fbm-tone) 24%, var(--fbm-bg));
+    color: var(--fbm-tone);
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.16);
+    transform: translateY(-1px);
+}
+
+.filebank-migration .text-nowrap,
+.filebank-ui .text-nowrap {
     white-space: nowrap;
 }
 
-.filebank-migration .fbm-break,
-.filebank-ui .fbm-break {
+.filebank-migration .text-break,
+.filebank-ui .text-break {
     overflow-wrap: anywhere;
-}
-
-.filebank-migration .fbm-mono,
-.filebank-ui .fbm-mono {
-    font-family: var(--bs-font-monospace, monospace);
 }
 
 .filebank-migration .fbm-profile-name,
@@ -2701,27 +2700,34 @@ body.filebank-embedded,
     --fbm-tone: var(--fbm-success);
 }
 
-.filebank-migration .fbm-badge-action,
-.filebank-ui .fbm-badge-action {
-    --fbm-tone: var(--fbm-primary);
-}
-
 .filebank-migration .fbm-bulkbar,
 .filebank-ui .fbm-bulkbar {
+    position: fixed;
+    bottom: 1.25rem;
+    inset-inline-start: 50%;
+    z-index: 1040;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--fbm-primary);
-    border-radius: var(--fbm-radius);
-    background-color: var(--fbm-surface);
+    justify-content: center;
+    gap: 0.5rem 0.75rem;
+    max-width: calc(100vw - 2rem);
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--fbm-border);
+    border-radius: 3rem;
+    background-color: var(--fbm-bg);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+    transform: translateX(-50%);
 }
 
 .filebank-migration .fbm-bulkbar[hidden],
 .filebank-ui .fbm-bulkbar[hidden] {
     display: none;
+}
+
+.filebank-migration [dir=rtl] .fbm-bulkbar,
+.filebank-ui [dir=rtl] .fbm-bulkbar {
+    transform: translateX(50%);
 }
 
 .filebank-migration .fbm-bulkbar-title,
@@ -2765,18 +2771,149 @@ body.filebank-embedded,
     font-size: 0.875rem;
 }
 
-.filebank-migration .fbm-page,
-.filebank-ui .fbm-page {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
+.filebank-migration .fbm-filterbox,
+.filebank-ui .fbm-filterbox {
+    position: relative;
+    padding: 0;
+    border: 0;
+    background: transparent;
 }
 
-.filebank-migration .fbm-page:disabled,
-.filebank-ui .fbm-page:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
+.filebank-migration .fbm-filterbox.fbm-filter-end,
+.filebank-ui .fbm-filterbox.fbm-filter-end {
+    margin-inline-start: auto;
+}
+
+.filebank-migration .fbm-filterbox > summary,
+.filebank-ui .fbm-filterbox > summary {
+    position: relative;
+    list-style: none;
+    cursor: pointer;
+}
+
+.filebank-migration .fbm-filterbox > summary::-webkit-details-marker,
+.filebank-ui .fbm-filterbox > summary::-webkit-details-marker {
+    display: none;
+}
+
+.filebank-migration .fbm-filterbox > summary .fbm-count,
+.filebank-ui .fbm-filterbox > summary .fbm-count {
+    position: absolute;
+    top: -0.45rem;
+    inset-inline-end: -0.45rem;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    margin: 0;
+    padding: 0 0.3rem;
+    font-size: 0.7rem;
+    line-height: 1.15rem;
+}
+
+.filebank-migration .fbm-filterbox[open] > summary,
+.filebank-migration .fbm-filterbox[data-active] > summary,
+.filebank-ui .fbm-filterbox[open] > summary,
+.filebank-ui .fbm-filterbox[data-active] > summary {
+    border-color: var(--fbm-primary);
+    background-color: color-mix(in srgb, var(--fbm-primary) 10%, var(--fbm-bg));
+    color: var(--fbm-primary);
+}
+
+.filebank-migration .fbm-toolbar .fbm-chips,
+.filebank-migration .fbm-toolbar + .fbm-chips,
+.filebank-ui .fbm-toolbar .fbm-chips,
+.filebank-ui .fbm-toolbar + .fbm-chips {
+    flex-basis: 100%;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.filebank-migration .fbm-filterpanel,
+.filebank-ui .fbm-filterpanel {
+    position: absolute;
+    inset-inline-start: 0;
+    top: calc(100% + 0.5rem);
+    z-index: 1050;
+    width: 20rem;
+    max-width: calc(100vw - 2rem);
+    padding: 1rem;
+    border: 1px solid var(--fbm-border);
+    border-radius: var(--fbm-radius);
+    background-color: var(--fbm-bg);
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
+}
+
+.filebank-migration .fbm-filter-end .fbm-filterpanel,
+.filebank-ui .fbm-filter-end .fbm-filterpanel {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+}
+
+.filebank-migration .fbm-filter-head,
+.filebank-ui .fbm-filter-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.filebank-migration .fbm-filter-heading,
+.filebank-ui .fbm-filter-heading {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.filebank-migration .fbm-filter-title,
+.filebank-ui .fbm-filter-title {
+    margin: 0 0 0.375rem;
+    color: var(--fbm-muted);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.filebank-migration .fbm-filter-group,
+.filebank-ui .fbm-filter-group {
+    min-width: 0;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    border: 0;
+}
+
+.filebank-migration .fbm-filter-option,
+.filebank-ui .fbm-filter-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.3125rem 0.625rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.filebank-migration .fbm-filter-option:hover,
+.filebank-ui .fbm-filter-option:hover {
+    background-color: color-mix(in srgb, var(--fbm-primary) 10%, var(--fbm-bg));
+    box-shadow: inset 3px 0 0 var(--fbm-primary);
+}
+
+.filebank-migration .fbm-filter-option .small,
+.filebank-ui .fbm-filter-option .small {
+    margin-inline-start: auto;
+}
+
+.filebank-migration .fbm-datefield .input-group,
+.filebank-ui .fbm-datefield .input-group {
+    flex-wrap: nowrap;
+}
+
+.filebank-migration .fbm-datefield input[readonly],
+.filebank-ui .fbm-datefield input[readonly] {
+    background-color: var(--fbm-bg);
+    cursor: pointer;
 }
 
 .filebank-migration .fbm-filters,
@@ -2804,21 +2941,16 @@ body.filebank-embedded,
     gap: 0.5rem;
 }
 
-.filebank-migration .fbm-select-fill,
-.filebank-ui .fbm-select-fill {
-    width: 100%;
-}
-
-.filebank-migration .fbm-table tr.is-changed td,
-.filebank-migration .fbm-table tr.is-changed th,
-.filebank-ui .fbm-table tr.is-changed td,
-.filebank-ui .fbm-table tr.is-changed th {
+.filebank-migration .table tr.is-changed td,
+.filebank-migration .table tr.is-changed th,
+.filebank-ui .table tr.is-changed td,
+.filebank-ui .table tr.is-changed th {
     background-color: var(--fbm-surface);
     box-shadow: inset 3px 0 0 var(--fbm-warning);
 }
 
-.filebank-migration .fbm-table tr.is-active td,
-.filebank-ui .fbm-table tr.is-active td {
+.filebank-migration .table tr.is-active td,
+.filebank-ui .table tr.is-active td {
     background-color: var(--fbm-surface);
 }
 
@@ -2940,13 +3072,6 @@ body.filebank-embedded,
     font-weight: 550;
 }
 
-.filebank-migration .fbm-btn-ghost,
-.filebank-ui .fbm-btn-ghost {
-    border-color: transparent;
-    background-color: transparent;
-    color: var(--fbm-primary);
-}
-
 .filebank-migration .fbm-segment,
 .filebank-ui .fbm-segment {
     display: inline-flex;
@@ -3059,24 +3184,18 @@ body.filebank-embedded,
     grid-column: 1 / -1;
 }
 
-.filebank-migration .fbm-table-wrap.fbm-flush,
-.filebank-ui .fbm-table-wrap.fbm-flush {
+.filebank-migration .table-responsive.fbm-flush,
+.filebank-ui .table-responsive.fbm-flush {
     border: 0;
     border-radius: 0;
 }
 
-.filebank-migration .fbm-h3,
-.filebank-ui .fbm-h3 {
+.filebank-migration .h3,
+.filebank-ui .h3 {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 650;
     line-height: 1.3;
-}
-
-.filebank-migration .fbm-select-wide,
-.filebank-ui .fbm-select-wide {
-    width: 100%;
-    max-width: 28rem;
 }
 
 .filebank-migration .fbm-wizard-body,
@@ -3210,12 +3329,55 @@ body.filebank-embedded,
 
 .filebank-migration .fbm-wizard-panel,
 .filebank-ui .fbm-wizard-panel {
-    min-height: 26rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 20rem;
     padding: 1.5rem;
     border: 1px solid var(--fbm-border);
     border-radius: var(--fbm-radius);
     background-color: var(--fbm-bg);
     box-shadow: var(--fbm-shadow);
+}
+
+.filebank-migration .fbm-wizard,
+.filebank-ui .fbm-wizard {
+    scroll-margin-top: 4.25rem;
+}
+
+.filebank-migration .fbm-wizard-scroll,
+.filebank-ui .fbm-wizard-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+@media (min-width: 62rem) and (min-height: 36rem) {
+
+    .filebank-migration .fbm-wizard,
+    .filebank-ui .fbm-wizard {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 5rem);
+    }
+
+    .filebank-migration .fbm-wizard-body,
+    .filebank-ui .fbm-wizard-body {
+        flex: 1 1 auto;
+        grid-template-rows: minmax(0, 1fr);
+        min-height: 0;
+        align-items: stretch;
+    }
+
+    .filebank-migration .fbm-stepper,
+    .filebank-ui .fbm-stepper {
+        position: static;
+        overflow-y: auto;
+    }
+
+    .filebank-migration .fbm-wizard-panel,
+    .filebank-ui .fbm-wizard-panel {
+        min-height: 0;
+    }
 }
 
 .filebank-migration .fbm-wizard-head,
@@ -3246,12 +3408,16 @@ body.filebank-embedded,
 
 .filebank-migration .fbm-wizard-foot,
 .filebank-ui .fbm-wizard-foot {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
     display: flex;
     justify-content: space-between;
     gap: 0.5rem;
-    margin-top: 1.75rem;
-    padding-top: 1rem;
+    margin-top: auto;
+    padding: 1rem 0 0.25rem;
     border-top: 1px solid var(--fbm-border);
+    background-color: var(--fbm-bg);
 }
 
 .filebank-migration .fbm-rows-empty,
@@ -3362,16 +3528,16 @@ body.filebank-embedded,
 @media (prefers-reduced-motion: reduce) {
 
     .filebank-migration .fbm-skeleton-row,
-    .filebank-migration .fbm-progress-fill,
+    .filebank-migration .progress-bar,
     .filebank-migration .fbm-switch,
     .filebank-migration .fbm-switch-knob,
-    .filebank-migration .fbm-btn,
+    .filebank-migration .btn,
     .filebank-migration .fbm-tile,
     .filebank-ui .fbm-skeleton-row,
-    .filebank-ui .fbm-progress-fill,
+    .filebank-ui .progress-bar,
     .filebank-ui .fbm-switch,
     .filebank-ui .fbm-switch-knob,
-    .filebank-ui .fbm-btn,
+    .filebank-ui .btn,
     .filebank-ui .fbm-tile {
         animation: none;
         transition: none;

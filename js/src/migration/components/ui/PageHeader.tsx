@@ -25,10 +25,10 @@ const PageHeader = ({title, subtitle, badges, back, actions}: PageHeaderProps) =
     <div className="fbm-header-title">
         {back}
         <div className="fbm-header-line">
-            <h2 className="fbm-h2">{title}</h2>
+            <h2 className="h2">{title}</h2>
             {badges}
         </div>
-        {subtitle && <p className="fbm-muted fbm-header-subtitle">{subtitle}</p>}
+        {subtitle && <p className="text-muted fbm-header-subtitle">{subtitle}</p>}
     </div>
     {actions && <div className="fbm-header-actions">{actions}</div>}
 </header>;

@@ -10,14 +10,16 @@
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import {emptyCorrespondence, MAX_CORRESPONDENCES, sameNameCorrespondence} from '../../lib/parameters';
+import {emptyCorrespondence, MAX_CORRESPONDENCES} from '../../lib/parameters';
 import type {Correspondence, Options, Text} from '../../types';
 import Icon from '../ui/Icon';
+import IconButton from '../ui/IconButton';
 
 interface CorrespondenceRowsProps {
     rows: Correspondence[];
-    /** The correspondences that the profile has, which the person can load instead of writing them. */
-    profileRows: Correspondence[];
+    /** The last migrations of the profile, whose folders can be taken instead of writing them again. */
+    previous: Options['previous'];
+    onReuse: (id: number) => void;
     modules: Options['modules'];
     onChange: (rows: Correspondence[]) => void;
     text: Text;
@@ -51,17 +53,17 @@ const Side = ({side, index, row, modules, onField, text, missing}: SideProps) =>
     return <div className={`fbm-side fbm-side-${side}`}>
         <div className="fbm-side-title">{text(side === 'source' ? 'rules_source_folder' : 'rules_target_folder')}</div>
         {side === 'source' && <div className="fbm-field">
-            <label className="fbm-label" htmlFor={id('type')}>{text('rules_kind')}</label>
-            <select id={id('type')} className="fbm-select" value={row.sourcetype} onChange={(event) => onField('sourcetype', event.target.value)}>
+            <label className="form-label" htmlFor={id('type')}>{text('rules_kind')}</label>
+            <select id={id('type')} className="form-select" value={row.sourcetype} onChange={(event) => onField('sourcetype', event.target.value)}>
                 {modules.map((module) => <option key={module.value} value={module.value}>{module.label}</option>)}
             </select>
         </div>}
         <div className="fbm-field-row">
             <div className="fbm-field">
-                <label className="fbm-label" htmlFor={id('field')}>{text('rules_field')}</label>
+                <label className="form-label" htmlFor={id('field')}>{text('rules_field')}</label>
                 <select
                     id={id('field')}
-                    className="fbm-select"
+                    className="form-select"
                     value={row[key('field')]}
                     onChange={(event) => onField(key('field'), event.target.value)}
                 >
@@ -69,10 +71,10 @@ const Side = ({side, index, row, modules, onField, text, missing}: SideProps) =>
                 </select>
             </div>
             <div className="fbm-field">
-                <label className="fbm-label" htmlFor={id('method')}>{text('rules_match')}</label>
+                <label className="form-label" htmlFor={id('method')}>{text('rules_match')}</label>
                 <select
                     id={id('method')}
-                    className="fbm-select"
+                    className="form-select"
                     value={row[key('method')]}
                     onChange={(event) => onField(key('method'), event.target.value)}
                 >
@@ -81,11 +83,11 @@ const Side = ({side, index, row, modules, onField, text, missing}: SideProps) =>
             </div>
         </div>
         <div className="fbm-field">
-            <label className="fbm-label" htmlFor={id('value')}>{text('rules_value')}</label>
+            <label className="form-label" htmlFor={id('value')}>{text('rules_value')}</label>
             <input
                 id={id('value')}
                 type="text"
-                className={`fbm-input${missing && value.trim() === '' ? ' is-invalid' : ''}`}
+                className={`form-control${missing && value.trim() === '' ? ' is-invalid' : ''}`}
                 maxLength={2048}
                 value={value}
                 onChange={(event) => onField(key('value'), event.target.value)}
@@ -94,7 +96,7 @@ const Side = ({side, index, row, modules, onField, text, missing}: SideProps) =>
     </div>;
 };
 
-const CorrespondenceRows = ({rows, profileRows, modules, onChange, text, missing}: CorrespondenceRowsProps) => {
+const CorrespondenceRows = ({rows, previous, onReuse, modules, onChange, text, missing}: CorrespondenceRowsProps) => {
     const change = (index: number, key: keyof Correspondence, value: string) => onChange(
         rows.map((row, position) => (position === index ? {...row, [key]: value} : row))
     );
@@ -103,20 +105,18 @@ const CorrespondenceRows = ({rows, profileRows, modules, onChange, text, missing
     return <div className="fbm-rows">
         {rows.length === 0 && <div className={`fbm-rows-empty${missing ? ' has-problem' : ''}`} data-region="no-correspondences">
             <div className="fbm-empty-icon"><Icon name="folder-open" /></div>
-            <p className="fbm-muted fbm-empty-text">{text('rules_empty')}</p>
+            <p className="text-muted fbm-empty-text">{text('rules_empty')}</p>
             {missing && <p className="fbm-problem">{text('rules_required')}</p>}
         </div>}
         {rows.map((row, index) => <div key={index} className="fbm-row-card">
             <div className="fbm-row-head">
                 <span className="fbm-row-number">{index + 1}</span>
-                <button
-                    type="button"
-                    className="fbm-iconbtn"
+                <IconButton
+                    icon="trash"
+                    label={text('rules_remove')}
+                    tone="danger"
                     onClick={() => onChange(rows.filter((_, position) => position !== index))}
-                    title={text('rules_remove')}
-                >
-                    <Icon name="trash" /><span className="fbm-sr">{text('rules_remove')}</span>
-                </button>
+                />
             </div>
             <div className="fbm-row-sides">
                 <Side side="source" index={index} row={row} modules={modules} text={text} missing={missing} onField={(key, value) => change(index, key, value)} />
@@ -127,20 +127,24 @@ const CorrespondenceRows = ({rows, profileRows, modules, onChange, text, missing
         <div className="fbm-row-add">
             <button
                 type="button"
-                className="fbm-btn fbm-btn-primary"
+                className="btn btn-primary"
                 disabled={!room}
                 onClick={() => onChange([...rows, emptyCorrespondence()])}
                 data-action="add-correspondence"
             >
                 <Icon name="plus" gap />{text('rules_add')}
             </button>
-            <button type="button" className="fbm-btn" disabled={!room} onClick={() => onChange([...rows, sameNameCorrespondence()])}>
-                <Icon name="equals" gap />{text('rules_add_same')}
-            </button>
-            {profileRows.length > 0 && rows.length === 0 && <button type="button" className="fbm-btn" onClick={() => onChange(profileRows)}>
-                <Icon name="layer-group" gap />{text('rules_add_profile', {n: profileRows.length})}
-            </button>}
-            <span className="fbm-muted">{text('rules_limit', {n: MAX_CORRESPONDENCES})}</span>
+            {previous.length > 0 && rows.length === 0 && <select
+                className="form-select fbm-select-auto"
+                aria-label={text('rules_reuse')}
+                value=""
+                onChange={(event) => onReuse(Number(event.target.value))}
+                data-action="reuse-correspondences"
+            >
+                <option value="" disabled>{text('rules_reuse')}</option>
+                {previous.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+            </select>}
+            <span className="text-muted">{text('rules_limit', {n: MAX_CORRESPONDENCES})}</span>
         </div>
     </div>;
 };

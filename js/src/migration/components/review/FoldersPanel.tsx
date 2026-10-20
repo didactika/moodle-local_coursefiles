@@ -82,12 +82,12 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
                 <div className="fbm-folder-route">
                     <span className="fbm-folder-side">
                         <strong>{folder.sourcecourse}</strong>
-                        <span className="fbm-muted">{folder.sourcefolder}</span>
+                        <span className="text-muted">{folder.sourcefolder}</span>
                     </span>
                     <Icon name="arrow-right" />
                     <span className="fbm-folder-side">
                         <strong>{folder.targetcourse}</strong>
-                        <span className="fbm-muted">{folder.targetfolder}</span>
+                        <span className="text-muted">{folder.targetfolder}</span>
                     </span>
                 </div>
                 <div className="fbm-folder-count">

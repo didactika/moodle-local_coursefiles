@@ -44,7 +44,7 @@ Feature: Migrations that never get in the way
     When I click on "[data-tab='folders']" "css_element"
     And I capture FileBank administration "migration-folders" at "[data-region='folders']"
 
-  Scenario: Nothing is chosen for the person, a folder that is not there is no error and changes create no other migration
+  Scenario: Nothing is chosen for the person, a folder that is not there is no error and a migration with nothing to write is not saved
     Given I log in as "admin"
     When I open FileBank administration "migration"
     And I set up a FileBank migration of "A folder that is not there" into "Target materials" from "2025" to "2026"
@@ -62,11 +62,10 @@ Feature: Migrations that never get in the way
     And I click on "[data-step='folders']" "css_element"
     And I set the field "fbm-c0-target-value" to "Missing destination"
     And I click on "[data-step='policies']" "css_element"
-    And I press "Leave it out"
+    And I click on "Leave it out" "text" in the "[data-region='migration-wizard']" "css_element"
     And I capture FileBank administration "migration-edit"
     And I click on "[data-step='check']" "css_element"
     And I wait until "[data-region='empty-state']" "css_element" exists
-    And I press "Save and recalculate"
-    Then I should see "Nothing to write" in the "[data-region='migration-review']" "css_element"
+    Then the "Save and recalculate" "button" should be disabled
     And FileBank should retain "1" migration plans
     And I capture FileBank administration "migration-edited"

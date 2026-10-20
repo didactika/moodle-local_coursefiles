@@ -26,7 +26,6 @@
 namespace local_filebank;
 
 use local_filebank\form\profile_form;
-use local_filebank\local\migration\view\migration_decisions;
 use local_filebank\local\migration\view\migration_files;
 use local_filebank\local\migration\view\migration_overview;
 use local_filebank\local\profile\profiles;
@@ -37,7 +36,6 @@ use local_filebank\output\navigation;
  *
  * @covers \local_filebank\local\migration\view\migration_overview
  * @covers \local_filebank\local\migration\view\migration_files
- * @covers \local_filebank\local\migration\view\migration_decisions
  * @covers \local_filebank\output\navigation
  * @covers \local_filebank\form\profile_form
  * @covers \local_filebank\output\profile_summary
@@ -131,11 +129,9 @@ final class admin_layout_test extends \advanced_testcase {
         $this->assertSame(58, $overview['summary']['files']);
         $this->assertSame(55, $overview['summary']['tocopy']);
         $this->assertSame(2, $overview['summary']['existing']);
-        $this->assertSame(1, $overview['summary']['conflicts']);
+        $this->assertSame(1, $overview['summary']['skipped'], 'A file that was held back is counted as left out');
         $this->assertFalse($overview['canexecute'], 'A migration of an older revision of the profile cannot be started');
-        $this->assertSame('blocked_content', $overview['natures'][0]['nature']);
-        $this->assertSame(1, $overview['natures'][0]['count']);
-        $this->assertSame(['skip', 'overwrite'], array_column($overview['natures'][0]['choices'], 'value'));
+        $this->assertArrayNotHasKey('natures', $overview);
         $all = migration_files::page($planid, '', '', 0, 25);
         $this->assertSame(58, $all['total']);
         $this->assertCount(25, $all['files']);
@@ -147,27 +143,10 @@ final class admin_layout_test extends \advanced_testcase {
         $search = migration_files::page($planid, '', 'file57.txt', 0, 25);
         $this->assertSame(1, $search['total']);
         $this->assertSame('file57.txt', $search['files'][0]['filename']);
-        $this->assertFalse($search['files'][0]['settable'], 'What waits for a decision is settled, not just checked');
+        $this->assertFalse($search['files'][0]['settable'], 'A file that was held back changes with the parameters');
         $folders = migration_files::folders($planid, '', 0, 25);
         $this->assertSame(1, $folders['total']);
         $this->assertSame(58, $folders['folders'][0]['total']);
         $this->assertSame(57, $folders['folders'][0]['included']);
-        $decisions = migration_decisions::page($planid, 'file', 'blocked_content', 0, 25);
-        $this->assertSame(1, $decisions['total']);
-        $this->assertSame('file57.txt', $decisions['items'][0]['label']);
-        $document = json_encode(
-            ['sourceedition' => '2025', 'targetedition' => '2026',
-                'issues' => array_fill(0, 61, ['reason' => 'ambiguous_course_pair'])]
-        );
-        $DB->update_record(
-            'local_filebank_plan',
-            (object)[
-                'id' => $planid, 'configjson' => $document, 'digest' => hash('sha256', $document),
-            ]
-        );
-        $issues = migration_decisions::page($planid, 'issue', 'ambiguous_course_pair', 1, 50);
-        $this->assertSame(61, $issues['total']);
-        $this->assertCount(11, $issues['items']);
-        $this->assertSame(['exclude'], array_column($issues['items'][0]['choices'], 'value'));
     }
 }

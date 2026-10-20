@@ -10,23 +10,23 @@
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo, useState} from 'react';
 import {useMigration} from '../../hooks/useMigration';
 import {describeError} from '../../lib/errors';
 import {parametersOf} from '../../lib/parameters';
 import {addToast} from '../../lib/toast';
 import {
-    cancelRun, deleteMigrations, executeMigration, reconfigureMigration, resolveDecisions, selectFiles, selectFolder,
+    cancelRun, deleteMigrations, executeMigration, reconfigureMigration, selectFiles, selectFolder,
 } from '../../services/api';
-import type {Bucket, Nature, Text} from '../../types';
+import type {Bucket, Text} from '../../types';
 import Alert from '../ui/Alert';
 import ConfirmModal from '../ui/ConfirmModal';
+import IconButton from '../ui/IconButton';
 import Icon from '../ui/Icon';
 import PageHeader from '../ui/PageHeader';
 import Skeleton from '../ui/Skeleton';
 import StatusBadge from '../ui/StatusBadge';
 import ActionPanel from './ActionPanel';
-import DecisionsPanel from './DecisionsPanel';
 import FilesPanel from './FilesPanel';
 import FoldersPanel from './FoldersPanel';
 import Notes from './Notes';
@@ -46,48 +46,27 @@ interface ReviewProps {
 const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
     const state = useMigration(id);
     const {migration, busy} = state;
-    const [tab, setTab] = useState<Tab | ''>('');
+    const [tab, setTab] = useState<Tab>('files');
     const [bucket, setBucket] = useState<Bucket>('');
     const [starting, setStarting] = useState(false);
     const [stopping, setStopping] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const parameters = useMemo(() => (migration ? parametersOf(migration) : null), [migration?.digest]);
-    const opened = migration !== null;
-    const waiting = migration !== null && migration.natures.length > 0;
-
-    // The part that opens is chosen once, so settling the last decision does not move the person to another part.
-    useEffect(() => {
-        if (opened && tab === '') {
-            setTab(waiting ? 'decisions' : 'files');
-        }
-    }, [opened, waiting, tab]);
 
     if (!migration || !parameters) {
         return <div className="fbm-review">
             <PageHeader
                 title={text('review_title', {n: id})}
-                back={<button type="button" className="fbm-back" onClick={onBack}><Icon name="arrow-left" gap />{text('back_to_list')}</button>}
+                back={<button type="button" className="btn btn-link btn-sm p-0 fbm-back" onClick={onBack}><Icon name="arrow-left" gap />{text('back_to_list')}</button>}
             />
-            {state.error !== '' && <Alert tone="danger" live actions={<button type="button" className="fbm-btn" onClick={() => void state.reload()}>{text('retry')}</button>}>
+            {state.error !== '' && <Alert tone="danger" live actions={<button type="button" className="btn btn-outline-secondary" onClick={() => void state.reload()}>{text('retry')}</button>}>
                 {state.error}
             </Alert>}
             {state.loading && <Skeleton rows={6} label={text('loading')} />}
         </div>;
     }
 
-    const decisions = migration.natures.reduce((sum, nature) => sum + nature.count, 0);
-    const current: Tab = tab === '' ? (decisions > 0 ? 'decisions' : 'files') : tab;
-
-    const resolve = async(nature: Nature, ids: number[], choice: string): Promise<boolean> => {
-        const answer = await state.apply(
-            () => resolveDecisions(migration.id, migration.digest, nature.kind, ids.length > 0 ? '' : nature.nature, ids, choice),
-            (result) => result.migration
-        );
-        if (answer) {
-            void addToast(text('resolved_n', {n: answer.changed}));
-        }
-        return answer !== null;
-    };
+    const current: Tab = tab;
 
     const start = async() => {
         const answer = await state.apply(() => executeMigration(migration.id, migration.digest));
@@ -118,7 +97,7 @@ const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
         <PageHeader
             title={text('review_title', {n: migration.id})}
             badges={<StatusBadge status={migration.state} label={migration.statelabel} />}
-            back={<button type="button" className="fbm-back" onClick={onBack}><Icon name="arrow-left" gap />{text('back_to_list')}</button>}
+            back={<button type="button" className="btn btn-link btn-sm p-0 fbm-back" onClick={onBack}><Icon name="arrow-left" gap />{text('back_to_list')}</button>}
             subtitle={<>
                 <span className="fbm-route">
                     <strong>{migration.source}</strong><Icon name="arrow-right" /><strong>{migration.target}</strong>
@@ -126,18 +105,16 @@ const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
                 {' · '}{migration.profile}{' · '}{migration.datelabel}
             </>}
             actions={<>
-                {migration.editable && <button type="button" className="fbm-btn" onClick={onEdit} disabled={busy} data-action="edit-parameters">
+                {migration.editable && <button type="button" className="btn btn-outline-secondary" onClick={onEdit} disabled={busy} data-action="edit-parameters">
                     <Icon name="sliders" gap />{text('edit_parameters')}
                 </button>}
-                <button type="button" className="fbm-btn" onClick={onNew} data-action="new-from">
+                <button type="button" className="btn btn-outline-secondary" onClick={onNew} data-action="new-from">
                     <Icon name="plus" gap />{text('new_migration')}
                 </button>
-                {!migration.run?.active && <button type="button" className="fbm-iconbtn tone-danger" title={text('delete')} onClick={() => setDeleting(true)}>
-                    <Icon name="trash" /><span className="fbm-sr">{text('delete')}</span>
-                </button>}
+                {!migration.run?.active && <IconButton icon="trash" label={text('delete')} tone="danger" onClick={() => setDeleting(true)} />}
             </>}
         />
-        {state.stale && <Alert tone="warning" live actions={<button type="button" className="fbm-btn" onClick={() => void state.reload()}>{text('reload')}</button>}>
+        {state.stale && <Alert tone="warning" live actions={<button type="button" className="btn btn-outline-secondary" onClick={() => void state.reload()}>{text('reload')}</button>}>
             {text('stale')}
         </Alert>}
         {state.error !== '' && !state.stale && <Alert tone="danger" live>{state.error}</Alert>}
@@ -161,9 +138,8 @@ const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
             onRework={() => void state.apply(() => reconfigureMigration(migration.id, migration.digest, parameters))}
         />
         <Notes notes={migration.summary.notes} text={text} />
-        <div className="fbm-tabs" role="tablist" aria-label={text('review_sections')}>
+        <div className="nav nav-tabs" role="tablist" aria-label={text('review_sections')}>
             {([
-                ['decisions', 'hand-pointer', decisions],
                 ['files', 'file-lines', migration.summary.files],
                 ['folders', 'folder-tree', migration.summary.folders],
             ] as Array<[Tab, string, number]>).map(([value, icon, count]) => <button
@@ -171,14 +147,13 @@ const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
                 type="button"
                 role="tab"
                 aria-selected={current === value}
-                className={`fbm-tab${current === value ? ' is-on' : ''}${value === 'decisions' && decisions > 0 ? ' needs-attention' : ''}`}
+                className={`nav-link${current === value ? ' active' : ''}`}
                 onClick={() => setTab(value)}
                 data-tab={value}
             >
-                <Icon name={icon} gap />{text('tab_' + value)}<span className="fbm-count">{count}</span>
+                <Icon name={icon} gap />{text('tab_' + value)}<span className="badge rounded-pill fbm-count">{count}</span>
             </button>)}
         </div>
-        {current === 'decisions' && <DecisionsPanel migration={migration} text={text} busy={busy} onResolve={resolve} />}
         {current === 'files' && <FilesPanel
             migration={migration}
             text={text}
@@ -218,7 +193,7 @@ const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
             onCancel={() => setDeleting(false)}
         >
             <p>{text('delete_text', {n: 1})}</p>
-            <p className="fbm-muted">{text('delete_hint')}</p>
+            <p className="text-muted">{text('delete_hint')}</p>
         </ConfirmModal>
     </div>;
 };

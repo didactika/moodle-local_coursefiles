@@ -6,26 +6,26 @@
     Escaped descriptions of the exact reviewed profile revision.
     Example context (json): {"name":"Annual courses","rows":[],"parsers":[],"familykey":"family","editioncapture":"edition"}
 }}
-<div class="filebank-ui filebank-admin fbm-panel" data-region="filebank-profile-summary">
-    <div class="fbm-panel-head">
-        <h3 class="fbm-panel-title">{{#str}}relationshiprules, local_filebank{{/str}}</h3>
-        {{#editurl}}<a class="fbm-btn fbm-btn-small" href="{{editurl}}">{{#str}}editprofilerules, local_filebank{{/str}}</a>{{/editurl}}
+<div class="filebank-ui filebank-admin card" data-region="filebank-profile-summary">
+    <div class="card-header">
+        <h3 class="card-title">{{#str}}relationshiprules, local_filebank{{/str}}</h3>
+        {{#editurl}}<a class="btn btn-outline-secondary btn-sm" href="{{editurl}}">{{#str}}editprofilerules, local_filebank{{/str}}</a>{{/editurl}}
     </div>
-    <div class="fbm-panel-body">
+    <div class="card-body">
         <p>{{{name}}}{{#revision}} · {{#str}}revision, local_filebank{{/str}} {{revision}}{{/revision}}</p>
         <dl class="fbm-definitions">{{#filters}}
-            <dt>{{{label}}}</dt><dd class="fbm-break"><code>{{capture}}</code></dd>
+            <dt>{{{label}}}</dt><dd class="text-break"><code>{{capture}}</code></dd>
         {{/filters}}</dl>
         {{#placement}}<details class="fbm-details">
             <summary><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}rulesinuse, local_filebank{{/str}}</summary>
         <dl class="fbm-definitions">{{#rows}}
-            <dt>{{label}}</dt><dd class="fbm-break">{{value}}</dd>
+            <dt>{{label}}</dt><dd class="text-break">{{value}}</dd>
         {{/rows}}</dl>
         </details>{{/placement}}
         <details class="fbm-details">
             <summary><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}relationshiprules, local_filebank{{/str}}</summary>
             <p>{{#str}}familykey, local_filebank{{/str}}: <code>{{familykey}}</code></p>
-            {{#parsers}}<p>{{field}}<br><code class="fbm-break">{{pattern}}</code></p>{{/parsers}}
+            {{#parsers}}<p>{{field}}<br><code class="text-break">{{pattern}}</code></p>{{/parsers}}
         </details>
     </div>
 </div>

@@ -75,7 +75,7 @@ final class workflow_authorization_test extends workflow_fixture {
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $options);
         $this->assertSame('reviewable', $plan->state);
         $document = json_decode($plan->configjson, true);
-        $this->assertSame([], $document['issues'], 'A folder that the source does not have is not an error');
+        $this->assertArrayNotHasKey('issues', $document, 'A folder that the source does not have is not an error');
         $this->assertSame(1, $document['notes']['nosourcefolder']);
         $this->assertSame(
             1,

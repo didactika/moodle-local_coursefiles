@@ -33,9 +33,9 @@ const ActionPanel = ({migration, text, busy, onStart, onStop, onEdit, onRework}:
             <div className="fbm-action-body">
                 <strong>{text('run_running', {done: run.done, total: run.total})}</strong>
                 <Progress value={run.done} max={Math.max(1, run.total)} label={text('progress')} />
-                <span className="fbm-muted">{text('run_running_hint')}</span>
+                <span className="text-muted">{text('run_running_hint')}</span>
             </div>
-            {run.cancancel && <button type="button" className="fbm-btn fbm-btn-danger" onClick={onStop} disabled={busy}>
+            {run.cancancel && <button type="button" className="btn btn-danger" onClick={onStop} disabled={busy}>
                 <Icon name="stop" gap />{text('run_stop')}
             </button>}
         </div>;
@@ -51,7 +51,7 @@ const ActionPanel = ({migration, text, busy, onStart, onStop, onEdit, onRework}:
     if (migration.outdated) {
         return <Alert
             tone="warning"
-            actions={<button type="button" className="fbm-btn fbm-btn-primary" onClick={onRework} disabled={busy}>
+            actions={<button type="button" className="btn btn-primary" onClick={onRework} disabled={busy}>
                 <Icon name="rotate" gap />{text('outdated_rework')}
             </button>}
         >
@@ -61,7 +61,7 @@ const ActionPanel = ({migration, text, busy, onStart, onStop, onEdit, onRework}:
     if (!summary.haswork) {
         return <Alert
             tone="info"
-            actions={migration.editable && <button type="button" className="fbm-btn fbm-btn-primary" onClick={onEdit} disabled={busy}>
+            actions={migration.editable && <button type="button" className="btn btn-primary" onClick={onEdit} disabled={busy}>
                 <Icon name="sliders" gap />{text('edit_parameters')}
             </button>}
         >
@@ -71,17 +71,13 @@ const ActionPanel = ({migration, text, busy, onStart, onStop, onEdit, onRework}:
     return <div className="fbm-action is-ready" data-region="start">
         <div className="fbm-action-body">
             <strong>{text('start_ready', {n: summary.tocopy + summary.tooverwrite})}</strong>
-            <span className="fbm-muted">
-                {summary.conflicts + summary.openissues > 0
-                    ? text('start_with_decisions', {n: summary.conflicts + summary.openissues})
-                    : text('start_all_set')}
-            </span>
+            <span className="text-muted">{text('start_all_set')}</span>
         </div>
         {migration.canexecute
-            ? <button type="button" className="fbm-btn fbm-btn-success fbm-btn-large" onClick={onStart} disabled={busy} data-action="start">
+            ? <button type="button" className="btn btn-success btn-lg" onClick={onStart} disabled={busy} data-action="start">
                 <Icon name="play" gap />{text('start')}
             </button>
-            : <span className="fbm-muted">{text('start_no_permission')}</span>}
+            : <span className="text-muted">{text('start_no_permission')}</span>}
     </div>;
 };
 

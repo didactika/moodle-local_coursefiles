@@ -93,7 +93,7 @@ export const createRows = async id => {
                 if (column.type === 'checkbox') {
                     input.className = 'filebank-row-check';
                 } else {
-                    input.className = column.options ? 'fbm-select fbm-select-fill' : 'fbm-input';
+                    input.className = column.options ? 'form-select w-100' : 'form-control';
                 }
                 if (column.type !== 'checkbox') {
                     input.value = value[column.key] || column.options?.[0]?.value || '';

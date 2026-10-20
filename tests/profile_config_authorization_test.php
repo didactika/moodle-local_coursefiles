@@ -89,7 +89,7 @@ final class profile_config_authorization_test extends profile_config_fixture {
     }
 
     /**
-     * Locked authors are blocked before any destination write.
+     * A file whose author is locked is kept out of the migration before any destination write.
      */
     public function test_locked_workflow_is_explicitly_blocked(): void {
 
@@ -98,7 +98,7 @@ final class profile_config_authorization_test extends profile_config_fixture {
         $this->assertSame('reviewable', $plan->state);
         json_decode($plan->configjson, true);
         $this->assertSame(
-            'blocked_policy',
+            'skip_conflict',
             $GLOBALS['DB']->get_field(
                 'local_filebank_operation',
                 'decision',

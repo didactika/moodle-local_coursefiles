@@ -11,7 +11,7 @@
  */
 import {fetchOne} from '@moodle/lms/core/ajax';
 import type {
-    Bucket, DecisionPage, FilePage, FolderPage, Migration, MigrationPage, Options, Parameters, Summary,
+    Bucket, FilePage, FolderPage, Migration, MigrationPage, Options, Parameters, Summary,
 } from '../types';
 
 const call = <T>(name: string, args: Record<string, unknown>): Promise<T> => fetchOne<T>({
@@ -44,7 +44,7 @@ export const listMigrations = (search: string, state: string, page: number, perp
     call('list', {search, state, page, perpage});
 
 /** Read what a new migration can be asked to do. */
-export const getOptions = (): Promise<Options> => call('options', {});
+export const getOptions = (search = '', profileid = 0): Promise<Options> => call('options', {search, profileid});
 
 /** Count what a migration with these parameters would do, without storing anything. */
 export const checkMigration = (parameters: Parameters): Promise<Summary> =>
@@ -57,10 +57,6 @@ export const createMigration = (parameters: Parameters): Promise<{id: number}> =
 /** Read one migration. */
 export const getMigration = (id: number): Promise<Migration> => call('get', {id});
 
-/** Read a page of what waits for a decision. */
-export const getDecisions = (id: number, kind: string, nature: string, page: number, perpage: number): Promise<DecisionPage> =>
-    call('decisions', {id, kind, nature, page, perpage});
-
 /** Read a page of the files of a migration. */
 export const getFiles = (id: number, bucket: Bucket, search: string, page: number, perpage: number): Promise<FilePage> =>
     call('files', {id, bucket, search, page, perpage});
@@ -68,11 +64,6 @@ export const getFiles = (id: number, bucket: Bucket, search: string, page: numbe
 /** Read a page of the folders of a migration. */
 export const getFolders = (id: number, search: string, page: number, perpage: number): Promise<FolderPage> =>
     call('folders', {id, search, page, perpage});
-
-/** Settle what waits for a decision: some of it, or all of one nature when no ids are given. */
-export const resolveDecisions = (
-    id: number, digest: string, kind: string, nature: string, ids: number[], choice: string,
-): Promise<{changed: number; migration: Migration}> => call('resolve', {id, digest, kind, nature, ids, choice});
 
 /** Change the parameters of a migration that has not run. */
 export const reconfigureMigration = (id: number, digest: string, parameters: Parameters): Promise<Migration> =>

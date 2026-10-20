@@ -1,7 +1,8 @@
 @local @local_filebank @filebank_migration @javascript
-Feature: Settle what needs a decision all at once
+Feature: Decide what happens with the files in conflict before the migration is created
   As a FileBank administrator
-  I need to settle hundreds of files in conflict with one choice, inside the same migration, and never be blocked by them
+  I need to say in the last step what happens with the files that are already different in the destination, so a migration
+  never waits for a decision once it exists
 
   Background:
     Given the following "local_filebank > conflict fixtures" exist:
@@ -10,28 +11,25 @@ Feature: Settle what needs a decision all at once
     And I log in as "admin"
     And I open FileBank administration "migration"
     And I set up a FileBank migration of "Published materials" into "Target materials" from "2025" to "2026"
+    Then I should see "12 files already have a different file in the destination" in the "[data-region='conflict-choice']" "css_element"
+    And I capture FileBank administration "migration-conflict-choice" at "[data-region='conflict-choice']"
+
+  Scenario: Files in conflict are kept as they are and the migration is created without anything to decide
+    When I press "Create migration"
+    And I wait until "[data-region='migration-review']" "css_element" exists
+    Then I should see "Left out" in the "[data-region='summary']" "css_element"
+    And I should not see "Decisions" in the "[data-region='migration-review']" "css_element"
+    And FileBank should retain "1" migration plans
+    And I capture FileBank administration "conflicts-kept"
+    When I click on "[data-region='files'] .fbm-filterbox summary" "css_element"
+    And I click on "Left as they are" "radio"
+    Then I should see "Left as they are" in the "[data-region='active-filters']" "css_element"
+
+  Scenario: Files in conflict are overwritten when that is chosen and the migration runs
+    When I click on "Overwrite it" "text" in the "[data-region='conflict-choice']" "css_element"
+    And I wait until "[data-region='check-result'] .fbm-choice.is-on input[value='overwrite']" "css_element" exists
     And I press "Create migration"
     And I wait until "[data-region='migration-review']" "css_element" exists
-
-  Scenario: Files in conflict never block and are left as they are with one click
-    Then I should see "A different file is already there" in the "[data-region='decisions']" "css_element"
-    And I should see "To decide" in the "[data-region='summary']" "css_element"
-    And I capture FileBank administration "decisions-open"
-    When I press "Review one by one"
-    And I wait until "[data-region='decision-list']" "css_element" exists
-    And I capture FileBank administration "decisions-list" at "[data-region='decisions']"
-    When I press "Apply to all 12: Keep the destination as it is"
-    And I click on "Apply" "button" in the "dialog" "css_element"
-    Then I should see "Everything is settled" in the "[data-region='decisions']" "css_element"
-    And FileBank should retain "1" migration plans
-    And I capture FileBank administration "decisions-settled"
-    When I click on "[data-tab='files']" "css_element"
-    And I click on "Left as they are" "button"
-    Then I should see "Left as they are"
-
-  Scenario: Files in conflict are overwritten together and the migration runs
-    When I press "Apply to all 12: Overwrite the file in the destination"
-    And I click on "Apply" "button" in the "dialog" "css_element"
     Then I should see "To overwrite" in the "[data-region='summary']" "css_element"
     And FileBank should retain "1" migration plans
     When I press "Start migration"

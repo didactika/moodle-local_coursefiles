@@ -88,10 +88,11 @@ Feature: Clear administration tabs and immutable migration previews
   Scenario: Material reuse logs are available as a native report
     Given I log in as "admin"
     When I navigate to "Reports > FileBank material reuse" in site administration
+    And I click on ".filebank-log .fbm-filterbox summary" "css_element"
     Then I should see "From date"
     And I should see "Through date"
-    When I set the field "Action" to "profile_activated"
-    And I click on ".filebank-log button[type='submit']" "css_element"
+    And I set the field "Action" to "profile_activated"
+    And I wait until "[data-region='active-filters']" "css_element" exists
     Then I should see "Profile activated"
     And I capture FileBank administration "log"
 

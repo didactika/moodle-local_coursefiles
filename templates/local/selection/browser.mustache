@@ -12,73 +12,73 @@
     <input type="hidden" name="layout" value="{{layout}}">
     {{^multipleprofiles}}<input type="hidden" name="profileid" value="{{profileid}}">{{/multipleprofiles}}
     {{#selecteditems}}<input type="hidden" name="items[]" value="{{value}}">{{/selecteditems}}
-    <div class="filebank-heading d-flex align-items-center justify-content-between flex-wrap mb-2"><h2 class="fbm-h4">{{{repositoryname}}}</h2>
-        <span class="fbm-muted fbm-small" role="status" data-filebank-loading></span>
+    <div class="filebank-heading d-flex align-items-center justify-content-between flex-wrap mb-2"><h2 class="h4">{{{repositoryname}}}</h2>
+        <span class="text-muted small" role="status" data-filebank-loading></span>
     </div>
-    {{#locked}}<div class="fbm-alert tone-warning" role="status"><div class="fbm-alert-body">{{#str}}browserlocked, local_filebank{{/str}}</div></div>{{/locked}}
+    {{#locked}}<div class="alert alert-warning" role="status"><div class="fbm-alert-body">{{#str}}browserlocked, local_filebank{{/str}}</div></div>{{/locked}}
     <div class="filebank-toolbar filebank-browser-filters d-flex align-items-end justify-content-between flex-wrap my-2">
-        <div class="filebank-search"><label for="mpq" class="fbm-label">{{#str}}filenamefilter, local_filebank{{/str}}</label> {{{filenamehelp}}}
+        <div class="filebank-search"><label for="mpq" class="form-label">{{#str}}filenamefilter, local_filebank{{/str}}</label> {{{filenamehelp}}}
             <div class="fbm-search"><span class="fbm-search-icon">{{#pix}}a/search, core{{/pix}}</span>
-                <input type="search" name="q" id="mpq" value="{{filters.q}}" class="fbm-input fbm-search-input" data-filebank-filter autocomplete="off">
+                <input type="search" name="q" id="mpq" value="{{filters.q}}" class="form-control form-control rounded-pill" data-filebank-filter autocomplete="off">
             </div>
         </div>
 
         <details class="filebank-filter-popover" data-filebank-options>
-            <summary class="fbm-btn">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}} <span data-filebank-filter-count>{{#filtercount}}({{filtercount}}){{/filtercount}}</span></summary>
+            <summary class="btn btn-outline-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}} <span data-filebank-filter-count>{{#filtercount}}({{filtercount}}){{/filtercount}}</span></summary>
             <div class="filebank-filter-menu"><div class="filebank-filterbar">
-        <div><label for="mpmodule" class="fbm-label">{{#str}}modulefilter, local_filebank{{/str}}</label> {{{modulehelp}}}
-            <select name="module" id="mpmodule" class="fbm-select fbm-select-fill" data-filebank-filter>{{#modules}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modules}}</select>
+        <div><label for="mpmodule" class="form-label">{{#str}}modulefilter, local_filebank{{/str}}</label> {{{modulehelp}}}
+            <select name="module" id="mpmodule" class="form-select w-100" data-filebank-filter>{{#modules}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modules}}</select>
         </div>
-        <div><label for="mptype" class="fbm-label">{{#str}}filetypefilter, local_filebank{{/str}}</label> {{{filetypehelp}}}
-            <select name="mimetype" id="mptype" class="fbm-select fbm-select-fill" data-filebank-filter>{{#types}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/types}}</select>
+        <div><label for="mptype" class="form-label">{{#str}}filetypefilter, local_filebank{{/str}}</label> {{{filetypehelp}}}
+            <select name="mimetype" id="mptype" class="form-select w-100" data-filebank-filter>{{#types}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/types}}</select>
         </div>
-            {{#multipleprofiles}}<div><label for="mpprofile" class="fbm-label">{{#str}}browserprofile, local_filebank{{/str}}</label> {{{profilehelp}}}
-                <select name="profileid" id="mpprofile" class="fbm-select fbm-select-fill" data-filebank-filter>{{#profiles}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/profiles}}</select>
+            {{#multipleprofiles}}<div><label for="mpprofile" class="form-label">{{#str}}browserprofile, local_filebank{{/str}}</label> {{{profilehelp}}}
+                <select name="profileid" id="mpprofile" class="form-select w-100" data-filebank-filter>{{#profiles}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/profiles}}</select>
             </div>{{/multipleprofiles}}
-            <div><label for="mpshortname" class="fbm-label">{{#str}}shortnamefilter, local_filebank{{/str}}</label> {{{coursehelp}}}<input type="text" name="shortname" id="mpshortname" value="{{filters.shortname}}" class="fbm-input" data-filebank-filter></div>
-            <div><label for="mpdestination" class="fbm-label">{{#str}}batchdestination, local_filebank{{/str}}</label> {{{destinationhelp}}}<select name="destination" id="mpdestination" class="fbm-select fbm-select-fill">{{#destinations}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/destinations}}</select></div>
-            <div><label for="mpmode" class="fbm-label">{{#str}}copymode, local_filebank{{/str}}</label> {{{modehelp}}}<select name="mode" id="mpmode" class="fbm-select fbm-select-fill">{{#modes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modes}}</select></div>
-            {{#capturefilters}}<div><label for="{{id}}" class="fbm-label">{{{label}}}</label> {{{capturehelp}}}
-                <input type="text" name="captures[{{key}}]" id="{{id}}" value="{{value}}" class="fbm-input" maxlength="255" list="{{id}}-values" data-filebank-filter autocomplete="off">
+            <div><label for="mpshortname" class="form-label">{{#str}}shortnamefilter, local_filebank{{/str}}</label> {{{coursehelp}}}<input type="text" name="shortname" id="mpshortname" value="{{filters.shortname}}" class="form-control" data-filebank-filter></div>
+            <div><label for="mpdestination" class="form-label">{{#str}}batchdestination, local_filebank{{/str}}</label> {{{destinationhelp}}}<select name="destination" id="mpdestination" class="form-select w-100">{{#destinations}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/destinations}}</select></div>
+            <div><label for="mpmode" class="form-label">{{#str}}copymode, local_filebank{{/str}}</label> {{{modehelp}}}<select name="mode" id="mpmode" class="form-select w-100">{{#modes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{{label}}}</option>{{/modes}}</select></div>
+            {{#capturefilters}}<div><label for="{{id}}" class="form-label">{{{label}}}</label> {{{capturehelp}}}
+                <input type="text" name="captures[{{key}}]" id="{{id}}" value="{{value}}" class="form-control" maxlength="255" list="{{id}}-values" data-filebank-filter autocomplete="off">
                 <datalist id="{{id}}-values">{{#suggestions}}<option value="{{value}}"></option>{{/suggestions}}</datalist>
             </div>{{/capturefilters}}
-            {{#morecapturefilters}}<div><label for="{{id}}" class="fbm-label">{{{label}}}</label> {{{capturehelp}}}
-                <input type="text" name="captures[{{key}}]" id="{{id}}" value="{{value}}" class="fbm-input" maxlength="255" list="{{id}}-values" data-filebank-filter autocomplete="off">
+            {{#morecapturefilters}}<div><label for="{{id}}" class="form-label">{{{label}}}</label> {{{capturehelp}}}
+                <input type="text" name="captures[{{key}}]" id="{{id}}" value="{{value}}" class="form-control" maxlength="255" list="{{id}}-values" data-filebank-filter autocomplete="off">
                 <datalist id="{{id}}-values">{{#suggestions}}<option value="{{value}}"></option>{{/suggestions}}</datalist>
             </div>{{/morecapturefilters}}
 
             </div><div class="fbm-filter-foot">
-                <button name="clearfilters" value="1" class="fbm-btn fbm-btn-small" data-filebank-clear-filters {{^filtercount}}disabled{{/filtercount}}>{{#pix}}i/reload, core{{/pix}} {{#str}}clearfilters, local_filebank{{/str}}</button>
+                <button name="clearfilters" value="1" class="btn btn-outline-secondary btn-sm" data-filebank-clear-filters {{^filtercount}}disabled{{/filtercount}}>{{#pix}}i/reload, core{{/pix}} {{#str}}clearfilters, local_filebank{{/str}}</button>
             </div></div>
         </details>
     </div>
     <div class="filebank-toolbar d-flex align-items-center justify-content-between flex-wrap my-2">
         <div class="fbm-actions">
-            <button name="search" value="1" class="fbm-btn fbm-btn-small" data-filebank-search>{{#str}}batchsearch, local_filebank{{/str}}</button>
-            <button name="selectall" value="1" class="fbm-btn fbm-btn-small fbm-btn-ghost">{{#str}}selectall, local_filebank{{/str}}</button>
-            <button name="clear" value="1" class="fbm-btn fbm-btn-small fbm-btn-ghost">{{#str}}clearselection, local_filebank{{/str}}</button>
+            <button name="search" value="1" class="btn btn-outline-secondary btn-sm" data-filebank-search>{{#str}}batchsearch, local_filebank{{/str}}</button>
+            <button name="selectall" value="1" class="btn btn-link btn-sm">{{#str}}selectall, local_filebank{{/str}}</button>
+            <button name="clear" value="1" class="btn btn-link btn-sm">{{#str}}clearselection, local_filebank{{/str}}</button>
         </div>
-        <div class="fbm-segment" role="group" data-filebank-layout-region data-react-component="@moodle/lms/local_filebank/ViewSelector" data-react-props="{{reactlayout}}" aria-label="{{#str}}browserlayout, local_filebank{{/str}}">
+        <div class="btn-group fbm-segment" role="group" data-filebank-layout-region data-react-component="@moodle/lms/local_filebank/ViewSelector" data-react-props="{{reactlayout}}" aria-label="{{#str}}browserlayout, local_filebank{{/str}}">
             <button type="button" class="fbm-segment-button {{#gridlayout}}active{{/gridlayout}}" data-filebank-layout="grid" aria-pressed="{{gridpressed}}{{^gridpressed}}false{{/gridpressed}}" title="{{#str}}layoutgrid, local_filebank{{/str}}">{{#pix}}a/view_icon_active, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}layoutgrid, local_filebank{{/str}}</span></button>
             <button type="button" class="fbm-segment-button {{#listlayout}}active{{/listlayout}}" data-filebank-layout="list" aria-pressed="{{listpressed}}{{^listpressed}}false{{/listpressed}}" title="{{#str}}layoutlist, local_filebank{{/str}}">{{#pix}}a/view_list_active, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}layoutlist, local_filebank{{/str}}</span></button>
             <button type="button" class="fbm-segment-button {{#treelayout}}active{{/treelayout}}" data-filebank-layout="tree" aria-pressed="{{treepressed}}{{^treepressed}}false{{/treepressed}}" title="{{#str}}layouttree, local_filebank{{/str}}">{{#pix}}a/view_tree_active, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}layouttree, local_filebank{{/str}}</span></button>
         </div>
     </div>
-    {{#infolder}}<div class="filebank-toolbar mb-2 d-flex align-items-center justify-content-between flex-wrap my-2"><button name="openfolder" value="{{parent}}" class="fbm-btn fbm-btn-small filebank-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</button><span class="fbm-small fbm-muted fbm-break">{{{location}}}</span></div>{{/infolder}}
+    {{#infolder}}<div class="filebank-toolbar mb-2 d-flex align-items-center justify-content-between flex-wrap my-2"><button name="openfolder" value="{{parent}}" class="btn btn-outline-secondary btn-sm filebank-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</button><span class="small text-muted text-break">{{{location}}}</span></div>{{/infolder}}
     <div class="filebank-results" data-filebank-results><div class="filebank-skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div class="filebank-cards">
         {{#treegroups}}<div class="filebank-browser-tree-group" data-collapsed="false">
-            <button type="button" class="fbm-btn fbm-btn-small fbm-btn-ghost filebank-course-heading{{^treelayout}} d-none{{/treelayout}}" data-filebank-course-toggle {{^treelayout}}hidden{{/treelayout}} aria-expanded="true"><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}i/course, core{{/pix}} <strong class="fbm-break">{{{name}}}</strong></button>
+            <button type="button" class="btn btn-sm btn-link filebank-course-heading{{^treelayout}} d-none{{/treelayout}}" data-filebank-course-toggle {{^treelayout}}hidden{{/treelayout}} aria-expanded="true"><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#pix}}i/course, core{{/pix}} <strong class="text-break">{{{name}}}</strong></button>
             <div class="filebank-tree-entries">{{#cards}}{{> local_filebank/local/selection/card}}{{/cards}}</div>
         </div>{{/treegroups}}
 
     </div>
-    {{^cards}}<div class="filebank-empty fbm-muted py-4 text-center">{{#pix}}a/search, core{{/pix}}<p class="mt-2">{{#catalogpending}}{{#str}}catalogpending, local_filebank{{/str}}{{/catalogpending}}{{^catalogpending}}{{#str}}batchempty, local_filebank{{/str}}{{/catalogpending}}</p></div>{{/cards}}
+    {{^cards}}<div class="filebank-empty text-muted py-4 text-center">{{#pix}}a/search, core{{/pix}}<p class="mt-2">{{#catalogpending}}{{#str}}catalogpending, local_filebank{{/str}}{{/catalogpending}}{{^catalogpending}}{{#str}}batchempty, local_filebank{{/str}}{{/catalogpending}}</p></div>{{/cards}}
     <div class="filebank-pagination mt-3 d-flex align-items-center justify-content-between flex-wrap">
-        {{#previouspage}}<button name="previouspage" value="1" class="fbm-btn fbm-btn-small">{{#pix}}t/left, core{{/pix}} {{#str}}previous, core{{/str}}</button>{{/previouspage}}
-        {{#next}}<button name="next" value="{{next}}" class="fbm-btn fbm-btn-small">{{#str}}batchnext, local_filebank{{/str}} {{#pix}}t/right, core{{/pix}}</button>{{/next}}
+        {{#previouspage}}<button name="previouspage" value="1" class="btn btn-outline-secondary btn-sm">{{#pix}}t/left, core{{/pix}} {{#str}}previous, core{{/str}}</button>{{/previouspage}}
+        {{#next}}<button name="next" value="{{next}}" class="btn btn-outline-secondary btn-sm">{{#str}}batchnext, local_filebank{{/str}} {{#pix}}t/right, core{{/pix}}</button>{{/next}}
     </div>
     </div><div class="filebank-footer fbm-footer">
-        <span class="fbm-small"><strong data-filebank-count>{{count}}</strong> {{#str}}selecteditems, local_filebank{{/str}}</span>
-        <button name="review" value="1" class="fbm-btn fbm-btn-primary" data-filebank-review>{{#str}}batchreview, local_filebank{{/str}} {{#pix}}t/right, core{{/pix}}</button>
+        <span class="small"><strong data-filebank-count>{{count}}</strong> {{#str}}selecteditems, local_filebank{{/str}}</span>
+        <button name="review" value="1" class="btn btn-primary" data-filebank-review>{{#str}}batchreview, local_filebank{{/str}} {{#pix}}t/right, core{{/pix}}</button>
     </div>
 </form>

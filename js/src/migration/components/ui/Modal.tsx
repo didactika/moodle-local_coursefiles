@@ -55,15 +55,15 @@ const Modal = ({open, title, onClose, closeLabel, children, footer, size = 'medi
             event.preventDefault();
         }}
     >
-        {open && <div className="fbm-dialog-body">
-            <header className="fbm-dialog-head">
-                <h3 className="fbm-dialog-title">{title}</h3>
-                <button type="button" className="fbm-iconbtn" onClick={close} title={closeLabel} disabled={busy}>
-                    <Icon name="xmark" /><span className="fbm-sr">{closeLabel}</span>
+        {open && <div className="modal-content fbm-dialog-body">
+            <header className="modal-header fbm-dialog-head">
+                <h3 className="modal-title h5">{title}</h3>
+                <button type="button" className="btn btn-link btn-icon" onClick={close} title={closeLabel} disabled={busy}>
+                    <Icon name="xmark" /><span className="filebank-visually-hidden">{closeLabel}</span>
                 </button>
             </header>
-            <div className="fbm-dialog-scroll">{children}</div>
-            {footer && <footer className="fbm-dialog-foot">{footer}</footer>}
+            <div className="modal-body fbm-dialog-scroll">{children}</div>
+            {footer && <footer className="modal-footer fbm-dialog-foot">{footer}</footer>}
         </div>}
     </dialog>;
 };

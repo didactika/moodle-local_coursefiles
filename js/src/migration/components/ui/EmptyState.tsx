@@ -26,8 +26,8 @@ const EmptyState = ({icon, title, text, actions, plain = false}: EmptyStateProps
     data-region="empty-state"
 >
     <div className="fbm-empty-icon"><Icon name={icon} /></div>
-    <h4 className="fbm-h4">{title}</h4>
-    <p className="fbm-muted fbm-empty-text">{text}</p>
+    <h4 className="h4">{title}</h4>
+    <p className="text-muted fbm-empty-text">{text}</p>
     {actions && <div className="fbm-empty-actions">{actions}</div>}
 </div>;
 

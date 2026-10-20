@@ -46,9 +46,9 @@ final class migration_editor_test extends \advanced_testcase {
      * @param string $source The name of the source folder.
      * @return array The options of the planner.
      */
-    private function options(string $source = 'Published materials'): array {
+    private function options(string $source = 'Published materials', string $conflict = 'skip'): array {
         return ['migration' => ['section_match' => ['strategy' => 'ordinal'], 'missing_target' => 'skip',
-            'same_path_different_content' => 'block', 'correspondences' => [[
+            'same_path_different_content' => $conflict, 'correspondences' => [[
                 'source_module' => ['type' => 'folder', 'field' => 'name', 'equals' => $source],
                 'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Target materials'],
             ]]], 'filters' => ['source' => ['edition' => '2025'], 'target' => ['edition' => '2026']]];
@@ -108,41 +108,41 @@ final class migration_editor_test extends \advanced_testcase {
     }
 
     /**
-     * Files in conflict stay out of the migration, so they block nothing, and one choice settles all of them in the same migration.
+     * Files that are already different in the destination are kept as they are when that is the choice, so they block nothing,
+     * and the check says how many there are whatever is chosen.
      */
-    public function test_conflicts_are_left_as_they_are_together_and_never_block(): void {
-        global $DB;
+    public function test_conflicts_are_kept_as_they_are_and_never_block(): void {
         $fixture = $this->conflicts();
+        $summary = migration_planner::check($fixture['profileid'], '2025', '2026', '', $this->options());
+        $this->assertSame(12, $summary['different']);
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $this->options());
         $this->assertSame('reviewable', $plan->state);
-        $this->assertSame(12, $this->operations($plan->id, ['decision' => 'blocked_content']));
-        $this->assertSame(0, $this->operations($plan->id, ['decision' => 'blocked_content', 'included' => 1]));
-        $this->assertTrue(plan_history::has_work($plan->id), 'The files that match are not held back by the ones in conflict');
-        $plans = $DB->count_records('local_filebank_plan');
-
-        $changed = plan_editor::resolve($plan->id, $plan->digest, 'file', [], 'skip', 'blocked_content');
-
-        $this->assertSame(12, $changed);
-        $this->assertSame($plans, $DB->count_records('local_filebank_plan'), 'Settling creates no other migration');
         $this->assertSame(12, $this->operations($plan->id, ['decision' => 'skip_conflict']));
         $this->assertSame(0, $this->operations($plan->id, ['decision' => 'skip_conflict', 'included' => 1]));
+        $this->assertTrue(plan_history::has_work($plan->id), 'The files that match are not held back by the ones in conflict');
         $this->assertSame('completed', $this->run_migration($plan));
         $this->assertSame('Destination version 3', $this->destination($fixture, 'clash-3.txt'));
     }
 
     /**
-     * Files in conflict are overwritten all at once when that is what is chosen, and the exclusions that were made are kept.
+     * Nothing waits for a person: a file in conflict that no policy settles is kept as it is, and choosing to overwrite later, in
+     * the same migration, keeps the files that were left out.
      */
-    public function test_conflicts_are_overwritten_together_and_exclusions_survive(): void {
+    public function test_conflicts_are_overwritten_when_chosen_and_exclusions_survive(): void {
         global $DB;
         $fixture = $this->conflicts();
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $this->options());
+        $legacy = $this->options('Published materials', 'block');
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $legacy);
+        $this->assertSame(0, $this->operations($plan->id, ['decision' => 'blocked_content']));
+        $this->assertSame(12, $this->operations($plan->id, ['decision' => 'skip_conflict']));
         $copy = $DB->get_record('local_filebank_operation', ['planid' => $plan->id, 'decision' => 'copy'], '*', IGNORE_MULTIPLE);
         plan_selection::save($plan->id, $plan->digest, [$copy->id], [], 'page');
         $plan = $DB->get_record('local_filebank_plan', ['id' => $plan->id]);
+        $plans = $DB->count_records('local_filebank_plan');
 
-        plan_editor::resolve($plan->id, $plan->digest, 'file', [], 'overwrite', 'blocked_content');
+        plan_editor::reconfigure($plan->id, $plan->digest, '2025', '2026', '', $this->options('Published materials', 'overwrite'));
 
+        $this->assertSame($plans, $DB->count_records('local_filebank_plan'), 'The change creates no other migration');
         $this->assertSame(12, $this->operations($plan->id, ['decision' => 'overwrite', 'included' => 1]));
         $this->assertSame(0, $this->operations($plan->id, ['sourcehash' => $copy->sourcehash, 'included' => 1]));
         $this->assertSame('completed', $this->run_migration($plan));
@@ -150,13 +150,13 @@ final class migration_editor_test extends \advanced_testcase {
     }
 
     /**
-     * A migration that was changed elsewhere cannot be settled from what a person was looking at.
+     * A migration that was changed elsewhere cannot be changed from what a person was looking at.
      */
     public function test_a_stale_digest_is_refused(): void {
         $fixture = $this->conflicts();
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $this->options());
         $this->expectException(\moodle_exception::class);
-        plan_editor::resolve($plan->id, str_repeat('a', 64), 'file', [], 'skip', 'blocked_content');
+        plan_editor::reconfigure($plan->id, str_repeat('a', 64), '2025', '2026', '', $this->options());
     }
 
     /**
@@ -203,13 +203,13 @@ final class migration_editor_test extends \advanced_testcase {
         $options['filters']['target'] = ['edition' => '2099'];
         $plan = migration_planner::preview($fixture['profileid'], '2025', '2099', '', $options);
         $document = json_decode($plan->configjson, true);
-        $this->assertSame([], $document['issues']);
+        $this->assertArrayNotHasKey('issues', $document);
         $this->assertSame(1, $document['notes']['nodestinationcourse']);
         $this->assertSame(0, $this->operations($plan->id, []));
 
         $nofolder = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $this->options('Nothing here'));
         $document = json_decode($nofolder->configjson, true);
-        $this->assertSame([], $document['issues']);
+        $this->assertArrayNotHasKey('issues', $document);
         $this->assertSame(1, $document['notes']['nosourcefolder']);
     }
 }

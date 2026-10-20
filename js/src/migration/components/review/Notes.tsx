@@ -33,7 +33,7 @@ const Notes = ({notes, text}: NotesProps) => {
         </button>
         {open && <ul className="fbm-notes">
             {notes.map((note) => <li key={note.kind}>{note.label}</li>)}
-            <li className="fbm-muted">{text('notes_footer')}</li>
+            <li className="text-muted">{text('notes_footer')}</li>
         </ul>}
     </div>;
 };

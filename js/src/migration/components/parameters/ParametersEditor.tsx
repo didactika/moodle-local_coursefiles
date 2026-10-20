@@ -11,11 +11,13 @@
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import {parametersFor, profileRules, type Problem, type StepKey} from '../../lib/parameters';
+import {parametersFor, parametersOf, type Problem, type StepKey} from '../../lib/parameters';
+import {getMigration} from '../../services/api';
 import type {Options, Parameters, Text} from '../../types';
 import CorrespondenceRows from './CorrespondenceRows';
 import CourseFilters from './CourseFilters';
 import PolicyFields from './PolicyFields';
+import ProfilePicker from './ProfilePicker';
 import SectionRules from './SectionRules';
 
 interface ParametersEditorProps {
@@ -23,6 +25,8 @@ interface ParametersEditorProps {
     options: Options;
     parameters: Parameters;
     onChange: (parameters: Parameters) => void;
+    /** Ask again for the options: the profiles whose name has the text, and the earlier migrations of the chosen profile. */
+    onOptions: (search: string, profileid: number) => void;
     text: Text;
     /** The profile is fixed, because the migration already exists. */
     lockProfile?: boolean;
@@ -30,25 +34,22 @@ interface ParametersEditorProps {
     problems: Problem[];
 }
 
-const ParametersEditor = ({step, options, parameters, onChange, text, lockProfile = false, problems}: ParametersEditorProps) => {
+const ParametersEditor = ({step, options, parameters, onChange, onOptions, text, lockProfile = false, problems}: ParametersEditorProps) => {
     const profile = options.profiles.find((item) => item.id === parameters.profileid);
 
     if (step === 'profile') {
-        return <select
-            className={`fbm-select fbm-select-wide${problems.includes('profile') ? ' is-invalid' : ''}`}
-            aria-label={text('wizard_profile')}
-            value={parameters.profileid}
-            disabled={lockProfile}
-            onChange={(event) => {
-                const next = options.profiles.find((item) => item.id === Number(event.target.value));
-                if (next) {
-                    onChange(parametersFor(next));
-                }
+        return <ProfilePicker
+            profiles={options.profiles}
+            chosen={parameters.profileid}
+            locked={lockProfile}
+            invalid={problems.includes('profile')}
+            onPick={(next) => {
+                onChange(parametersFor(next));
+                onOptions('', next.id);
             }}
-        >
-            {parameters.profileid <= 0 && <option value={0}>{text('wizard_profile_choose')}</option>}
-            {options.profiles.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-        </select>;
+            onSearch={(query) => onOptions(query, parameters.profileid)}
+            text={text}
+        />;
     }
     if (!profile) {
         return null;
@@ -63,9 +64,14 @@ const ParametersEditor = ({step, options, parameters, onChange, text, lockProfil
         />;
     }
     if (step === 'folders') {
+        const reuse = async(id: number) => {
+            const earlier = parametersOf(await getMigration(id));
+            onChange({...parameters, rules: {...parameters.rules, correspondences: earlier.rules.correspondences}});
+        };
         return <CorrespondenceRows
             rows={parameters.rules.correspondences}
-            profileRows={profileRules(profile).correspondences}
+            previous={options.previous}
+            onReuse={(id) => void reuse(id).catch(() => undefined)}
             modules={options.modules}
             onChange={(correspondences) => onChange({...parameters, rules: {...parameters.rules, correspondences}})}
             text={text}

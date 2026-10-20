@@ -707,14 +707,12 @@ var FilebankMigration = (() => {
     rules: JSON.stringify(parameters.rules)
   });
   var listMigrations = (search, state, page, perpage) => call("list", { search, state, page, perpage });
-  var getOptions = () => call("options", {});
+  var getOptions = (search = "", profileid = 0) => call("options", { search, profileid });
   var checkMigration = (parameters) => call("check", { profileid: parameters.profileid, ...asArguments(parameters) });
   var createMigration = (parameters) => call("create", { profileid: parameters.profileid, ...asArguments(parameters) });
   var getMigration = (id) => call("get", { id });
-  var getDecisions = (id, kind, nature, page, perpage) => call("decisions", { id, kind, nature, page, perpage });
   var getFiles = (id, bucket, search, page, perpage) => call("files", { id, bucket, search, page, perpage });
   var getFolders = (id, search, page, perpage) => call("folders", { id, search, page, perpage });
-  var resolveDecisions = (id, digest, kind, nature, ids, choice) => call("resolve", { id, digest, kind, nature, ids, choice });
   var reconfigureMigration = (id, digest, parameters) => call("reconfigure", { id, digest, ...asArguments(parameters) });
   var selectFiles = (id, digest, action, visible = [], included = []) => call("select", { id, digest, action, visible, included });
   var selectFolder = (id, digest, folder, included) => call("select", {
@@ -808,6 +806,26 @@ var FilebankMigration = (() => {
   );
   var Icon_default = Icon;
 
+  // js/src/migration/lib/tones.ts
+  var BADGES = {
+    primary: "tone-primary",
+    success: "tone-success",
+    warning: "tone-warning",
+    danger: "tone-danger",
+    info: "tone-info",
+    neutral: "tone-neutral"
+  };
+  var ALERTS = {
+    primary: "alert-primary",
+    success: "alert-success",
+    warning: "alert-warning",
+    danger: "alert-danger",
+    info: "alert-info",
+    neutral: "alert-secondary"
+  };
+  var badgeClasses = (tone) => `badge rounded-pill ${BADGES[tone]}`;
+  var alertClasses = (tone) => `alert ${ALERTS[tone]}`;
+
   // js/src/migration/components/ui/Alert.tsx
   var ICONS = {
     danger: "circle-exclamation",
@@ -820,7 +838,7 @@ var FilebankMigration = (() => {
   var Alert = ({ tone = "info", children, actions, live = false }) => /* @__PURE__ */ u3(
     "div",
     {
-      className: `fbm-alert tone-${tone}`,
+      className: `${alertClasses(tone)} fbm-alert`,
       role: live ? "alert" : "status",
       children: [
         /* @__PURE__ */ u3("span", { className: "fbm-alert-icon", children: /* @__PURE__ */ u3(Icon_default, { name: ICONS[tone] }) }),
@@ -855,22 +873,119 @@ var FilebankMigration = (() => {
   };
   var Check_default = Check;
 
-  // js/src/migration/components/ui/Chips.tsx
-  var Chips = ({ label, value, chips, onChange }) => /* @__PURE__ */ u3("div", { className: "fbm-chips", role: "group", "aria-label": label, children: chips.map((chip) => /* @__PURE__ */ u3(
+  // js/src/migration/components/ui/FilterMenu.tsx
+  var FilterMenu = ({ label, resetLabel, groups, afterSearch = true }) => {
+    const box = A2(null);
+    const applied = groups.filter((group) => group.value !== "");
+    y2(() => {
+      const close = (event) => {
+        const element = box.current;
+        if ((element == null ? void 0 : element.open) && (!(event.target instanceof Node) || !element.contains(event.target))) {
+          element.open = false;
+        }
+      };
+      const escape = (event) => {
+        if (event.key === "Escape" && box.current) {
+          box.current.open = false;
+        }
+      };
+      document.addEventListener("click", close);
+      document.addEventListener("keydown", escape);
+      return () => {
+        document.removeEventListener("click", close);
+        document.removeEventListener("keydown", escape);
+      };
+    }, []);
+    return /* @__PURE__ */ u3(b, { children: [
+      /* @__PURE__ */ u3(
+        "details",
+        {
+          ref: box,
+          className: `fbm-filterbox${afterSearch ? " fbm-filter-end" : ""}`,
+          "data-region": "filters",
+          "data-active": applied.length > 0 ? "true" : void 0,
+          children: [
+            /* @__PURE__ */ u3("summary", { className: "btn btn-outline-secondary", children: [
+              /* @__PURE__ */ u3(Icon_default, { name: "filter", gap: true }),
+              label,
+              applied.length > 0 && /* @__PURE__ */ u3("span", { className: "badge rounded-pill fbm-count", children: applied.length })
+            ] }),
+            /* @__PURE__ */ u3("div", { className: "fbm-filterpanel", children: [
+              /* @__PURE__ */ u3("div", { className: "fbm-filter-head", children: [
+                /* @__PURE__ */ u3("h3", { className: "fbm-filter-heading", children: label }),
+                /* @__PURE__ */ u3(
+                  "button",
+                  {
+                    type: "button",
+                    className: "btn btn-outline-secondary fbm-iconpill",
+                    title: resetLabel,
+                    disabled: applied.length === 0,
+                    onClick: () => applied.forEach((group) => group.onChange("")),
+                    children: [
+                      /* @__PURE__ */ u3(Icon_default, { name: "rotate-right" }),
+                      /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: resetLabel })
+                    ]
+                  }
+                )
+              ] }),
+              groups.map((group) => /* @__PURE__ */ u3("fieldset", { className: "fbm-filter-group", children: [
+                /* @__PURE__ */ u3("legend", { className: "fbm-filter-title", children: group.label }),
+                group.options.map((option) => /* @__PURE__ */ u3("label", { className: "fbm-filter-option", children: [
+                  /* @__PURE__ */ u3(
+                    "input",
+                    {
+                      type: "radio",
+                      name: `fbm-filter-${group.id}`,
+                      checked: group.value === option.value,
+                      onChange: () => group.onChange(option.value)
+                    }
+                  ),
+                  /* @__PURE__ */ u3("span", { children: option.label }),
+                  option.count !== void 0 && /* @__PURE__ */ u3("span", { className: "text-muted small", children: option.count })
+                ] }, option.value))
+              ] }, group.id))
+            ] })
+          ]
+        }
+      ),
+      applied.length > 0 && /* @__PURE__ */ u3("div", { className: "fbm-chips", "data-region": "active-filters", children: applied.map((group) => {
+        var _a;
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            className: "btn btn-sm btn-outline-secondary rounded-pill fbm-chip",
+            onClick: () => group.onChange(""),
+            children: [
+              group.label,
+              ": ",
+              (_a = group.options.find((option) => option.value === group.value)) == null ? void 0 : _a.label,
+              /* @__PURE__ */ u3(Icon_default, { name: "xmark" })
+            ]
+          },
+          group.id
+        );
+      }) })
+    ] });
+  };
+  var FilterMenu_default = FilterMenu;
+
+  // js/src/migration/components/ui/IconButton.tsx
+  var IconButton = ({ icon, label, onClick, tone = "neutral", disabled = false }) => /* @__PURE__ */ u3(
     "button",
     {
       type: "button",
-      className: `fbm-chip${chip.value === value ? " is-on" : ""}`,
-      "aria-pressed": chip.value === value,
-      onClick: () => onChange(chip.value),
+      className: `btn btn-outline-secondary fbm-iconpill${tone === "neutral" ? "" : ` tone-${tone}`}`,
+      title: label,
+      disabled,
+      onClick,
       children: [
-        chip.label,
-        chip.count !== void 0 && /* @__PURE__ */ u3("span", { className: "fbm-chip-count", children: chip.count })
+        /* @__PURE__ */ u3(Icon_default, { name: icon }),
+        /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: label })
       ]
-    },
-    chip.value
-  )) });
-  var Chips_default = Chips;
+    }
+  );
+  var IconButton_default = IconButton;
 
   // js/src/migration/components/ui/Modal.tsx
   var Modal = ({ open, title, onClose, closeLabel, children, footer, size = "medium", busy = false }) => {
@@ -899,16 +1014,16 @@ var FilebankMigration = (() => {
         onCancel: (event) => {
           event.preventDefault();
         },
-        children: open && /* @__PURE__ */ u3("div", { className: "fbm-dialog-body", children: [
-          /* @__PURE__ */ u3("header", { className: "fbm-dialog-head", children: [
-            /* @__PURE__ */ u3("h3", { className: "fbm-dialog-title", children: title }),
-            /* @__PURE__ */ u3("button", { type: "button", className: "fbm-iconbtn", onClick: close, title: closeLabel, disabled: busy, children: [
+        children: open && /* @__PURE__ */ u3("div", { className: "modal-content fbm-dialog-body", children: [
+          /* @__PURE__ */ u3("header", { className: "modal-header fbm-dialog-head", children: [
+            /* @__PURE__ */ u3("h3", { className: "modal-title h5", children: title }),
+            /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-link btn-icon", onClick: close, title: closeLabel, disabled: busy, children: [
               /* @__PURE__ */ u3(Icon_default, { name: "xmark" }),
-              /* @__PURE__ */ u3("span", { className: "fbm-sr", children: closeLabel })
+              /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: closeLabel })
             ] })
           ] }),
-          /* @__PURE__ */ u3("div", { className: "fbm-dialog-scroll", children }),
-          footer && /* @__PURE__ */ u3("footer", { className: "fbm-dialog-foot", children: footer })
+          /* @__PURE__ */ u3("div", { className: "modal-body fbm-dialog-scroll", children }),
+          footer && /* @__PURE__ */ u3("footer", { className: "modal-footer fbm-dialog-foot", children: footer })
         ] })
       }
     );
@@ -940,8 +1055,8 @@ var FilebankMigration = (() => {
       onClose: onCancel,
       closeLabel: cancelLabel,
       footer: /* @__PURE__ */ u3(b, { children: [
-        /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", onClick: onCancel, disabled: busy, children: cancelLabel }),
-        /* @__PURE__ */ u3("button", { type: "button", className: `fbm-btn fbm-btn-${tone}`, onClick: onConfirm, disabled: busy, children: [
+        /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary", onClick: onCancel, disabled: busy, children: cancelLabel }),
+        /* @__PURE__ */ u3("button", { type: "button", className: `btn btn-${tone}`, onClick: onConfirm, disabled: busy, children: [
           busy && /* @__PURE__ */ u3(Icon_default, { name: "spinner", gap: true, spin: true }),
           confirmLabel
         ] })
@@ -959,8 +1074,8 @@ var FilebankMigration = (() => {
       "data-region": "empty-state",
       children: [
         /* @__PURE__ */ u3("div", { className: "fbm-empty-icon", children: /* @__PURE__ */ u3(Icon_default, { name: icon }) }),
-        /* @__PURE__ */ u3("h4", { className: "fbm-h4", children: title }),
-        /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-empty-text", children: text }),
+        /* @__PURE__ */ u3("h4", { className: "h4", children: title }),
+        /* @__PURE__ */ u3("p", { className: "text-muted fbm-empty-text", children: text }),
         actions && /* @__PURE__ */ u3("div", { className: "fbm-empty-actions", children: actions })
       ]
     }
@@ -973,7 +1088,7 @@ var FilebankMigration = (() => {
     /* @__PURE__ */ u3("div", { className: "fbm-floating-actions", children }),
     /* @__PURE__ */ u3("button", { type: "button", className: "fbm-floating-clear", onClick: onClear, title: clearLabel, children: [
       /* @__PURE__ */ u3(Icon_default, { name: "xmark" }),
-      /* @__PURE__ */ u3("span", { className: "fbm-sr", children: clearLabel })
+      /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: clearLabel })
     ] })
   ] });
   var FloatingBar_default = FloatingBar;
@@ -983,61 +1098,57 @@ var FilebankMigration = (() => {
     /* @__PURE__ */ u3("div", { className: "fbm-header-title", children: [
       back,
       /* @__PURE__ */ u3("div", { className: "fbm-header-line", children: [
-        /* @__PURE__ */ u3("h2", { className: "fbm-h2", children: title }),
+        /* @__PURE__ */ u3("h2", { className: "h2", children: title }),
         badges
       ] }),
-      subtitle && /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-header-subtitle", children: subtitle })
+      subtitle && /* @__PURE__ */ u3("p", { className: "text-muted fbm-header-subtitle", children: subtitle })
     ] }),
     actions && /* @__PURE__ */ u3("div", { className: "fbm-header-actions", children: actions })
   ] });
   var PageHeader_default = PageHeader;
 
-  // js/src/migration/lib/paging.ts
-  var pageWindow = (page, perpage, total, around = 2) => {
-    const pages = Math.max(1, Math.ceil(total / Math.max(1, perpage)));
-    const start = Math.max(0, Math.min(page - around, pages - 1 - around * 2));
-    const end = Math.min(pages - 1, Math.max(page + around, around * 2));
-    const shown = [];
-    for (let index = Math.max(0, start); index <= end; index++) {
-      shown.push(index);
-    }
-    return {
-      pages,
-      shown,
-      first: shown[0] > 0,
-      last: shown[shown.length - 1] < pages - 1,
-      startDots: shown[0] > 1,
-      endDots: shown[shown.length - 1] < pages - 2
-    };
-  };
-
   // js/src/migration/components/ui/Pagination.tsx
-  var Pagination = ({ page, perpage, total, onPage, text }) => {
-    const bar = pageWindow(page, perpage, total);
-    if (bar.pages < 2) {
+  var Pagination = ({ page, perpage, total, onPage, text, sizes, onPerPage }) => {
+    const pages = Math.max(1, Math.ceil(total / Math.max(1, perpage)));
+    const choose = sizes !== void 0 && onPerPage !== void 0 && total > 0 ? { sizes, onPerPage } : null;
+    if (pages < 2 && choose === null) {
       return null;
     }
-    const go = (target, title, content, key) => /* @__PURE__ */ u3("li", { children: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-page", title, "aria-label": title, onClick: () => onPage(target), children: content }) }, key);
-    return /* @__PURE__ */ u3("nav", { "aria-label": text("pagination_label"), className: "fbm-pagination", children: [
-      /* @__PURE__ */ u3("ul", { className: "fbm-pages", children: [
-        bar.first && go(0, text("pagination_first"), /* @__PURE__ */ u3(Icon_default, { name: "angles-left" }), "first"),
-        page > 0 && go(page - 1, text("pagination_previous"), /* @__PURE__ */ u3(Icon_default, { name: "angle-left" }), "previous"),
-        bar.startDots && /* @__PURE__ */ u3("li", { children: /* @__PURE__ */ u3("span", { className: "fbm-page is-gap", children: "..." }) }, "start"),
-        bar.shown.map((index) => /* @__PURE__ */ u3("li", { children: /* @__PURE__ */ u3(
-          "button",
+    const from = total > 0 ? page * perpage + 1 : 0;
+    const to = Math.min((page + 1) * perpage, total);
+    const arrow = (target, enabled, icon, title) => /* @__PURE__ */ u3(
+      "button",
+      {
+        type: "button",
+        className: "btn btn-link btn-icon",
+        title,
+        "aria-label": title,
+        disabled: !enabled,
+        onClick: () => onPage(target),
+        children: /* @__PURE__ */ u3(Icon_default, { name: icon })
+      }
+    );
+    return /* @__PURE__ */ u3("nav", { "aria-label": text("pagination_label"), className: "fbm-listbar fbm-pagination", children: [
+      /* @__PURE__ */ u3("div", { className: "fbm-listbar-size", children: choose !== null && /* @__PURE__ */ u3(b, { children: [
+        /* @__PURE__ */ u3("span", { className: "fbm-listbar-label", children: text("per_page") }),
+        /* @__PURE__ */ u3(
+          "select",
           {
-            type: "button",
-            className: `fbm-page${index === page ? " is-current" : ""}`,
-            onClick: () => onPage(index),
-            "aria-current": index === page ? "page" : void 0,
-            children: index + 1
+            className: "form-select form-select-sm rounded-pill",
+            "aria-label": text("per_page"),
+            value: perpage,
+            onChange: (event) => choose.onPerPage(Number(event.target.value)),
+            children: choose.sizes.map((size) => /* @__PURE__ */ u3("option", { value: size, children: size }, size))
           }
-        ) }, index)),
-        bar.endDots && /* @__PURE__ */ u3("li", { children: /* @__PURE__ */ u3("span", { className: "fbm-page is-gap", children: "..." }) }, "end"),
-        bar.last && go(bar.pages - 1, text("pagination_last"), bar.pages, "last"),
-        page < bar.pages - 1 && go(page + 1, text("pagination_next"), /* @__PURE__ */ u3(Icon_default, { name: "angle-right" }), "next")
-      ] }),
-      /* @__PURE__ */ u3("div", { className: "fbm-muted fbm-pagination-info", children: text("pagination_info", { current: page + 1, total: bar.pages, count: total }) })
+        )
+      ] }) }),
+      /* @__PURE__ */ u3("div", { className: "fbm-listbar-pages", children: [
+        /* @__PURE__ */ u3("span", { className: "text-muted small", "aria-live": "polite", children: text("pagination_range", { from, to, total }) }),
+        /* @__PURE__ */ u3("div", { className: "fbm-actions", children: [
+          arrow(page - 1, page > 0, "chevron-left", text("pagination_previous")),
+          arrow(page + 1, page < pages - 1, "chevron-right", text("pagination_next"))
+        ] })
+      ] })
     ] });
   };
   var Pagination_default = Pagination;
@@ -1045,7 +1156,7 @@ var FilebankMigration = (() => {
   // js/src/migration/components/ui/Progress.tsx
   var Progress = ({ value, max, label, tone = "primary" }) => {
     const percent = max > 0 ? Math.min(100, Math.round(value / max * 100)) : 0;
-    return /* @__PURE__ */ u3("div", { className: `fbm-progress tone-${tone}`, role: "progressbar", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, children: /* @__PURE__ */ u3("div", { className: "fbm-progress-fill", style: { width: `${percent}%` } }) });
+    return /* @__PURE__ */ u3("div", { className: "progress", role: "progressbar", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, children: /* @__PURE__ */ u3("div", { className: `progress-bar bg-${tone === "neutral" ? "secondary" : tone}`, style: { width: `${percent}%` } }) });
   };
   var Progress_default = Progress;
 
@@ -1058,7 +1169,7 @@ var FilebankMigration = (() => {
         type: "search",
         id,
         value,
-        className: "fbm-input fbm-search-input",
+        className: "form-control rounded-pill",
         placeholder,
         "aria-label": placeholder,
         autoComplete: "off",
@@ -1072,7 +1183,7 @@ var FilebankMigration = (() => {
     ),
     value !== "" && /* @__PURE__ */ u3("button", { type: "button", className: "fbm-search-clear", onClick: () => onChange(""), title: clearLabel, children: [
       /* @__PURE__ */ u3(Icon_default, { name: "xmark" }),
-      /* @__PURE__ */ u3("span", { className: "fbm-sr", children: clearLabel })
+      /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: clearLabel })
     ] })
   ] });
   var SearchBox_default = SearchBox;
@@ -1108,7 +1219,7 @@ var FilebankMigration = (() => {
   };
   var StatusBadge = ({ status, label }) => {
     const look = lookOf(status);
-    return /* @__PURE__ */ u3("span", { className: `fbm-badge tone-${look.tone}`, children: [
+    return /* @__PURE__ */ u3("span", { className: badgeClasses(look.tone), children: [
       /* @__PURE__ */ u3(Icon_default, { name: look.icon, gap: true, spin: status === "running" }),
       label
     ] });
@@ -1182,7 +1293,7 @@ var FilebankMigration = (() => {
         {
           title: text("list_title"),
           subtitle: text("list_subtitle"),
-          actions: hasAny && /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-primary", onClick: onNew, "data-action": "new-migration", children: [
+          actions: hasAny && /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-primary", onClick: onNew, "data-action": "new-migration", children: [
             /* @__PURE__ */ u3(Icon_default, { name: "plus", gap: true }),
             text("new_migration")
           ] })
@@ -1196,7 +1307,7 @@ var FilebankMigration = (() => {
           icon: "right-left",
           title: text("list_empty_title"),
           text: text("list_empty_text"),
-          actions: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-primary", onClick: onNew, "data-action": "new-migration", children: [
+          actions: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-primary", onClick: onNew, "data-action": "new-migration", children: [
             /* @__PURE__ */ u3(Icon_default, { name: "plus", gap: true }),
             text("new_migration")
           ] })
@@ -1206,30 +1317,25 @@ var FilebankMigration = (() => {
         /* @__PURE__ */ u3("div", { className: "fbm-toolbar", children: [
           /* @__PURE__ */ u3(SearchBox_default, { id: "fbm-list-search", value: search, onChange: setSearch, placeholder: text("list_search"), clearLabel: text("clear") }),
           /* @__PURE__ */ u3(
-            "select",
+            FilterMenu_default,
             {
-              className: "fbm-select fbm-perpage",
-              "aria-label": text("per_page"),
-              value: perpage,
-              onChange: (event) => setPerpage(Number(event.target.value)),
-              children: pagesizes.map((size) => /* @__PURE__ */ u3("option", { value: size, children: text("per_page_n", { n: size }) }, size))
+              label: text("filters"),
+              resetLabel: text("filters_reset"),
+              groups: [{
+                id: "state",
+                label: text("list_states"),
+                value: state,
+                onChange: setState,
+                options: STATES.map((value) => ({
+                  value,
+                  label: value === "" ? text("all") : text("state_" + value),
+                  count: countOf(value)
+                }))
+              }]
             }
           )
         ] }),
-        /* @__PURE__ */ u3(
-          Chips_default,
-          {
-            label: text("list_states"),
-            value: state,
-            onChange: setState,
-            chips: STATES.map((value) => ({
-              value,
-              label: value === "" ? text("all") : text("state_" + value),
-              count: countOf(value)
-            }))
-          }
-        ),
-        rows.length === 0 ? /* @__PURE__ */ u3(EmptyState_default, { icon: "magnifying-glass", title: text("list_nomatch_title"), text: text("list_nomatch_text") }) : /* @__PURE__ */ u3("div", { className: "fbm-table-wrap", children: /* @__PURE__ */ u3("table", { className: "fbm-table", children: [
+        rows.length === 0 ? /* @__PURE__ */ u3(EmptyState_default, { icon: "magnifying-glass", title: text("list_nomatch_title"), text: text("list_nomatch_text") }) : /* @__PURE__ */ u3("div", { className: "table-responsive", children: /* @__PURE__ */ u3("table", { className: "table table-hover", children: [
           /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
             /* @__PURE__ */ u3("th", { className: "fbm-col-check", children: /* @__PURE__ */ u3(
               Check_default,
@@ -1246,7 +1352,7 @@ var FilebankMigration = (() => {
             /* @__PURE__ */ u3("th", { children: text("col_files") }),
             /* @__PURE__ */ u3("th", { children: text("col_state") }),
             /* @__PURE__ */ u3("th", { children: text("col_created") }),
-            /* @__PURE__ */ u3("th", { children: /* @__PURE__ */ u3("span", { className: "fbm-sr", children: text("col_actions") }) })
+            /* @__PURE__ */ u3("th", { children: /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: text("col_actions") }) })
           ] }) }),
           /* @__PURE__ */ u3("tbody", { children: rows.map((row) => /* @__PURE__ */ u3("tr", { "data-migration": row.id, children: [
             /* @__PURE__ */ u3("td", { className: "fbm-col-check", children: /* @__PURE__ */ u3(
@@ -1258,7 +1364,7 @@ var FilebankMigration = (() => {
                 onChange: (checked) => setSelected(checked ? [...chosen, row.id] : chosen.filter((id) => id !== row.id))
               }
             ) }),
-            /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-link", onClick: () => onOpen(row.id), children: [
+            /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-link p-0 fbm-link", onClick: () => onOpen(row.id), children: [
               /* @__PURE__ */ u3("strong", { children: [
                 "#",
                 row.id
@@ -1273,11 +1379,7 @@ var FilebankMigration = (() => {
             ] }) }),
             /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3("span", { className: "fbm-files-cell", children: [
               /* @__PURE__ */ u3("strong", { children: row.towrite }),
-              /* @__PURE__ */ u3("span", { className: "fbm-muted", children: text("list_of_files", { n: row.files }) }),
-              row.conflicts > 0 && /* @__PURE__ */ u3("span", { className: "fbm-badge tone-info", children: [
-                /* @__PURE__ */ u3(Icon_default, { name: "hand-pointer", gap: true }),
-                text("list_decisions", { n: row.conflicts })
-              ] })
+              /* @__PURE__ */ u3("span", { className: "text-muted", children: text("list_of_files", { n: row.files }) })
             ] }) }),
             /* @__PURE__ */ u3("td", { children: [
               /* @__PURE__ */ u3(StatusBadge_default, { status: row.state, label: row.statelabel }),
@@ -1290,29 +1392,25 @@ var FilebankMigration = (() => {
                 }
               )
             ] }),
-            /* @__PURE__ */ u3("td", { className: "fbm-muted", children: row.datelabel }),
-            /* @__PURE__ */ u3("td", { className: "fbm-col-actions", children: [
-              /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-small", onClick: () => onOpen(row.id), children: [
-                text("open"),
-                /* @__PURE__ */ u3(Icon_default, { name: "arrow-right" })
-              ] }),
-              row.candelete && /* @__PURE__ */ u3(
-                "button",
-                {
-                  type: "button",
-                  className: "fbm-iconbtn tone-danger",
-                  title: text("delete"),
-                  onClick: () => setAsking([row.id]),
-                  children: [
-                    /* @__PURE__ */ u3(Icon_default, { name: "trash" }),
-                    /* @__PURE__ */ u3("span", { className: "fbm-sr", children: text("delete") })
-                  ]
-                }
-              )
-            ] })
+            /* @__PURE__ */ u3("td", { className: "text-muted", children: row.datelabel }),
+            /* @__PURE__ */ u3("td", { className: "fbm-col-actions", children: /* @__PURE__ */ u3("div", { className: "fbm-actions", children: [
+              /* @__PURE__ */ u3(IconButton_default, { icon: "eye", label: text("open"), tone: "primary", onClick: () => onOpen(row.id) }),
+              row.candelete && /* @__PURE__ */ u3(IconButton_default, { icon: "trash", label: text("delete"), tone: "danger", onClick: () => setAsking([row.id]) })
+            ] }) })
           ] }, row.id)) })
         ] }) }),
-        /* @__PURE__ */ u3(Pagination_default, { page, perpage, total: data.total, onPage: setPage, text })
+        /* @__PURE__ */ u3(
+          Pagination_default,
+          {
+            page,
+            perpage,
+            total: data.total,
+            onPage: setPage,
+            text,
+            sizes: pagesizes,
+            onPerPage: setPerpage
+          }
+        )
       ] }),
       chosen.length > 0 && /* @__PURE__ */ u3(
         FloatingBar_default,
@@ -1320,7 +1418,7 @@ var FilebankMigration = (() => {
           summary: text("selected_n", { n: chosen.length }),
           clearLabel: text("clear_selection"),
           onClear: () => setSelected([]),
-          children: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-pill tone-danger", onClick: () => setAsking(chosen), children: [
+          children: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-sm btn-danger", onClick: () => setAsking(chosen), children: [
             /* @__PURE__ */ u3(Icon_default, { name: "trash", gap: true }),
             text("delete_selected")
           ] })
@@ -1340,7 +1438,7 @@ var FilebankMigration = (() => {
           onCancel: () => setAsking(null),
           children: [
             /* @__PURE__ */ u3("p", { children: text("delete_text", { n: (_e = asking == null ? void 0 : asking.length) != null ? _e : 0 }) }),
-            /* @__PURE__ */ u3("p", { className: "fbm-muted", children: text("delete_hint") })
+            /* @__PURE__ */ u3("p", { className: "text-muted", children: text("delete_hint") })
           ]
         }
       )
@@ -1412,17 +1510,6 @@ var FilebankMigration = (() => {
   var MAX_CORRESPONDENCES = 20;
   var MAX_SECTION_PAIRS = 200;
   var STEP_KEYS = ["profile", "courses", "folders", "sections", "policies", "check"];
-  var sameNameCorrespondence = () => ({
-    sourcetype: "folder",
-    sourcefield: "name",
-    sourcemethod: "pattern",
-    sourcevalue: "~^(?<name>.+)$~",
-    targetfield: "name",
-    targetmethod: "template",
-    // The template of the destination, in which ${name} is the name that the pattern of the source captured.
-    // eslint-disable-next-line no-template-curly-in-string
-    targetvalue: "${name}"
-  });
   var emptyCorrespondence = () => ({
     sourcetype: "folder",
     sourcefield: "name",
@@ -1515,9 +1602,9 @@ var FilebankMigration = (() => {
         /* @__PURE__ */ u3("div", { className: "fbm-action-body", children: [
           /* @__PURE__ */ u3("strong", { children: text("run_running", { done: run.done, total: run.total }) }),
           /* @__PURE__ */ u3(Progress_default, { value: run.done, max: Math.max(1, run.total), label: text("progress") }),
-          /* @__PURE__ */ u3("span", { className: "fbm-muted", children: text("run_running_hint") })
+          /* @__PURE__ */ u3("span", { className: "text-muted", children: text("run_running_hint") })
         ] }),
-        run.cancancel && /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-danger", onClick: onStop, disabled: busy, children: [
+        run.cancancel && /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-danger", onClick: onStop, disabled: busy, children: [
           /* @__PURE__ */ u3(Icon_default, { name: "stop", gap: true }),
           text("run_stop")
         ] })
@@ -1540,7 +1627,7 @@ var FilebankMigration = (() => {
         Alert_default,
         {
           tone: "warning",
-          actions: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-primary", onClick: onRework, disabled: busy, children: [
+          actions: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-primary", onClick: onRework, disabled: busy, children: [
             /* @__PURE__ */ u3(Icon_default, { name: "rotate", gap: true }),
             text("outdated_rework")
           ] }),
@@ -1557,7 +1644,7 @@ var FilebankMigration = (() => {
         Alert_default,
         {
           tone: "info",
-          actions: migration.editable && /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-primary", onClick: onEdit, disabled: busy, children: [
+          actions: migration.editable && /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-primary", onClick: onEdit, disabled: busy, children: [
             /* @__PURE__ */ u3(Icon_default, { name: "sliders", gap: true }),
             text("edit_parameters")
           ] }),
@@ -1572,258 +1659,33 @@ var FilebankMigration = (() => {
     return /* @__PURE__ */ u3("div", { className: "fbm-action is-ready", "data-region": "start", children: [
       /* @__PURE__ */ u3("div", { className: "fbm-action-body", children: [
         /* @__PURE__ */ u3("strong", { children: text("start_ready", { n: summary.tocopy + summary.tooverwrite }) }),
-        /* @__PURE__ */ u3("span", { className: "fbm-muted", children: summary.conflicts + summary.openissues > 0 ? text("start_with_decisions", { n: summary.conflicts + summary.openissues }) : text("start_all_set") })
+        /* @__PURE__ */ u3("span", { className: "text-muted", children: text("start_all_set") })
       ] }),
-      migration.canexecute ? /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-success fbm-btn-large", onClick: onStart, disabled: busy, "data-action": "start", children: [
+      migration.canexecute ? /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-success btn-lg", onClick: onStart, disabled: busy, "data-action": "start", children: [
         /* @__PURE__ */ u3(Icon_default, { name: "play", gap: true }),
         text("start")
-      ] }) : /* @__PURE__ */ u3("span", { className: "fbm-muted", children: text("start_no_permission") })
+      ] }) : /* @__PURE__ */ u3("span", { className: "text-muted", children: text("start_no_permission") })
     ] });
   };
   var ActionPanel_default = ActionPanel;
 
   // js/src/migration/components/ui/Panel.tsx
-  var Panel = ({ title, icon, count, actions, flush = false, region, children }) => /* @__PURE__ */ u3("section", { className: "fbm-panel", "data-region": region, children: [
-    /* @__PURE__ */ u3("header", { className: "fbm-panel-head", children: [
-      /* @__PURE__ */ u3("h3", { className: "fbm-panel-title", children: [
+  var Panel = ({ title, icon, count, actions, flush = false, region, children }) => /* @__PURE__ */ u3("section", { className: "card", "data-region": region, children: [
+    /* @__PURE__ */ u3("header", { className: "card-header d-flex flex-wrap align-items-center justify-content-between", children: [
+      /* @__PURE__ */ u3("h3", { className: "card-title h5 mb-0 d-flex align-items-center", children: [
         /* @__PURE__ */ u3("span", { className: "fbm-panel-icon", children: /* @__PURE__ */ u3(Icon_default, { name: icon, gap: true }) }),
         title,
-        count !== void 0 && /* @__PURE__ */ u3("span", { className: "fbm-count", children: count })
+        count !== void 0 && /* @__PURE__ */ u3("span", { className: "badge rounded-pill fbm-count", children: count })
       ] }),
       actions && /* @__PURE__ */ u3("div", { className: "fbm-panel-actions", children: actions })
     ] }),
-    /* @__PURE__ */ u3("div", { className: flush ? "fbm-panel-flush" : "fbm-panel-body", children })
+    /* @__PURE__ */ u3("div", { className: flush ? "card-body p-0" : "card-body", children })
   ] });
   var Panel_default = Panel;
 
-  // js/src/migration/components/review/DecisionList.tsx
-  var PAGE_SIZE = 10;
-  var common = (lists) => {
-    if (lists.length === 0) {
-      return [];
-    }
-    return lists[0].filter((choice) => lists.every((list) => list.some((other) => other.value === choice.value)));
-  };
-  var DecisionList = ({ migrationId, digest, nature, text, busy, onApply }) => {
-    var _a, _b;
-    const [page, setPage] = h2(0);
-    const [data, setData] = h2(null);
-    const [error, setError] = h2("");
-    const [selected, setSelected] = h2([]);
-    const [choice, setChoice] = h2("");
-    const [own, setOwn] = h2({});
-    y2(() => {
-      let current2 = true;
-      void getDecisions(migrationId, nature.kind, nature.nature, page, PAGE_SIZE).then((read2) => {
-        if (current2) {
-          setData(read2);
-          setError("");
-          setSelected([]);
-          setOwn({});
-        }
-      }).catch((problem) => {
-        if (current2) {
-          setError(describeError(problem));
-        }
-      });
-      return () => {
-        current2 = false;
-      };
-    }, [migrationId, digest, nature.kind, nature.nature, page]);
-    y2(() => {
-      if (data && data.items.length === 0 && page > 0) {
-        setPage(page - 1);
-      }
-    }, [data, page]);
-    if (error !== "") {
-      return /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: error });
-    }
-    if (!data) {
-      return /* @__PURE__ */ u3(Skeleton_default, { rows: 3, label: text("loading") });
-    }
-    const items = data.items;
-    const chosen = items.filter((item) => selected.includes(item.id));
-    const shared = common(chosen.map((item) => item.choices));
-    const selectedChoice = shared.some((item) => item.value === choice) ? choice : (_b = (_a = shared[0]) == null ? void 0 : _a.value) != null ? _b : "";
-    return /* @__PURE__ */ u3("div", { className: "fbm-decisions", "data-region": "decision-list", children: [
-      /* @__PURE__ */ u3("div", { className: "fbm-decisions-bar", children: [
-        /* @__PURE__ */ u3(
-          Check_default,
-          {
-            label: text("select_all_page"),
-            checked: items.length > 0 && chosen.length === items.length,
-            partial: chosen.length > 0,
-            onChange: (checked) => setSelected(checked ? items.map((item) => item.id) : [])
-          }
-        ),
-        /* @__PURE__ */ u3("span", { className: "fbm-muted", children: text("selected_n", { n: chosen.length }) }),
-        chosen.length > 0 && /* @__PURE__ */ u3(b, { children: [
-          /* @__PURE__ */ u3("select", { className: "fbm-select", "aria-label": text("decision_choice"), value: selectedChoice, onChange: (event) => setChoice(event.target.value), children: shared.map((item) => /* @__PURE__ */ u3("option", { value: item.value, children: item.label }, item.value)) }),
-          /* @__PURE__ */ u3(
-            "button",
-            {
-              type: "button",
-              className: "fbm-btn fbm-btn-primary",
-              disabled: busy || selectedChoice === "",
-              onClick: () => onApply(chosen.map((item) => item.id), selectedChoice),
-              children: [
-                /* @__PURE__ */ u3(Icon_default, { name: "check", gap: true }),
-                text("apply_selected")
-              ]
-            }
-          )
-        ] })
-      ] }),
-      /* @__PURE__ */ u3("ul", { className: "fbm-decision-items", children: items.map((item) => {
-        var _a2, _b2, _c;
-        const value = (_c = (_b2 = own[item.id]) != null ? _b2 : (_a2 = item.choices[0]) == null ? void 0 : _a2.value) != null ? _c : "";
-        return /* @__PURE__ */ u3("li", { className: "fbm-decision-item", children: [
-          /* @__PURE__ */ u3(
-            Check_default,
-            {
-              label: item.label,
-              checked: selected.includes(item.id),
-              onChange: (checked) => setSelected(checked ? [...selected, item.id] : selected.filter((id) => id !== item.id))
-            }
-          ),
-          /* @__PURE__ */ u3("div", { className: "fbm-decision-text", children: [
-            /* @__PURE__ */ u3("strong", { children: item.label }),
-            /* @__PURE__ */ u3("span", { className: "fbm-muted", children: item.context }),
-            item.detail !== "" && /* @__PURE__ */ u3("span", { className: "fbm-muted fbm-small", children: item.detail })
-          ] }),
-          /* @__PURE__ */ u3("div", { className: "fbm-decision-own", children: [
-            item.choices.length > 1 && /* @__PURE__ */ u3(
-              "select",
-              {
-                className: "fbm-select",
-                "aria-label": text("decision_choice"),
-                value,
-                onChange: (event) => setOwn({ ...own, [item.id]: event.target.value }),
-                children: item.choices.map((option) => /* @__PURE__ */ u3("option", { value: option.value, children: option.label }, option.value))
-              }
-            ),
-            /* @__PURE__ */ u3(
-              "button",
-              {
-                type: "button",
-                className: "fbm-btn fbm-btn-small",
-                disabled: busy || value === "",
-                onClick: () => onApply([item.id], value),
-                title: item.choices.length === 1 ? item.choices[0].label : text("apply"),
-                children: item.choices.length === 1 ? item.choices[0].label : text("apply")
-              }
-            )
-          ] })
-        ] }, item.id);
-      }) }),
-      /* @__PURE__ */ u3(Pagination_default, { page, perpage: PAGE_SIZE, total: data.total, onPage: setPage, text })
-    ] });
-  };
-  var DecisionList_default = DecisionList;
-
-  // js/src/migration/components/review/NatureCard.tsx
-  var NatureCard = ({ migrationId, digest, nature, text, busy, onResolve }) => {
-    var _a, _b;
-    const [open, setOpen] = h2(false);
-    const [asking, setAsking] = h2("");
-    const label = (_b = (_a = nature.choices.find((choice) => choice.value === asking)) == null ? void 0 : _a.label) != null ? _b : "";
-    const confirm = async () => {
-      const done = await onResolve(nature, [], asking);
-      if (done) {
-        setAsking("");
-      }
-    };
-    return /* @__PURE__ */ u3("section", { className: "fbm-nature", "data-nature": nature.nature, children: [
-      /* @__PURE__ */ u3("header", { className: "fbm-nature-head", children: [
-        /* @__PURE__ */ u3("span", { className: "fbm-nature-icon", children: /* @__PURE__ */ u3(Icon_default, { name: nature.kind === "file" ? "file-circle-exclamation" : "folder-open" }) }),
-        /* @__PURE__ */ u3("div", { className: "fbm-nature-title", children: [
-          /* @__PURE__ */ u3("h4", { className: "fbm-h4", children: [
-            nature.label,
-            /* @__PURE__ */ u3("span", { className: "fbm-count", children: nature.count })
-          ] }),
-          /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-nature-help", children: text("nature_help_" + nature.kind) })
-        ] })
-      ] }),
-      /* @__PURE__ */ u3("div", { className: "fbm-nature-actions", children: [
-        nature.choices.map((choice) => /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            className: `fbm-btn ${choice.value === "overwrite" ? "fbm-btn-warning" : "fbm-btn-primary"}`,
-            disabled: busy,
-            onClick: () => setAsking(choice.value),
-            "data-choice": choice.value,
-            children: [
-              text("apply_all", { n: nature.count }),
-              ": ",
-              choice.label
-            ]
-          },
-          choice.value
-        )),
-        /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", "aria-expanded": open, onClick: () => setOpen(!open), children: [
-          /* @__PURE__ */ u3(Icon_default, { name: open ? "chevron-up" : "list", gap: true }),
-          open ? text("hide_list") : text("review_one_by_one")
-        ] })
-      ] }),
-      open && /* @__PURE__ */ u3(
-        DecisionList_default,
-        {
-          migrationId,
-          digest,
-          nature,
-          text,
-          busy,
-          onApply: (ids, choice) => void onResolve(nature, ids, choice)
-        }
-      ),
-      /* @__PURE__ */ u3(
-        ConfirmModal_default,
-        {
-          open: asking !== "",
-          tone: asking === "overwrite" ? "warning" : "primary",
-          icon: asking === "overwrite" ? "triangle-exclamation" : "circle-question",
-          busy,
-          title: text("apply_all_title", { n: nature.count }),
-          confirmLabel: text("apply"),
-          cancelLabel: text("cancel"),
-          onConfirm: () => void confirm(),
-          onCancel: () => setAsking(""),
-          children: [
-            /* @__PURE__ */ u3("p", { children: /* @__PURE__ */ u3("strong", { children: nature.label }) }),
-            /* @__PURE__ */ u3("p", { children: label }),
-            /* @__PURE__ */ u3("p", { className: "fbm-muted", children: text("apply_all_text", { n: nature.count }) })
-          ]
-        }
-      )
-    ] });
-  };
-  var NatureCard_default = NatureCard;
-
-  // js/src/migration/components/review/DecisionsPanel.tsx
-  var DecisionsPanel = ({ migration, text, busy, onResolve }) => {
-    const settled = migration.summary.skipped > 0;
-    return /* @__PURE__ */ u3(Panel_default, { title: text("tab_decisions"), icon: "hand-pointer", count: migration.natures.reduce((sum, item) => sum + item.count, 0), region: "decisions", children: migration.natures.length === 0 ? /* @__PURE__ */ u3(EmptyState_default, { plain: true, icon: "circle-check", title: text("decisions_none_title"), text: text(settled ? "decisions_none_settled" : "decisions_none_text") }) : /* @__PURE__ */ u3(b, { children: [
-      /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-panel-intro", children: text("decisions_intro") }),
-      /* @__PURE__ */ u3("div", { className: "fbm-natures", children: migration.natures.map((nature) => /* @__PURE__ */ u3(
-        NatureCard_default,
-        {
-          migrationId: migration.id,
-          digest: migration.digest,
-          nature,
-          text,
-          busy: busy || !migration.editable,
-          onResolve
-        },
-        nature.kind + nature.nature
-      )) })
-    ] }) });
-  };
-  var DecisionsPanel_default = DecisionsPanel;
-
   // js/src/migration/components/review/FilesPanel.tsx
   var SIZES = [10, 25, 50];
-  var BUCKETS = ["", "copy", "existing", "conflict", "left"];
+  var BUCKETS = ["", "copy", "existing", "left"];
   var FilesPanel = ({ migration, text, bucket, onBucket, busy, onSelect }) => {
     var _a, _b;
     const [search, setSearch] = h2("");
@@ -1878,11 +1740,11 @@ var FilebankMigration = (() => {
         count: countOf(""),
         region: "files",
         actions: migration.editable && /* @__PURE__ */ u3(b, { children: [
-          /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-small", disabled: busy, onClick: () => onSelect("all"), children: [
+          /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary btn-sm", disabled: busy, onClick: () => onSelect("all"), children: [
             /* @__PURE__ */ u3(Icon_default, { name: "square-check", gap: true }),
             text("include_all")
           ] }),
-          /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-small", disabled: busy, onClick: () => onSelect("none"), children: [
+          /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary btn-sm", disabled: busy, onClick: () => onSelect("none"), children: [
             /* @__PURE__ */ u3(Icon_default, { name: "square", gap: true }),
             text("exclude_all")
           ] })
@@ -1891,24 +1753,28 @@ var FilebankMigration = (() => {
           error !== "" && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: error }),
           /* @__PURE__ */ u3("div", { className: "fbm-toolbar", children: [
             /* @__PURE__ */ u3(SearchBox_default, { id: "fbm-files-search", value: search, onChange: setSearch, placeholder: text("files_search"), clearLabel: text("clear") }),
-            /* @__PURE__ */ u3("select", { className: "fbm-select fbm-perpage", "aria-label": text("per_page"), value: perpage, onChange: (event) => setPerpage(Number(event.target.value)), children: SIZES.map((size) => /* @__PURE__ */ u3("option", { value: size, children: text("per_page_n", { n: size }) }, size)) })
+            /* @__PURE__ */ u3(
+              FilterMenu_default,
+              {
+                label: text("filters"),
+                resetLabel: text("filters_reset"),
+                groups: [{
+                  id: "bucket",
+                  label: text("files_groups"),
+                  value: bucket,
+                  onChange: (value) => onBucket(value),
+                  options: BUCKETS.map((value) => ({
+                    value,
+                    label: text(value === "" ? "all" : "bucket_" + value),
+                    count: countOf(value)
+                  }))
+                }]
+              }
+            )
           ] }),
-          /* @__PURE__ */ u3(
-            Chips_default,
-            {
-              label: text("files_groups"),
-              value: bucket,
-              onChange: (value) => onBucket(value),
-              chips: BUCKETS.map((value) => ({
-                value,
-                label: text(value === "" ? "all" : "bucket_" + value),
-                count: countOf(value)
-              }))
-            }
-          ),
           data === null && error === "" && /* @__PURE__ */ u3(Skeleton_default, { rows: 6, label: text("loading") }),
           data !== null && files.length === 0 && /* @__PURE__ */ u3(EmptyState_default, { plain: true, icon: "file-circle-question", title: text("files_empty_title"), text: text("files_empty_text") }),
-          files.length > 0 && /* @__PURE__ */ u3("div", { className: "fbm-table-wrap", children: /* @__PURE__ */ u3("table", { className: "fbm-table fbm-files", children: [
+          files.length > 0 && /* @__PURE__ */ u3("div", { className: "table-responsive", children: /* @__PURE__ */ u3("table", { className: "table table-hover fbm-files", children: [
             /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
               /* @__PURE__ */ u3("th", { className: "fbm-col-check", children: /* @__PURE__ */ u3(
                 Check_default,
@@ -1938,24 +1804,35 @@ var FilebankMigration = (() => {
               ) }),
               /* @__PURE__ */ u3("td", { children: [
                 /* @__PURE__ */ u3("strong", { className: "fbm-file-name", children: file.filename }),
-                file.filepath !== "/" && /* @__PURE__ */ u3("span", { className: "fbm-muted fbm-small fbm-block", children: file.filepath })
+                file.filepath !== "/" && /* @__PURE__ */ u3("span", { className: "text-muted small d-block", children: file.filepath })
               ] }),
               /* @__PURE__ */ u3("td", { children: [
-                /* @__PURE__ */ u3("span", { className: "fbm-block", children: file.sourcecourse }),
-                /* @__PURE__ */ u3("span", { className: "fbm-muted fbm-small", children: file.sourcefolder })
+                /* @__PURE__ */ u3("span", { className: "d-block", children: file.sourcecourse }),
+                /* @__PURE__ */ u3("span", { className: "text-muted small", children: file.sourcefolder })
               ] }),
               /* @__PURE__ */ u3("td", { children: [
-                /* @__PURE__ */ u3("span", { className: "fbm-block", children: file.targetcourse }),
-                /* @__PURE__ */ u3("span", { className: "fbm-muted fbm-small", children: file.targetfolder })
+                /* @__PURE__ */ u3("span", { className: "d-block", children: file.targetcourse }),
+                /* @__PURE__ */ u3("span", { className: "text-muted small", children: file.targetfolder })
               ] }),
               /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3(StatusBadge_default, { status: file.decision, label: file.decisionlabel }) }),
               showsRun && /* @__PURE__ */ u3("td", { children: [
                 file.included && /* @__PURE__ */ u3(StatusBadge_default, { status: file.state, label: file.statelabel }),
-                file.result !== "" && /* @__PURE__ */ u3("span", { className: "fbm-muted fbm-small fbm-block", children: file.result })
+                file.result !== "" && /* @__PURE__ */ u3("span", { className: "text-muted small d-block", children: file.result })
               ] })
             ] }, file.id)) })
           ] }) }),
-          /* @__PURE__ */ u3(Pagination_default, { page, perpage, total: (_b = data == null ? void 0 : data.total) != null ? _b : 0, onPage: setPage, text })
+          /* @__PURE__ */ u3(
+            Pagination_default,
+            {
+              page,
+              perpage,
+              total: (_b = data == null ? void 0 : data.total) != null ? _b : 0,
+              onPage: setPage,
+              text,
+              sizes: SIZES,
+              onPerPage: setPerpage
+            }
+          )
         ]
       }
     );
@@ -1980,7 +1857,7 @@ var FilebankMigration = (() => {
   var Switch_default = Switch;
 
   // js/src/migration/components/review/FoldersPanel.tsx
-  var PAGE_SIZE2 = 20;
+  var PAGE_SIZE = 20;
   var FoldersPanel = ({ migration, text, busy, onSelect }) => {
     var _a;
     const [search, setSearch] = h2("");
@@ -1993,7 +1870,7 @@ var FilebankMigration = (() => {
     }, [query]);
     y2(() => {
       let current2 = true;
-      void getFolders(migration.id, query, page, PAGE_SIZE2).then((read2) => {
+      void getFolders(migration.id, query, page, PAGE_SIZE).then((read2) => {
         if (current2) {
           setData(read2);
           setError("");
@@ -2027,12 +1904,12 @@ var FilebankMigration = (() => {
         /* @__PURE__ */ u3("div", { className: "fbm-folder-route", children: [
           /* @__PURE__ */ u3("span", { className: "fbm-folder-side", children: [
             /* @__PURE__ */ u3("strong", { children: folder.sourcecourse }),
-            /* @__PURE__ */ u3("span", { className: "fbm-muted", children: folder.sourcefolder })
+            /* @__PURE__ */ u3("span", { className: "text-muted", children: folder.sourcefolder })
           ] }),
           /* @__PURE__ */ u3(Icon_default, { name: "arrow-right" }),
           /* @__PURE__ */ u3("span", { className: "fbm-folder-side", children: [
             /* @__PURE__ */ u3("strong", { children: folder.targetcourse }),
-            /* @__PURE__ */ u3("span", { className: "fbm-muted", children: folder.targetfolder })
+            /* @__PURE__ */ u3("span", { className: "text-muted", children: folder.targetfolder })
           ] })
         ] }),
         /* @__PURE__ */ u3("div", { className: "fbm-folder-count", children: [
@@ -2040,7 +1917,7 @@ var FilebankMigration = (() => {
           /* @__PURE__ */ u3(Progress_default, { value: folder.included, max: Math.max(1, folder.total), label: text("progress"), tone: "success" })
         ] })
       ] }, `${folder.sourcecourseid}:${folder.sourcecmid}:${folder.targetcourse}:${folder.targetfolder}`)) }),
-      /* @__PURE__ */ u3(Pagination_default, { page, perpage: PAGE_SIZE2, total: (_a = data == null ? void 0 : data.total) != null ? _a : 0, onPage: setPage, text })
+      /* @__PURE__ */ u3(Pagination_default, { page, perpage: PAGE_SIZE, total: (_a = data == null ? void 0 : data.total) != null ? _a : 0, onPage: setPage, text })
     ] });
   };
   var FoldersPanel_default = FoldersPanel;
@@ -2060,7 +1937,7 @@ var FilebankMigration = (() => {
       ] }),
       open && /* @__PURE__ */ u3("ul", { className: "fbm-notes", children: [
         notes.map((note) => /* @__PURE__ */ u3("li", { children: note.label }, note.kind)),
-        /* @__PURE__ */ u3("li", { className: "fbm-muted", children: text("notes_footer") })
+        /* @__PURE__ */ u3("li", { className: "text-muted", children: text("notes_footer") })
       ] })
     ] });
   };
@@ -2092,15 +1969,14 @@ var FilebankMigration = (() => {
               " ",
               text("start_overwrite")
             ] }),
-            /* @__PURE__ */ u3("li", { className: "fbm-muted", children: [
+            /* @__PURE__ */ u3("li", { className: "text-muted", children: [
               /* @__PURE__ */ u3("strong", { children: summary.existing }),
               " ",
               text("start_existing")
             ] })
           ] }),
           summary.tooverwrite > 0 && /* @__PURE__ */ u3(Alert_default, { tone: "warning", children: text("start_overwrite_warning") }),
-          summary.conflicts + summary.openissues > 0 && /* @__PURE__ */ u3("p", { className: "fbm-muted", children: text("start_left", { n: summary.conflicts + summary.openissues }) }),
-          /* @__PURE__ */ u3("p", { className: "fbm-muted", children: text("start_background") })
+          /* @__PURE__ */ u3("p", { className: "text-muted", children: text("start_background") })
         ]
       }
     );
@@ -2124,7 +2000,6 @@ var FilebankMigration = (() => {
 
   // js/src/migration/components/review/SummaryTiles.tsx
   var SummaryTiles = ({ summary, text, onFiles, onTab, active }) => {
-    const decisions = summary.conflicts + summary.openissues;
     const onFilesTab = active.tab === "files";
     return /* @__PURE__ */ u3("div", { className: "fbm-tiles", "data-region": "summary", children: [
       /* @__PURE__ */ u3(
@@ -2166,13 +2041,13 @@ var FilebankMigration = (() => {
       /* @__PURE__ */ u3(
         StatTile_default,
         {
-          label: text("summary_conflicts"),
-          value: decisions,
-          tone: decisions > 0 ? "info" : "neutral",
-          icon: "hand-pointer",
-          hint: decisions > 0 ? text("summary_conflicts_hint") : text("summary_conflicts_none"),
-          active: active.tab === "decisions",
-          onClick: () => onTab("decisions")
+          label: text("summary_left"),
+          value: summary.skipped,
+          tone: "neutral",
+          icon: "hand",
+          hint: text("summary_left_hint"),
+          active: onFilesTab && active.bucket === "left",
+          onClick: () => onFiles("left")
         }
       ),
       /* @__PURE__ */ u3(
@@ -2196,47 +2071,29 @@ var FilebankMigration = (() => {
     var _a;
     const state = useMigration(id);
     const { migration, busy } = state;
-    const [tab, setTab] = h2("");
+    const [tab, setTab] = h2("files");
     const [bucket, setBucket] = h2("");
     const [starting, setStarting] = h2(false);
     const [stopping, setStopping] = h2(false);
     const [deleting, setDeleting] = h2(false);
     const parameters = T2(() => migration ? parametersOf(migration) : null, [migration == null ? void 0 : migration.digest]);
-    const opened = migration !== null;
-    const waiting = migration !== null && migration.natures.length > 0;
-    y2(() => {
-      if (opened && tab === "") {
-        setTab(waiting ? "decisions" : "files");
-      }
-    }, [opened, waiting, tab]);
     if (!migration || !parameters) {
       return /* @__PURE__ */ u3("div", { className: "fbm-review", children: [
         /* @__PURE__ */ u3(
           PageHeader_default,
           {
             title: text("review_title", { n: id }),
-            back: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-back", onClick: onBack, children: [
+            back: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-link btn-sm p-0 fbm-back", onClick: onBack, children: [
               /* @__PURE__ */ u3(Icon_default, { name: "arrow-left", gap: true }),
               text("back_to_list")
             ] })
           }
         ),
-        state.error !== "" && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, actions: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", onClick: () => void state.reload(), children: text("retry") }), children: state.error }),
+        state.error !== "" && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, actions: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary", onClick: () => void state.reload(), children: text("retry") }), children: state.error }),
         state.loading && /* @__PURE__ */ u3(Skeleton_default, { rows: 6, label: text("loading") })
       ] });
     }
-    const decisions = migration.natures.reduce((sum, nature) => sum + nature.count, 0);
-    const current2 = tab === "" ? decisions > 0 ? "decisions" : "files" : tab;
-    const resolve = async (nature, ids, choice) => {
-      const answer = await state.apply(
-        () => resolveDecisions(migration.id, migration.digest, nature.kind, ids.length > 0 ? "" : nature.nature, ids, choice),
-        (result) => result.migration
-      );
-      if (answer) {
-        void addToast(text("resolved_n", { n: answer.changed }));
-      }
-      return answer !== null;
-    };
+    const current2 = tab;
     const start = async () => {
       const answer = await state.apply(() => executeMigration(migration.id, migration.digest));
       setStarting(false);
@@ -2265,7 +2122,7 @@ var FilebankMigration = (() => {
         {
           title: text("review_title", { n: migration.id }),
           badges: /* @__PURE__ */ u3(StatusBadge_default, { status: migration.state, label: migration.statelabel }),
-          back: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-back", onClick: onBack, children: [
+          back: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-link btn-sm p-0 fbm-back", onClick: onBack, children: [
             /* @__PURE__ */ u3(Icon_default, { name: "arrow-left", gap: true }),
             text("back_to_list")
           ] }),
@@ -2281,22 +2138,19 @@ var FilebankMigration = (() => {
             migration.datelabel
           ] }),
           actions: /* @__PURE__ */ u3(b, { children: [
-            migration.editable && /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", onClick: onEdit, disabled: busy, "data-action": "edit-parameters", children: [
+            migration.editable && /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary", onClick: onEdit, disabled: busy, "data-action": "edit-parameters", children: [
               /* @__PURE__ */ u3(Icon_default, { name: "sliders", gap: true }),
               text("edit_parameters")
             ] }),
-            /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", onClick: onNew, "data-action": "new-from", children: [
+            /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary", onClick: onNew, "data-action": "new-from", children: [
               /* @__PURE__ */ u3(Icon_default, { name: "plus", gap: true }),
               text("new_migration")
             ] }),
-            !((_a = migration.run) == null ? void 0 : _a.active) && /* @__PURE__ */ u3("button", { type: "button", className: "fbm-iconbtn tone-danger", title: text("delete"), onClick: () => setDeleting(true), children: [
-              /* @__PURE__ */ u3(Icon_default, { name: "trash" }),
-              /* @__PURE__ */ u3("span", { className: "fbm-sr", children: text("delete") })
-            ] })
+            !((_a = migration.run) == null ? void 0 : _a.active) && /* @__PURE__ */ u3(IconButton_default, { icon: "trash", label: text("delete"), tone: "danger", onClick: () => setDeleting(true) })
           ] })
         }
       ),
-      state.stale && /* @__PURE__ */ u3(Alert_default, { tone: "warning", live: true, actions: /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", onClick: () => void state.reload(), children: text("reload") }), children: text("stale") }),
+      state.stale && /* @__PURE__ */ u3(Alert_default, { tone: "warning", live: true, actions: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary", onClick: () => void state.reload(), children: text("reload") }), children: text("stale") }),
       state.error !== "" && !state.stale && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: state.error }),
       /* @__PURE__ */ u3(
         SummaryTiles_default,
@@ -2324,8 +2178,7 @@ var FilebankMigration = (() => {
         }
       ),
       /* @__PURE__ */ u3(Notes_default, { notes: migration.summary.notes, text }),
-      /* @__PURE__ */ u3("div", { className: "fbm-tabs", role: "tablist", "aria-label": text("review_sections"), children: [
-        ["decisions", "hand-pointer", decisions],
+      /* @__PURE__ */ u3("div", { className: "nav nav-tabs", role: "tablist", "aria-label": text("review_sections"), children: [
         ["files", "file-lines", migration.summary.files],
         ["folders", "folder-tree", migration.summary.folders]
       ].map(([value, icon, count]) => /* @__PURE__ */ u3(
@@ -2334,18 +2187,17 @@ var FilebankMigration = (() => {
           type: "button",
           role: "tab",
           "aria-selected": current2 === value,
-          className: `fbm-tab${current2 === value ? " is-on" : ""}${value === "decisions" && decisions > 0 ? " needs-attention" : ""}`,
+          className: `nav-link${current2 === value ? " active" : ""}`,
           onClick: () => setTab(value),
           "data-tab": value,
           children: [
             /* @__PURE__ */ u3(Icon_default, { name: icon, gap: true }),
             text("tab_" + value),
-            /* @__PURE__ */ u3("span", { className: "fbm-count", children: count })
+            /* @__PURE__ */ u3("span", { className: "badge rounded-pill fbm-count", children: count })
           ]
         },
         value
       )) }),
-      current2 === "decisions" && /* @__PURE__ */ u3(DecisionsPanel_default, { migration, text, busy, onResolve: resolve }),
       current2 === "files" && /* @__PURE__ */ u3(
         FilesPanel_default,
         {
@@ -2395,7 +2247,7 @@ var FilebankMigration = (() => {
           onCancel: () => setDeleting(false),
           children: [
             /* @__PURE__ */ u3("p", { children: text("delete_text", { n: 1 }) }),
-            /* @__PURE__ */ u3("p", { className: "fbm-muted", children: text("delete_hint") })
+            /* @__PURE__ */ u3("p", { className: "text-muted", children: text("delete_hint") })
           ]
         }
       )
@@ -2403,15 +2255,35 @@ var FilebankMigration = (() => {
   };
   var Review_default = Review;
 
+  // js/src/migration/components/ui/ChoiceCards.tsx
+  var ChoiceCards = ({ label, name, value, choices, onChange }) => /* @__PURE__ */ u3("div", { className: "fbm-choices", role: "radiogroup", "aria-label": label, children: choices.map((choice) => /* @__PURE__ */ u3("label", { className: `fbm-choice${choice.value === value ? " is-on" : ""}`, children: [
+    /* @__PURE__ */ u3(
+      "input",
+      {
+        type: "radio",
+        name,
+        value: choice.value,
+        checked: choice.value === value,
+        onChange: () => onChange(choice.value)
+      }
+    ),
+    /* @__PURE__ */ u3("span", { className: "fbm-choice-dot", "aria-hidden": "true" }),
+    /* @__PURE__ */ u3("span", { className: "fbm-choice-text", children: [
+      /* @__PURE__ */ u3("span", { className: "fbm-choice-title", children: choice.label }),
+      choice.hint && /* @__PURE__ */ u3("span", { className: "fbm-choice-hint", children: choice.hint })
+    ] })
+  ] }, choice.value)) });
+  var ChoiceCards_default = ChoiceCards;
+
   // js/src/migration/components/parameters/CheckResult.tsx
-  var CheckResult = ({ summary, loading: loading2, error, text }) => {
+  var CheckResult = ({ summary, loading: loading2, error, text, policy, onPolicy }) => {
     if (error !== "") {
       return /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: error });
     }
-    if (loading2 || !summary) {
+    if (!summary) {
       return /* @__PURE__ */ u3(Skeleton_default, { rows: 3, label: text("loading") });
     }
-    if (summary.files === 0) {
+    if (summary.files === 0 && !loading2) {
       return /* @__PURE__ */ u3(
         EmptyState_default,
         {
@@ -2427,9 +2299,9 @@ var FilebankMigration = (() => {
         /* @__PURE__ */ u3(StatTile_default, { label: text("summary_tocopy"), value: summary.tocopy, tone: "success", icon: "copy" }),
         /* @__PURE__ */ u3(StatTile_default, { label: text("summary_tooverwrite"), value: summary.tooverwrite, tone: "warning", icon: "pen-to-square" }),
         /* @__PURE__ */ u3(StatTile_default, { label: text("summary_existing"), value: summary.existing, tone: "neutral", icon: "equals" }),
-        /* @__PURE__ */ u3(StatTile_default, { label: text("summary_conflicts"), value: summary.conflicts + summary.openissues, tone: "info", icon: "hand-pointer" })
+        /* @__PURE__ */ u3(StatTile_default, { label: text("summary_left"), value: summary.skipped, tone: "neutral", icon: "hand" })
       ] }),
-      /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-check-scope", children: [
+      /* @__PURE__ */ u3("p", { className: "text-muted fbm-check-scope", children: [
         /* @__PURE__ */ u3(Icon_default, { name: "folder-tree", gap: true }),
         text("check_scope", {
           folders: summary.folders,
@@ -2437,8 +2309,25 @@ var FilebankMigration = (() => {
           to: summary.targetcourses
         })
       ] }),
-      !summary.haswork && /* @__PURE__ */ u3(Alert_default, { tone: "info", children: text("check_no_work") }),
-      summary.conflicts + summary.openissues > 0 && /* @__PURE__ */ u3(Alert_default, { tone: "info", children: text("check_decisions_later") }),
+      summary.different > 0 && /* @__PURE__ */ u3("section", { className: "fbm-conflict", "data-region": "conflict-choice", children: [
+        /* @__PURE__ */ u3("h4", { className: "h5", children: text("check_conflict_title", { n: summary.different }) }),
+        /* @__PURE__ */ u3("p", { className: "text-muted fbm-hint", children: text("check_conflict_help") }),
+        /* @__PURE__ */ u3(
+          ChoiceCards_default,
+          {
+            label: text("policy_conflictpolicy"),
+            name: "fbm-conflict-policy",
+            value: policy === "overwrite" ? "overwrite" : "skip",
+            onChange: onPolicy,
+            choices: ["skip", "overwrite"].map((value) => ({
+              value,
+              label: text("policy_conflictpolicy_" + value),
+              hint: text("policy_conflictpolicy_" + value + "_hint")
+            }))
+          }
+        )
+      ] }),
+      !summary.haswork && /* @__PURE__ */ u3(Alert_default, { tone: "warning", children: text("check_no_work") }),
       summary.notes.length > 0 && /* @__PURE__ */ u3("ul", { className: "fbm-notes", children: summary.notes.map((note) => /* @__PURE__ */ u3("li", { children: [
         /* @__PURE__ */ u3(Icon_default, { name: "circle-info", gap: true }),
         note.label
@@ -2457,17 +2346,17 @@ var FilebankMigration = (() => {
     return /* @__PURE__ */ u3("div", { className: `fbm-side fbm-side-${side}`, children: [
       /* @__PURE__ */ u3("div", { className: "fbm-side-title", children: text(side === "source" ? "rules_source_folder" : "rules_target_folder") }),
       side === "source" && /* @__PURE__ */ u3("div", { className: "fbm-field", children: [
-        /* @__PURE__ */ u3("label", { className: "fbm-label", htmlFor: id("type"), children: text("rules_kind") }),
-        /* @__PURE__ */ u3("select", { id: id("type"), className: "fbm-select", value: row.sourcetype, onChange: (event) => onField("sourcetype", event.target.value), children: modules.map((module) => /* @__PURE__ */ u3("option", { value: module.value, children: module.label }, module.value)) })
+        /* @__PURE__ */ u3("label", { className: "form-label", htmlFor: id("type"), children: text("rules_kind") }),
+        /* @__PURE__ */ u3("select", { id: id("type"), className: "form-select", value: row.sourcetype, onChange: (event) => onField("sourcetype", event.target.value), children: modules.map((module) => /* @__PURE__ */ u3("option", { value: module.value, children: module.label }, module.value)) })
       ] }),
       /* @__PURE__ */ u3("div", { className: "fbm-field-row", children: [
         /* @__PURE__ */ u3("div", { className: "fbm-field", children: [
-          /* @__PURE__ */ u3("label", { className: "fbm-label", htmlFor: id("field"), children: text("rules_field") }),
+          /* @__PURE__ */ u3("label", { className: "form-label", htmlFor: id("field"), children: text("rules_field") }),
           /* @__PURE__ */ u3(
             "select",
             {
               id: id("field"),
-              className: "fbm-select",
+              className: "form-select",
               value: row[key("field")],
               onChange: (event) => onField(key("field"), event.target.value),
               children: FIELDS.map((field) => /* @__PURE__ */ u3("option", { value: field, children: text("rules_field_" + field) }, field))
@@ -2475,12 +2364,12 @@ var FilebankMigration = (() => {
           )
         ] }),
         /* @__PURE__ */ u3("div", { className: "fbm-field", children: [
-          /* @__PURE__ */ u3("label", { className: "fbm-label", htmlFor: id("method"), children: text("rules_match") }),
+          /* @__PURE__ */ u3("label", { className: "form-label", htmlFor: id("method"), children: text("rules_match") }),
           /* @__PURE__ */ u3(
             "select",
             {
               id: id("method"),
-              className: "fbm-select",
+              className: "form-select",
               value: row[key("method")],
               onChange: (event) => onField(key("method"), event.target.value),
               children: METHODS.map((method) => /* @__PURE__ */ u3("option", { value: method, children: text("rules_match_" + method) }, method))
@@ -2489,13 +2378,13 @@ var FilebankMigration = (() => {
         ] })
       ] }),
       /* @__PURE__ */ u3("div", { className: "fbm-field", children: [
-        /* @__PURE__ */ u3("label", { className: "fbm-label", htmlFor: id("value"), children: text("rules_value") }),
+        /* @__PURE__ */ u3("label", { className: "form-label", htmlFor: id("value"), children: text("rules_value") }),
         /* @__PURE__ */ u3(
           "input",
           {
             id: id("value"),
             type: "text",
-            className: `fbm-input${missing && value.trim() === "" ? " is-invalid" : ""}`,
+            className: `form-control${missing && value.trim() === "" ? " is-invalid" : ""}`,
             maxLength: 2048,
             value,
             onChange: (event) => onField(key("value"), event.target.value)
@@ -2504,7 +2393,7 @@ var FilebankMigration = (() => {
       ] })
     ] });
   };
-  var CorrespondenceRows = ({ rows, profileRows, modules, onChange, text, missing }) => {
+  var CorrespondenceRows = ({ rows, previous, onReuse, modules, onChange, text, missing }) => {
     const change = (index, key, value) => onChange(
       rows.map((row, position) => position === index ? { ...row, [key]: value } : row)
     );
@@ -2512,23 +2401,19 @@ var FilebankMigration = (() => {
     return /* @__PURE__ */ u3("div", { className: "fbm-rows", children: [
       rows.length === 0 && /* @__PURE__ */ u3("div", { className: `fbm-rows-empty${missing ? " has-problem" : ""}`, "data-region": "no-correspondences", children: [
         /* @__PURE__ */ u3("div", { className: "fbm-empty-icon", children: /* @__PURE__ */ u3(Icon_default, { name: "folder-open" }) }),
-        /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-empty-text", children: text("rules_empty") }),
+        /* @__PURE__ */ u3("p", { className: "text-muted fbm-empty-text", children: text("rules_empty") }),
         missing && /* @__PURE__ */ u3("p", { className: "fbm-problem", children: text("rules_required") })
       ] }),
       rows.map((row, index) => /* @__PURE__ */ u3("div", { className: "fbm-row-card", children: [
         /* @__PURE__ */ u3("div", { className: "fbm-row-head", children: [
           /* @__PURE__ */ u3("span", { className: "fbm-row-number", children: index + 1 }),
           /* @__PURE__ */ u3(
-            "button",
+            IconButton_default,
             {
-              type: "button",
-              className: "fbm-iconbtn",
-              onClick: () => onChange(rows.filter((_3, position) => position !== index)),
-              title: text("rules_remove"),
-              children: [
-                /* @__PURE__ */ u3(Icon_default, { name: "trash" }),
-                /* @__PURE__ */ u3("span", { className: "fbm-sr", children: text("rules_remove") })
-              ]
+              icon: "trash",
+              label: text("rules_remove"),
+              tone: "danger",
+              onClick: () => onChange(rows.filter((_3, position) => position !== index))
             }
           )
         ] }),
@@ -2543,7 +2428,7 @@ var FilebankMigration = (() => {
           "button",
           {
             type: "button",
-            className: "fbm-btn fbm-btn-primary",
+            className: "btn btn-primary",
             disabled: !room,
             onClick: () => onChange([...rows, emptyCorrespondence()]),
             "data-action": "add-correspondence",
@@ -2553,15 +2438,21 @@ var FilebankMigration = (() => {
             ]
           }
         ),
-        /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", disabled: !room, onClick: () => onChange([...rows, sameNameCorrespondence()]), children: [
-          /* @__PURE__ */ u3(Icon_default, { name: "equals", gap: true }),
-          text("rules_add_same")
-        ] }),
-        profileRows.length > 0 && rows.length === 0 && /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", onClick: () => onChange(profileRows), children: [
-          /* @__PURE__ */ u3(Icon_default, { name: "layer-group", gap: true }),
-          text("rules_add_profile", { n: profileRows.length })
-        ] }),
-        /* @__PURE__ */ u3("span", { className: "fbm-muted", children: text("rules_limit", { n: MAX_CORRESPONDENCES }) })
+        previous.length > 0 && rows.length === 0 && /* @__PURE__ */ u3(
+          "select",
+          {
+            className: "form-select fbm-select-auto",
+            "aria-label": text("rules_reuse"),
+            value: "",
+            onChange: (event) => onReuse(Number(event.target.value)),
+            "data-action": "reuse-correspondences",
+            children: [
+              /* @__PURE__ */ u3("option", { value: "", disabled: true, children: text("rules_reuse") }),
+              previous.map((item) => /* @__PURE__ */ u3("option", { value: item.id, children: item.label }, item.id))
+            ]
+          }
+        ),
+        /* @__PURE__ */ u3("span", { className: "text-muted", children: text("rules_limit", { n: MAX_CORRESPONDENCES }) })
       ] })
     ] });
   };
@@ -2579,7 +2470,7 @@ var FilebankMigration = (() => {
       onChange({ ...parameters, [side]: next });
     };
     if (dimensions.length === 0) {
-      return /* @__PURE__ */ u3("p", { className: "fbm-muted", children: text("wizard_no_filters") });
+      return /* @__PURE__ */ u3("p", { className: "text-muted", children: text("wizard_no_filters") });
     }
     return /* @__PURE__ */ u3("div", { className: `fbm-sides${missing ? " has-problem" : ""}`, children: [
       ["source", "target"].map((side) => /* @__PURE__ */ u3("fieldset", { className: `fbm-side fbm-side-${side}`, children: [
@@ -2590,13 +2481,13 @@ var FilebankMigration = (() => {
         dimensions.map((dimension) => {
           var _a;
           return /* @__PURE__ */ u3("div", { className: "fbm-field", children: [
-            /* @__PURE__ */ u3("label", { className: "fbm-label", htmlFor: `fbm-${side}-${dimension.key}`, children: dimension.label }),
+            /* @__PURE__ */ u3("label", { className: "form-label", htmlFor: `fbm-${side}-${dimension.key}`, children: dimension.label }),
             /* @__PURE__ */ u3(
               "input",
               {
                 id: `fbm-${side}-${dimension.key}`,
                 type: "text",
-                className: "fbm-input",
+                className: "form-control",
                 maxLength: 255,
                 value: (_a = parameters[side][dimension.key]) != null ? _a : "",
                 placeholder: text("wizard_any"),
@@ -2614,27 +2505,77 @@ var FilebankMigration = (() => {
   // js/src/migration/components/parameters/PolicyFields.tsx
   var POLICIES = [
     { key: "missingtarget", values: ["create", "skip"] },
-    { key: "conflictpolicy", values: ["block", "overwrite"] },
     { key: "duplicatepolicy", values: ["skip-and-report", "keep"] }
   ];
   var PolicyFields = ({ rules, onChange, text }) => /* @__PURE__ */ u3("div", { className: "fbm-policies", children: POLICIES.map((policy) => {
     const value = policy.values.includes(rules[policy.key]) ? rules[policy.key] : policy.values[0];
     const name = (item) => "policy_" + policy.key + "_" + item.split("-").join("_");
-    return /* @__PURE__ */ u3("div", { className: "fbm-policy", children: [
-      /* @__PURE__ */ u3("div", { className: "fbm-label", children: text("policy_" + policy.key) }),
+    return /* @__PURE__ */ u3("fieldset", { className: "fbm-policy", children: [
+      /* @__PURE__ */ u3("legend", { className: "fbm-policy-title", children: text("policy_" + policy.key) }),
       /* @__PURE__ */ u3(
-        Chips_default,
+        ChoiceCards_default,
         {
           label: text("policy_" + policy.key),
+          name: `fbm-policy-${policy.key}`,
           value,
           onChange: (next) => onChange({ ...rules, [policy.key]: next }),
-          chips: policy.values.map((item) => ({ value: item, label: text(name(item)) }))
+          choices: policy.values.map((item) => ({ value: item, label: text(name(item)), hint: text(name(item) + "_hint") }))
         }
-      ),
-      /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-hint", children: text(name(value) + "_hint") })
+      )
     ] }, policy.key);
   }) });
   var PolicyFields_default = PolicyFields;
+
+  // js/src/migration/components/parameters/ProfilePicker.tsx
+  var ProfilePicker = ({ profiles, chosen, locked, invalid, onPick, onSearch, text }) => {
+    const [query, setQuery] = h2("");
+    const followed = useDebounced(query, 300);
+    const first = A2(true);
+    y2(() => {
+      if (first.current) {
+        first.current = false;
+        return;
+      }
+      onSearch(followed.trim());
+    }, [followed]);
+    return /* @__PURE__ */ u3("div", { className: `fbm-picker${invalid ? " has-problem" : ""}`, "data-region": "profile-picker", children: [
+      !locked && /* @__PURE__ */ u3("div", { className: "fbm-search", children: [
+        /* @__PURE__ */ u3("span", { className: "fbm-search-icon", children: /* @__PURE__ */ u3(Icon_default, { name: "magnifying-glass" }) }),
+        /* @__PURE__ */ u3(
+          "input",
+          {
+            type: "search",
+            className: "form-control rounded-pill",
+            value: query,
+            placeholder: text("profile_search"),
+            "aria-label": text("profile_search"),
+            autoComplete: "off",
+            onChange: (event) => setQuery(event.target.value)
+          }
+        )
+      ] }),
+      /* @__PURE__ */ u3("div", { className: "list-group fbm-picker-list", role: "listbox", "aria-label": text("wizard_profile"), children: [
+        profiles.map((profile) => /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            role: "option",
+            "aria-selected": profile.id === chosen,
+            className: `list-group-item list-group-item-action${profile.id === chosen ? " active" : ""}`,
+            disabled: locked && profile.id !== chosen,
+            onClick: () => onPick(profile),
+            children: [
+              profile.id === chosen && /* @__PURE__ */ u3(Icon_default, { name: "check", gap: true }),
+              profile.name
+            ]
+          },
+          profile.id
+        )),
+        profiles.length === 0 && /* @__PURE__ */ u3("p", { className: "text-muted fbm-hint", children: text("profile_none") })
+      ] })
+    ] });
+  };
+  var ProfilePicker_default = ProfilePicker;
 
   // js/src/migration/components/parameters/SectionRules.tsx
   var STRATEGIES = ["ordinal", "name", "mapping"];
@@ -2644,32 +2585,45 @@ var FilebankMigration = (() => {
       ...rules,
       sectionmap: pairs.map((pair, position) => position === index ? { ...pair, [key]: value } : pair)
     });
+    const invalid = (value) => missing && !/^[1-9][0-9]*$/.test(value);
     return /* @__PURE__ */ u3("div", { className: "fbm-sections", children: [
       /* @__PURE__ */ u3(
-        Chips_default,
+        ChoiceCards_default,
         {
           label: text("rules_sections"),
+          name: "fbm-section-strategy",
           value: rules.sectionstrategy,
           onChange: (sectionstrategy) => onChange({
             ...rules,
             sectionstrategy,
             sectionmap: sectionstrategy === "mapping" && pairs.length === 0 ? [{ source: "", target: "" }] : pairs
           }),
-          chips: STRATEGIES.map((value) => ({ value, label: text("rules_sections_" + value) }))
+          choices: STRATEGIES.map((value) => ({
+            value,
+            label: text("rules_sections_" + value),
+            hint: text("rules_sections_" + value + "_hint")
+          }))
         }
       ),
-      /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-hint", children: text("rules_sections_" + rules.sectionstrategy + "_hint") }),
       rules.sectionstrategy === "mapping" && /* @__PURE__ */ u3("div", { className: "fbm-pairs", children: [
+        /* @__PURE__ */ u3("div", { className: "fbm-pair fbm-pair-head", "aria-hidden": "true", children: [
+          /* @__PURE__ */ u3("span", {}),
+          /* @__PURE__ */ u3("span", { className: "form-label", children: text("rules_section_source") }),
+          /* @__PURE__ */ u3("span", {}),
+          /* @__PURE__ */ u3("span", { className: "form-label", children: text("rules_section_target") }),
+          /* @__PURE__ */ u3("span", {})
+        ] }),
         pairs.map((pair, index) => /* @__PURE__ */ u3("div", { className: "fbm-pair", children: [
+          /* @__PURE__ */ u3("span", { className: "fbm-row-number", children: index + 1 }),
           /* @__PURE__ */ u3(
             "input",
             {
-              type: "text",
+              type: "number",
+              min: 1,
               inputMode: "numeric",
-              className: `fbm-input${missing && !/^[1-9][0-9]*$/.test(pair.source) ? " is-invalid" : ""}`,
+              className: `form-control${invalid(pair.source) ? " is-invalid" : ""}`,
               value: pair.source,
               "aria-label": text("rules_section_source"),
-              placeholder: text("rules_section_source"),
               onChange: (event) => setPair(index, "source", event.target.value)
             }
           ),
@@ -2677,34 +2631,30 @@ var FilebankMigration = (() => {
           /* @__PURE__ */ u3(
             "input",
             {
-              type: "text",
+              type: "number",
+              min: 1,
               inputMode: "numeric",
-              className: `fbm-input${missing && !/^[1-9][0-9]*$/.test(pair.target) ? " is-invalid" : ""}`,
+              className: `form-control${invalid(pair.target) ? " is-invalid" : ""}`,
               value: pair.target,
               "aria-label": text("rules_section_target"),
-              placeholder: text("rules_section_target"),
               onChange: (event) => setPair(index, "target", event.target.value)
             }
           ),
           /* @__PURE__ */ u3(
-            "button",
+            IconButton_default,
             {
-              type: "button",
-              className: "fbm-iconbtn",
-              title: text("rules_remove"),
-              onClick: () => onChange({ ...rules, sectionmap: pairs.filter((_3, position) => position !== index) }),
-              children: [
-                /* @__PURE__ */ u3(Icon_default, { name: "trash" }),
-                /* @__PURE__ */ u3("span", { className: "fbm-sr", children: text("rules_remove") })
-              ]
+              icon: "trash",
+              label: text("rules_remove"),
+              tone: "danger",
+              onClick: () => onChange({ ...rules, sectionmap: pairs.filter((_3, position) => position !== index) })
             }
           )
         ] }, index)),
-        /* @__PURE__ */ u3(
+        /* @__PURE__ */ u3("div", { className: "fbm-row-add", children: /* @__PURE__ */ u3(
           "button",
           {
             type: "button",
-            className: "fbm-btn",
+            className: "btn btn-outline-secondary",
             disabled: pairs.length >= MAX_SECTION_PAIRS,
             onClick: () => onChange({ ...rules, sectionmap: [...pairs, { source: "", target: "" }] }),
             children: [
@@ -2712,33 +2662,29 @@ var FilebankMigration = (() => {
               text("rules_section_add")
             ]
           }
-        )
+        ) })
       ] })
     ] });
   };
   var SectionRules_default = SectionRules;
 
   // js/src/migration/components/parameters/ParametersEditor.tsx
-  var ParametersEditor = ({ step, options, parameters, onChange, text, lockProfile = false, problems }) => {
+  var ParametersEditor = ({ step, options, parameters, onChange, onOptions, text, lockProfile = false, problems }) => {
     const profile = options.profiles.find((item) => item.id === parameters.profileid);
     if (step === "profile") {
       return /* @__PURE__ */ u3(
-        "select",
+        ProfilePicker_default,
         {
-          className: `fbm-select fbm-select-wide${problems.includes("profile") ? " is-invalid" : ""}`,
-          "aria-label": text("wizard_profile"),
-          value: parameters.profileid,
-          disabled: lockProfile,
-          onChange: (event) => {
-            const next = options.profiles.find((item) => item.id === Number(event.target.value));
-            if (next) {
-              onChange(parametersFor(next));
-            }
+          profiles: options.profiles,
+          chosen: parameters.profileid,
+          locked: lockProfile,
+          invalid: problems.includes("profile"),
+          onPick: (next) => {
+            onChange(parametersFor(next));
+            onOptions("", next.id);
           },
-          children: [
-            parameters.profileid <= 0 && /* @__PURE__ */ u3("option", { value: 0, children: text("wizard_profile_choose") }),
-            options.profiles.map((item) => /* @__PURE__ */ u3("option", { value: item.id, children: item.name }, item.id))
-          ]
+          onSearch: (query) => onOptions(query, parameters.profileid),
+          text
         }
       );
     }
@@ -2758,11 +2704,16 @@ var FilebankMigration = (() => {
       );
     }
     if (step === "folders") {
+      const reuse = async (id) => {
+        const earlier = parametersOf(await getMigration(id));
+        onChange({ ...parameters, rules: { ...parameters.rules, correspondences: earlier.rules.correspondences } });
+      };
       return /* @__PURE__ */ u3(
         CorrespondenceRows_default,
         {
           rows: parameters.rules.correspondences,
-          profileRows: profileRules(profile).correspondences,
+          previous: options.previous,
+          onReuse: (id) => void reuse(id).catch(() => void 0),
           modules: options.modules,
           onChange: (correspondences) => onChange({ ...parameters, rules: { ...parameters.rules, correspondences } }),
           text,
@@ -2819,8 +2770,8 @@ var FilebankMigration = (() => {
     policies: "sliders",
     check: "clipboard-check"
   };
-  var MigrationWizard = ({ mode, options, migrationId, onClose, onDone, text }) => {
-    var _a, _b, _c;
+  var MigrationWizard = ({ mode, options, migrationId, onClose, onDone, onOptions, text }) => {
+    var _a, _b, _c, _d;
     const [parameters, setParameters] = h2(null);
     const [source, setSource] = h2(null);
     const [step, setStep] = h2(0);
@@ -2832,6 +2783,8 @@ var FilebankMigration = (() => {
     const [error, setError] = h2("");
     const [leaving, setLeaving] = h2(false);
     const initial = A2("");
+    const root = A2(null);
+    const ready = options !== null && parameters !== null;
     const steps = STEP_KEYS;
     y2(() => {
       if (!options) {
@@ -2860,6 +2813,18 @@ var FilebankMigration = (() => {
         current2 = false;
       };
     }, [options, migrationId]);
+    y2(() => {
+      var _a2;
+      if (ready && window.matchMedia("(min-width: 62rem) and (min-height: 36rem)").matches) {
+        (_a2 = root.current) == null ? void 0 : _a2.scrollIntoView({ block: "start" });
+      }
+    }, [ready]);
+    const chosen = (_a = parameters == null ? void 0 : parameters.profileid) != null ? _a : 0;
+    y2(() => {
+      if (chosen > 0) {
+        onOptions("", chosen);
+      }
+    }, [chosen]);
     const dirty = parameters !== null && keyOf(parameters) !== initial.current;
     y2(() => {
       if (!dirty) {
@@ -2872,7 +2837,7 @@ var FilebankMigration = (() => {
       return () => window.removeEventListener("beforeunload", warn);
     }, [dirty]);
     const heading = mode === "edit" ? text("edit_title") : text("wizard_title");
-    const back = /* @__PURE__ */ u3("button", { type: "button", className: "fbm-back", onClick: () => dirty ? setLeaving(true) : onClose(), children: [
+    const back = /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-link btn-sm p-0 fbm-back", onClick: () => dirty ? setLeaving(true) : onClose(), children: [
       /* @__PURE__ */ u3(Icon_default, { name: "arrow-left", gap: true }),
       text(mode === "edit" ? "back_to_migration" : "back_to_list")
     ] });
@@ -2884,23 +2849,22 @@ var FilebankMigration = (() => {
         error === "" && (!options || options.profiles.length > 0) && /* @__PURE__ */ u3(Skeleton_default, { rows: 5, label: text("loading") })
       ] });
     }
-    const dimensions = (_b = (_a = options.profiles.find((item) => item.id === parameters.profileid)) == null ? void 0 : _a.dimensions.length) != null ? _b : 0;
+    const dimensions = (_c = (_b = options.profiles.find((item) => item.id === parameters.profileid)) == null ? void 0 : _b.dimensions.length) != null ? _c : 0;
     const key = steps[step];
     const last = step === steps.length - 1;
     const change = (next2) => {
       setParameters(next2);
       setSummary(null);
     };
-    const runCheck = async () => {
+    const runCheck = async (asked = parameters, keepResult = false) => {
       setChecking(true);
-      setSummary(null);
+      if (!keepResult) {
+        setSummary(null);
+      }
       setError("");
-      const asked = keyOf(parameters);
       try {
-        const result = await checkMigration(parameters);
-        if (asked === keyOf(parameters)) {
-          setSummary(result);
-        }
+        const result = await checkMigration(asked);
+        setSummary(result);
       } catch (problem) {
         setError(describeError(problem));
       } finally {
@@ -2942,12 +2906,12 @@ var FilebankMigration = (() => {
         setSaving(false);
       }
     };
-    const canSave = summary !== null && (mode === "edit" || summary.files > 0 || summary.openissues > 0);
-    return /* @__PURE__ */ u3("div", { className: "fbm-wizard", "data-region": "migration-wizard", "data-mode": mode, children: [
+    const canSave = summary !== null && summary.haswork && !checking;
+    return /* @__PURE__ */ u3("div", { className: "fbm-wizard", "data-region": "migration-wizard", "data-mode": mode, ref: root, children: [
       /* @__PURE__ */ u3(
         PageHeader_default,
         {
-          title: mode === "edit" ? text("edit_title_n", { n: (_c = source == null ? void 0 : source.id) != null ? _c : migrationId }) : heading,
+          title: mode === "edit" ? text("edit_title_n", { n: (_d = source == null ? void 0 : source.id) != null ? _d : migrationId }) : heading,
           subtitle: text(mode === "edit" ? "edit_hint" : "wizard_subtitle"),
           back
         }
@@ -2958,26 +2922,43 @@ var FilebankMigration = (() => {
           /* @__PURE__ */ u3("header", { className: "fbm-wizard-head", children: [
             /* @__PURE__ */ u3("span", { className: "fbm-wizard-icon", children: /* @__PURE__ */ u3(Icon_default, { name: STEP_ICONS[key] }) }),
             /* @__PURE__ */ u3("div", { children: [
-              /* @__PURE__ */ u3("h3", { className: "fbm-h3", children: text("step_" + key) }),
-              /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-wizard-help", children: text("step_" + key + "_help") })
+              /* @__PURE__ */ u3("h3", { className: "h3", children: text("step_" + key) }),
+              /* @__PURE__ */ u3("p", { className: "text-muted fbm-wizard-help", children: text("step_" + key + "_help") })
             ] })
           ] }),
-          error !== "" && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: error }),
-          key === "check" ? /* @__PURE__ */ u3(CheckResult_default, { summary, loading: checking, error: "", text }) : /* @__PURE__ */ u3(
-            ParametersEditor_default,
-            {
-              step: key,
-              options,
-              parameters,
-              onChange: change,
-              text,
-              lockProfile: mode === "edit",
-              problems
-            }
-          ),
-          key === "check" && summary !== null && !canSave && /* @__PURE__ */ u3("p", { className: "fbm-muted fbm-wizard-hint", children: text("wizard_change_hint") }),
+          /* @__PURE__ */ u3("div", { className: "fbm-wizard-scroll", children: [
+            error !== "" && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: error }),
+            key === "check" ? /* @__PURE__ */ u3(
+              CheckResult_default,
+              {
+                summary,
+                loading: checking,
+                error: "",
+                text,
+                policy: parameters.rules.conflictpolicy,
+                onPolicy: (conflictpolicy) => {
+                  const next2 = { ...parameters, rules: { ...parameters.rules, conflictpolicy } };
+                  setParameters(next2);
+                  void runCheck(next2, true);
+                }
+              }
+            ) : /* @__PURE__ */ u3(
+              ParametersEditor_default,
+              {
+                step: key,
+                options,
+                parameters,
+                onChange: change,
+                onOptions,
+                text,
+                lockProfile: mode === "edit",
+                problems
+              }
+            ),
+            key === "check" && summary !== null && !canSave && /* @__PURE__ */ u3("p", { className: "text-muted fbm-wizard-hint", children: text("wizard_change_hint") })
+          ] }),
           /* @__PURE__ */ u3("footer", { className: "fbm-wizard-foot", children: [
-            /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn", onClick: () => go(step - 1), disabled: step === 0 || saving, children: [
+            /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary", onClick: () => go(step - 1), disabled: step === 0 || saving, children: [
               /* @__PURE__ */ u3(Icon_default, { name: "arrow-left", gap: true }),
               text("wizard_previous")
             ] }),
@@ -2985,7 +2966,7 @@ var FilebankMigration = (() => {
               "button",
               {
                 type: "button",
-                className: "fbm-btn fbm-btn-primary",
+                className: "btn btn-primary",
                 onClick: () => void save(),
                 disabled: !canSave || saving,
                 "data-action": "save-migration",
@@ -2994,7 +2975,7 @@ var FilebankMigration = (() => {
                   text(mode === "edit" ? "edit_save" : "wizard_create")
                 ]
               }
-            ) : /* @__PURE__ */ u3("button", { type: "button", className: "fbm-btn fbm-btn-primary", onClick: next, "data-action": "next-step", children: [
+            ) : /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-primary", onClick: next, "data-action": "next-step", children: [
               text(steps[step + 1] === "check" ? "wizard_check" : "wizard_next"),
               /* @__PURE__ */ u3(Icon_default, { name: "arrow-right" })
             ] })
@@ -3076,6 +3057,9 @@ var FilebankMigration = (() => {
       document.querySelectorAll(".fbm-boot").forEach((block) => block.remove());
       getOptions().then(setOptions).catch((problem) => setError(describeError(problem)));
     }, []);
+    const loadOptions = q2((search, profileid) => {
+      getOptions(search, profileid).then(setOptions).catch((problem) => setError(describeError(problem)));
+    }, []);
     let screen;
     if (route.mode === "new" || route.mode === "edit") {
       screen = /* @__PURE__ */ u3(
@@ -3086,7 +3070,8 @@ var FilebankMigration = (() => {
           migrationId: route.mode === "edit" ? route.planid : route.from,
           text,
           onClose: () => route.mode === "edit" ? route.openReview(route.planid) : route.openList(),
-          onDone: route.openReview
+          onDone: route.openReview,
+          onOptions: loadOptions
         },
         `${route.mode}-${route.planid}-${route.from}`
       );

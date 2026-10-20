@@ -52,6 +52,11 @@ final class migration_notes {
     public const NOT_PUBLIC = 'notpublic';
 
     /**
+     * @var string A folder whose place in the destination cannot be told, because there is more than one or none that can take it.
+     */
+    public const NOT_RESOLVED = 'notresolved';
+
+    /**
      * @var int[] How many times each kind of thing was left out.
      */
     private array $counts = [];

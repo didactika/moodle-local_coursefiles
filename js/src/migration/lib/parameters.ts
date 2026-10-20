@@ -23,23 +23,6 @@ export type StepKey = 'profile' | 'courses' | 'folders' | 'sections' | 'policies
 export const STEP_KEYS: StepKey[] = ['profile', 'courses', 'folders', 'sections', 'policies', 'check'];
 
 /**
- * A correspondence that reads a folder by name and writes the folder with the same name.
- *
- * @returns The new row.
- */
-export const sameNameCorrespondence = (): Correspondence => ({
-    sourcetype: 'folder',
-    sourcefield: 'name',
-    sourcemethod: 'pattern',
-    sourcevalue: '~^(?<name>.+)$~',
-    targetfield: 'name',
-    targetmethod: 'template',
-    // The template of the destination, in which ${name} is the name that the pattern of the source captured.
-    // eslint-disable-next-line no-template-curly-in-string
-    targetvalue: '${name}',
-});
-
-/**
  * A correspondence that is yet to be filled in.
  *
  * @returns The new row, which finds a folder by its exact name on both sides.
