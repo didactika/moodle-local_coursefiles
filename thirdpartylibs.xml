@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>amd/src/migration_app.js</location>
+        <name>Preact</name>
+        <description>The part of Preact that the migration screens use, built into the module together with them from js/src by tools/build-migration.mjs.</description>
+        <version>10.24.3</version>
+        <license>MIT</license>
+        <repository>https://github.com/preactjs/preact</repository>
+        <copyrights>
+            <copyright>2015-present Jason Miller</copyright>
+        </copyrights>
+    </library>
+</libraries>

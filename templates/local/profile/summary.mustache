@@ -6,24 +6,26 @@
     Escaped descriptions of the exact reviewed profile revision.
     Example context (json): {"name":"Annual courses","rows":[],"parsers":[],"familykey":"family","editioncapture":"edition"}
 }}
-<div class="filebank-admin card mb-4" data-region="filebank-profile-summary">
-    <div class="card-body">
-        <h3 class="h5">{{#str}}relationshiprules, local_filebank{{/str}}</h3>
+<div class="filebank-ui filebank-admin fbm-panel" data-region="filebank-profile-summary">
+    <div class="fbm-panel-head">
+        <h3 class="fbm-panel-title">{{#str}}relationshiprules, local_filebank{{/str}}</h3>
+        {{#editurl}}<a class="fbm-btn fbm-btn-small" href="{{editurl}}">{{#str}}editprofilerules, local_filebank{{/str}}</a>{{/editurl}}
+    </div>
+    <div class="fbm-panel-body">
         <p>{{{name}}}{{#revision}} · {{#str}}revision, local_filebank{{/str}} {{revision}}{{/revision}}</p>
-        {{#editurl}}<p><a href="{{editurl}}">{{#str}}editprofilerules, local_filebank{{/str}}</a></p>{{/editurl}}
-        <dl class="row mb-0">{{#filters}}
-            <dt class="col-md-4">{{{label}}}</dt><dd class="col-md-8 text-break"><code>{{capture}}</code></dd>
+        <dl class="fbm-definitions">{{#filters}}
+            <dt>{{{label}}}</dt><dd class="fbm-break"><code>{{capture}}</code></dd>
         {{/filters}}</dl>
-        {{#placement}}<details class="mt-3">
+        {{#placement}}<details class="fbm-details">
             <summary><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}rulesinuse, local_filebank{{/str}}</summary>
-        <dl class="row mb-0 mt-3">{{#rows}}
-            <dt class="col-md-4">{{label}}</dt><dd class="col-md-8 text-break">{{value}}</dd>
+        <dl class="fbm-definitions">{{#rows}}
+            <dt>{{label}}</dt><dd class="fbm-break">{{value}}</dd>
         {{/rows}}</dl>
         </details>{{/placement}}
-        <details class="mt-3">
+        <details class="fbm-details">
             <summary><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}relationshiprules, local_filebank{{/str}}</summary>
-            <p class="mt-3">{{#str}}familykey, local_filebank{{/str}}: <code>{{familykey}}</code></p>
-            {{#parsers}}<p>{{field}}<br><code class="text-break">{{pattern}}</code></p>{{/parsers}}
+            <p>{{#str}}familykey, local_filebank{{/str}}: <code>{{familykey}}</code></p>
+            {{#parsers}}<p>{{field}}<br><code class="fbm-break">{{pattern}}</code></p>{{/parsers}}
         </details>
     </div>
 </div>

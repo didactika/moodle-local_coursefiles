@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Reviewed immutable family migration planning.
+ * Family migration planning.
  *
  * @package local_filebank
  * @copyright 2026 Didactika.org
@@ -24,35 +24,109 @@
  */
 namespace local_filebank\local\migration;
 
-use local_filebank\local\catalog\material_source;
 use local_filebank\local\profile\profiles;
-use local_filebank\local\policy\author_policy;
-use local_filebank\local\logging\log;
 
 /**
- * Creates explicit file decisions without writing course materials.
+ * Works out what a migration would do, without writing course materials: the files that would be copied, the ones that already are
+ * there, and the few that need a decision. What does not match is left out and counted, and nothing that needs a decision stops the
+ * rest from being migrated.
  */
 final class migration_planner {
     /**
-     * Preview copies between two values of a configured course dimension.
+     * Preview copies between two values of a configured course dimension and store the result as a new migration.
      *
      * @param int $profileid Profile.
      * @param string $sourceedition Source label.
      * @param string $targetedition Target label.
-     * @param bool $layoutconfirmed Reviewed section layout.
-     * @param string $scopekey Configured capture filter or edition.
-     * @param array $options Migration-owned rules and capture filters.
+     * @param string $scopekey Filter dimension used for the edition-like labels.
+     * @param array $options Reviewed migration, filters, placements, exclusions and file choices.
      * @return \stdClass Stored plan.
      */
     public static function preview(
         int $profileid,
         string $sourceedition,
         string $targetedition,
-        bool $layoutconfirmed,
         string $scopekey = 'edition',
         array $options = []
     ): \stdClass {
+        $draft = self::compute($profileid, $sourceedition, $targetedition, $scopekey, $options);
+        return planning_store::save(
+            $profileid,
+            (int) $draft['revision']->id,
+            $draft['document'],
+            $draft['operations'],
+            $draft['creations']
+        );
+    }
 
+    /**
+     * Work a stored migration out again from its document and store the result where it is, without creating another one.
+     *
+     * @param int $planid The migration to rewrite.
+     * @param int $profileid Profile.
+     * @param array $document Document of the migration with the changes already made.
+     * @return \stdClass The stored migration.
+     */
+    public static function replace(int $planid, int $profileid, array $document): \stdClass {
+        $draft = self::compute(
+            $profileid,
+            $document['sourceedition'],
+            $document['targetedition'],
+            $document['scopekey'] ?? 'edition',
+            [
+                'migration' => $document['migration'], 'filters' => $document['filters'] ?? null,
+                'placements' => $document['placements'] ?? [], 'excluded' => $document['excluded'] ?? [],
+                'filechoices' => $document['filechoices'] ?? [], 'ignoredissues' => $document['ignoredissues'] ?? [],
+            ]
+        );
+        return planning_store::save(
+            $profileid,
+            (int) $draft['revision']->id,
+            $draft['document'],
+            $draft['operations'],
+            $draft['creations'],
+            $planid
+        );
+    }
+
+    /**
+     * Work out what a migration would do and say it in numbers, without storing anything.
+     *
+     * @param int $profileid Profile.
+     * @param string $sourceedition Source label.
+     * @param string $targetedition Target label.
+     * @param string $scopekey Filter dimension used for the edition-like labels.
+     * @param array $options Reviewed migration, filters, placements, exclusions and file choices.
+     * @return array What it would copy, overwrite, skip and ask about, and what it leaves out.
+     */
+    public static function check(
+        int $profileid,
+        string $sourceedition,
+        string $targetedition,
+        string $scopekey = 'edition',
+        array $options = []
+    ): array {
+        $draft = self::compute($profileid, $sourceedition, $targetedition, $scopekey, $options);
+        return migration_summary::of($draft['document'], $draft['operations']);
+    }
+
+    /**
+     * Work out the operations, the destinations to create, the decisions that are open and the notes of a migration.
+     *
+     * @param int $profileid Profile.
+     * @param string $sourceedition Source label.
+     * @param string $targetedition Target label.
+     * @param string $scopekey Filter dimension used for the edition-like labels.
+     * @param array $options Reviewed migration, filters, placements, exclusions and file choices.
+     * @return array The revision, the document of the migration, its operations and the destinations to create.
+     */
+    public static function compute(
+        int $profileid,
+        string $sourceedition,
+        string $targetedition,
+        string $scopekey = 'edition',
+        array $options = []
+    ): array {
         require_capability('local/filebank:planmigration', \context_system::instance());
         [$profile, $revision, $rules] = profiles::load($profileid);
         $scopecapture = $scopekey !== '' ? course_scope::capture($rules, $scopekey) : '';
@@ -61,45 +135,30 @@ final class migration_planner {
         $excluded = $options['excluded'] ?? [];
         $ignoredissues = $options['ignoredissues'] ?? [];
         $filechoices = $options['filechoices'] ?? [];
-        $filters = $options['filters'] ?? null;
-        $filters = migration_pairs::filters($filters, $rules->filter_definitions());
-        if (
-            ($filters === null && ($sourceedition === '' || $targetedition === '' || $sourceedition === $targetedition))
-                || (($config['section_match']['strategy'] ?? 'ordinal') === 'ordinal' && !$layoutconfirmed)
-        ) {
+        $filters = migration_pairs::filters($options['filters'] ?? null, $rules->filter_definitions());
+        if ($filters === null && ($sourceedition === '' || $targetedition === '' || $sourceedition === $targetedition)) {
             throw new \moodle_exception('layoutrequired', 'local_filebank');
         }
-        $pairs = migration_pairs::collect(
-            $revision,
-            $rules,
-            $scopekey,
-            $scopecapture,
-            $sourceedition,
-            $targetedition,
-            $filters
-        );
+        $pairs = migration_pairs::collect($revision, $rules, $scopekey, $scopecapture, $sourceedition, $targetedition, $filters);
         $operations = [];
         $issues = [];
         $creations = [];
-        $request = compact('profileid', 'config', 'placements', 'filechoices', 'excluded');
+        $notes = new migration_notes();
+        $request = compact('profileid', 'config', 'placements', 'filechoices', 'excluded', 'notes');
         $request['loaded'] = [$profile, $revision, $rules];
         foreach ($pairs as $pair) {
             planning_materials::pair($pair, $request, $operations, $issues, $creations);
         }
-        $issues = array_values(
-            array_filter(
-                $issues,
-                static fn($issue) => !in_array(
-                    hash('sha256', json_encode($issue)),
-                    $ignoredissues,
-                    true
-                )
-            )
-        );
+        $issues = array_values(array_filter(
+            $issues,
+            static fn($issue) => !in_array(hash('sha256', json_encode($issue)), $ignoredissues, true)
+        ));
         $document = ['sourceedition' => $sourceedition, 'targetedition' => $targetedition, 'scopekey' => $scopekey,
-            'layoutconfirmed' => $layoutconfirmed, 'migration' => $config, 'filters' => $filters,
+            'layoutconfirmed' => true, 'migration' => $config, 'filters' => $filters,
             'placements' => $placements, 'excluded' => $excluded, 'ignoredissues' => $ignoredissues,
-            'filechoices' => $filechoices, 'issues' => $issues, 'operationcount' => count($operations)];
-        return planning_store::save($profileid, (int)$revision->id, $document, $operations, $creations);
+            'filechoices' => $filechoices, 'issues' => $issues, 'notes' => $notes->counts(),
+            'operationcount' => count($operations)];
+        return ['profile' => $profile, 'revision' => $revision, 'document' => $document,
+            'operations' => $operations, 'creations' => $creations];
     }
 }

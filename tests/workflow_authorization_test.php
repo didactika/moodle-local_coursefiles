@@ -39,7 +39,7 @@ require_once(__DIR__ . '/fixtures/workflow_fixture.php');
 /**
  * Authorization regression contracts.
  * @covers \local_filebank\local\migration\migration_planner
- * @covers \local_filebank\local\migration\plan_resolution
+ * @covers \local_filebank\local\migration\plan_editor
  * @covers \local_filebank\local\migration\plan_history
  * @covers \local_filebank\local\migration\plan_selection
  * @covers \local_filebank\local\migration\target_binding
@@ -72,11 +72,11 @@ final class workflow_authorization_test extends workflow_fixture {
             ],
             'Shared lesson content'
         );
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $options);
         $this->assertSame('reviewable', $plan->state);
         $document = json_decode($plan->configjson, true);
-        $this->assertSame('sourcefoldermissing', $document['issues'][0]['reason']);
-        $this->assertFalse($document['issues'][0]['blocking']);
+        $this->assertSame([], $document['issues'], 'A folder that the source does not have is not an error');
+        $this->assertSame(1, $document['notes']['nosourcefolder']);
         $this->assertSame(
             1,
             $DB->count_records(
@@ -101,7 +101,7 @@ final class workflow_authorization_test extends workflow_fixture {
         $this->setAdminUser();
         $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Disabled approval']);
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026');
         profiles::change_state([$fixture['profileid']], 'disable');
         $CFG->maintenance_enabled = false;
         $this->expectException(\dml_missing_record_exception::class);
@@ -135,12 +135,11 @@ final class workflow_authorization_test extends workflow_fixture {
                 'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Target materials'],
             ];
         }
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
-        $data = \local_filebank\output\migration_report::data($plan->id);
-        $this->assertCount(2, $data['groups']);
-        $this->assertCount(2, $data['courses'][0]['folders']);
-        $this->assertNotSame($data['groups'][0]['groupcmid'], $data['groups'][1]['groupcmid']);
-        $this->assertSame(3, $data['courses'][0]['coursetotal']);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $options);
+        $data = \local_filebank\local\migration\view\migration_files::folders($plan->id, '', 0, 25);
+        $this->assertSame(2, $data['total']);
+        $this->assertNotSame($data['folders'][0]['sourcecmid'], $data['folders'][1]['sourcecmid']);
+        $this->assertSame(3, $data['folders'][0]['total'] + $data['folders'][1]['total']);
     }
 
     /**
@@ -164,7 +163,7 @@ final class workflow_authorization_test extends workflow_fixture {
             );
         }
         indexer::refresh($source->id);
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026');
         plan_selection::save(
             $plan->id,
             $plan->digest,
@@ -187,8 +186,8 @@ final class workflow_authorization_test extends workflow_fixture {
         $this->setAdminUser();
         $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Retention migration']);
-        $expired = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
-        $active = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $expired = migration_planner::preview($fixture['profileid'], '2025', '2026');
+        $active = migration_planner::preview($fixture['profileid'], '2025', '2026');
         $now = time();
         $DB->set_field('local_filebank_plan', 'timecreated', $now - 400 * DAYSECS);
         $DB->insert_record(
@@ -217,7 +216,7 @@ final class workflow_authorization_test extends workflow_fixture {
         $this->setAdminUser();
         $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Removed profile']);
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026');
         profiles::change_state([$fixture['profileid']], 'disable');
         $this->assertSame(0, (int)$DB->get_field('local_filebank', 'enabled', ['id' => $fixture['profileid']]));
         profiles::change_state([$fixture['profileid']], 'enable');

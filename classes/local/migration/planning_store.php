@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Reviewed immutable family migration planning.
+ * Persistence of what a migration would do.
  *
  * @package local_filebank
  * @copyright 2026 Didactika.org
@@ -24,86 +24,95 @@
  */
 namespace local_filebank\local\migration;
 
-use local_filebank\local\catalog\material_source;
-use local_filebank\local\profile\profiles;
-use local_filebank\local\policy\author_policy;
 use local_filebank\local\logging\log;
 
 /**
- * Persist an immutable reviewed plan and its operation manifest atomically.
+ * Stores a migration with its operations and the destinations to create, as a new migration or in place of what an existing one
+ * had.
  */
 final class planning_store {
     /**
-     * Persist the reviewed plan and complete immutable operation manifest.
+     * Store a migration.
      *
-     * @param int $profileid Profileid.
-     * @param int $revisionid Revisionid.
-     * @param array $document Document.
-     * @param array $operations Operations.
-     * @param array $creations Creations.
-     * @return stdClass Result.
+     * A migration that already exists and has not run is rewritten where it is: its identity, its number and its date stay, and the
+     * operations and the document are the new ones. Anything that is not a new migration goes through here, so a decision that is
+     * taken inside a migration never leaves a second one behind.
+     *
+     * @param int $profileid Profile.
+     * @param int $revisionid Reviewed profile revision.
+     * @param array $document Document of the migration.
+     * @param array[] $operations The operations.
+     * @param array[] $creations The destinations that would be created.
+     * @param int $replaceid The migration to rewrite, or 0 for a new one.
+     * @return \stdClass Stored migration.
      */
     public static function save(
         int $profileid,
         int $revisionid,
         array $document,
         array $operations,
-        array $creations
+        array $creations,
+        int $replaceid = 0
     ): \stdClass {
         global $DB, $USER;
         $json = json_encode($document, JSON_UNESCAPED_SLASHES);
-        $blockedissues = array_filter($document['issues'], static fn($issue) => $issue['blocking'] ?? true);
-        $blockedfiles = array_filter(
-            $operations,
-            static fn($operation) => $operation['included']
-                && str_starts_with($operation['decision'], 'blocked_')
-        );
-        $blocked = $blockedissues || $blockedfiles;
-        $haswork = array_filter(
-            $operations,
-            static fn($op) => $op['included']
-                && in_array($op['decision'], ['copy', 'overwrite'], true)
-        );
         $transaction = $DB->start_delegated_transaction();
-        $planid = $DB->insert_record(
-            'local_filebank_plan',
-            (object)[
+        if ($replaceid > 0) {
+            $planid = $replaceid;
+            $DB->delete_records('local_filebank_target', ['planid' => $planid]);
+            $DB->delete_records('local_filebank_operation', ['planid' => $planid]);
+            $DB->update_record('local_filebank_plan', (object) [
+                'id' => $planid, 'revisionid' => $revisionid, 'configjson' => $json, 'digest' => hash('sha256', $json),
+                'state' => 'reviewable',
+            ]);
+        } else {
+            $planid = $DB->insert_record('local_filebank_plan', (object) [
                 'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revisionid,
                 'userid' => $USER->id, 'configjson' => $json, 'digest' => hash('sha256', $json),
-                'state' => $blocked ? 'blocked' : ($haswork ? 'reviewable' : 'cancelled'), 'timecreated' => time(),
-            ]
-        );
-        foreach ($creations as $key => $definition) {
-            $DB->insert_record(
-                'local_filebank_target',
-                (object)['planid' => $planid, 'targetkey' => $key,
-                    'definitionjson' => json_encode($definition), 'cmid' => 0, 'snapshotjson' => '{}']
-            );
+                'state' => 'reviewable', 'timecreated' => time(),
+            ]);
         }
-        foreach ($operations as $operation) {
-            $DB->insert_record(
-                'local_filebank_operation',
-                (object)[
-                    'planid' => $planid, 'opkey' => $operation['opkey'], 'sourcehash' => $operation['sourcehash'],
-                    'targetcmid' => $operation['targetcmid'], 'sourcecourseid' => $operation['snapshot']['sourcecourse'],
-                    'targetcourseid' => $operation['snapshot']['target']['courseid'],
-                    'sourcecmid' => $operation['snapshot']['sourcecmid'], 'snapshot' => json_encode($operation['snapshot']),
-                    'included' => $operation['included'] ? 1 : 0,
-                    'decision' => $operation['decision'], 'state' => 'pending', 'result' => '{}', 'timemodified' => time(),
-                ]
-            );
-        }
+        self::rows($planid, $operations, $creations);
         $document['operationsdigest'] = plan_selection::manifest_digest($planid);
+        $document['selectiondigest'] = plan_selection::digest($planid);
         $json = json_encode($document, JSON_UNESCAPED_SLASHES);
-        $DB->update_record(
-            'local_filebank_plan',
-            (object)[
-                'id' => $planid, 'configjson' => $json, 'digest' => hash('sha256', $json),
-            ]
-        );
+        $DB->update_record('local_filebank_plan', (object) [
+            'id' => $planid, 'configjson' => $json, 'digest' => hash('sha256', $json),
+        ]);
         $transaction->allow_commit();
         $plan = $DB->get_record('local_filebank_plan', ['id' => $planid], '*', MUST_EXIST);
-        log::record('migration_previewed', $plan->uuid, ['operations' => count($operations), 'blocked' => (bool)$blocked]);
+        log::record($replaceid > 0 ? 'migration_updated' : 'migration_previewed', $plan->uuid, [
+            'operations' => count($operations),
+            'conflicts' => count(array_filter(
+                $operations,
+                static fn(array $operation): bool => str_starts_with($operation['decision'], 'blocked_')
+            )),
+        ]);
         return $plan;
+    }
+
+    /**
+     * Write the operations and the destinations to create of a migration.
+     *
+     * @param int $planid The migration.
+     * @param array[] $operations The operations.
+     * @param array[] $creations The destinations that would be created.
+     */
+    private static function rows(int $planid, array $operations, array $creations): void {
+        global $DB;
+        foreach ($creations as $key => $definition) {
+            $DB->insert_record('local_filebank_target', (object) ['planid' => $planid, 'targetkey' => $key,
+                'definitionjson' => json_encode($definition), 'cmid' => 0, 'snapshotjson' => '{}']);
+        }
+        foreach ($operations as $operation) {
+            $DB->insert_record('local_filebank_operation', (object) [
+                'planid' => $planid, 'opkey' => $operation['opkey'], 'sourcehash' => $operation['sourcehash'],
+                'targetcmid' => $operation['targetcmid'], 'sourcecourseid' => $operation['snapshot']['sourcecourse'],
+                'targetcourseid' => $operation['snapshot']['target']['courseid'],
+                'sourcecmid' => $operation['snapshot']['sourcecmid'], 'snapshot' => json_encode($operation['snapshot']),
+                'included' => $operation['included'] ? 1 : 0,
+                'decision' => $operation['decision'], 'state' => 'pending', 'result' => '{}', 'timemodified' => time(),
+            ]);
+        }
     }
 }

@@ -17,3 +17,15 @@ Document behavior together with its code and current limitations. Workspace deve
 Frontend features separate controller initialization, scoped actions, listeners, selectors and backend repository access. Preserve native entry exports and the same PHP/session contracts on both lines. Moodle 5.3 uses strict TypeScript ESM and native React; keep those sources and generated assets off the 4.5 distribution.
 
 Edit styles.scss and scss/ component sources, then run `node tools/build-styles.mjs /path/to/moodle`. CI checks generated CSS using `--check`. The 5.3 pipeline also generates core aliases, checks all plugin sources with `npx tsc --project public/local/filebank/tsconfig.json`, and runs the native ESM build.
+
+## The migration screens
+
+The migration screens are TypeScript that is written once, in the Moodle 5.3 line (`js/esm/src/Migration.tsx` and `js/esm/src/migration`). This line keeps a copy in `js/src` and builds it, together with Preact, into the AMD module `amd/src/migration_app.js`, so do not edit either of them here. To bring a change over from `main`:
+
+```
+node tools/sync-migration-ui.mjs <worktree of main>
+npm ci
+node tools/build-migration.mjs
+```
+
+Then minify the module with `grunt amd` as with any other AMD module. CI runs `node tools/build-migration.mjs --check`, which fails when the module is not what `js/src` produces.

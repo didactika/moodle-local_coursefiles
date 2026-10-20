@@ -103,7 +103,7 @@
 }
 
 .filebank-browser {
-    & .filebank-open.btn {
+    & .filebank-open {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -166,11 +166,11 @@
         background: var(--filebank-host-background, #fff);
         z-index: 10;
     }
-    & .filebank-open.btn:hover {
+    & .filebank-open:hover {
         background: color-mix(in srgb, var(--filebank-primary) 22%, #fff);
         color: var(--filebank-primary);
     }
-    & .filebank-open.btn:focus-visible {
+    & .filebank-open:focus-visible {
         outline: 2px solid var(--filebank-primary);
         outline-offset: 2px;
     }

@@ -61,6 +61,9 @@ final class planning_destination {
         $DB->get_record('course_sections', ['id' => $sectionid, 'course' => $targetcourse], '*', MUST_EXIST);
         $targets = self::targets($targetcourse, $sectionid, $correspondence, $captures, $override);
 
+        if (!$targets && empty($override) && ($config['missing_target'] ?? 'create') === 'skip') {
+            throw new skipped_source();
+        }
         self::require_supported($targets, $override, $config);
         if (!$targets) {
             $targetdata = target_binding::descriptor(
@@ -141,7 +144,7 @@ final class planning_destination {
     private static function require_supported(array $targets, array $override, array $config): void {
         if (
             count($targets) > 1 || ($targets && $targets[0]->modname !== 'folder')
-            || (!$targets && empty($override['create']) && ($config['missing_target'] ?? 'block') !== 'create')
+            || (!$targets && empty($override['create']) && ($config['missing_target'] ?? 'create') === 'block')
         ) {
             throw new \moodle_exception('placementambiguous', 'local_filebank');
         }

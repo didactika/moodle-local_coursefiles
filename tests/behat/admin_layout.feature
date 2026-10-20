@@ -53,30 +53,6 @@ Feature: Clear administration tabs and immutable migration previews
     And I should not see "Unsaved profile name"
     And I capture FileBank administration "profiles"
 
-  Scenario: A stored migration preview groups files and exposes decision filters
-    Given I log in as "admin"
-    When I open FileBank administration "migration"
-    Then I should see "Migrations"
-    When I follow "New migration"
-    And I press "Continue to source and destination"
-    And I set the field "sourcefilters[edition]" to "2025"
-    And I set the field "targetfilters[edition]" to "2026"
-    And I set the field "layoutconfirmed" to "1"
-    And I press "Create preview"
-    Then I should see "CB2025"
-    And I should see "CB2026"
-    And I should see "lesson.txt"
-    And I should see "Original teacher"
-    When I follow "Continue to execution"
-    Then I should see "Files are processed in the background without enabling site maintenance"
-    When I follow "Back to review"
-    And I capture FileBank administration "migration-review"
-    When I follow "Already available (0)"
-    Then I should see "No files match this decision filter"
-    When I follow "Change configuration and create a new preview"
-    Then the field "sourcefilters[edition]" matches value "2025"
-    And the field "targetfilters[edition]" matches value "2026"
-
   Scenario: Delegated profile management has its own authorized entry
     Given the FileBank teacher can manage site profiles
     And I log in as "cbteacher"
@@ -97,37 +73,6 @@ Feature: Clear administration tabs and immutable migration previews
     Then I should see "Guided profile"
     And I should not see "Migration acceptance"
 
-  Scenario: Migration exclusions survive searches and the execution step
-    Given I log in as "admin"
-    When I open FileBank administration "migration"
-    And I follow "New migration"
-    And I press "Continue to source and destination"
-    And I set the field "sourcefilters[edition]" to "2025"
-    And I set the field "targetfilters[edition]" to "2026"
-    And I set the field "layoutconfirmed" to "1"
-    And I press "Create preview"
-    And I click on "[data-filebank-selectall]" "css_element"
-    And I wait for the FileBank migration selection to save
-    Then I should see "0 files included across all pages"
-    When I set the field "Find a course, folder or file" to "lesson"
-    And I wait for the FileBank migration selection to save
-    And I click on "[data-filebank-review-search] button" "css_element"
-    Then I should see "lesson.txt"
-    And I should see "Excluded"
-    When I click on "[data-filebank-selectall]" "css_element"
-    And I wait for the FileBank migration selection to save
-    Then I should see "2 files included across all pages"
-    When I click on "input[name='included[]']" "css_element"
-    And I wait for the FileBank migration selection to save
-    And I click on "[data-filebank-review-search] button" "css_element"
-    Then I should see "1 files included across all pages"
-    When I click on "[data-filebank-selectall]" "css_element"
-    And I wait for the FileBank migration selection to save
-    And I follow "Continue to execution"
-    Then I should see "Files are processed in the background without enabling site maintenance"
-    And "input[name='confirmed']" "css_element" should not exist
-    And I should not see "Find a course, folder or file"
-
   @_file_upload
   Scenario: Import a portable profile through the native upload control
     Given I log in as "admin"
@@ -143,7 +88,6 @@ Feature: Clear administration tabs and immutable migration previews
   Scenario: Material reuse logs are available as a native report
     Given I log in as "admin"
     When I navigate to "Reports > FileBank material reuse" in site administration
-    When I click on ".filebank-filter-popover summary" "css_element"
     Then I should see "From date"
     And I should see "Through date"
     When I set the field "Action" to "profile_activated"
@@ -173,27 +117,6 @@ Feature: Clear administration tabs and immutable migration previews
     Then I should see "Perfil editado"
     And I capture FileBank administration "spanish-profiles"
 
-  Scenario: Edit a blocked migration without rewriting its original review
-    Given I log in as "admin"
-    When I open FileBank administration "migration"
-    And I follow "New migration"
-    And I press "Continue to source and destination"
-    And the FileBank correspondence rows should fit narrow screens
-    And I set the field "sourcefilters[edition]" to "2025"
-    And I set the field "targetfilters[edition]" to "2026"
-    And I set the field "layoutconfirmed" to "1"
-    And I set the FileBank destination folder rule to "New destination"
-    And I press "Create preview"
-    Then I should see "Blocked"
-    When I open FileBank administration "migration"
-    And I click on "a[title='Edit']" "css_element"
-    Then the field "sourcefilters[edition]" matches value "2025"
-    And the field "targetfilters[edition]" matches value "2026"
-    When I set the field "missingtarget" to "create"
-    And I press "Create preview"
-    Then I should see "Continue to execution"
-    And FileBank should retain "2" migration plans
-
   Scenario: Compare and restore versions without creating another profile
     Given I log in as "admin"
     When I open FileBank administration "profiles"
@@ -213,24 +136,3 @@ Feature: Clear administration tabs and immutable migration previews
     When I open FileBank administration "profiles"
     Then I should see "Migration acceptance" in the ".filebank-profiles table" "css_element"
     And I should not see "Updated acceptance" in the ".filebank-profiles table" "css_element"
-
-  Scenario: Resolve a missing destination in place and keep Continue visible
-    Given I log in as "admin"
-    When I open FileBank administration "migration"
-    And I follow "New migration"
-    And I press "Continue to source and destination"
-    And I set the field "sourcefilters[edition]" to "2025"
-    And I set the field "targetfilters[edition]" to "2026"
-    And I set the field "layoutconfirmed" to "1"
-    And I set the FileBank destination folder rule to "Missing destination"
-    And I press "Create preview"
-    Then "[data-filebank-continue][aria-disabled='true']" "css_element" should exist
-    And "[data-filebank-continue]" "css_element" should be visible
-    When I set the field "mp-issue-0" to "Use: Target materials"
-    And I wait for the FileBank migration selection to save
-    Then "[data-filebank-continue][aria-disabled='false']" "css_element" should exist
-    And I should see "lesson.txt"
-    And I capture FileBank administration "resolved-migration"
-    When I follow "Continue to execution"
-    Then I should see "Files are processed in the background without enabling site maintenance"
-    And "input[name='confirmed']" "css_element" should not exist

@@ -46,7 +46,7 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_filebank'));
 echo $PAGE->get_renderer('local_filebank')->render(\local_filebank\output\navigation::site('profiles'));
 echo $OUTPUT->heading(get_string('importprofiles', 'local_filebank'), 3);
 echo html_writer::tag('p', get_string('profileimporthelp', 'local_filebank'), ['class' => 'text-muted']);
-echo html_writer::start_div('filebank-admin filebank-panel');
+echo html_writer::start_div('filebank-ui filebank-admin filebank-panel');
 $form->display();
 echo html_writer::end_div();
 echo $OUTPUT->footer();

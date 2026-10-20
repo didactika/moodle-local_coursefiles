@@ -54,8 +54,13 @@ final class planning_materials {
         if (empty($pair['source'])) {
             return;
         }
-        if (count($pair['source']) !== 1 || count($pair['target'] ?? []) !== 1) {
-            $issues[] = ['reason' => 'ambiguous_course_pair', 'courses' => $pair];
+        if (empty($pair['target'])) {
+            // The destination has no course for the filters that were asked for: there is nothing to migrate to, and nothing wrong.
+            $request['notes']->add(migration_notes::NO_DESTINATION_COURSE);
+            return;
+        }
+        if (count($pair['source']) !== 1 || count($pair['target']) !== 1) {
+            $issues[] = ['reason' => 'ambiguous_course_pair', 'courses' => $pair, 'blocking' => false];
             return;
         }
         $sourcecourse = $pair['source'][0];
@@ -110,7 +115,8 @@ final class planning_materials {
             ) || $matched;
         }
         if (!$matched) {
-            $issues[] = ['reason' => 'sourcefoldermissing', 'sourcecourseid' => $request['sourcecourse'], 'blocking' => false];
+            // What does not match in the source is not migrated; it is not an error either.
+            $request['notes']->add(migration_notes::NO_SOURCE_FOLDER);
         }
     }
 
@@ -153,6 +159,7 @@ final class planning_materials {
             return false;
         }
         if (!self::visible($sourcecm, $sourcecourseinfo)) {
+            $request['notes']->add(migration_notes::NOT_PUBLIC);
             return true;
         }
         $placementkey = $sourcecm->id . ':' . $targetcourse;
@@ -210,10 +217,12 @@ final class planning_materials {
                 $operation = planning_file::operation($candidate, $target, $targetcontent, $sourcescope, $context);
                 $operations[$operation['opkey']] = $operation;
             }
+        } catch (skipped_source $skipped) {
+            $request['notes']->add(migration_notes::NO_DESTINATION_FOLDER);
         } catch (\moodle_exception $exception) {
             $issues[] = ['sourcecmid' => $sourcecm->id, 'sourcecourseid' => $sourcecourse,
             'targetcourseid' => $targetcourse,
-            'reason' => $exception->errorcode];
+            'reason' => $exception->errorcode, 'blocking' => false];
         }
         return true;
     }

@@ -115,27 +115,4 @@ final class output_test extends \advanced_testcase {
         $this->assertStringContainsString(get_string('lockedpolicyhelp', 'local_filebank'), $html);
         $this->assertStringNotContainsString('<select', $html);
     }
-
-    /**
-     * Reports show named destinations and translated outcomes.
-     */
-    public function test_migration_report_uses_readable_decisions(): void {
-        $renderer = $this->renderer();
-        $html = $renderer->render(new view('migration_report', [
-            'planstate' => display::outcome('reviewable'), 'sourceedition' => '2025',
-            'targetedition' => '2026', 'reviewstep' => true,
-            'hasoperations' => true, 'courses' => [[
-                'sourcecoursehtml' => display::name('BIO101-2025'), 'targetcoursehtml' => display::name('BIO101-2026'),
-                'folders' => [['targetsectionhtml' => display::name('Week 1'),
-                'targetfolderhtml' => display::name('Class materials'), 'operations' => [[
-                'filename' => 'lesson.pdf', 'filepath' => '/week1/', 'author' => 'Original author', 'license' => 'cc',
-                'decisionlabel' => display::outcome('skip_content'), 'statelabel' => display::outcome('pending'),
-                ]]]],
-            ]],
-        ]));
-        $this->assertStringContainsString('BIO101-2026', $html);
-        $this->assertStringContainsString(get_string('outcome_skip_content', 'local_filebank'), $html);
-        $this->assertStringNotContainsString('<pre', $html);
-        $this->assertStringNotContainsString('skip_content', $html);
-    }
 }

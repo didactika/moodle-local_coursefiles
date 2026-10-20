@@ -154,52 +154,6 @@ function local_filebank_output_fragment_browser_tree(array $args): string {
 }
 
 /**
- * Save a bounded review change and render its current canonical state.
- * @param array $args Core-validated system context and serialized request.
- * @return string Themeable review fragment.
- */
-function local_filebank_output_fragment_migration(array $args): string {
-    global $OUTPUT;
-    require_capability('local/filebank:planmigration', context_system::instance());
-    $state = \local_filebank\local\fragment_request::state($args, 131072, 8);
-    $planid = clean_param($state['planid'] ?? 0, PARAM_INT);
-    $action = $state['action'] ?? 'view';
-    if ($action === 'resolve') {
-        $planid = \local_filebank\local\migration\plan_resolution::apply(
-            $planid,
-            clean_param($state['digest'] ?? '', PARAM_ALPHANUM),
-            clean_param($state['kind'] ?? '', PARAM_ALPHA),
-            clean_param($state['id'] ?? -1, PARAM_INT),
-            trim(clean_param($state['choice'] ?? '', PARAM_TEXT))
-        );
-    } else if (in_array($action, ['page', 'group', 'all', 'none'], true)) {
-        \local_filebank\local\migration\plan_selection::save(
-            $planid,
-            clean_param($state['digest'] ?? '', PARAM_ALPHANUM),
-            $state['visible'] ?? [],
-            $state['included'] ?? [],
-            $action,
-            ['courseid' => (int)($state['courseid'] ?? 0), 'cmid' => (int)($state['cmid'] ?? 0),
-            'included' => (int)($state['groupincluded'] ?? 0)]
-        );
-        $result = \local_filebank\local\migration\plan_selection::state($planid, $state['visible'] ?? []);
-        return html_writer::div('', '', ['data-filebank-selection-state' => json_encode($result)]);
-    } else if ($action !== 'view') {
-        throw new moodle_exception('invalidmigrationaction', 'local_filebank');
-    }
-    $data = \local_filebank\output\migration_report::data(
-        $planid,
-        clean_param($state['decision'] ?? '', PARAM_ALPHA),
-        (int)($state['page'] ?? 0),
-        clean_param($state['q'] ?? '', PARAM_TEXT),
-        'review',
-        (int)($state['issuepage'] ?? 0),
-        (int)($state['perpage'] ?? 50)
-    );
-    return $OUTPUT->render_from_template('local_filebank/local/migration/report', $data);
-}
-
-/**
  * Change selected profile states without replacing the list or its selection.
  *
  * @param array $args Core-validated system context and bounded JSON state.

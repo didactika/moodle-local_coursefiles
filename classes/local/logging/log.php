@@ -37,7 +37,8 @@ final class log {
         return ['profile_state_changed', 'profile_activated', 'site_policy_changed', 'course_policy_changed',
             'publication_granted', 'publication_revoked',
             'migration_previewed', 'migration_selection_changed', 'migration_queued', 'migration_blocked', 'migration_batch',
-            'migration_deleted', 'migration_empty_cancelled', 'migration_conflict_resolved'];
+            'migration_deleted', 'migration_empty_cancelled', 'migration_conflict_resolved', 'migration_updated',
+            'migration_reconfigured', 'migration_empty_skipped'];
     }
 
     /**

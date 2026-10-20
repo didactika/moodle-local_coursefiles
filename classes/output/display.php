@@ -42,6 +42,17 @@ final class display {
     }
 
     /**
+     * A name as plain text, for a screen that writes it as text and not as HTML.
+     *
+     * @param string $value Stored name.
+     * @param \context|null $context Display context.
+     * @return string The filtered name without markup.
+     */
+    public static function plain(string $value, ?\context $context = null): string {
+        return html_entity_decode(strip_tags(self::name($value, $context)), ENT_QUOTES);
+    }
+
+    /**
      * Apply Moodle text filters and cleaning to a configurable filter label.
      *
      * @param string $value Configured label.
