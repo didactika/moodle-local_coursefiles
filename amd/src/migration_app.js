@@ -27,6 +27,7 @@
 
 import Ajax from 'core/ajax';
 import Toast from 'core/toast';
+import ModalEvents from 'core/modal_events';
 
 "use strict";
 var FilebankMigration = (() => {
@@ -558,6 +559,29 @@ var FilebankMigration = (() => {
       n2.u = e3 = e3[2];
     }
   };
+  function V2(n2) {
+    return this.getChildContext = function() {
+      return n2.context;
+    }, n2.children;
+  }
+  function W(n2) {
+    var e3 = this, r3 = n2.i;
+    e3.componentWillUnmount = function() {
+      B(null, e3.l), e3.l = null, e3.i = null;
+    }, e3.i && e3.i !== r3 && e3.componentWillUnmount(), e3.l || (e3.i = r3, e3.l = { nodeType: 1, parentNode: r3, childNodes: [], contains: function() {
+      return true;
+    }, appendChild: function(n3) {
+      this.childNodes.push(n3), e3.i.appendChild(n3);
+    }, insertBefore: function(n3, t3) {
+      this.childNodes.push(n3), e3.i.appendChild(n3);
+    }, removeChild: function(n3) {
+      this.childNodes.splice(this.childNodes.indexOf(n3) >>> 1, 1), e3.i.removeChild(n3);
+    } }), B(_(V2, { context: e3.context }, n2.__v), e3.l);
+  }
+  function P3(n2, e3) {
+    var r3 = _(W, { __v: n2, i: e3 });
+    return r3.containerInfo = e3, r3;
+  }
   (F3.prototype = new k()).__a = function(n2) {
     var t3 = this, e3 = L2(t3.__v), r3 = t3.o.get(n2);
     return r3[0]++, function(u4) {
@@ -664,24 +688,6 @@ var FilebankMigration = (() => {
       return () => window.clearTimeout(timer);
     }, [value, milliseconds]);
     return followed;
-  };
-
-  // js/src/migration/hooks/useKeptHeight.ts
-  var useKeptHeight = () => {
-    const ref = A2(null);
-    const [height, setHeight] = h2(0);
-    const style = height > 0 ? { minHeight: `${height}px` } : void 0;
-    return {
-      ref,
-      style,
-      /** Remember the height the list has now, before it changes page. */
-      keep: () => setHeight((current2) => {
-        var _a, _b;
-        return Math.max(current2, (_b = (_a = ref.current) == null ? void 0 : _a.offsetHeight) != null ? _b : 0);
-      }),
-      /** Let the list take its own height again. */
-      release: () => setHeight(0)
-    };
   };
 
   // js/src/migration/lib/paging.ts
@@ -800,6 +806,7 @@ var FilebankMigration = (() => {
     list: "list",
     "list-ol": "list-ol",
     "magnifying-glass": "search",
+    pen: "pencil",
     "pen-to-square": "pencil-square-o",
     play: "play",
     plus: "plus",
@@ -969,7 +976,7 @@ var FilebankMigration = (() => {
                 "button",
                 {
                   type: "button",
-                  className: `btn btn-sm btn-outline-secondary rounded-pill fbm-chip${group.value === option.value ? " active" : ""}`,
+                  className: `btn btn-sm btn-outline-secondary fbm-chip${group.value === option.value ? " active" : ""}`,
                   "aria-pressed": group.value === option.value,
                   onClick: () => group.onChange(option.value),
                   children: [
@@ -1004,50 +1011,17 @@ var FilebankMigration = (() => {
   );
   var IconButton_default = IconButton;
 
-  // js/src/migration/components/ui/Modal.tsx
-  var Modal = ({ open, title, onClose, closeLabel, children, footer, size = "medium", busy = false }) => {
-    const dialog = A2(null);
-    y2(() => {
-      const element = dialog.current;
-      if (!element) {
-        return;
-      }
-      if (open && !element.open) {
-        element.showModal();
-      } else if (!open && element.open) {
-        element.close();
-      }
-    }, [open]);
-    const close = () => {
-      if (!busy) {
-        onClose();
-      }
-    };
-    return /* @__PURE__ */ u3(
-      "dialog",
-      {
-        ref: dialog,
-        className: `fbm-dialog fbm-dialog-${size}`,
-        onCancel: (event) => {
-          event.preventDefault();
-        },
-        children: open && /* @__PURE__ */ u3("div", { className: "modal-content fbm-dialog-body", children: [
-          /* @__PURE__ */ u3("header", { className: "modal-header fbm-dialog-head", children: [
-            /* @__PURE__ */ u3("h3", { className: "modal-title h5", children: title }),
-            /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-link btn-icon", onClick: close, title: closeLabel, disabled: busy, children: [
-              /* @__PURE__ */ u3(Icon_default, { name: "xmark" }),
-              /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: closeLabel })
-            ] })
-          ] }),
-          /* @__PURE__ */ u3("div", { className: "modal-body fbm-dialog-scroll", children }),
-          footer && /* @__PURE__ */ u3("footer", { className: "modal-footer fbm-dialog-foot", children: footer })
-        ] })
-      }
-    );
+  // js/shims/amd.ts
+  var requireAsync = (name) => {
+    const found = getHost().modules[name];
+    return found === void 0 ? Promise.reject(new Error("Unknown module " + name)) : Promise.resolve(found);
   };
-  var Modal_default = Modal;
 
   // js/src/migration/components/ui/ConfirmModal.tsx
+  var unwrap = (module) => {
+    var _a;
+    return (_a = module.default) != null ? _a : module;
+  };
   var ConfirmModal = ({
     open,
     title,
@@ -1057,30 +1031,70 @@ var FilebankMigration = (() => {
     onConfirm,
     onCancel,
     tone = "primary",
-    icon = "circle-question",
     busy = false
-  }) => /* @__PURE__ */ u3(
-    Modal_default,
-    {
-      open,
-      size: "small",
-      busy,
-      title: /* @__PURE__ */ u3(b, { children: [
-        /* @__PURE__ */ u3(Icon_default, { name: icon, gap: true }),
-        title
-      ] }),
-      onClose: onCancel,
-      closeLabel: cancelLabel,
-      footer: /* @__PURE__ */ u3(b, { children: [
-        /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-outline-secondary", onClick: onCancel, disabled: busy, children: cancelLabel }),
-        /* @__PURE__ */ u3("button", { type: "button", className: `btn btn-${tone}`, onClick: onConfirm, disabled: busy, children: [
-          busy && /* @__PURE__ */ u3(Icon_default, { name: "spinner", gap: true, spin: true }),
-          confirmLabel
-        ] })
-      ] }),
-      children: /* @__PURE__ */ u3("div", { className: "fbm-confirm-body", children })
-    }
-  );
+  }) => {
+    const [body, setBody] = h2(null);
+    const current2 = A2(null);
+    const answers = A2({ onConfirm, onCancel });
+    answers.current = { onConfirm, onCancel };
+    y2(() => {
+      if (!open) {
+        return void 0;
+      }
+      let alive = true;
+      let made = null;
+      void (async () => {
+        const [factory, events] = await Promise.all([
+          requireAsync("core/modal_save_cancel").then(unwrap),
+          requireAsync("core/modal_events").then(unwrap)
+        ]);
+        const modal = await factory.create({ title, body: "", removeOnClose: true });
+        if (!alive) {
+          modal.destroy();
+          return;
+        }
+        made = modal;
+        current2.current = modal;
+        modal.setSaveButtonText(confirmLabel);
+        const root = modal.getRoot();
+        const save = root[0].querySelector('[data-action="save"]');
+        if (save && tone !== "primary") {
+          save.classList.replace("btn-primary", `btn-${tone}`);
+        }
+        const cancel = root[0].querySelector('[data-action="cancel"]');
+        if (cancel) {
+          cancel.textContent = cancelLabel;
+        }
+        root.on(events.save, (event) => {
+          event.preventDefault();
+          answers.current.onConfirm();
+        });
+        root.on(events.hidden, () => {
+          if (current2.current === modal) {
+            current2.current = null;
+            answers.current.onCancel();
+          }
+        });
+        modal.show();
+        setBody(modal.getBody()[0]);
+      })();
+      return () => {
+        alive = false;
+        setBody(null);
+        if (made && current2.current === made) {
+          current2.current = null;
+          made.hide();
+        }
+      };
+    }, [open]);
+    y2(() => {
+      var _a;
+      (_a = body == null ? void 0 : body.closest(".modal-content")) == null ? void 0 : _a.querySelectorAll(".modal-footer button, .modal-header button").forEach((button) => {
+        button.disabled = busy;
+      });
+    }, [busy, body]);
+    return body ? P3(/* @__PURE__ */ u3("div", { className: "filebank-ui fbm-confirm-body", children }), body) : null;
+  };
   var ConfirmModal_default = ConfirmModal;
 
   // js/src/migration/components/ui/EmptyState.tsx
@@ -1258,7 +1272,6 @@ var FilebankMigration = (() => {
     const [state, setState] = h2("");
     const [page, setPage] = h2(0);
     const [perpage, setPerpage] = h2(PAGE_SIZES[0]);
-    const kept = useKeptHeight();
     const [data, setData] = h2(null);
     const [error, setError] = h2("");
     const [selected, setSelected] = h2([]);
@@ -1278,7 +1291,6 @@ var FilebankMigration = (() => {
     }, [load2]);
     y2(() => {
       setPage(0);
-      kept.release();
     }, [query, state, perpage]);
     const active = (_a = data == null ? void 0 : data.migrations.some((migration) => migration.state === "queued" || migration.state === "running")) != null ? _a : false;
     y2(() => {
@@ -1363,7 +1375,7 @@ var FilebankMigration = (() => {
           ] }) })
         ] }),
         /* @__PURE__ */ u3("div", { className: "fbm-list-region", children: [
-          rows.length === 0 ? /* @__PURE__ */ u3(EmptyState_default, { icon: "magnifying-glass", title: text("list_nomatch_title"), text: text("list_nomatch_text") }) : /* @__PURE__ */ u3("div", { className: "table-responsive", ref: kept.ref, style: kept.style, children: /* @__PURE__ */ u3("table", { className: "table table-hover", children: [
+          rows.length === 0 ? /* @__PURE__ */ u3(EmptyState_default, { icon: "magnifying-glass", title: text("list_nomatch_title"), text: text("list_nomatch_text") }) : /* @__PURE__ */ u3("div", { className: "table-responsive", children: /* @__PURE__ */ u3("table", { className: "table table-hover", children: [
             /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
               /* @__PURE__ */ u3("th", { className: "fbm-col-check", children: /* @__PURE__ */ u3(
                 Check_default,
@@ -1418,8 +1430,8 @@ var FilebankMigration = (() => {
               ] }),
               /* @__PURE__ */ u3("td", { className: "text-muted", children: row.datelabel }),
               /* @__PURE__ */ u3("td", { className: "fbm-col-actions", children: /* @__PURE__ */ u3("div", { className: "fbm-actions", children: [
-                /* @__PURE__ */ u3(IconButton_default, { icon: "eye", label: text("open"), tone: "primary", onClick: () => onOpen(row.id) }),
-                row.candelete && /* @__PURE__ */ u3(IconButton_default, { icon: "trash", label: text("delete"), tone: "danger", onClick: () => setAsking([row.id]) })
+                row.state === "reviewable" ? /* @__PURE__ */ u3(IconButton_default, { icon: "pen", label: text("edit"), tone: "primary", onClick: () => onOpen(row.id) }) : /* @__PURE__ */ u3(IconButton_default, { icon: "circle-info", label: text("details"), tone: "primary", onClick: () => onOpen(row.id) }),
+                /* @__PURE__ */ u3(IconButton_default, { icon: "trash", label: text("delete"), tone: "danger", disabled: !row.candelete, onClick: () => setAsking([row.id]) })
               ] }) })
             ] }, row.id)) })
           ] }) }),
@@ -1430,7 +1442,6 @@ var FilebankMigration = (() => {
               perpage,
               total: data.total,
               onPage: (next) => {
-                kept.keep();
                 setPage(next);
               },
               text,
@@ -1456,7 +1467,6 @@ var FilebankMigration = (() => {
         {
           open: asking !== null,
           tone: "danger",
-          icon: "triangle-exclamation",
           busy: deleting,
           title: text("delete_title"),
           confirmLabel: text("delete"),
@@ -1603,12 +1613,6 @@ var FilebankMigration = (() => {
   };
   var keyOf = (parameters) => JSON.stringify(parameters);
 
-  // js/shims/amd.ts
-  var requireAsync = (name) => {
-    const found = getHost().modules[name];
-    return found === void 0 ? Promise.reject(new Error("Unknown module " + name)) : Promise.resolve(found);
-  };
-
   // js/src/migration/lib/toast.ts
   var loading = null;
   var load = async () => {
@@ -1717,13 +1721,11 @@ var FilebankMigration = (() => {
     const [search, setSearch] = h2("");
     const [page, setPage] = h2(0);
     const [perpage, setPerpage] = h2(PAGE_SIZES[0]);
-    const kept = useKeptHeight();
     const [data, setData] = h2(null);
     const [error, setError] = h2("");
     const query = useDebounced(search, 250);
     y2(() => {
       setPage(0);
-      kept.release();
     }, [bucket, query, perpage]);
     y2(() => {
       let current2 = true;
@@ -1803,7 +1805,7 @@ var FilebankMigration = (() => {
           data === null && error === "" && /* @__PURE__ */ u3(Skeleton_default, { rows: 6, label: text("loading") }),
           data !== null && files.length === 0 && /* @__PURE__ */ u3(EmptyState_default, { plain: true, icon: "file-circle-question", title: text("files_empty_title"), text: text("files_empty_text") }),
           /* @__PURE__ */ u3("div", { className: "fbm-list-region", children: [
-            files.length > 0 && /* @__PURE__ */ u3("div", { className: "table-responsive", ref: kept.ref, style: kept.style, children: /* @__PURE__ */ u3("table", { className: "table table-hover fbm-files", children: [
+            files.length > 0 && /* @__PURE__ */ u3("div", { className: "table-responsive", children: /* @__PURE__ */ u3("table", { className: "table table-hover fbm-files", children: [
               /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
                 /* @__PURE__ */ u3("th", { className: "fbm-col-check", children: /* @__PURE__ */ u3(
                   Check_default,
@@ -1857,7 +1859,6 @@ var FilebankMigration = (() => {
                 perpage,
                 total: (_b = data == null ? void 0 : data.total) != null ? _b : 0,
                 onPage: (next) => {
-                  kept.keep();
                   setPage(next);
                 },
                 text,
@@ -1894,13 +1895,11 @@ var FilebankMigration = (() => {
     const [search, setSearch] = h2("");
     const [page, setPage] = h2(0);
     const [perpage, setPerpage] = h2(PAGE_SIZES[0]);
-    const kept = useKeptHeight();
     const [data, setData] = h2(null);
     const [error, setError] = h2("");
     const query = useDebounced(search, 250);
     y2(() => {
       setPage(0);
-      kept.release();
     }, [query, perpage]);
     y2(() => {
       let current2 = true;
@@ -1925,7 +1924,7 @@ var FilebankMigration = (() => {
       data === null && error === "" && /* @__PURE__ */ u3(Skeleton_default, { rows: 4, label: text("loading") }),
       data !== null && data.folders.length === 0 && /* @__PURE__ */ u3(EmptyState_default, { plain: true, icon: "folder-open", title: text("folders_empty_title"), text: text("folders_empty_text") }),
       /* @__PURE__ */ u3("div", { className: "fbm-list-region", children: [
-        data !== null && data.folders.length > 0 && /* @__PURE__ */ u3("div", { ref: kept.ref, style: kept.style, children: /* @__PURE__ */ u3("ul", { className: "fbm-folders", children: data.folders.map((folder) => /* @__PURE__ */ u3("li", { className: "fbm-folder", children: [
+        data !== null && data.folders.length > 0 && /* @__PURE__ */ u3("div", { className: "fbm-list-scroll", children: /* @__PURE__ */ u3("ul", { className: "fbm-folders", children: data.folders.map((folder) => /* @__PURE__ */ u3("li", { className: "fbm-folder", children: [
           /* @__PURE__ */ u3(
             Switch_default,
             {
@@ -1959,7 +1958,6 @@ var FilebankMigration = (() => {
             perpage,
             total: (_a = data == null ? void 0 : data.total) != null ? _a : 0,
             onPage: (next) => {
-              kept.keep();
               setPage(next);
             },
             text,
@@ -1999,7 +1997,6 @@ var FilebankMigration = (() => {
       ConfirmModal_default,
       {
         open,
-        icon: "play",
         busy,
         title: text("start_title", { n: migration.id }),
         confirmLabel: text("start"),
@@ -2195,7 +2192,7 @@ var FilebankMigration = (() => {
               /* @__PURE__ */ u3(Icon_default, { name: "plus", gap: true }),
               text("new_migration")
             ] }),
-            !((_a = migration.run) == null ? void 0 : _a.active) && /* @__PURE__ */ u3(IconButton_default, { icon: "trash", label: text("delete"), tone: "danger", onClick: () => setDeleting(true) })
+            /* @__PURE__ */ u3(IconButton_default, { icon: "trash", label: text("delete"), tone: "danger", disabled: Boolean((_a = migration.run) == null ? void 0 : _a.active), onClick: () => setDeleting(true) })
           ] })
         }
       ),
@@ -2273,7 +2270,6 @@ var FilebankMigration = (() => {
         {
           open: stopping,
           tone: "danger",
-          icon: "stop",
           busy,
           title: text("stop_title"),
           confirmLabel: text("run_stop"),
@@ -2288,7 +2284,6 @@ var FilebankMigration = (() => {
         {
           open: deleting,
           tone: "danger",
-          icon: "triangle-exclamation",
           title: text("delete_title"),
           confirmLabel: text("delete"),
           cancelLabel: text("cancel"),
@@ -3039,7 +3034,6 @@ var FilebankMigration = (() => {
         {
           open: leaving,
           tone: "danger",
-          icon: "triangle-exclamation",
           title: text("discard_title"),
           confirmLabel: text("discard"),
           cancelLabel: text("keep_editing"),
@@ -3157,6 +3151,26 @@ var FilebankMigration = (() => {
 })();
 
 /**
+ * The save and cancel modal of Moodle: the module of Moodle 4.3 and later creates it, and the modal factory does on Moodle 4.0 to
+ * 4.2. Both are loaded when a modal is asked for, so a version without one of them never fails to load the screens.
+ */
+const ModalSaveCancel = {
+    create: (options) => new Promise((resolve, reject) => {
+        window.require(['core/modal_save_cancel'], (loaded) => {
+            const Modern = loaded.default || loaded;
+            if (typeof Modern.create === 'function') {
+                resolve(Modern.create(options));
+                return;
+            }
+            window.require(['core/modal_factory'], (factory) => {
+                const Factory = factory.default || factory;
+                resolve(Factory.create(Object.assign({type: Factory.types.SAVE_CANCEL}, options)));
+            }, reject);
+        }, reject);
+    }),
+};
+
+/**
  * Draw the migrations in the page, with what the element that holds them says in its data-props attribute.
  */
 export const init = () => {
@@ -3164,6 +3178,6 @@ export const init = () => {
     FilebankMigration.mount(
         element,
         JSON.parse(element.dataset.props),
-        {ajax: Ajax, modules: {'core/toast': Toast}}
+        {ajax: Ajax, modules: {'core/toast': Toast, 'core/modal_save_cancel': ModalSaveCancel, 'core/modal_events': ModalEvents}}
     );
 };

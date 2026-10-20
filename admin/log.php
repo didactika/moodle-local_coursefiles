@@ -87,7 +87,7 @@ $records = [];
 foreach ($page['records'] as $record) {
     $user = $users[$record->userid] ?? null;
     $records[] = [
-        'date' => userdate($record->timecreated),
+        'date' => userdate($record->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
         'action' => in_array($record->action, \local_filebank\local\logging\log::actions(), true)
             ? get_string('logaction_' . $record->action, 'local_filebank') : $record->action,
         'user' => $user && !$user->deleted ? fullname($user)

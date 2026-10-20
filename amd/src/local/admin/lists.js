@@ -2,8 +2,9 @@
 // Moodle is free software under the GNU General Public License, version 3 or later.
 
 /**
- * Lists of server pages that change page in place: the arrows and the size of a page fetch the next page and replace only the
- * region of the list (its table and its pager), keeping its height so a shorter last page does not make the page jump.
+ * Lists of server pages that change in place: the arrows, the size of a page and the filters fetch the page and replace only the
+ * region of the list (its table and its pager) and the parts of the page that tell about it. The table has a fixed height, so
+ * nothing moves.
  *
  * @module local_filebank/local/admin/lists
  * @copyright 2026 Didactika.org
@@ -12,26 +13,51 @@
  */
 
 /**
+ * Refresh the parts of the page outside the list that tell about it (a count, the size of a page kept by a form).
+ *
+ * @param {Document} page The page that was fetched.
+ */
+const refresh = (page) => {
+    document.querySelectorAll('[data-filebank-refresh]').forEach(element => {
+        const twin = page.querySelector(`[data-filebank-refresh="${element.dataset.filebankRefresh}"]`);
+        if (!twin) {
+            return;
+        }
+        if (element instanceof HTMLInputElement && twin instanceof HTMLInputElement) {
+            element.value = twin.value;
+        } else {
+            element.innerHTML = twin.innerHTML;
+        }
+    });
+    document.querySelectorAll('[data-filebank-refresh-active]').forEach(element => {
+        const twin = page.querySelector(`[data-filebank-refresh-active="${element.dataset.filebankRefreshActive}"]`);
+        element.toggleAttribute('data-active', twin !== null && twin.hasAttribute('data-active'));
+    });
+};
+
+/**
  * Replace the region of a list with the one of another page.
  *
- * @param {Element} origin The control that asked for the page, inside the region.
+ * @param {Element} origin The control that asked for the page, inside the region, or the region itself.
  * @param {string} url The address of the page.
- * @param {boolean} keep Keep the height of the list (another page) or let it take its own (another size).
  */
-export const swapList = async(origin, url, keep = true) => {
+export const swapList = async(origin, url) => {
     const region = origin.closest('[data-filebank-list]');
     if (!region) {
         window.location.assign(url);
         return;
     }
-    // The table keeps the size it has now, so a page with fewer rows does not make the page jump.
-    const table = region.querySelector('.table-responsive');
-    const height = table ? table.offsetHeight : 0;
+    // Only the last page asked for is shown: a search typed quickly does not end on the answer to an older one.
+    const request = String(Number(region.dataset.request || 0) + 1);
+    region.dataset.request = request;
     region.setAttribute('aria-busy', 'true');
     try {
         const response = await fetch(url, {credentials: 'same-origin'});
         const page = new DOMParser().parseFromString(await response.text(), 'text/html');
         const next = page.querySelector(`[data-filebank-list="${region.dataset.filebankList}"]`);
+        if (region.dataset.request !== request) {
+            return;
+        }
         if (!response.ok || !next) {
             window.location.assign(url);
             return;
@@ -59,16 +85,15 @@ export const swapList = async(origin, url, keep = true) => {
         } else {
             region.replaceChildren(...Array.from(next.childNodes, node => document.importNode(node, true)));
         }
-        const fresh = region.querySelector('.table-responsive');
-        if (fresh) {
-            fresh.style.minHeight = keep && height > 0 ? `${height}px` : '';
-        }
+        refresh(page);
         window.history.replaceState(window.history.state, '', url);
         region.dispatchEvent(new CustomEvent('filebank:listchanged', {bubbles: true}));
     } catch (problem) {
         window.location.assign(url);
     } finally {
-        region.removeAttribute('aria-busy');
+        if (region.dataset.request === request) {
+            region.removeAttribute('aria-busy');
+        }
     }
 };
 

@@ -28,7 +28,7 @@ const Chips = ({label, value, chips, onChange}: ChipsProps) => <div className="f
     {chips.map((chip) => <button
         key={chip.value}
         type="button"
-        className={`btn btn-sm btn-outline-secondary rounded-pill fbm-chip${chip.value === value ? ' active' : ''}`}
+        className={`btn btn-sm btn-outline-secondary fbm-chip${chip.value === value ? ' active' : ''}`}
         aria-pressed={chip.value === value}
         onClick={() => onChange(chip.value)}
     >

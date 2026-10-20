@@ -48,6 +48,7 @@ const NAMES: Record<string, string> = {
     list: 'list',
     'list-ol': 'list-ol',
     'magnifying-glass': 'search',
+    pen: 'pencil',
     'pen-to-square': 'pencil-square-o',
     play: 'play',
     plus: 'plus',

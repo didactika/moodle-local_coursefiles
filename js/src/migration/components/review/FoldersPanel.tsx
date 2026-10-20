@@ -11,7 +11,6 @@
  */
 import {useEffect, useState} from 'react';
 import {useDebounced} from '../../hooks/useDebounced';
-import {useKeptHeight} from '../../hooks/useKeptHeight';
 import {PAGE_SIZES} from '../../lib/paging';
 import {describeError} from '../../lib/errors';
 import {getFolders} from '../../services/api';
@@ -37,14 +36,12 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
     const [perpage, setPerpage] = useState(PAGE_SIZES[0]);
-    const kept = useKeptHeight();
     const [data, setData] = useState<FolderPage | null>(null);
     const [error, setError] = useState('');
     const query = useDebounced(search, 250);
 
     useEffect(() => {
         setPage(0);
-        kept.release();
     }, [query, perpage]);
 
     useEffect(() => {
@@ -74,7 +71,7 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
         {data === null && error === '' && <Skeleton rows={4} label={text('loading')} />}
         {data !== null && data.folders.length === 0 && <EmptyState plain icon="folder-open" title={text('folders_empty_title')} text={text('folders_empty_text')} />}
         <div className="fbm-list-region">
-        {data !== null && data.folders.length > 0 && <div ref={kept.ref} style={kept.style}><ul className="fbm-folders">
+        {data !== null && data.folders.length > 0 && <div className="fbm-list-scroll"><ul className="fbm-folders">
             {data.folders.map((folder) => <li key={`${folder.sourcecourseid}:${folder.sourcecmid}:${folder.targetcourse}:${folder.targetfolder}`} className="fbm-folder">
                 <Switch
                     label={text('folder_switch', {name: folder.sourcefolder})}
@@ -105,7 +102,6 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
             perpage={perpage}
             total={data?.total ?? 0}
             onPage={(next) => {
-                kept.keep();
                 setPage(next);
             }}
             text={text}

@@ -191,5 +191,5 @@ export const changePage = event => {
             const url = new URL(select.dataset.url, document.baseURI);
             url.searchParams.set('perpage', select.value);
             url.searchParams.set(select.dataset.pageparameter, '0');
-            void swapList(select, url.toString(), false);
+            void swapList(select, url.toString());
         };

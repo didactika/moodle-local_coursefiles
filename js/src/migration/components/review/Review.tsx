@@ -111,7 +111,7 @@ const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
                 <button type="button" className="btn btn-outline-secondary" onClick={onNew} data-action="new-from">
                     <Icon name="plus" gap />{text('new_migration')}
                 </button>
-                {!migration.run?.active && <IconButton icon="trash" label={text('delete')} tone="danger" onClick={() => setDeleting(true)} />}
+                <IconButton icon="trash" label={text('delete')} tone="danger" disabled={Boolean(migration.run?.active)} onClick={() => setDeleting(true)} />
             </>}
         />
         {state.stale && <Alert tone="warning" live actions={<button type="button" className="btn btn-outline-secondary" onClick={() => void state.reload()}>{text('reload')}</button>}>
@@ -172,7 +172,6 @@ const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
         <ConfirmModal
             open={stopping}
             tone="danger"
-            icon="stop"
             busy={busy}
             title={text('stop_title')}
             confirmLabel={text('run_stop')}
@@ -185,7 +184,6 @@ const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
         <ConfirmModal
             open={deleting}
             tone="danger"
-            icon="triangle-exclamation"
             title={text('delete_title')}
             confirmLabel={text('delete')}
             cancelLabel={text('cancel')}

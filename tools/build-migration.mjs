@@ -104,9 +104,30 @@ const header = `// This file is part of Moodle - https://moodle.org/
 
 import Ajax from 'core/ajax';
 import Toast from 'core/toast';
+import ModalEvents from 'core/modal_events';
 
 `;
 const footer = `
+
+/**
+ * The save and cancel modal of Moodle: the module of Moodle 4.3 and later creates it, and the modal factory does on Moodle 4.0 to
+ * 4.2. Both are loaded when a modal is asked for, so a version without one of them never fails to load the screens.
+ */
+const ModalSaveCancel = {
+    create: (options) => new Promise((resolve, reject) => {
+        window.require(['core/modal_save_cancel'], (loaded) => {
+            const Modern = loaded.default || loaded;
+            if (typeof Modern.create === 'function') {
+                resolve(Modern.create(options));
+                return;
+            }
+            window.require(['core/modal_factory'], (factory) => {
+                const Factory = factory.default || factory;
+                resolve(Factory.create(Object.assign({type: Factory.types.SAVE_CANCEL}, options)));
+            }, reject);
+        }, reject);
+    }),
+};
 
 /**
  * Draw the migrations in the page, with what the element that holds them says in its data-props attribute.
@@ -116,7 +137,7 @@ export const init = () => {
     FilebankMigration.mount(
         element,
         JSON.parse(element.dataset.props),
-        {ajax: Ajax, modules: {'core/toast': Toast}}
+        {ajax: Ajax, modules: {'core/toast': Toast, 'core/modal_save_cancel': ModalSaveCancel, 'core/modal_events': ModalEvents}}
     );
 };
 `;

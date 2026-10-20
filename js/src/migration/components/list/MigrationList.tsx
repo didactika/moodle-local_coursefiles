@@ -11,7 +11,6 @@
  */
 import {useCallback, useEffect, useState} from 'react';
 import {useDebounced} from '../../hooks/useDebounced';
-import {useKeptHeight} from '../../hooks/useKeptHeight';
 import {PAGE_SIZES} from '../../lib/paging';
 import {describeError} from '../../lib/errors';
 import {deleteMigrations, listMigrations} from '../../services/api';
@@ -44,7 +43,6 @@ const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
     const [state, setState] = useState('');
     const [page, setPage] = useState(0);
     const [perpage, setPerpage] = useState(PAGE_SIZES[0]);
-    const kept = useKeptHeight();
     const [data, setData] = useState<MigrationPage | null>(null);
     const [error, setError] = useState('');
     const [selected, setSelected] = useState<number[]>([]);
@@ -67,7 +65,6 @@ const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
 
     useEffect(() => {
         setPage(0);
-        kept.release();
     }, [query, state, perpage]);
 
     // A migration that is running changes while the list is open.
@@ -147,7 +144,7 @@ const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
             <div className="fbm-list-region">
             {rows.length === 0
                 ? <EmptyState icon="magnifying-glass" title={text('list_nomatch_title')} text={text('list_nomatch_text')} />
-                : <div className="table-responsive" ref={kept.ref} style={kept.style}>
+                : <div className="table-responsive">
                     <table className="table table-hover">
                         <thead>
                             <tr>
@@ -206,8 +203,10 @@ const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
                                 <td className="text-muted">{row.datelabel}</td>
                                 <td className="fbm-col-actions">
                                     <div className="fbm-actions">
-                                        <IconButton icon="eye" label={text('open')} tone="primary" onClick={() => onOpen(row.id)} />
-                                        {row.candelete && <IconButton icon="trash" label={text('delete')} tone="danger" onClick={() => setAsking([row.id])} />}
+                                        {row.state === 'reviewable'
+                                            ? <IconButton icon="pen" label={text('edit')} tone="primary" onClick={() => onOpen(row.id)} />
+                                            : <IconButton icon="circle-info" label={text('details')} tone="primary" onClick={() => onOpen(row.id)} />}
+                                        <IconButton icon="trash" label={text('delete')} tone="danger" disabled={!row.candelete} onClick={() => setAsking([row.id])} />
                                     </div>
                                 </td>
                             </tr>)}
@@ -219,7 +218,6 @@ const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
                 perpage={perpage}
                 total={data.total}
                 onPage={(next) => {
-                    kept.keep();
                     setPage(next);
                 }}
                 text={text}
@@ -239,7 +237,6 @@ const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
         <ConfirmModal
             open={asking !== null}
             tone="danger"
-            icon="triangle-exclamation"
             busy={deleting}
             title={text('delete_title')}
             confirmLabel={text('delete')}

@@ -27,7 +27,6 @@ const StartModal = ({open, migration, text, busy, onConfirm, onCancel}: StartMod
     const {summary} = migration;
     return <ConfirmModal
         open={open}
-        icon="play"
         busy={busy}
         title={text('start_title', {n: migration.id})}
         confirmLabel={text('start')}

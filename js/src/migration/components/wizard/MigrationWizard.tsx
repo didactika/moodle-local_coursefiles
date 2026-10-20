@@ -273,7 +273,6 @@ const MigrationWizard = ({mode, options, migrationId, onClose, onDone, onOptions
         <ConfirmModal
             open={leaving}
             tone="danger"
-            icon="triangle-exclamation"
             title={text('discard_title')}
             confirmLabel={text('discard')}
             cancelLabel={text('keep_editing')}
