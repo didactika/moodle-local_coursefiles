@@ -1,10 +1,11 @@
 // The migrations: a list, the window that starts one and the page of each one.
 //
-// The plugin has to look right on Bootstrap 4 (Moodle 4.0 to 4.3) and on Bootstrap 5 (Moodle 4.4 and later), so every colour is a
-// variable of the plugin that takes the value of the variable of Bootstrap 5, then the one of Bootstrap 4, then a colour of its own.
-// Only the buttons and fields of Bootstrap that are the same in both are not used: the plugin draws its own.
+// The plugin has to look right on Bootstrap 4 (Moodle 4.0 to 4.3) and on Bootstrap 5 (Moodle 4.4 and later), so every colour
+// is a variable of the plugin that takes the value of the variable of Bootstrap 5, then the one of Bootstrap 4, then a colour
+// of its own. The buttons and fields are drawn by the plugin, because they differ between the two versions of Bootstrap.
 
-.filebank-migration {
+.filebank-migration,
+.filebank-ui {
     --fbm-primary: var(--bs-primary, var(--primary, #0f6cbf));
     --fbm-success: var(--bs-success, var(--success, #357a32));
     --fbm-warning: var(--bs-warning-text-emphasis, #8a5a00);
@@ -118,31 +119,33 @@
     .fbm-btn-success,
     .fbm-btn-danger,
     .fbm-btn-warning {
-        color: #fff;
         border-color: transparent;
+        background-color: var(--fbm-solid);
+        color: #fff;
 
         &:hover:not(:disabled),
         &:focus-visible:not(:disabled) {
-            color: #fff;
             border-color: transparent;
-            filter: brightness(0.92);
+            background-color: var(--fbm-solid);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 0 0 99px rgba(0, 0, 0, 0.12);
         }
     }
 
     .fbm-btn-primary {
-        background-color: var(--fbm-primary);
+        --fbm-solid: var(--fbm-primary);
     }
 
     .fbm-btn-success {
-        background-color: var(--fbm-success);
+        --fbm-solid: var(--fbm-success);
     }
 
     .fbm-btn-danger {
-        background-color: var(--fbm-danger);
+        --fbm-solid: var(--fbm-danger);
     }
 
     .fbm-btn-warning {
-        background-color: #b26a00;
+        --fbm-solid: #b26a00;
     }
 
     .fbm-btn-small {
@@ -250,7 +253,7 @@
 
     // Fields.
     .fbm-label {
-        display: block;
+        display: inline-block;
         margin-bottom: 0.25rem;
         color: var(--fbm-muted);
         font-size: 0.8125rem;
@@ -306,7 +309,6 @@
         width: 1.125rem;
         height: 1.125rem;
         margin: 0;
-        accent-color: var(--fbm-primary);
         cursor: pointer;
     }
 
@@ -357,7 +359,7 @@
         transform: translateX(1.1rem);
     }
 
-    [dir="rtl"] .fbm-switch.is-on .fbm-switch-knob {
+    [dir=rtl] .fbm-switch.is-on .fbm-switch-knob {
         transform: translateX(-1.1rem);
     }
 
@@ -715,6 +717,12 @@
         margin: 0;
         border-collapse: collapse;
 
+        & th,
+        & td {
+            border-inline: 0;
+            border-top: 0;
+        }
+
         & th {
             padding: 0.65rem 0.8rem;
             border-bottom: 1px solid var(--fbm-border);
@@ -958,9 +966,8 @@
     .fbm-skeleton-row {
         height: 3rem;
         border-radius: var(--fbm-radius);
-        background: linear-gradient(90deg, var(--fbm-surface) 25%, var(--fbm-border) 50%, var(--fbm-surface) 75%);
-        background-size: 200% 100%;
-        animation: fbm-shimmer 1.4s linear infinite;
+        background-color: var(--fbm-surface);
+        animation: filebank-pulse 1.1s ease-in-out infinite alternate;
     }
 
     // What can be done with what was chosen: it floats at the bottom of the screen.
@@ -982,7 +989,7 @@
         transform: translateX(-50%);
     }
 
-    [dir="rtl"] .fbm-floating {
+    [dir=rtl] .fbm-floating {
         transform: translateX(50%);
     }
 
@@ -1459,6 +1466,570 @@
         font-size: 0.8125rem;
     }
 
+    // The pages that list things: profiles, versions and the log.
+    .fbm-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.15rem;
+    }
+
+    .fbm-actions .fbm-iconbtn {
+        text-decoration: none;
+    }
+
+    .fbm-nowrap {
+        white-space: nowrap;
+    }
+
+    .fbm-break {
+        overflow-wrap: anywhere;
+    }
+
+    .fbm-mono {
+        font-family: var(--bs-font-monospace, monospace);
+    }
+
+    .fbm-profile-name {
+        font-weight: 650;
+        text-decoration: none;
+    }
+
+    .fbm-profile-name:hover,
+    .fbm-profile-name:focus-visible {
+        text-decoration: underline;
+    }
+
+    .fbm-status {
+        --fbm-tone: var(--fbm-muted);
+        padding-inline-start: 0.5rem;
+
+        &::before {
+            content: "";
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            margin-inline-end: 0.4rem;
+            border-radius: 50%;
+            background-color: var(--fbm-tone);
+        }
+    }
+
+    tr[data-enabled="1"] .fbm-status {
+        --fbm-tone: var(--fbm-success);
+    }
+
+    .fbm-badge-action {
+        --fbm-tone: var(--fbm-primary);
+    }
+
+    .fbm-bulkbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--fbm-primary);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-surface);
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    .fbm-bulkbar-title {
+        margin-inline-end: 0.5rem;
+        font-weight: 650;
+    }
+
+    .fbm-checkline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0;
+    }
+
+    .fbm-listbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+
+    .fbm-listbar-size,
+    .fbm-listbar-pages {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .fbm-listbar-label {
+        margin: 0;
+        color: var(--fbm-muted);
+        font-size: 0.875rem;
+    }
+
+    .fbm-page {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+
+    .fbm-page:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .fbm-filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+        align-items: end;
+        gap: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-surface);
+
+        & .fbm-field {
+            margin-bottom: 0;
+        }
+    }
+
+    .fbm-filters-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .fbm-select-fill {
+        width: 100%;
+    }
+
+    .fbm-table tr.is-changed td,
+    .fbm-table tr.is-changed th {
+        background-color: var(--fbm-surface);
+        box-shadow: inset 3px 0 0 var(--fbm-warning);
+    }
+
+    .fbm-table tr.is-active td {
+        background-color: var(--fbm-surface);
+    }
+
+    .fbm-compare {
+        margin-bottom: 1rem;
+    }
+
+    .fbm-compare code {
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.3rem;
+        background-color: var(--fbm-surface);
+        color: var(--fbm-text);
+        font-size: 0.8125rem;
+        word-break: break-word;
+    }
+
+    .fbm-definitions {
+        display: grid;
+        grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+        gap: 0.4rem 1rem;
+        margin: 0;
+
+        & dt {
+            font-weight: 600;
+        }
+
+        & dd {
+            margin: 0;
+        }
+    }
+
+    .fbm-details {
+        margin-top: 0.9rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--fbm-border);
+
+        & summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+    }
+
+    .fbm-policy-effective {
+        margin: 0 0 0.75rem;
+    }
+
+    // The forms of Moodle that the plugin shows inside its own pages: the profile editor and the import.
+    &.filebank-panel {
+        padding: 1.25rem 1.5rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        box-shadow: var(--fbm-shadow);
+    }
+
+    .mform .fitem {
+        margin-bottom: 0.85rem;
+    }
+
+    .mform label,
+    .mform .col-form-label {
+        font-weight: 600;
+    }
+
+    .mform .form-control,
+    .mform select,
+    .mform textarea,
+    .mform input[type=text],
+    .mform input[type=number],
+    .mform input[type=search],
+    .mform input[type=date] {
+        min-height: 2.375rem;
+        padding: 0.35rem 0.75rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: 0.5rem;
+        background-color: var(--fbm-bg);
+        color: var(--fbm-text);
+    }
+
+    .mform select {
+        padding-inline-end: 2rem;
+    }
+
+    .mform .form-control:focus,
+    .mform select:focus,
+    .mform textarea:focus {
+        border-color: var(--fbm-primary);
+        outline: 2px solid var(--fbm-primary);
+        outline-offset: -1px;
+    }
+
+    .mform .btn {
+        min-height: 2.375rem;
+        padding: 0.4rem 1.1rem;
+        border-radius: 2rem;
+        font-weight: 550;
+    }
+
+    // The picker that sits inside the file picker of Moodle.
+    .fbm-btn-ghost {
+        border-color: transparent;
+        background-color: transparent;
+        color: var(--fbm-primary);
+    }
+
+    .fbm-segment {
+        display: inline-flex;
+        overflow: hidden;
+        border: 1px solid var(--fbm-border);
+        border-radius: 2rem;
+        background-color: var(--fbm-bg);
+    }
+
+    .fbm-segment-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.4rem;
+        height: 2.1rem;
+        padding: 0 0.7rem;
+        border: 0;
+        background: transparent;
+        color: var(--fbm-muted);
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--fbm-surface);
+            color: var(--fbm-text);
+        }
+
+        &.active,
+        &[aria-pressed=true] {
+            background-color: var(--fbm-primary);
+            color: #fff;
+        }
+
+        & .icon {
+            margin: 0;
+        }
+    }
+
+    .fbm-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--fbm-border);
+    }
+
+    .fbm-filter-foot {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--fbm-border);
+    }
+
+    .filebank-filter-menu {
+        padding: 0.9rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .filebank-filter-popover > summary {
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .filebank-search .fbm-search {
+        max-width: none;
+    }
+
+    .fbm-filters-catalog {
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    }
+
+    .fbm-field-wide {
+        grid-column: span 2;
+    }
+
+    .fbm-filters-more {
+        grid-column: 1 / -1;
+        padding: 0;
+        border: 0;
+    }
+
+    .fbm-filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+        gap: 0.75rem 1rem;
+        margin-top: 0.75rem;
+    }
+
+    .fbm-filters-actions {
+        grid-column: 1 / -1;
+    }
+
+    .fbm-table-wrap.fbm-flush {
+        border: 0;
+        border-radius: 0;
+    }
+
+    .fbm-h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 650;
+        line-height: 1.3;
+    }
+
+    .fbm-select-wide {
+        width: 100%;
+        max-width: 28rem;
+    }
+
+    // The page that starts a migration: the steps on the left and the open one on the right.
+    .fbm-wizard-body {
+        display: grid;
+        grid-template-columns: 16rem minmax(0, 1fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .fbm-stepper {
+        position: sticky;
+        top: 5rem;
+    }
+
+    .fbm-stepper-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .fbm-stepper-item {
+        position: relative;
+        padding-bottom: 0.25rem;
+
+        &:not(:last-child)::before {
+            content: "";
+            position: absolute;
+            top: 2.6rem;
+            bottom: -0.1rem;
+            inset-inline-start: 1.1rem;
+            width: 2px;
+            background-color: var(--fbm-border);
+        }
+
+        &.is-done:not(:last-child)::before {
+            background-color: var(--fbm-primary);
+        }
+    }
+
+    .fbm-stepper-button {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.45rem 0.5rem;
+        border: 0;
+        border-radius: 0.6rem;
+        background: transparent;
+        color: var(--fbm-text);
+        font: inherit;
+        text-align: start;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            background-color: var(--fbm-surface);
+        }
+
+        &:disabled {
+            cursor: default;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--fbm-primary);
+            outline-offset: 2px;
+        }
+    }
+
+    .fbm-stepper-dot {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 50%;
+        background-color: var(--fbm-border);
+        color: var(--fbm-text);
+        font-size: 0.875rem;
+        font-weight: 650;
+    }
+
+    .fbm-stepper-item.is-current .fbm-stepper-dot,
+    .fbm-stepper-item.is-done .fbm-stepper-dot {
+        background-color: var(--fbm-primary);
+        color: #fff;
+    }
+
+    .fbm-stepper-item.is-current .fbm-stepper-dot {
+        box-shadow: 0 0 0 4px var(--fbm-surface), 0 0 0 6px var(--fbm-primary);
+    }
+
+    .fbm-stepper-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding-top: 0.1rem;
+    }
+
+    .fbm-stepper-title {
+        font-weight: 650;
+    }
+
+    .fbm-stepper-item.is-todo .fbm-stepper-title {
+        color: var(--fbm-muted);
+    }
+
+    .fbm-stepper-hint {
+        color: var(--fbm-muted);
+        font-size: 0.8125rem;
+    }
+
+    .fbm-wizard-panel {
+        min-height: 26rem;
+        padding: 1.5rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        box-shadow: var(--fbm-shadow);
+    }
+
+    .fbm-wizard-head {
+        display: flex;
+        gap: 0.9rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .fbm-wizard-icon {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 0.7rem;
+        background-color: var(--fbm-surface);
+        color: var(--fbm-primary);
+        font-size: 1.15rem;
+    }
+
+    .fbm-wizard-help {
+        margin: 0.15rem 0 0;
+    }
+
+    .fbm-wizard-foot {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-top: 1.75rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--fbm-border);
+    }
+
+    .fbm-rows-empty {
+        padding: 1.5rem 1rem 0.5rem;
+        border: 1px dashed var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-surface);
+        text-align: center;
+
+        &.has-problem {
+            border-color: var(--fbm-danger);
+        }
+    }
+
+    @media (max-width: 991px) {
+        .fbm-wizard-body {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .fbm-stepper {
+            position: static;
+            overflow-x: auto;
+        }
+
+        .fbm-stepper-list {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .fbm-stepper-item::before {
+            display: none;
+        }
+
+        .fbm-stepper-hint {
+            display: none;
+        }
+
+        .fbm-stepper-button {
+            width: auto;
+            white-space: nowrap;
+        }
+    }
+
     @media (max-width: 767px) {
         .fbm-sides,
         .fbm-field-row {
@@ -1513,15 +2084,5 @@
             animation: none;
             transition: none;
         }
-    }
-}
-
-@keyframes fbm-shimmer {
-    from {
-        background-position: 200% 0;
-    }
-
-    to {
-        background-position: -200% 0;
     }
 }

@@ -78,16 +78,13 @@ final class migration_rules {
     /**
      * Describe stored migration rules the way the migration screens edit them.
      *
-     * @param array $config Stored migration rules; empty for the plain "same name" correspondence.
+     * @param array $config Stored migration rules; with none, there is no correspondence and the person adds them.
      * @return array The rules: correspondences, sectionstrategy, sectionmap and the three policies.
      */
     public static function to_ui(array $config): array {
-        $rules = $config['correspondences'] ?? [];
-        if (!$rules) {
-            $rules = [['source_module' => ['type' => 'folder', 'field' => 'name', 'pattern' => '~^(?<name>.+)$~'],
-                'target_module' => ['field' => 'name', 'template' => '${name}']]];
-        }
         $rows = [];
+        // A profile can describe its single correspondence directly, without the list.
+        $rules = $config['correspondences'] ?? (isset($config['source_module'], $config['target_module']) ? [$config] : []);
         foreach ($rules as $rule) {
             $row = [];
             foreach (['source', 'target'] as $side) {

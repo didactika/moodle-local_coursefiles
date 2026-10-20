@@ -5,8 +5,8 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
- * The migrations of FileBank: the list of them, the window that starts one and the page of each one, all in one application that
- * never leaves the page. The server works everything out; this only asks and shows.
+ * The migrations of FileBank: the list of them, the page that starts one or changes its parameters, and the page of each one, all
+ * in one application that never leaves the page. The server works everything out; this only asks and shows.
  *
  * Mounted by core/react_autoinit from the data-react-component that the page writes.
  *
@@ -18,92 +18,78 @@ import { jsxDEV } from "react/jsx-dev-runtime";
 import { useEffect, useMemo, useState } from "react";
 import MigrationList from "./migration/components/list/MigrationList";
 import Review from "./migration/components/review/Review";
-import NewMigrationModal from "./migration/components/wizard/NewMigrationModal";
+import Alert from "./migration/components/ui/Alert";
+import MigrationWizard from "./migration/components/wizard/MigrationWizard";
 import { useRoute } from "./migration/hooks/useRoute";
 import { describeError } from "./migration/lib/errors";
 import { createText } from "./migration/lib/text";
 import { getOptions } from "./migration/services/api";
-import Alert from "./migration/components/ui/Alert";
 function Migration(props) {
   const text = useMemo(() => createText(props.strings), [props.strings]);
   const route = useRoute(props.planid, props.pageurl);
   const [options, setOptions] = useState(null);
   const [error, setError] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [initial, setInitial] = useState(null);
   useEffect(() => {
     document.querySelectorAll(".fbm-boot").forEach((block) => block.remove());
     getOptions().then(setOptions).catch((problem) => setError(describeError(problem)));
   }, []);
-  const openWizard = /* @__PURE__ */ __name((parameters) => {
-    setInitial(parameters);
-    setCreating(true);
-  }, "openWizard");
-  return /* @__PURE__ */ jsxDEV("div", { className: "filebank-migration", "data-region": "fbm-app", children: [
-    error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, children: error }, void 0, false, {
-      fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-      lineNumber: 52,
-      columnNumber: 26
-    }, this),
-    route.planid > 0 ? /* @__PURE__ */ jsxDEV(
+  let screen;
+  if (route.mode === "new" || route.mode === "edit") {
+    screen = /* @__PURE__ */ jsxDEV(
+      MigrationWizard,
+      {
+        mode: route.mode,
+        options,
+        migrationId: route.mode === "edit" ? route.planid : route.from,
+        text,
+        onClose: () => route.mode === "edit" ? route.openReview(route.planid) : route.openList(),
+        onDone: route.openReview
+      },
+      `${route.mode}-${route.planid}-${route.from}`,
+      false,
+      {
+        fileName: "public/local/filebank/js/esm/src/Migration.tsx",
+        lineNumber: 46,
+        columnNumber: 18
+      },
+      this
+    );
+  } else if (route.mode === "review") {
+    screen = /* @__PURE__ */ jsxDEV(
       Review,
       {
         id: route.planid,
         text,
-        options,
-        onBack: () => route.open(0),
-        onNew: openWizard
+        onBack: route.openList,
+        onEdit: () => route.openEdit(route.planid),
+        onNew: () => route.openNew(route.planid)
       },
       route.planid,
       false,
       {
         fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-        lineNumber: 54,
-        columnNumber: 15
+        lineNumber: 56,
+        columnNumber: 18
       },
       this
-    ) : /* @__PURE__ */ jsxDEV(
-      MigrationList,
-      {
-        text,
-        pagesizes: props.pagesizes,
-        onOpen: route.open,
-        onNew: () => openWizard(null)
-      },
-      void 0,
-      false,
-      {
-        fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-        lineNumber: 62,
-        columnNumber: 15
-      },
-      this
-    ),
-    /* @__PURE__ */ jsxDEV(
-      NewMigrationModal,
-      {
-        open: creating,
-        options,
-        initial,
-        text,
-        onClose: () => setCreating(false),
-        onCreated: (id) => {
-          setCreating(false);
-          route.open(id);
-        }
-      },
-      void 0,
-      false,
-      {
-        fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-        lineNumber: 68,
-        columnNumber: 9
-      },
-      this
-    )
+    );
+  } else {
+    screen = /* @__PURE__ */ jsxDEV(MigrationList, { text, pagesizes: props.pagesizes, onOpen: route.openReview, onNew: () => route.openNew() }, void 0, false, {
+      fileName: "public/local/filebank/js/esm/src/Migration.tsx",
+      lineNumber: 65,
+      columnNumber: 18
+    }, this);
+  }
+  return /* @__PURE__ */ jsxDEV("div", { className: "filebank-migration", "data-region": "fbm-app", children: [
+    error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, children: error }, void 0, false, {
+      fileName: "public/local/filebank/js/esm/src/Migration.tsx",
+      lineNumber: 69,
+      columnNumber: 26
+    }, this),
+    screen
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-    lineNumber: 51,
+    lineNumber: 68,
     columnNumber: 12
   }, this);
 }

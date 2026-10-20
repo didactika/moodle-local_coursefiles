@@ -18,7 +18,7 @@ import {addToast} from '../../lib/toast';
 import {
     cancelRun, deleteMigrations, executeMigration, reconfigureMigration, resolveDecisions, selectFiles, selectFolder,
 } from '../../services/api';
-import type {Bucket, Nature, Options, Parameters, Text} from '../../types';
+import type {Bucket, Nature, Text} from '../../types';
 import Alert from '../ui/Alert';
 import ConfirmModal from '../ui/ConfirmModal';
 import Icon from '../ui/Icon';
@@ -27,7 +27,6 @@ import Skeleton from '../ui/Skeleton';
 import StatusBadge from '../ui/StatusBadge';
 import ActionPanel from './ActionPanel';
 import DecisionsPanel from './DecisionsPanel';
-import EditParametersModal from './EditParametersModal';
 import FilesPanel from './FilesPanel';
 import FoldersPanel from './FoldersPanel';
 import Notes from './Notes';
@@ -37,20 +36,20 @@ import SummaryTiles, {type Tab} from './SummaryTiles';
 interface ReviewProps {
     id: number;
     text: Text;
-    options: Options | null;
     onBack: () => void;
+    /** Change the parameters of this migration, in the page that does it. */
+    onEdit: () => void;
     /** Start another migration, from the parameters of this one. */
-    onNew: (parameters: Parameters) => void;
+    onNew: () => void;
 }
 
-const Review = ({id, text, options, onBack, onNew}: ReviewProps) => {
+const Review = ({id, text, onBack, onEdit, onNew}: ReviewProps) => {
     const state = useMigration(id);
     const {migration, busy} = state;
     const [tab, setTab] = useState<Tab | ''>('');
     const [bucket, setBucket] = useState<Bucket>('');
     const [starting, setStarting] = useState(false);
     const [stopping, setStopping] = useState(false);
-    const [editing, setEditing] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const parameters = useMemo(() => (migration ? parametersOf(migration) : null), [migration?.digest]);
     const opened = migration !== null;
@@ -105,14 +104,6 @@ const Review = ({id, text, options, onBack, onNew}: ReviewProps) => {
         setStopping(false);
     };
 
-    const save = async(changed: Parameters) => {
-        const answer = await state.apply(() => reconfigureMigration(migration.id, migration.digest, changed));
-        if (answer) {
-            setEditing(false);
-            void addToast(text('edit_saved'));
-        }
-    };
-
     const remove = async() => {
         try {
             await deleteMigrations([migration.id]);
@@ -135,10 +126,10 @@ const Review = ({id, text, options, onBack, onNew}: ReviewProps) => {
                 {' · '}{migration.profile}{' · '}{migration.datelabel}
             </>}
             actions={<>
-                {migration.editable && <button type="button" className="fbm-btn" onClick={() => setEditing(true)} disabled={busy} data-action="edit-parameters">
+                {migration.editable && <button type="button" className="fbm-btn" onClick={onEdit} disabled={busy} data-action="edit-parameters">
                     <Icon name="sliders" gap />{text('edit_parameters')}
                 </button>}
-                <button type="button" className="fbm-btn" onClick={() => onNew(parameters)} data-action="new-from">
+                <button type="button" className="fbm-btn" onClick={onNew} data-action="new-from">
                     <Icon name="plus" gap />{text('new_migration')}
                 </button>
                 {!migration.run?.active && <button type="button" className="fbm-iconbtn tone-danger" title={text('delete')} onClick={() => setDeleting(true)}>
@@ -149,7 +140,7 @@ const Review = ({id, text, options, onBack, onNew}: ReviewProps) => {
         {state.stale && <Alert tone="warning" live actions={<button type="button" className="fbm-btn" onClick={() => void state.reload()}>{text('reload')}</button>}>
             {text('stale')}
         </Alert>}
-        {state.error !== '' && !state.stale && !editing && <Alert tone="danger" live>{state.error}</Alert>}
+        {state.error !== '' && !state.stale && <Alert tone="danger" live>{state.error}</Alert>}
         <SummaryTiles
             summary={migration.summary}
             text={text}
@@ -166,7 +157,7 @@ const Review = ({id, text, options, onBack, onNew}: ReviewProps) => {
             busy={busy}
             onStart={() => setStarting(true)}
             onStop={() => setStopping(true)}
-            onEdit={() => setEditing(true)}
+            onEdit={onEdit}
             onRework={() => void state.apply(() => reconfigureMigration(migration.id, migration.digest, parameters))}
         />
         <Notes notes={migration.summary.notes} text={text} />
@@ -229,19 +220,6 @@ const Review = ({id, text, options, onBack, onNew}: ReviewProps) => {
             <p>{text('delete_text', {n: 1})}</p>
             <p className="fbm-muted">{text('delete_hint')}</p>
         </ConfirmModal>
-        <EditParametersModal
-            open={editing}
-            options={options}
-            initial={parameters}
-            text={text}
-            busy={busy}
-            error={state.error}
-            onSave={(changed) => void save(changed)}
-            onClose={() => {
-                setEditing(false);
-                state.clearError();
-            }}
-        />
     </div>;
 };
 

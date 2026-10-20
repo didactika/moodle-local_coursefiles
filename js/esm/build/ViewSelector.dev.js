@@ -32,7 +32,7 @@ function ViewSelector({ initialLayout, views }) {
     {
       ref: index === 0 ? firstButton : void 0,
       type: "button",
-      className: `btn btn-sm btn-outline-secondary${active === view.value ? " active" : ""}`,
+      className: `fbm-segment-button${active === view.value ? " active" : ""}`,
       "data-filebank-layout": view.value,
       "data-filebank-react-view": "true",
       "aria-pressed": active === view.value,

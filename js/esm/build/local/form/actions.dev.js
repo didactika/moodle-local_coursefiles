@@ -72,7 +72,7 @@ const createRows = /* @__PURE__ */ __name(async (id) => {
             }
           }
         }
-        input.className = column.type === "checkbox" ? "filebank-row-check" : column.options ? "form-select form-select-sm" : "form-control form-control-sm";
+        input.className = column.type === "checkbox" ? "filebank-row-check" : column.options ? "fbm-select fbm-select-fill" : "fbm-input";
         if (column.type !== "checkbox") {
           input.value = String(value[column.key] || column.options?.[0]?.value || "");
         }

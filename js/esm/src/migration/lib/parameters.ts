@@ -2,7 +2,7 @@
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
- * The parameters of a migration: where they start from and when they are complete.
+ * The parameters of a migration: where they start from, the steps that ask for them and when each step is complete.
  *
  * @module     local_filebank/migration/lib/parameters
  * @copyright  2026 Didactika.org
@@ -17,6 +17,11 @@ export const MAX_CORRESPONDENCES = 20;
 /** The most pairs of sections a migration can map. */
 export const MAX_SECTION_PAIRS = 200;
 
+/** The steps that ask for the parameters of a migration, in order. */
+export type StepKey = 'profile' | 'courses' | 'folders' | 'sections' | 'policies' | 'check';
+
+export const STEP_KEYS: StepKey[] = ['profile', 'courses', 'folders', 'sections', 'policies', 'check'];
+
 /**
  * A correspondence that reads a folder by name and writes the folder with the same name.
  *
@@ -29,19 +34,36 @@ export const sameNameCorrespondence = (): Correspondence => ({
     sourcevalue: '~^(?<name>.+)$~',
     targetfield: 'name',
     targetmethod: 'template',
+    // The template of the destination, in which ${name} is the name that the pattern of the source captured.
+    // eslint-disable-next-line no-template-curly-in-string
     targetvalue: '${name}',
+});
+
+/**
+ * A correspondence that is yet to be filled in.
+ *
+ * @returns The new row, which finds a folder by its exact name on both sides.
+ */
+export const emptyCorrespondence = (): Correspondence => ({
+    sourcetype: 'folder',
+    sourcefield: 'name',
+    sourcemethod: 'equals',
+    sourcevalue: '',
+    targetfield: 'name',
+    targetmethod: 'equals',
+    targetvalue: '',
 });
 
 /**
  * The rules a profile proposes.
  *
  * @param option The profile.
- * @returns The rules, with at least one correspondence.
+ * @returns The rules, with the correspondences that the profile has.
  */
 export const profileRules = (option: ProfileOption): Rules => JSON.parse(option.rules) as Rules;
 
 /**
- * The parameters to start a new migration from a profile.
+ * The parameters to start a new migration from a profile. No folder is chosen for the person: the correspondences start empty.
  *
  * @param option The profile.
  * @returns The parameters, with no course filter.
@@ -50,7 +72,7 @@ export const parametersFor = (option: ProfileOption): Parameters => ({
     profileid: option.id,
     source: {},
     target: {},
-    rules: profileRules(option),
+    rules: {...profileRules(option), correspondences: []},
 });
 
 /**
@@ -114,6 +136,27 @@ export const problemsOf = (parameters: Parameters, dimensions: number): Problem[
         }
     }
     return problems;
+};
+
+/** The problem that each step is responsible for. */
+const STEP_PROBLEM: Partial<Record<StepKey, Problem>> = {
+    profile: 'profile',
+    courses: 'courses',
+    folders: 'correspondence',
+    sections: 'sections',
+};
+
+/**
+ * What is missing in one step.
+ *
+ * @param step The step.
+ * @param parameters The parameters.
+ * @param dimensions How many filters the profile has.
+ * @returns The problems that belong to the step.
+ */
+export const stepProblems = (step: StepKey, parameters: Parameters, dimensions: number): Problem[] => {
+    const own = STEP_PROBLEM[step];
+    return own ? problemsOf(parameters, dimensions).filter(problem => problem === own) : [];
 };
 
 /**

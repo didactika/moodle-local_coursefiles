@@ -51,14 +51,8 @@ const Modal = ({open, title, onClose, closeLabel, children, footer, size = 'medi
         ref={dialog}
         className={`fbm-dialog fbm-dialog-${size}`}
         onCancel={(event) => {
+            // Escape does not close it either: a window is closed with its own button, so nothing is lost by a stray key or click.
             event.preventDefault();
-            close();
-        }}
-        onClick={(event) => {
-            // A click on the backdrop is a click on the dialog itself and not on what is inside it.
-            if (event.target === dialog.current) {
-                close();
-            }
         }}
     >
         {open && <div className="fbm-dialog-body">

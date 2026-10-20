@@ -3,28 +3,37 @@
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
     @template local_filebank/local/policy/course
-    Native course policy form and inherited effective status.
-    Context: actionurl, sesskey, courseid, locked, effectivelabel, canoverride, choices, catalogurl.
+    Effective author policy and, when the site permits it, a stricter course choice.
     Example context (json): {"locked":true,"effectivelabel":"Preserve and lock declared author","choices":[]}
 }}
-<section class="filebank-policy" data-region="filebank-policy">
-    <h2>{{#str}}coursepolicy, local_filebank{{/str}}</h2>
-    <p class="text-muted">{{#str}}policyintro, local_filebank{{/str}}</p>
-    <div class="card mb-4"><div class="card-body">
-        <h3 class="h5">{{#str}}effectivepolicy, local_filebank{{/str}}</h3>
-        <p>{{effectivelabel}}</p>
-        {{#locked}}<div class="alert alert-info mb-0">{{#str}}lockedpolicyhelp, local_filebank{{/str}}</div>{{/locked}}
-        {{^locked}}<p class="text-muted mb-0">{{#str}}editablepolicyhelp, local_filebank{{/str}}</p>{{/locked}}
-    </div></div>
-    {{#canoverride}}<form method="post" action="{{actionurl}}" class="card mb-4"><div class="card-body">
-        <input type="hidden" name="sesskey" value="{{sesskey}}">
-        <input type="hidden" name="courseid" value="{{courseid}}">
-        <label for="filebankpolicy">{{#str}}author_policy, local_filebank{{/str}} </label> {{{policyhelp}}}
-        <select class="form-select form-select-sm mb-3" name="policy" id="filebankpolicy">{{#choices}}
-            <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
-        {{/choices}}</select>
-        <div class="filebank-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top"><button class="btn btn-primary" type="submit">{{#str}}savechanges, core{{/str}}</button></div>
-    </div></form>{{/canoverride}}
-    {{^canoverride}}<p>{{#str}}policymanagedbysite, local_filebank{{/str}}</p>{{/canoverride}}
-    <a class="btn btn-outline-secondary" href="{{catalogurl}}">{{#str}}backtomaterials, local_filebank{{/str}}</a>
+<section class="filebank-ui filebank-policy" data-region="filebank-policy">
+    <header class="fbm-header">
+        <div class="fbm-header-title">
+            <div class="fbm-header-line"><h2 class="fbm-h2">{{#str}}coursepolicy, local_filebank{{/str}}</h2></div>
+            <p class="fbm-muted fbm-header-subtitle">{{#str}}policyintro, local_filebank{{/str}}</p>
+        </div>
+        <div class="fbm-header-actions"><a class="fbm-btn" href="{{catalogurl}}">{{#pix}}t/left, core{{/pix}}{{#str}}backtomaterials, local_filebank{{/str}}</a></div>
+    </header>
+    <div class="fbm-panel">
+        <div class="fbm-panel-head"><h3 class="fbm-panel-title">{{#str}}effectivepolicy, local_filebank{{/str}}</h3></div>
+        <div class="fbm-panel-body">
+            <p class="fbm-policy-effective"><span class="fbm-badge {{#locked}}tone-warning{{/locked}}{{^locked}}tone-success{{/locked}}">{{effectivelabel}}</span></p>
+            {{#locked}}<div class="fbm-alert tone-info"><div class="fbm-alert-body">{{#str}}lockedpolicyhelp, local_filebank{{/str}}</div></div>{{/locked}}
+            {{^locked}}<p class="fbm-muted">{{#str}}editablepolicyhelp, local_filebank{{/str}}</p>{{/locked}}
+        </div>
+    </div>
+    {{#canoverride}}<form method="post" action="{{actionurl}}" class="fbm-panel">
+        <div class="fbm-panel-body">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <input type="hidden" name="courseid" value="{{courseid}}">
+            <div class="fbm-field">
+                <label for="filebankpolicy" class="fbm-label">{{#str}}author_policy, local_filebank{{/str}}</label> {{{policyhelp}}}
+                <select class="fbm-select" name="policy" id="filebankpolicy">{{#choices}}
+                    <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                {{/choices}}</select>
+            </div>
+            <div class="filebank-page-actions fbm-wizard-foot"><button class="fbm-btn fbm-btn-primary" type="submit">{{#str}}savechanges, core{{/str}}</button></div>
+        </div>
+    </form>{{/canoverride}}
+    {{^canoverride}}<p class="fbm-muted">{{#str}}policymanagedbysite, local_filebank{{/str}}</p>{{/canoverride}}
 </section>

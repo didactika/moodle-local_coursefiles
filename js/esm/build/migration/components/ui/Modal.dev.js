@@ -40,54 +40,48 @@ const Modal = /* @__PURE__ */ __name(({ open, title, onClose, closeLabel, childr
       className: `fbm-dialog fbm-dialog-${size}`,
       onCancel: (event) => {
         event.preventDefault();
-        close();
-      },
-      onClick: (event) => {
-        if (event.target === dialog.current) {
-          close();
-        }
       },
       children: open && /* @__PURE__ */ jsxDEV("div", { className: "fbm-dialog-body", children: [
         /* @__PURE__ */ jsxDEV("header", { className: "fbm-dialog-head", children: [
           /* @__PURE__ */ jsxDEV("h3", { className: "fbm-dialog-title", children: title }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/ui/Modal.tsx",
-            lineNumber: 66,
+            lineNumber: 60,
             columnNumber: 17
           }),
           /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-iconbtn", onClick: close, title: closeLabel, disabled: busy, children: [
             /* @__PURE__ */ jsxDEV(Icon, { name: "xmark" }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/ui/Modal.tsx",
-              lineNumber: 68,
+              lineNumber: 62,
               columnNumber: 21
             }),
             /* @__PURE__ */ jsxDEV("span", { className: "fbm-sr", children: closeLabel }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/ui/Modal.tsx",
-              lineNumber: 68,
+              lineNumber: 62,
               columnNumber: 42
             })
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/ui/Modal.tsx",
-            lineNumber: 67,
+            lineNumber: 61,
             columnNumber: 17
           })
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/ui/Modal.tsx",
-          lineNumber: 65,
+          lineNumber: 59,
           columnNumber: 13
         }),
         /* @__PURE__ */ jsxDEV("div", { className: "fbm-dialog-scroll", children }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/ui/Modal.tsx",
-          lineNumber: 71,
+          lineNumber: 65,
           columnNumber: 13
         }),
         footer && /* @__PURE__ */ jsxDEV("footer", { className: "fbm-dialog-foot", children: footer }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/ui/Modal.tsx",
-          lineNumber: 72,
+          lineNumber: 66,
           columnNumber: 24
         })
       ] }, void 0, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/Modal.tsx",
-        lineNumber: 64,
+        lineNumber: 58,
         columnNumber: 18
       })
     },

@@ -1,4 +1,4 @@
-import{useCallback as d,useEffect as a,useState as c}from"react";/**
+import{useCallback as a,useEffect as w,useState as c}from"react";/**
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
@@ -8,4 +8,4 @@ import{useCallback as d,useEffect as a,useState as c}from"react";/**
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */const w=(t,n)=>{const[s,o]=c(t);a(()=>{const e=()=>o(Number(new URLSearchParams(window.location.search).get("id"))||0);return window.addEventListener("popstate",e),()=>window.removeEventListener("popstate",e)},[]);const i=d(e=>{const r=e>0?`${n}${n.includes("?")?"&":"?"}id=${e}`:n;window.history.pushState({},"",r),o(e),window.scrollTo({top:0})},[n]);return{planid:s,open:i}};export{w as useRoute};
+ */const s=t=>{const o=new URLSearchParams(t),n=Number(o.get("id"))||0;return n>0?{mode:o.get("edit")==="1"?"edit":"review",planid:n,from:0}:o.get("new")==="1"?{mode:"new",planid:0,from:Number(o.get("from"))||0}:{mode:"list",planid:0,from:0}},u=(t,o)=>{const[n,r]=c(()=>t>0?{mode:"review",planid:t,from:0}:s(window.location.search));w(()=>{const e=()=>r(s(window.location.search));return window.addEventListener("popstate",e),()=>window.removeEventListener("popstate",e)},[]);const i=a((e,d)=>{const m=d===""?o:`${o}${o.includes("?")?"&":"?"}${d}`;window.history.pushState({},"",m),r(e),window.scrollTo({top:0})},[o]);return{...n,openList:()=>i({mode:"list",planid:0,from:0},""),openNew:(e=0)=>i({mode:"new",planid:0,from:e},e>0?`new=1&from=${e}`:"new=1"),openReview:e=>i({mode:"review",planid:e,from:0},`id=${e}`),openEdit:e=>i({mode:"edit",planid:e,from:0},`id=${e}&edit=1`)}};export{u as useRoute};

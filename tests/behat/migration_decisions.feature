@@ -9,15 +9,7 @@ Feature: Settle what needs a decision all at once
       | Conflicts acceptance |
     And I log in as "admin"
     And I open FileBank administration "migration"
-    And I click on "[data-action='new-migration']" "css_element"
-    And I set the field "fbm-source-edition" to "2025"
-    And I set the field "fbm-target-edition" to "2026"
-    And I set the field "fbm-c0-source-method" to "Exactly"
-    And I set the field "fbm-c0-source-value" to "Published materials"
-    And I set the field "fbm-c0-target-method" to "Exactly"
-    And I set the field "fbm-c0-target-value" to "Target materials"
-    And I press "Check what it would do"
-    And I wait until "[data-region='check-result']" "css_element" exists
+    And I set up a FileBank migration of "Published materials" into "Target materials" from "2025" to "2026"
     And I press "Create migration"
     And I wait until "[data-region='migration-review']" "css_element" exists
 

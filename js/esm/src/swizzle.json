@@ -143,7 +143,15 @@
     "eject": "risky",
     "wrap": "risky"
   },
+  "migration/components/wizard/MigrationWizard": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "migration/components/wizard/NewMigrationModal": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/wizard/Stepper": {
     "eject": "risky",
     "wrap": "risky"
   },

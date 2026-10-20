@@ -78,4 +78,31 @@ class behat_local_filebank_steps_9 extends behat_local_filebank_base {
         }
         $this->getSession()->resizeWindow(1366, 1000);
     }
+
+    /**
+     * Go through the steps of the page that starts a migration with one correspondence, and stop at the check of the last step.
+     *
+     * @When /^I set up a FileBank migration of "([^"]*)" into "([^"]*)" from "([^"]*)" to "([^"]*)"$/
+     * @param string $source Exact name of the source folder.
+     * @param string $target Exact name of the destination folder.
+     * @param string $from Edition of the source courses.
+     * @param string $to Edition of the destination courses.
+     */
+    public function set_up_migration(string $source, string $target, string $from, string $to): void {
+        $click = static fn(string $selector): array => [$selector, 'css_element'];
+        $this->execute('behat_general::i_click_on', $click("[data-action='new-migration']"));
+        $this->execute('behat_general::i_click_on', $click("[data-action='next-step']"));
+        $this->execute('behat_forms::i_set_the_field_to', ['fbm-source-edition', $from]);
+        $this->execute('behat_forms::i_set_the_field_to', ['fbm-target-edition', $to]);
+        $this->execute('behat_general::i_click_on', $click("[data-action='next-step']"));
+        $this->execute('behat_general::i_click_on', $click("[data-action='add-correspondence']"));
+        $this->execute('behat_forms::i_set_the_field_to', ['fbm-c0-source-value', $source]);
+        $this->execute('behat_forms::i_set_the_field_to', ['fbm-c0-target-value', $target]);
+        // Folders, sections and the policies each take one click to leave, and the last one opens the check.
+        for ($step = 0; $step < 3; $step++) {
+            $this->execute('behat_general::i_click_on', $click("[data-action='next-step']"));
+        }
+        $result = "[data-region='check-result'],[data-region='empty-state']";
+        $this->execute('behat_general::wait_until_exists', [$result, 'css_element']);
+    }
 }

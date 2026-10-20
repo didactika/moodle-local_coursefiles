@@ -16,7 +16,7 @@
                     <div class="filebank-origin text-break">{{#showorigin}}{{{origin}}}{{/showorigin}}</div>
                     <div class="filebank-card-meta d-flex flex-wrap mt-2 pt-2 border-top">{{#isfolder}}<span class="filebank-chip">{{selectionlabel}}</span>{{/isfolder}}{{^isfolder}}<span class="text-muted text-break">{{details}}</span>{{/isfolder}}</div>
                 </div>
-                {{#isfolder}}<button name="openfolder" value="{{open}}" class="btn btn-outline-secondary filebank-open" aria-expanded="false" title="{{#str}}openfolder, local_filebank{{/str}}">{{#pix}}t/right, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}openfolder, local_filebank{{/str}}</span></button>{{/isfolder}}
+                {{#isfolder}}<button name="openfolder" value="{{open}}" class="fbm-iconbtn filebank-open" aria-expanded="false" title="{{#str}}openfolder, local_filebank{{/str}}">{{#pix}}t/right, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}openfolder, local_filebank{{/str}}</span></button>{{/isfolder}}
             </div>
         </div>
 {{#isfolder}}<div class="filebank-browser-children" data-tree-entries hidden></div></div>{{/isfolder}}

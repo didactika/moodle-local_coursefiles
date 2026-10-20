@@ -52,21 +52,6 @@ class behat_local_filebank_steps_3 extends behat_local_filebank_base {
     }
 
     /**
-     * Edit the actual row controls rather than posting an unrelated document.
-     *
-     * @When /^I set the FileBank destination folder rule to "([^"]*)"$/
-     * @param string $name Exact target folder name.
-     */
-    public function destination_folder_rule(string $name): void {
-        $this->getSession()->getDriver()->executeScript(
-            'const method=document.querySelector("[data-field=targetmethod]");method.value="equals";'
-            . 'method.dispatchEvent(new Event("input",{bubbles:true}));'
-            . 'const value=document.querySelector("[data-field=targetvalue]");value.value=' . json_encode($name) . ';'
-            . 'value.dispatchEvent(new Event("input",{bubbles:true}));'
-        );
-    }
-
-    /**
      * Reconfiguration keeps the initial reviewed record intact.
      *
      * @Then /^FileBank should retain "([0-9]+)" migration plans$/

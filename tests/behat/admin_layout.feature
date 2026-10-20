@@ -73,6 +73,7 @@ Feature: Clear administration tabs and immutable migration previews
     Then I should see "Guided profile"
     And I should not see "Migration acceptance"
 
+  @_file_upload
   Scenario: Import a portable profile through the native upload control
     Given I log in as "admin"
     When I open FileBank administration "profiles"
@@ -87,7 +88,6 @@ Feature: Clear administration tabs and immutable migration previews
   Scenario: Material reuse logs are available as a native report
     Given I log in as "admin"
     When I navigate to "Reports > FileBank material reuse" in site administration
-    When I click on ".filebank-filter-popover summary" "css_element"
     Then I should see "From date"
     And I should see "Through date"
     When I set the field "Action" to "profile_activated"

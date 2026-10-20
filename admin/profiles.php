@@ -76,21 +76,44 @@ if ($search !== '') {
 }
 $total = $DB->count_records_sql('SELECT COUNT(1) FROM {local_filebank} p WHERE ' . $condition, $params);
 $page = \local_filebank\output\pagination::clamp($total, $page, $perpage);
+$data['total'] = $total;
 $data['pagination'] = \local_filebank\output\pagination::render(
     $total,
     $page,
     $perpage,
     new moodle_url('/local/filebank/admin/profiles.php', ['q' => $search])
 );
-foreach (
-    $DB->get_records_sql(
-        'SELECT p.*, r.revision, r.timecreated, r.configjson FROM {local_filebank} p
-       LEFT JOIN {local_filebank_revision} r ON r.id = p.activeid WHERE ' . $condition . ' ORDER BY p.name, p.id',
-        $params,
-        $page * $perpage,
-        $perpage
-    ) as $profile
-) {
+$records = $DB->get_records_sql(
+    'SELECT p.*, r.revision, r.timecreated, r.configjson FROM {local_filebank} p
+   LEFT JOIN {local_filebank_revision} r ON r.id = p.activeid WHERE ' . $condition . ' ORDER BY p.name, p.id',
+    $params,
+    $page * $perpage,
+    $perpage
+);
+$courses = [];
+$migrations = [];
+if ($records) {
+    [$insql, $inparams] = $DB->get_in_or_equal(array_keys($records), SQL_PARAMS_NAMED, 'profile');
+    foreach (
+        $DB->get_records_sql(
+            'SELECT p.id, COUNT(c.id) AS total FROM {local_filebank} p
+          LEFT JOIN {local_filebank_course} c ON c.revisionid = p.activeid WHERE p.id ' . $insql . ' GROUP BY p.id',
+            $inparams
+        ) as $row
+    ) {
+        $courses[$row->id] = (int)$row->total;
+    }
+    foreach (
+        $DB->get_records_sql(
+            'SELECT profileid AS id, COUNT(1) AS total FROM {local_filebank_plan}
+              WHERE profileid ' . $insql . ' GROUP BY profileid',
+            $inparams
+        ) as $row
+    ) {
+        $migrations[$row->id] = (int)$row->total;
+    }
+}
+foreach ($records as $profile) {
     $config = json_decode($profile->configjson, true);
     $labels = [];
     foreach ((new \local_filebank\local\profile\profile_config($config))->filter_definitions() as $definition) {
@@ -104,6 +127,8 @@ foreach (
         'url' => (new moodle_url('/local/filebank/admin/profile.php', ['profileid' => $profile->id]))->out(false),
         'status' => \local_filebank\output\display::outcome($profile->enabled ? 'enabled' : 'disabled'),
         'revision' => $profile->revision, 'enabled' => (bool)$profile->enabled,
+        'stats' => get_string('profilestats', 'local_filebank', (object)['courses' => $courses[$profile->id] ?? 0,
+            'migrations' => $migrations[$profile->id] ?? 0, 'revision' => $profile->revision]),
         'date' => userdate($profile->timecreated),
     ];
 }

@@ -15,7 +15,6 @@ var selectors_default = {
   bulkForms: Common.bulkForms,
   button: Common.button,
   history: Common.history,
-  migration: Common.migration,
   pageSize: Common.pageSize,
   paginationControls: Common.paginationControls,
   profileState: Common.profileState,
