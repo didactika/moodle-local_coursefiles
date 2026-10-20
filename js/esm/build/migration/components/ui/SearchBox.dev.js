@@ -1,0 +1,76 @@
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+import { jsxDEV } from "react/jsx-dev-runtime";
+/**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
+ * A search field that filters as the person types, with a way to clear it.
+ *
+ * @module     local_filebank/migration/components/ui/SearchBox
+ * @copyright  2026 Didactika.org
+ * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+import Icon from "./Icon";
+const SearchBox = /* @__PURE__ */ __name(({ value, onChange, placeholder, clearLabel, id }) => /* @__PURE__ */ jsxDEV("div", { className: "fbm-search", children: [
+  /* @__PURE__ */ jsxDEV("span", { className: "fbm-search-icon", children: /* @__PURE__ */ jsxDEV(Icon, { name: "magnifying-glass" }, void 0, false, {
+    fileName: "public/local/filebank/js/esm/src/migration/components/ui/SearchBox.tsx",
+    lineNumber: 23,
+    columnNumber: 39
+  }) }, void 0, false, {
+    fileName: "public/local/filebank/js/esm/src/migration/components/ui/SearchBox.tsx",
+    lineNumber: 23,
+    columnNumber: 5
+  }),
+  /* @__PURE__ */ jsxDEV(
+    "input",
+    {
+      type: "search",
+      id,
+      value,
+      className: "form-control rounded-pill",
+      placeholder,
+      "aria-label": placeholder,
+      autoComplete: "off",
+      onChange: (event) => onChange(event.target.value),
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          onChange("");
+        }
+      }
+    },
+    void 0,
+    false,
+    {
+      fileName: "public/local/filebank/js/esm/src/migration/components/ui/SearchBox.tsx",
+      lineNumber: 24,
+      columnNumber: 5
+    }
+  ),
+  value !== "" && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-search-clear", onClick: () => onChange(""), title: clearLabel, children: [
+    /* @__PURE__ */ jsxDEV(Icon, { name: "xmark" }, void 0, false, {
+      fileName: "public/local/filebank/js/esm/src/migration/components/ui/SearchBox.tsx",
+      lineNumber: 40,
+      columnNumber: 9
+    }),
+    /* @__PURE__ */ jsxDEV("span", { className: "filebank-visually-hidden", children: clearLabel }, void 0, false, {
+      fileName: "public/local/filebank/js/esm/src/migration/components/ui/SearchBox.tsx",
+      lineNumber: 40,
+      columnNumber: 30
+    })
+  ] }, void 0, true, {
+    fileName: "public/local/filebank/js/esm/src/migration/components/ui/SearchBox.tsx",
+    lineNumber: 39,
+    columnNumber: 22
+  })
+] }, void 0, true, {
+  fileName: "public/local/filebank/js/esm/src/migration/components/ui/SearchBox.tsx",
+  lineNumber: 22,
+  columnNumber: 87
+}), "SearchBox");
+var SearchBox_default = SearchBox;
+export {
+  SearchBox_default as default
+};
+//# sourceMappingURL=SearchBox.dev.js.map

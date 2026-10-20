@@ -93,7 +93,7 @@ if ($summary !== null) {
     echo $OUTPUT->notification(get_string('unsavedpreview', 'local_filebank'), 'info');
     echo $renderer->render(new view('profile_summary', $summary));
 }
-echo html_writer::start_div('filebank-admin filebank-panel');
+echo html_writer::start_div('filebank-ui filebank-admin filebank-panel');
 $form->display();
 echo html_writer::end_div();
 echo $OUTPUT->footer();

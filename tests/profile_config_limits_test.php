@@ -63,7 +63,7 @@ final class profile_config_limits_test extends profile_config_fixture {
         [$profileid, , $target, , $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_filebank');
         $CFG->maintenance_enabled = false;
-        $plan = migration_planner::preview($profileid, '2025', '2026', true);
+        $plan = migration_planner::preview($profileid, '2025', '2026');
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $DB->set_field('folder', 'name', 'changed', ['id' => $tfolder->id]);
         rebuild_course_cache($target->id, true);

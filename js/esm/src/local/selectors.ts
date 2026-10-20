@@ -1,7 +1,7 @@
-// This file is part of Moodle - https://moodle.org/
-// Moodle is free software under the GNU General Public License, version 3 or later.
-
 /**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
  * Stable DOM contracts shared by native controllers and theme overrides.
  *
  * @module local_filebank/local/selectors
@@ -17,8 +17,8 @@ export default {
     browser: '.filebank-browser',
     browserTreeGroup: '.filebank-browser-tree-group',
     bulkActions: '[data-filebank-bulk-actions]',
-    bulkChecks: 'input[name="profiles[]"],input[name="plans[]"]',
-    bulkForms: '[data-filebank-profiles],[data-filebank-migrations]',
+    bulkChecks: 'input[name="profiles[]"]',
+    bulkForms: '[data-filebank-profiles]',
     button: 'button',
     card: '.filebank-card',
     cardBody: '.card-body',
@@ -51,10 +51,6 @@ export default {
     layouts: '[data-filebank-layout]',
     links: 'a[href]',
     loading: '[data-filebank-loading]',
-    migration: '[data-region=filebank-migration]',
-    migrationGroups: 'details[data-filebank-group],details[data-filebank-folder-group]',
-    migrationQ: '#filebank-migration-q',
-    migrationSelection: '[data-filebank-migration-selection]',
     nativeConfirmation: '.file-picker.fp-select .fp-select-confirm',
     openFolder: '[name=openfolder]',
     operation: '[data-filebank-operation]',

@@ -1,6 +1,9 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 /**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
  * Accessible selection controls for native administration forms.
  *
  * @module local_filebank/local/form/actions
@@ -69,7 +72,7 @@ const createRows = /* @__PURE__ */ __name(async (id) => {
             }
           }
         }
-        input.className = column.type === "checkbox" ? "filebank-row-check" : column.options ? "form-select form-select-sm" : "form-control form-control-sm";
+        input.className = column.type === "checkbox" ? "filebank-row-check" : column.options ? "form-select w-100" : "form-control";
         if (column.type !== "checkbox") {
           input.value = String(value[column.key] || column.options?.[0]?.value || "");
         }

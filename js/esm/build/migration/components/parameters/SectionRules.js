@@ -1,0 +1,12 @@
+import{MAX_SECTION_PAIRS as g}from"../../lib/parameters";import f from"../ui/ChoiceCards";import u from"../ui/Icon";import _ from"../ui/IconButton";import{jsx as s,jsxs as r}from"react/jsx-runtime";/**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
+ * How the sections of a source course are matched with the sections of the destination course: by position, by name, or pair by
+ * pair.
+ *
+ * @module     local_filebank/migration/components/parameters/SectionRules
+ * @copyright  2026 Didactika.org
+ * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */const v=["ordinal","name","mapping"],N=({rules:n,onChange:m,text:a,missing:b})=>{const t=n.sectionmap,l=(e,o,i)=>m({...n,sectionmap:t.map((c,d)=>d===e?{...c,[o]:i}:c)}),p=e=>b&&!/^[1-9][0-9]*$/.test(e);return r("div",{className:"fbm-sections",children:[s(f,{label:a("rules_sections"),name:"fbm-section-strategy",value:n.sectionstrategy,onChange:e=>m({...n,sectionstrategy:e,sectionmap:e==="mapping"&&t.length===0?[{source:"",target:""}]:t}),choices:v.map(e=>({value:e,label:a("rules_sections_"+e),hint:a("rules_sections_"+e+"_hint")}))}),n.sectionstrategy==="mapping"&&r("div",{className:"fbm-pairs",children:[r("div",{className:"fbm-pair fbm-pair-head","aria-hidden":"true",children:[s("span",{}),s("span",{className:"form-label",children:a("rules_section_source")}),s("span",{}),s("span",{className:"form-label",children:a("rules_section_target")}),s("span",{})]}),t.map((e,o)=>r("div",{className:"fbm-pair",children:[s("span",{className:"fbm-row-number",children:o+1}),s("input",{type:"number",min:1,inputMode:"numeric",className:`form-control${p(e.source)?" is-invalid":""}`,value:e.source,"aria-label":a("rules_section_source"),onChange:i=>l(o,"source",i.target.value)}),s(u,{name:"arrow-right"}),s("input",{type:"number",min:1,inputMode:"numeric",className:`form-control${p(e.target)?" is-invalid":""}`,value:e.target,"aria-label":a("rules_section_target"),onChange:i=>l(o,"target",i.target.value)}),s(_,{icon:"trash",label:a("rules_remove"),tone:"danger",onClick:()=>m({...n,sectionmap:t.filter((i,c)=>c!==o)})})]},o)),s("div",{className:"fbm-row-add",children:r("button",{type:"button",className:"btn btn-outline-secondary",disabled:t.length>=g,onClick:()=>m({...n,sectionmap:[...t,{source:"",target:""}]}),children:[s(u,{name:"plus",gap:!0}),a("rules_section_add")]})})]})]})};var C=N;export{C as default};

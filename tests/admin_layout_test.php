@@ -26,19 +26,22 @@
 namespace local_filebank;
 
 use local_filebank\form\profile_form;
+use local_filebank\local\migration\view\migration_files;
+use local_filebank\local\migration\view\migration_overview;
 use local_filebank\local\profile\profiles;
-use local_filebank\output\migration_report;
 use local_filebank\output\navigation;
 
 /**
  * Tests the real presentation contracts and permissions.
  *
- * @covers \local_filebank\output\migration_report
+ * @covers \local_filebank\local\migration\view\migration_overview
+ * @covers \local_filebank\local\migration\view\migration_files
  * @covers \local_filebank\output\navigation
  * @covers \local_filebank\form\profile_form
  * @covers \local_filebank\output\profile_summary
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\output\migration_report::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\view\migration_overview::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\view\migration_files::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\output\navigation::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\form\profile_form::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\output\profile_summary::class)]
@@ -61,7 +64,7 @@ final class admin_layout_test extends \advanced_testcase {
         $this->assertTrue($tabs['tabs'][0]['active']);
         $this->assertStringContainsString('/admin/profiles.php', $tabs['tabs'][0]['url']);
         $this->expectException(\required_capability_exception::class);
-        migration_report::data(1);
+        migration_overview::get(1);
     }
 
     /**
@@ -85,9 +88,9 @@ final class admin_layout_test extends \advanced_testcase {
     }
 
     /**
-     * Decision filtering and page counts use the complete immutable preview.
+     * Group counts, filters and pages use the complete stored migration, and what waits for a decision is listed apart.
      */
-    public function test_review_pages_preserve_revision_and_whole_plan_counts(): void {
+    public function test_pages_preserve_revision_and_whole_migration_counts(): void {
 
         global $DB, $USER;
         $this->resetAfterTest();
@@ -101,7 +104,7 @@ final class admin_layout_test extends \advanced_testcase {
             (object)[
                 'uuid' => \core\uuid::generate(), 'profileid' => $profileid, 'revisionid' => $revision->id,
                 'userid' => $USER->id, 'configjson' => $document, 'digest' => hash('sha256', $document),
-                'state' => 'blocked', 'timecreated' => time(),
+                'state' => 'reviewable', 'timecreated' => time(),
             ]
         );
         $source = $this->getDataGenerator()->create_course();
@@ -111,10 +114,12 @@ final class admin_layout_test extends \advanced_testcase {
                 'local_filebank_operation',
                 (object)[
                     'planid' => $planid, 'opkey' => hash('sha256', (string)$index), 'sourcehash' => sha1((string)$index),
-                    'targetcmid' => 999, 'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_path'),
+                    'targetcmid' => 999, 'sourcecourseid' => $source->id, 'targetcourseid' => $target->id,
+                    'sourcecmid' => 7, 'included' => $index < 57 ? 1 : 0,
+                    'decision' => $index < 55 ? 'copy' : ($index < 57 ? 'skip_content' : 'blocked_content'),
                     'state' => $index === 0 ? 'copied' : 'pending', 'result' => '{}', 'timemodified' => time(),
                     'snapshot' => json_encode(
-                        ['sourcecourse' => $source->id,
+                        ['sourcecourse' => $source->id, 'sourcecmid' => 7, 'sourcefoldername' => 'Published',
                             'source' => ['filename' => 'file' . $index . '.txt', 'filepath' => '/',
                                 'author' => 'Original', 'license' => 'cc'],
                             'target' => ['courseid' => $target->id, 'name' => 'Materials',
@@ -125,42 +130,28 @@ final class admin_layout_test extends \advanced_testcase {
         }
         $config['migration']['source_module']['equals'] = 'Changed after preview';
         profiles::save(json_encode($config), $profileid);
-        $data = migration_report::data($planid);
-        $this->assertSame([55, 2, 1], array_column($data['metrics'], 'count'));
-        $this->assertCount(50, $data['groups'][0]['operations']);
-        $this->assertSame(1, $data['plancompleted']);
-        $this->assertSame(58, $data['plantotal']);
-        $this->assertFalse($data['canexecute']);
-        $this->assertStringContainsString('materiales_de_clase.module', $data['summary']['rows'][0]['value']);
-        $second = migration_report::data($planid, 'copy', 1);
-        $this->assertCount(5, $second['groups'][0]['operations']);
-        $this->assertArrayHasKey('previousurl', $second);
-        $this->assertArrayNotHasKey('nexturl', $second);
-        $skips = migration_report::data($planid, 'skip');
-        $this->assertCount(2, $skips['groups'][0]['operations']);
-        $this->assertSame(58, $skips['plantotal']);
-        $this->assertSame(1, (int)$skips['summary']['revision']);
-        $search = migration_report::data($planid, '', 0, 'file57.txt');
-        $this->assertCount(1, $search['groups'][0]['operations']);
-        $this->assertSame('file57.txt', $search['groups'][0]['operations'][0]['filename']);
-        $document = json_encode(
-            ['sourceedition' => '2025', 'targetedition' => '2026',
-                'issues' => array_fill(0, 61, ['reason' => 'ambiguous_course_pair'])]
-        );
-        $DB->update_record(
-            'local_filebank_plan',
-            (object)[
-                'id' => $planid, 'configjson' => $document, 'digest' => hash('sha256', $document),
-            ]
-        );
-        $firstissues = migration_report::data($planid);
-        $this->assertCount(50, $firstissues['issues']);
-        $this->assertArrayHasKey('issuenexturl', $firstissues);
-        $lastissues = migration_report::data($planid, '', 0, '', 'review', 999);
-        $this->assertCount(11, $lastissues['issues']);
-        $this->assertSame(1, $lastissues['issuepage']);
-        $this->assertArrayHasKey('issuepreviousurl', $lastissues);
-        $this->assertArrayNotHasKey('issuenexturl', $lastissues);
-        $this->assertCount(50, $lastissues['groups'][0]['operations']);
+        $overview = migration_overview::get($planid);
+        $this->assertSame(58, $overview['summary']['files']);
+        $this->assertSame(55, $overview['summary']['tocopy']);
+        $this->assertSame(2, $overview['summary']['existing']);
+        $this->assertSame(1, $overview['summary']['skipped'], 'A file that was held back is counted as left out');
+        $this->assertFalse($overview['canexecute'], 'A migration of an older revision of the profile cannot be started');
+        $this->assertArrayNotHasKey('natures', $overview);
+        $all = migration_files::page($planid, '', '', 0, 25);
+        $this->assertSame(58, $all['total']);
+        $this->assertCount(25, $all['files']);
+        $this->assertSame(55, $all['counts']['copy']);
+        $last = migration_files::page($planid, 'copy', '', 2, 25);
+        $this->assertCount(5, $last['files']);
+        $existing = migration_files::page($planid, 'existing', '', 0, 25);
+        $this->assertSame(2, $existing['total']);
+        $search = migration_files::page($planid, '', 'file57.txt', 0, 25);
+        $this->assertSame(1, $search['total']);
+        $this->assertSame('file57.txt', $search['files'][0]['filename']);
+        $this->assertFalse($search['files'][0]['settable'], 'A file that was held back changes with the parameters');
+        $folders = migration_files::folders($planid, '', 0, 25);
+        $this->assertSame(1, $folders['total']);
+        $this->assertSame(58, $folders['folders'][0]['total']);
+        $this->assertSame(57, $folders['folders'][0]['included']);
     }
 }

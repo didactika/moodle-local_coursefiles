@@ -39,8 +39,8 @@ if (data_submitted()) {
     redirect($url, get_string('versionrestored', 'local_filebank'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 $page = max(0, optional_param('page', 0, PARAM_INT));
-$perpage = \local_filebank\output\pagination::size();
 $total = $DB->count_records('local_filebank_revision', ['profileid' => $profileid]);
+$perpage = \local_filebank\output\pagination::rows(\local_filebank\output\pagination::size(), $total);
 $page = \local_filebank\output\pagination::clamp($total, $page, $perpage);
 $records = $DB->get_records(
     'local_filebank_revision',
@@ -77,10 +77,13 @@ if (optional_param('changesonly', false, PARAM_BOOL)) {
 }
 $PAGE->requires->js_call_amd('local_filebank/administration', 'init');
 $choices = $records;
-foreach (array_unique([$profile->activeid, $left, $right]) as $id) {
-    if ($id) {
-        $choices[$id] = $DB->get_record('local_filebank_revision', ['id' => $id, 'profileid' => $profileid], '*', MUST_EXIST);
+$wanted = array_values(array_filter(array_unique([$profile->activeid, $left, $right])));
+$found = $wanted ? $DB->get_records_list('local_filebank_revision', 'id', $wanted) : [];
+foreach ($wanted as $id) {
+    if (!isset($found[$id]) || (int)$found[$id]->profileid !== (int)$profileid) {
+        throw new dml_missing_record_exception('local_filebank_revision');
     }
+    $choices[$id] = $found[$id];
 }
 foreach ($choices as $version) {
     $data['choices'][] = ['id' => $version->id, 'number' => $version->revision,

@@ -2,6 +2,9 @@ var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
 /**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
  * Native Moodle 5.3 React layout selector with theme-overridable markup.
  *
  * @module local_filebank/ViewSelector
@@ -29,7 +32,7 @@ function ViewSelector({ initialLayout, views }) {
     {
       ref: index === 0 ? firstButton : void 0,
       type: "button",
-      className: `btn btn-sm btn-outline-secondary${active === view.value ? " active" : ""}`,
+      className: `btn btn-sm btn-outline-secondary fbm-segment-button${active === view.value ? " active" : ""}`,
       "data-filebank-layout": view.value,
       "data-filebank-react-view": "true",
       "aria-pressed": active === view.value,

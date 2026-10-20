@@ -73,13 +73,15 @@ foreach ($profiles as $profile) {
     $options[$profile->id] = $profile->name;
 }
 $data = [
-    'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_filebank'),
     'publicationhelp' => $OUTPUT->help_icon('publicationmodule', 'local_filebank'),
     'actionurl' => $PAGE->url->out(false), 'courseid' => $courseid, 'profileid' => $profileid,
     'sesskey' => sesskey(), 'profiles' => display::options($options, (string)$profileid),
     'hasprofiles' => (bool)$profiles, 'filters' => $filters, 'reseturl' => $reseturl->out(false),
     'multipleprofiles' => count($profiles) > 1,
-    'advancedfilters' => $filters['shortname'] !== '' || $filters['module'] !== '' || $filters['mimetype'] !== '',
+    'advancedcount' => count(array_filter(
+        [$filters['edition'], $filters['shortname'], $filters['module'], $filters['mimetype']],
+        'strlen'
+    )),
     'modules' => display::options([
         '' => get_string('allmodules', 'local_filebank'),
     ] + \local_filebank\local\catalog\source_registry::module_names(), $filters['module']),
@@ -141,6 +143,7 @@ if ($profileid) {
     }
 }
 $data['hasassets'] = (bool)$data['assets'];
+$PAGE->requires->js_call_amd('local_filebank/administration', 'init');
 echo $OUTPUT->header();
 echo $PAGE->get_renderer('local_filebank')->render(\local_filebank\output\navigation::course('index', $courseid));
 echo $PAGE->get_renderer('local_filebank')->render(new view('catalog', $data));

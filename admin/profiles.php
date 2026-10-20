@@ -34,7 +34,7 @@ if (data_submitted()) {
     require_sesskey();
     $action = optional_param('action', '', PARAM_ALPHA);
     $ids = optional_param_array('profiles', [], PARAM_INT);
-    $rowaction = optional_param('rowaction', '', PARAM_RAW);
+    $rowaction = optional_param('rowaction', '', PARAM_TEXT);
     if ($rowaction !== '') {
         if (!preg_match('/^(enable|disable|delete):[1-9][0-9]*$/', $rowaction)) {
             throw new invalid_parameter_exception('Invalid profile action');
@@ -57,7 +57,7 @@ if (data_submitted()) {
     send_file($json, 'filebank-profiles.json', 0, 0, true, true, 'application/json');
 }
 $page = max(0, optional_param('page', 0, PARAM_INT));
-$perpage = \local_filebank\output\pagination::size();
+$asked = \local_filebank\output\pagination::size();
 $search = optional_param('q', '', PARAM_TEXT);
 $profileid = optional_param('profileid', 0, PARAM_INT);
 if ($profileid) {
@@ -66,8 +66,7 @@ if ($profileid) {
 $data = ['contextid' => context_system::instance()->id, 'profiles' => [],
     'newprofileurl' => (new moodle_url('/local/filebank/admin/profile.php'))->out(false),
     'importurl' => (new moodle_url('/local/filebank/admin/profile_import.php'))->out(false),
-    'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_filebank'),
-    'actionurl' => $PAGE->url->out(false), 'search' => $search, 'sesskey' => sesskey(), 'perpage' => $perpage];
+    'actionurl' => $PAGE->url->out(false), 'search' => $search, 'sesskey' => sesskey()];
 $condition = 'p.deleted = 0';
 $params = [];
 if ($search !== '') {
@@ -75,22 +74,47 @@ if ($search !== '') {
     $params['search'] = '%' . $DB->sql_like_escape($search) . '%';
 }
 $total = $DB->count_records_sql('SELECT COUNT(1) FROM {local_filebank} p WHERE ' . $condition, $params);
+$perpage = \local_filebank\output\pagination::rows($asked, $total);
+$data['perpage'] = \local_filebank\output\pagination::value($perpage, $total);
 $page = \local_filebank\output\pagination::clamp($total, $page, $perpage);
+$data['total'] = $total;
 $data['pagination'] = \local_filebank\output\pagination::render(
     $total,
     $page,
     $perpage,
     new moodle_url('/local/filebank/admin/profiles.php', ['q' => $search])
 );
-foreach (
-    $DB->get_records_sql(
-        'SELECT p.*, r.revision, r.timecreated, r.configjson FROM {local_filebank} p
-       LEFT JOIN {local_filebank_revision} r ON r.id = p.activeid WHERE ' . $condition . ' ORDER BY p.name, p.id',
-        $params,
-        $page * $perpage,
-        $perpage
-    ) as $profile
-) {
+$records = $DB->get_records_sql(
+    'SELECT p.*, r.revision, r.timecreated, r.configjson FROM {local_filebank} p
+   LEFT JOIN {local_filebank_revision} r ON r.id = p.activeid WHERE ' . $condition . ' ORDER BY p.name, p.id',
+    $params,
+    $page * $perpage,
+    $perpage
+);
+$courses = [];
+$migrations = [];
+if ($records) {
+    [$insql, $inparams] = $DB->get_in_or_equal(array_keys($records), SQL_PARAMS_NAMED, 'profile');
+    foreach (
+        $DB->get_records_sql(
+            'SELECT p.id, COUNT(c.id) AS total FROM {local_filebank} p
+          LEFT JOIN {local_filebank_course} c ON c.revisionid = p.activeid WHERE p.id ' . $insql . ' GROUP BY p.id',
+            $inparams
+        ) as $row
+    ) {
+        $courses[$row->id] = (int)$row->total;
+    }
+    foreach (
+        $DB->get_records_sql(
+            'SELECT profileid AS id, COUNT(1) AS total FROM {local_filebank_plan}
+              WHERE profileid ' . $insql . ' GROUP BY profileid',
+            $inparams
+        ) as $row
+    ) {
+        $migrations[$row->id] = (int)$row->total;
+    }
+}
+foreach ($records as $profile) {
     $config = json_decode($profile->configjson, true);
     $labels = [];
     foreach ((new \local_filebank\local\profile\profile_config($config))->filter_definitions() as $definition) {
@@ -104,6 +128,8 @@ foreach (
         'url' => (new moodle_url('/local/filebank/admin/profile.php', ['profileid' => $profile->id]))->out(false),
         'status' => \local_filebank\output\display::outcome($profile->enabled ? 'enabled' : 'disabled'),
         'revision' => $profile->revision, 'enabled' => (bool)$profile->enabled,
+        'stats' => get_string('profilestats', 'local_filebank', (object)['courses' => $courses[$profile->id] ?? 0,
+            'migrations' => $migrations[$profile->id] ?? 0, 'revision' => $profile->revision]),
         'date' => userdate($profile->timecreated),
     ];
 }

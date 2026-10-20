@@ -29,6 +29,7 @@ use local_filebank\local\catalog\indexer;
 use local_filebank\local\maintenance\retention;
 use local_filebank\local\migration\migration_executor;
 use local_filebank\local\migration\migration_planner;
+use local_filebank\local\migration\plan_editor;
 use local_filebank\local\migration\plan_selection;
 use local_filebank\local\profile\profiles;
 
@@ -39,7 +40,7 @@ require_once(__DIR__ . '/fixtures/workflow_fixture.php');
 /**
  *  regression contracts.
  * @covers \local_filebank\local\migration\migration_planner
- * @covers \local_filebank\local\migration\plan_resolution
+ * @covers \local_filebank\local\migration\plan_editor
  * @covers \local_filebank\local\migration\plan_history
  * @covers \local_filebank\local\migration\plan_selection
  * @covers \local_filebank\local\migration\target_binding
@@ -48,7 +49,7 @@ require_once(__DIR__ . '/fixtures/workflow_fixture.php');
  * @covers \local_filebank\local\profile\profiles
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\migration_planner::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\plan_resolution::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\plan_editor::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\plan_history::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\plan_selection::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_filebank\local\migration\target_binding::class)]
@@ -77,7 +78,7 @@ final class workflow_test extends workflow_fixture {
                     ),
                 ]
             );
-            $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', ['migration' => $config]);
+            $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', 'edition', ['migration' => $config]);
             $this->assertSame('reviewable', $plan->state);
             $operations = $DB->get_records('local_filebank_operation', ['planid' => $plan->id]);
             $this->assertCount(1, $operations);
@@ -96,7 +97,7 @@ final class workflow_test extends workflow_fixture {
     /**
      * Explicit destination choices preserve the old review and included exclusions.
      */
-    public function test_resolve_destination_without_losing_selection(): void {
+    public function test_unresolved_destination_is_left_out_without_losing_selection(): void {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -109,33 +110,30 @@ final class workflow_test extends workflow_fixture {
                 ['source_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Published materials'],
                 'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Missing destination']],
             ]]];
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', $options);
-        $this->assertSame('blocked', $plan->state);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', 'edition', $options);
+        $this->assertSame('reviewable', $plan->state, 'A folder whose destination cannot be told never blocks the migration');
+        $document = json_decode($plan->configjson, true);
+        $this->assertSame(1, $document['notes']['notresolved'] ?? 0, 'It is counted as left out, not asked about');
+        $this->assertArrayNotHasKey('issues', $document);
         $operations = $DB->get_records('local_filebank_operation', ['planid' => $plan->id]);
         $ids = array_keys($operations);
         plan_selection::save($plan->id, $plan->digest, $ids, [$ids[0]]);
         $plan = $DB->get_record('local_filebank_plan', ['id' => $plan->id]);
-        $next = \local_filebank\local\migration\plan_resolution::apply(
-            $plan->id,
-            $plan->digest,
-            'issue',
-            0,
-            'folder:' . $fixture['targetcmid']
-        );
-        $this->assertNotSame((int)$plan->id, $next);
-        $this->assertSame($plan->configjson, $DB->get_field('local_filebank_plan', 'configjson', ['id' => $plan->id]));
-        $this->assertSame('reviewable', $DB->get_field('local_filebank_plan', 'state', ['id' => $next]));
-        $this->assertSame(1, $DB->count_records('local_filebank_operation', ['planid' => $next, 'included' => 0]));
-        $state = plan_selection::state($next, []);
+        $plans = $DB->count_records('local_filebank_plan');
+        plan_editor::reconfigure($plan->id, $plan->digest, '2025', '2026', 'edition', $options);
+        $this->assertSame($plans, $DB->count_records('local_filebank_plan'), 'Changing the parameters creates no other migration');
+        $this->assertSame('reviewable', $DB->get_field('local_filebank_plan', 'state', ['id' => $plan->id]));
+        $this->assertSame(1, $DB->count_records('local_filebank_operation', ['planid' => $plan->id, 'included' => 0]));
+        $state = plan_selection::state($plan->id, []);
         $this->assertTrue($state['cancontinue']);
         $this->assertSame(1, $state['included']);
         $this->assertSame(2, $state['total']);
     }
 
     /**
-     * Missing destinations are only created at execution in the explicit existing section.
+     * A missing destination is only created when the migration runs, in the section that matches.
      */
-    public function test_resolve_creation_and_execute_without_maintenance(): void {
+    public function test_missing_destination_is_created_at_execution_without_maintenance(): void {
         global $DB, $CFG;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -143,22 +141,15 @@ final class workflow_test extends workflow_fixture {
             ->create_migration_fixture(['name' => 'Create resolved destination']);
         $options = ['migration' => ['source_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Published materials'],
             'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Missing destination'],
-            'section_match' => ['strategy' => 'ordinal'], 'missing_target' => 'block']];
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, 'edition', $options);
+            'section_match' => ['strategy' => 'ordinal'], 'missing_target' => 'create']];
         $target = get_coursemodule_from_id('folder', $fixture['targetcmid']);
         $count = $DB->count_records('folder', ['course' => $target->course]);
-        $next = \local_filebank\local\migration\plan_resolution::apply(
-            $plan->id,
-            $plan->digest,
-            'issue',
-            0,
-            'create:' . $target->section
-        );
-        $this->assertSame($count, $DB->count_records('folder', ['course' => $target->course]));
-        $plan = $DB->get_record('local_filebank_plan', ['id' => $next]);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', 'edition', $options);
+        $this->assertSame($count, $DB->count_records('folder', ['course' => $target->course]), 'Nothing is created before the run');
+        $plan = $DB->get_record('local_filebank_plan', ['id' => $plan->id]);
         $this->assertSame('reviewable', $plan->state);
         $CFG->maintenance_enabled = false;
-        $run = migration_executor::queue($next, $plan->digest);
+        $run = migration_executor::queue($plan->id, $plan->digest);
         $more = migration_executor::execute($run);
         while ($more) {
             $more = migration_executor::execute($run);
@@ -187,19 +178,19 @@ final class workflow_test extends workflow_fixture {
                 'Unique lesson ' . $i
             );
         }
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026');
         $ops = $DB->get_records('local_filebank_operation', ['planid' => $plan->id], 'id', '*', 0, 10);
         plan_selection::save($plan->id, $plan->digest, array_keys($ops), [], 'none');
         $state = plan_selection::state($plan->id, array_keys($ops));
         $this->assertSame(57, $state['total']);
         $this->assertSame(0, $state['included']);
-        $this->assertTrue($state['emptycancelled']);
+        $this->assertTrue($state['empty']);
         $this->assertFalse($state['cancontinue']);
         plan_selection::save($plan->id, $state['digest'], array_keys($ops), [], 'all');
         $state = plan_selection::state($plan->id, array_keys($ops));
         $this->assertSame(57, $state['included']);
         $this->assertTrue($state['cancontinue']);
-        $other = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $other = migration_planner::preview($fixture['profileid'], '2025', '2026');
         migration_executor::queue($plan->id, $state['digest']);
         try {
             \local_filebank\local\migration\plan_history::delete_many([$other->id, $plan->id]);
@@ -222,7 +213,7 @@ final class workflow_test extends workflow_fixture {
         $this->setAdminUser();
         $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Available site']);
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026');
         $file = get_file_storage()->create_file_from_string(
             [
                 'contextid' => \context_module::instance($fixture['targetcmid'])->id,
@@ -304,7 +295,7 @@ final class workflow_test extends workflow_fixture {
             'previous lesson'
         );
         indexer::refresh($target->id);
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $options);
         $this->assertSame('reviewable', $plan->state);
         $this->assertSame(1, $DB->count_records('local_filebank_target', ['planid' => $plan->id]));
         $this->assertSame(1, $DB->count_records('local_filebank_operation', ['planid' => $plan->id, 'decision' => 'overwrite']));
@@ -339,7 +330,7 @@ final class workflow_test extends workflow_fixture {
                 'lesson.txt'
             )->get_author()
         );
-        $second = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
+        $second = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $options);
         $this->assertSame(
             4,
             $DB->count_records(
@@ -365,7 +356,7 @@ final class workflow_test extends workflow_fixture {
                 'source_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Published materials'],
                 'target_module' => ['type' => 'folder', 'field' => 'name', 'equals' => 'Never created'],
             ]]], 'filters' => ['source' => ['edition' => '2025'], 'target' => ['edition' => '2026']]];
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true, '', $options);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', '', $options);
         foreach ($DB->get_records('local_filebank_operation', ['planid' => $plan->id]) as $operation) {
             get_file_storage()->get_file_by_hash($operation->sourcehash)->delete();
         }

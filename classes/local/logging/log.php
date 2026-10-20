@@ -37,7 +37,8 @@ final class log {
         return ['profile_state_changed', 'profile_activated', 'site_policy_changed', 'course_policy_changed',
             'publication_granted', 'publication_revoked',
             'migration_previewed', 'migration_selection_changed', 'migration_queued', 'migration_blocked', 'migration_batch',
-            'migration_deleted', 'migration_empty_cancelled', 'migration_conflict_resolved'];
+            'migration_deleted', 'migration_empty_cancelled', 'migration_conflict_resolved', 'migration_updated',
+            'migration_reconfigured', 'migration_empty_skipped'];
     }
 
     /**
@@ -63,7 +64,7 @@ final class log {
     ): array {
         global $DB;
         require_capability('local/filebank:viewlog', \context_system::instance());
-        $limit = max(1, min(100, $limit));
+        $limit = max(1, min(\local_filebank\output\pagination::MAX_ALL, $limit));
         $where = ['1 = 1'];
         $params = [];
         foreach (['action' => $action, 'entityuuid' => $entityuuid] as $field => $value) {

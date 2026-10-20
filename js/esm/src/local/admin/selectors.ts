@@ -1,7 +1,7 @@
-// This file is part of Moodle - https://moodle.org/
-// Moodle is free software under the GNU General Public License, version 3 or later.
-
 /**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
  * admin selectors.
  * @module local_filebank/local/admin/selectors
  * @copyright 2026 Didactika.org
@@ -17,7 +17,6 @@ export default {
     bulkForms: Common.bulkForms,
     button: Common.button,
     history: Common.history,
-    migration: Common.migration,
     pageSize: Common.pageSize,
     paginationControls: Common.paginationControls,
     profileState: Common.profileState,

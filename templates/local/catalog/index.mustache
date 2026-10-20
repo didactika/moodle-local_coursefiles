@@ -8,11 +8,13 @@
     reseturl, canrefresh, sesskey, publicationenabled, publicationmodules, policyurl.
     Example context (json): {"actionurl":"/local/filebank/course/index.php","courseid":2,"profiles":[],"filters":{},"assets":[]}
 }}
-<section class="filebank-admin filebank-catalog" data-region="filebank-catalog" aria-labelledby="filebank-catalog-title">
-    <div class="mb-4">
-        <h2 id="filebank-catalog-title">{{#str}}dashboard, local_filebank{{/str}}</h2>
-        <p class="text-muted">{{#str}}catalogintro, local_filebank{{/str}}</p>
-    </div>
+<section class="filebank-ui filebank-admin filebank-catalog" data-region="filebank-catalog" aria-labelledby="filebank-catalog-title">
+    <header class="fbm-header">
+        <div class="fbm-header-title">
+            <div class="fbm-header-line"><h2 id="filebank-catalog-title" class="h2">{{#str}}dashboard, local_filebank{{/str}}</h2></div>
+            <p class="text-muted fbm-header-subtitle">{{#str}}catalogintro, local_filebank{{/str}}</p>
+        </div>
+    </header>
     {{#hasprofiles}}
     {{> local_filebank/local/catalog/filters}}
     {{#hasassets}}
@@ -20,24 +22,21 @@
     {{#assets}}{{> local_filebank/local/catalog/material_card}}{{/assets}}
     {{/hasassets}}
     {{^hasassets}}
-    <div class="card mb-4" data-region="filebank-empty">
-        <div class="card-body text-center">
-            <h3 class="h5">{{#str}}none, local_filebank{{/str}}</h3>
-            <p class="text-muted">{{#str}}emptyhelp, local_filebank{{/str}}</p>
-            <a href="{{reseturl}}" class="btn btn-outline-secondary">{{#str}}clearfilters, local_filebank{{/str}}</a>
-        </div>
+    <div class="fbm-empty" data-region="filebank-empty">
+        <h4 class="h4">{{#str}}none, local_filebank{{/str}}</h4>
+        <p class="text-muted fbm-empty-text">{{#str}}emptyhelp, local_filebank{{/str}}</p>
+        <div class="fbm-empty-actions"><a href="{{reseturl}}" class="btn btn-outline-secondary">{{#str}}clearfilters, local_filebank{{/str}}</a></div>
     </div>
     {{/hasassets}}
-    {{#nexturl}}<nav class="mb-4" aria-label="{{#str}}pagination, local_filebank{{/str}}">
-        <a href="{{nexturl}}" class="btn btn-outline-primary">{{#str}}nextpage, local_filebank{{/str}}</a>
+    {{#nexturl}}<nav class="fbm-listbar" aria-label="{{#str}}pagination, local_filebank{{/str}}">
+        <a href="{{nexturl}}" class="btn btn-primary">{{#str}}nextpage, local_filebank{{/str}}</a>
     </nav>{{/nexturl}}
     {{/hasprofiles}}
-    {{^hasprofiles}}<div class="alert alert-info">{{#str}}noprofile, local_filebank{{/str}}</div>{{/hasprofiles}}
+    {{^hasprofiles}}<div class="alert alert-info"><div class="fbm-alert-body">{{#str}}noprofile, local_filebank{{/str}}</div></div>{{/hasprofiles}}
     {{#canrefresh}}
-    <details class="mb-4"><summary><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}catalogmaintenance, local_filebank{{/str}}</summary>
-    <div class="card mb-4">
+    <details class="fbm-details">
+        <summary><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}catalogmaintenance, local_filebank{{/str}}</summary>
         <div class="card-body">
-            <h3 class="h5">{{#str}}catalogmaintenance, local_filebank{{/str}}</h3>
             <p class="text-muted">{{#str}}refreshhelp, local_filebank{{/str}}</p>
             <form method="post" action="{{actionurl}}">
                 <input type="hidden" name="sesskey" value="{{sesskey}}">
@@ -46,10 +45,9 @@
                 <button class="btn btn-outline-secondary" type="submit" name="action" value="refresh">{{#str}}reindex, local_filebank{{/str}}</button>
             </form>
         </div>
-    </div>
     </details>
     {{/canrefresh}}
-    {{#publicationenabled}}<details class="mb-4">
+    {{#publicationenabled}}<details class="fbm-details">
         <summary><span class="filebank-disclosure-icon" aria-hidden="true">{{#pix}}t/collapsedchevron, core{{/pix}}</span>{{#str}}publicationtitle, local_filebank{{/str}}</summary>
         {{> local_filebank/local/catalog/publication}}
     </details>{{/publicationenabled}}

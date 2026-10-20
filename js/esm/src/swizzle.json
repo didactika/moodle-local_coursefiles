@@ -1,4 +1,160 @@
 {
+  "Migration": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/list/MigrationList": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/parameters/CheckResult": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/parameters/CorrespondenceRows": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/parameters/CourseFilters": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/parameters/ParametersEditor": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/parameters/PolicyFields": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/parameters/ProfilePicker": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/parameters/SectionRules": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/review/ActionPanel": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/review/FilesPanel": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/review/FoldersPanel": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/review/Notes": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/review/Review": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/review/StartModal": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/review/SummaryTiles": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Alert": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Check": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Chips": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/ChoiceCards": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/ConfirmModal": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/EmptyState": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/FilterMenu": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/FloatingBar": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Icon": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/IconButton": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Modal": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/PageHeader": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Pagination": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Panel": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Progress": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/SearchBox": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Skeleton": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/StatTile": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/StatusBadge": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/Switch": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/wizard/MigrationWizard": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/wizard/NewMigrationModal": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/wizard/Stepper": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "ViewSelector": {
     "eject": "risky",
     "wrap": "risky"

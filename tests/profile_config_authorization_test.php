@@ -96,16 +96,16 @@ final class profile_config_authorization_test extends profile_config_fixture {
     }
 
     /**
-     * Locked authors are blocked before any destination write.
+     * A file whose author is locked is kept out of the migration before any destination write.
      */
     public function test_locked_workflow_is_explicitly_blocked(): void {
 
         [$profileid] = $this->fixture();
-        $plan = migration_planner::preview($profileid, '2025', '2026', true);
-        $this->assertSame('blocked', $plan->state);
+        $plan = migration_planner::preview($profileid, '2025', '2026');
+        $this->assertSame('reviewable', $plan->state);
         json_decode($plan->configjson, true);
         $this->assertSame(
-            'blocked_policy',
+            'skip_conflict',
             $GLOBALS['DB']->get_field(
                 'local_filebank_operation',
                 'decision',
@@ -123,7 +123,7 @@ final class profile_config_authorization_test extends profile_config_fixture {
         [$profileid, , , $sfolder, $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_filebank');
         $CFG->maintenance_enabled = false;
-        $plan = migration_planner::preview($profileid, '2025', '2026', true);
+        $plan = migration_planner::preview($profileid, '2025', '2026');
         $this->assertSame('reviewable', $plan->state);
         $runid = migration_executor::queue($plan->id, $plan->digest);
         $this->assertFalse(migration_executor::execute($runid));
@@ -142,7 +142,7 @@ final class profile_config_authorization_test extends profile_config_fixture {
         );
         $this->assertNotFalse($saved);
         $this->assertSame('Original author', $saved->get_author());
-        $second = migration_planner::preview($profileid, '2025', '2026', true);
+        $second = migration_planner::preview($profileid, '2025', '2026');
         $this->assertSame('skip_identical', $DB->get_field('local_filebank_operation', 'decision', ['planid' => $second->id]));
         $this->assertCount(
             1,
@@ -191,9 +191,9 @@ final class profile_config_authorization_test extends profile_config_fixture {
             reset($sourcefile)
         );
         $CFG->maintenance_enabled = false;
-        $plan = migration_planner::preview($profileid, '2025', '2026', true);
+        $plan = migration_planner::preview($profileid, '2025', '2026');
         $this->assertSame('skip_content', $DB->get_field('local_filebank_operation', 'decision', ['planid' => $plan->id]));
-        $this->assertSame('cancelled', $plan->state);
+        $this->assertSame('reviewable', $plan->state);
         $this->assertFalse($DB->record_exists('local_filebank_run', ['planid' => $plan->id]));
         $this->assertCount(
             1,
@@ -220,7 +220,7 @@ final class profile_config_authorization_test extends profile_config_fixture {
         foreach ([$source, $target] as $course) {
             indexer::refresh($course->id);
         }
-        $plan = migration_planner::preview($profileid, '2025', '2026', true, 'cohort');
+        $plan = migration_planner::preview($profileid, '2025', '2026', 'cohort');
         $document = json_decode($plan->configjson, true);
         $this->assertSame('cohort', $document['scopekey']);
         $this->assertSame(1, $document['operationcount']);
@@ -247,7 +247,7 @@ final class profile_config_authorization_test extends profile_config_fixture {
         $sourcefile = reset($sourcefiles);
         get_file_storage()->create_file_from_storedfile(['filename' => 'second.pdf'], $sourcefile);
         indexer::refresh($source->id);
-        $plan = migration_planner::preview($profileid, '2025', '2026', true);
+        $plan = migration_planner::preview($profileid, '2025', '2026');
         $ids = array_map('intval', $DB->get_fieldset_select('local_filebank_operation', 'id', 'planid = ?', [$plan->id]));
         \local_filebank\local\migration\plan_selection::save($plan->id, $plan->digest, $ids, [$ids[0]]);
         $changed = $DB->get_record('local_filebank_plan', ['id' => $plan->id]);
@@ -285,7 +285,7 @@ final class profile_config_authorization_test extends profile_config_fixture {
         [$profileid, , , , $tfolder] = $this->fixture();
         set_config('author_policy', 'editable_with_provenance', 'local_filebank');
         $CFG->maintenance_enabled = false;
-        $plan = migration_planner::preview($profileid, '2025', '2026', true);
+        $plan = migration_planner::preview($profileid, '2025', '2026');
         $runid = migration_executor::queue($plan->id, $plan->digest);
         profiles::save(json_encode($this->config()), $profileid);
         $this->assertFalse(migration_executor::execute($runid));

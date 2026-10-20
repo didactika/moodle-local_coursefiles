@@ -7,23 +7,23 @@
     Context: actionurl, sesskey, courseid, profileid, publicationmodules, haspublicationmodules.
     Example context (json): {"publicationmodules":[{"value":12,"label":"Class materials"}],"haspublicationmodules":true,"action":"/local/filebank/course/publish.php","actionurl":"/local/filebank/course/publish.php"}
 }}
-<section class="card mb-4" aria-labelledby="cb-publication-title">
-    <div class="card-body">
-        <h3 id="cb-publication-title" class="h5">{{#str}}publicationtitle, local_filebank{{/str}}</h3>
-        <p class="text-muted">{{#str}}publicationhelp, local_filebank{{/str}}</p>
-        {{#haspublicationmodules}}
-        <form method="post" action="{{actionurl}}">
-            <input type="hidden" name="sesskey" value="{{sesskey}}">
-            <input type="hidden" name="courseid" value="{{courseid}}">
-            <input type="hidden" name="profileid" value="{{profileid}}">
-            <label for="cb-publication-module">{{#str}}publicationmodule, local_filebank{{/str}} </label> {{{publicationhelp}}}
-            <select class="form-select form-select-sm mb-3" name="cmid" id="cb-publication-module">{{#publicationmodules}}
+<section class="card-body" aria-labelledby="cb-publication-title">
+    <h3 id="cb-publication-title" class="h4">{{#str}}publicationtitle, local_filebank{{/str}}</h3>
+    <p class="text-muted">{{#str}}publicationhelp, local_filebank{{/str}}</p>
+    {{#haspublicationmodules}}
+    <form method="post" action="{{actionurl}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <input type="hidden" name="courseid" value="{{courseid}}">
+        <input type="hidden" name="profileid" value="{{profileid}}">
+        <div class="fbm-field">
+            <label for="cb-publication-module" class="form-label">{{#str}}publicationmodule, local_filebank{{/str}}</label> {{{publicationhelp}}}
+            <select class="form-select" name="cmid" id="cb-publication-module">{{#publicationmodules}}
                 <option value="{{value}}">{{{label}}}</option>
             {{/publicationmodules}}</select>
-            <div class="filebank-page-actions d-flex align-items-center flex-wrap py-3 mt-3 border-top"><button class="btn btn-primary" name="action" value="publish" type="submit">{{#str}}publish, local_filebank{{/str}}</button>
-            <button class="btn btn-outline-warning" name="action" value="revoke" type="submit">{{#str}}revoke, local_filebank{{/str}}</button></div>
-        </form>
-        {{/haspublicationmodules}}
-        {{^haspublicationmodules}}<p>{{#str}}nopublicationmodules, local_filebank{{/str}}</p>{{/haspublicationmodules}}
-    </div>
+        </div>
+        <div class="filebank-page-actions fbm-wizard-foot"><button class="btn btn-primary" name="action" value="publish" type="submit">{{#str}}publish, local_filebank{{/str}}</button>
+        <button class="btn btn-outline-secondary" name="action" value="revoke" type="submit">{{#str}}revoke, local_filebank{{/str}}</button></div>
+    </form>
+    {{/haspublicationmodules}}
+    {{^haspublicationmodules}}<p>{{#str}}nopublicationmodules, local_filebank{{/str}}</p>{{/haspublicationmodules}}
 </section>

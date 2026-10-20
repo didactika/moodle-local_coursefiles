@@ -7,31 +7,69 @@
     Context: profiles, hasprofiles, newprofileurl.
     Example context (json): {"profiles":[],"hasprofiles":false,"actionurl":"/local/filebank/admin/profiles.php","contextid":1}
 }}
-<section class="filebank-admin filebank-profiles mb-4">
-    <h2>{{#str}}profiles, local_filebank{{/str}}</h2>
-    <p class="text-muted">{{#str}}profilesintro, local_filebank{{/str}}</p>
-    <form method="get" action="{{actionurl}}" class="mb-3"><div class="d-flex align-items-center filebank-actionbar flex-wrap"><div class="input-group input-group-sm filebank-table-search"><input type="hidden" name="perpage" value="{{perpage}}"><input type="search" name="q" value="{{search}}" class="form-control" aria-label="{{#str}}search, core{{/str}}"><button class="btn btn-outline-secondary">{{#pix}}a/search, core{{/pix}}</button></div>{{{filterhelp}}}</div></form>
-    <form method="post" action="{{actionurl}}" data-filebank-profiles data-contextid="{{contextid}}">
-    <input type="hidden" name="sesskey" value="{{sesskey}}">
-    <div class="filebank-actionbar mb-3 d-flex align-items-center flex-wrap">
-        <div class="filebank-actionbar d-flex align-items-center flex-wrap">
-            <a class="btn btn-sm btn-primary" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_filebank{{/str}}</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_filebank{{/str}}</a>
-            {{#hasprofiles}}<button name="action" value="exportall" class="btn btn-sm btn-outline-secondary">{{#pix}}i/export, core{{/pix}}{{#str}}exportallprofiles, local_filebank{{/str}}</button>{{/hasprofiles}}
+<section class="filebank-ui filebank-admin filebank-profiles">
+    <header class="fbm-header">
+        <div class="fbm-header-title">
+            <div class="fbm-header-line" data-filebank-refresh="profiles-count"><h2 class="h2">{{#str}}profiles, local_filebank{{/str}}</h2>{{#total}}<span class="badge rounded-pill fbm-count">{{total}}</span>{{/total}}</div>
+            <p class="text-muted fbm-header-subtitle">{{#str}}profilesintro, local_filebank{{/str}}</p>
         </div>
-    {{#hasprofiles}}<div class="d-flex align-items-center flex-wrap filebank-actionbar">
-        <span class="btn-group filebank-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}" data-filebank-bulk-actions hidden>
-        <button name="action" value="export" class="btn btn-sm btn-outline-info" disabled title="{{#str}}exportselectedprofiles, local_filebank{{/str}}" aria-label="{{#str}}exportselectedprofiles, local_filebank{{/str}}">{{#pix}}i/export, core{{/pix}}{{#str}}exportaction, local_filebank{{/str}}</button>
-        <button name="action" value="enable" class="btn btn-sm btn-outline-primary" disabled title="{{#str}}enableselected, local_filebank{{/str}}" aria-label="{{#str}}enableselected, local_filebank{{/str}}">{{#pix}}t/show, core{{/pix}}{{#str}}enable, core{{/str}}</button>
-        <button name="action" value="disable" class="btn btn-sm btn-outline-primary" disabled title="{{#str}}disableselected, local_filebank{{/str}}" aria-label="{{#str}}disableselected, local_filebank{{/str}}">{{#pix}}t/hide, core{{/pix}}{{#str}}disable, core{{/str}}</button>
-        <button name="action" value="delete" class="btn btn-sm btn-outline-danger" disabled title="{{#str}}deleteselected, local_filebank{{/str}}" aria-label="{{#str}}deleteselected, local_filebank{{/str}}">{{#pix}}t/delete, core{{/pix}}{{#str}}delete, core{{/str}}</button>
-        </span>
-    </div>{{/hasprofiles}}
-    </div>
-    <div class="table-responsive"><table class="table table-hover"><thead><tr><th><input type="checkbox" data-filebank-selectall aria-label="{{#str}}selectall, core{{/str}}" title="{{#str}}selectall, core{{/str}}"></th><th>{{#str}}name, core{{/str}}</th><th>{{#str}}status, core{{/str}}</th><th>{{#str}}lastmodified, core{{/str}}</th><th class="text-end">{{#str}}actions, core{{/str}}</th></tr></thead><tbody>{{#profiles}}
-        <tr data-profile-id="{{id}}" data-enabled="{{#enabled}}1{{/enabled}}{{^enabled}}0{{/enabled}}"><td><input type="checkbox" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_filebank{{/str}}"></td><td><a href="{{url}}">{{{name}}}</a><div class="small text-muted text-break">{{grouping}}</div><div class="small">{{{filters}}}</div></td><td><span class="filebank-chip" data-profile-status>{{status}}</span></td><td>{{date}}</td><td class="text-end text-nowrap"><div class="btn-group filebank-row-actions" role="group" aria-label="{{#str}}actions, core{{/str}}"><a href="{{historyurl}}" class="btn btn-sm btn-outline-info" title="{{#str}}versionhistory, local_filebank{{/str}}" aria-label="{{#str}}versionhistory, local_filebank{{/str}}">{{#pix}}i/log, core{{/pix}}</a><a class="btn btn-sm btn-outline-secondary" href="{{url}}" title="{{#str}}edit, core{{/str}}" aria-label="{{#str}}edit, core{{/str}}">{{#pix}}t/edit, core{{/pix}}</a><button class="btn btn-sm btn-outline-primary" name="rowaction" value="{{#enabled}}disable{{/enabled}}{{^enabled}}enable{{/enabled}}:{{id}}" aria-label="{{#enabled}}{{#str}}disable, core{{/str}}{{/enabled}}{{^enabled}}{{#str}}enable, core{{/str}}{{/enabled}}">{{#enabled}}{{#pix}}t/hide, core{{/pix}}{{/enabled}}{{^enabled}}{{#pix}}t/show, core{{/pix}}{{/enabled}}</button><button class="btn btn-sm btn-outline-danger" name="rowaction" value="delete:{{id}}" title="{{#str}}delete, core{{/str}}" aria-label="{{#str}}delete, core{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div></td></tr>
-    {{/profiles}}</tbody></table></div>
-    {{^hasprofiles}}<p>{{#str}}noprofile, local_filebank{{/str}}</p>{{/hasprofiles}}
-    {{{pagination}}}
+    </header>
+    <form method="get" action="{{actionurl}}" class="fbm-toolbar" data-filebank-live-filters data-filebank-target="profiles">
+        <input type="hidden" name="perpage" value="{{perpage}}" data-filebank-refresh="profiles-perpage">
+        <div class="fbm-search">
+            <label for="filebank-profile-search" class="filebank-visually-hidden">{{#str}}search, core{{/str}}</label>
+            <span class="fbm-search-icon">{{#pix}}a/search, core{{/pix}}</span>
+            <input type="search" id="filebank-profile-search" name="q" value="{{search}}" class="form-control rounded-pill" aria-label="{{#str}}search, core{{/str}}" placeholder="{{#str}}search, core{{/str}}" autocomplete="off" data-filebank-live-text>
+        </div>
+        <div class="fbm-toolbar-actions">
+            <a class="btn btn-primary" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_filebank{{/str}}</a>
+            <a class="btn btn-outline-secondary" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_filebank{{/str}}</a>
+            {{#hasprofiles}}<button class="btn btn-outline-secondary" name="action" value="exportall" form="filebank-profiles-form">{{#pix}}i/export, core{{/pix}}{{#str}}exportallprofiles, local_filebank{{/str}}</button>{{/hasprofiles}}
+        </div>
+    </form>
+    <form method="post" action="{{actionurl}}" id="filebank-profiles-form" data-filebank-profiles data-contextid="{{contextid}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <div data-filebank-list="profiles">
+        {{#hasprofiles}}<div class="fbm-bulkbar" role="group" aria-label="{{#str}}actions, core{{/str}}" data-filebank-bulk-actions hidden>
+            <span class="fbm-bulkbar-title" role="status" data-filebank-bulk-count data-template="{{#str}}selectedcount, local_filebank, __COUNT__{{/str}}"></span>
+            <button name="action" value="export" class="btn btn-outline-secondary btn-sm" disabled title="{{#str}}exportselectedprofiles, local_filebank{{/str}}" aria-label="{{#str}}exportselectedprofiles, local_filebank{{/str}}">{{#pix}}i/export, core{{/pix}}{{#str}}exportaction, local_filebank{{/str}}</button>
+            <button name="action" value="enable" class="btn btn-outline-secondary btn-sm" disabled title="{{#str}}enableselected, local_filebank{{/str}}" aria-label="{{#str}}enableselected, local_filebank{{/str}}">{{#pix}}t/show, core{{/pix}}{{#str}}enable, core{{/str}}</button>
+            <button name="action" value="disable" class="btn btn-outline-secondary btn-sm" disabled title="{{#str}}disableselected, local_filebank{{/str}}" aria-label="{{#str}}disableselected, local_filebank{{/str}}">{{#pix}}t/hide, core{{/pix}}{{#str}}disable, core{{/str}}</button>
+            <button name="action" value="delete" class="btn btn-danger btn-sm" disabled title="{{#str}}deleteselected, local_filebank{{/str}}" aria-label="{{#str}}deleteselected, local_filebank{{/str}}">{{#pix}}t/delete, core{{/pix}}{{#str}}delete, core{{/str}}</button>
+        </div>
+        <div class="table-responsive"><table class="table table-hover fbm-profiles-table">
+            <thead><tr>
+                <th class="fbm-col-check"><input type="checkbox" class="fbm-check" data-filebank-selectall aria-label="{{#str}}selectall, core{{/str}}" title="{{#str}}selectall, core{{/str}}"></th>
+                <th>{{#str}}name, core{{/str}}</th>
+                <th>{{#str}}profilerecognition, local_filebank{{/str}}</th>
+                <th class="fbm-col-fit">{{#str}}status, core{{/str}}</th>
+                <th class="fbm-col-fit">{{#str}}lastmodified, core{{/str}}</th>
+                <th class="fbm-col-actions fbm-col-fit"><span class="filebank-visually-hidden">{{#str}}actions, core{{/str}}</span></th>
+            </tr></thead>
+            <tbody>{{#profiles}}
+                <tr data-profile-id="{{id}}" data-enabled="{{#enabled}}1{{/enabled}}{{^enabled}}0{{/enabled}}">
+                    <td class="fbm-col-check"><input type="checkbox" class="fbm-check" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_filebank{{/str}}"></td>
+                    <td>
+                        <a class="fbm-profile-name fbm-row-title" href="{{url}}">{{{name}}}</a>
+                        <span class="fbm-table-meta">{{stats}}</span>
+                    </td>
+                    <td>
+                        <span class="text-break">{{grouping}}</span>
+                        {{#filters}}<span class="fbm-table-meta">{{{filters}}}</span>{{/filters}}
+                    </td>
+                    <td class="fbm-col-fit"><span class="badge rounded-pill tone-neutral fbm-status" data-profile-status>{{status}}</span></td>
+                    <td class="fbm-col-fit text-muted">{{date}}</td>
+                    <td class="fbm-col-actions fbm-col-fit"><div class="fbm-actions" role="group" aria-label="{{#str}}actions, core{{/str}}">
+                        <a href="{{historyurl}}" class="btn btn-outline-secondary fbm-iconpill tone-warning" title="{{#str}}versionhistory, local_filebank{{/str}}" aria-label="{{#str}}versionhistory, local_filebank{{/str}}">{{#pix}}i/log, core{{/pix}}</a>
+                        <a class="btn btn-outline-secondary fbm-iconpill tone-primary" href="{{url}}" title="{{#str}}edit, core{{/str}}" aria-label="{{#str}}edit, core{{/str}}">{{#pix}}t/edit, core{{/pix}}</a>
+                        <button class="btn btn-outline-secondary fbm-iconpill" name="rowaction" value="{{#enabled}}disable{{/enabled}}{{^enabled}}enable{{/enabled}}:{{id}}" aria-label="{{#enabled}}{{#str}}disable, core{{/str}}{{/enabled}}{{^enabled}}{{#str}}enable, core{{/str}}{{/enabled}}" title="{{#enabled}}{{#str}}disable, core{{/str}}{{/enabled}}{{^enabled}}{{#str}}enable, core{{/str}}{{/enabled}}">{{#enabled}}{{#pix}}t/hide, core{{/pix}}{{/enabled}}{{^enabled}}{{#pix}}t/show, core{{/pix}}{{/enabled}}</button>
+                        <button class="btn btn-outline-secondary fbm-iconpill tone-danger" name="rowaction" value="delete:{{id}}" title="{{#str}}delete, core{{/str}}" aria-label="{{#str}}delete, core{{/str}}">{{#pix}}t/delete, core{{/pix}}</button>
+                    </div></td>
+                </tr>
+            {{/profiles}}</tbody>
+        </table></div>{{/hasprofiles}}
+        {{^hasprofiles}}<div class="fbm-empty"><h4 class="h4">{{#str}}noprofile, local_filebank{{/str}}</h4><p class="text-muted fbm-empty-text">{{#str}}profilesintro, local_filebank{{/str}}</p></div>{{/hasprofiles}}
+        {{{pagination}}}
+        </div>
     </form>
 </section>

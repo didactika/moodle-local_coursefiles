@@ -1,0 +1,2200 @@
+// The migrations: a list, the window that starts one and the page of each one.
+//
+// The plugin has to look right on Bootstrap 4 (Moodle 4.0 to 4.3) and on Bootstrap 5 (Moodle 4.4 and later), so every colour
+// is a variable of the plugin that takes the value of the variable of Bootstrap 5, then the one of Bootstrap 4, then a colour
+// of its own. Buttons, fields, forms and dialogs are the ones of Moodle, drawn by the theme; the plugin only rounds the chrome of
+// its lists (the toolbar over a table, the actions of a row and the pager under it) and lays out its own components.
+
+.filebank-migration,
+.filebank-ui {
+    --fbm-primary: var(--bs-primary, var(--primary, #0f6cbf));
+    --fbm-success: var(--bs-success, var(--success, #357a32));
+    --fbm-warning: var(--bs-warning-text-emphasis, #8a5a00);
+    --fbm-danger: var(--bs-danger, var(--danger, #ca3120));
+    --fbm-info: var(--bs-info-text-emphasis, #005f73);
+    --fbm-text: var(--bs-body-color, #212529);
+    --fbm-muted: var(--bs-secondary-color, #6c757d);
+    --fbm-bg: var(--bs-body-bg, #fff);
+    --fbm-surface: var(--bs-tertiary-bg, #f8f9fa);
+    --fbm-border: var(--bs-border-color, #dee2e6);
+    --fbm-radius: 0.625rem;
+    --fbm-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 2px 10px rgba(0, 0, 0, 0.04);
+    --fbm-gap: 1rem;
+
+    color: var(--fbm-text);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+
+    &.fbm-boot {
+        min-height: 20rem;
+    }
+
+    // Small helpers.
+    .font-monospace {
+        font-family: var(--bs-font-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace);
+    }
+
+    .text-muted {
+        color: var(--fbm-muted);
+    }
+
+    .small {
+        font-size: 0.8125rem;
+    }
+
+    .fbm-gap {
+        margin-inline-end: 0.4rem;
+    }
+
+    .h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 650;
+        line-height: 1.25;
+    }
+
+    .h4 {
+        margin: 0;
+        font-size: 1.0625rem;
+        font-weight: 650;
+        line-height: 1.3;
+    }
+
+    // Buttons are the ones of the theme. The chrome of a list (its toolbar) is rounded, like the pager and the actions of its rows.
+    .fbm-toolbar .btn {
+        border-radius: 50rem;
+    }
+
+    .fbm-toolbar .btn,
+    .fbm-floatbar .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .btn-icon {
+        display: inline-flex;
+        min-height: 0;
+        align-items: center;
+        justify-content: center;
+        width: 2.125rem;
+        height: 2.125rem;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--fbm-muted);
+        cursor: pointer;
+
+        &:hover:not(:disabled),
+        &:focus-visible {
+            background-color: var(--fbm-surface);
+            color: var(--fbm-text);
+        }
+
+        &.tone-danger:hover {
+            color: var(--fbm-danger);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+
+    .fbm-back {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--fbm-muted);
+        font-size: 0.875rem;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--fbm-primary);
+        }
+    }
+
+    // Fields are the ones of the theme; the plugin only lays them out.
+    .fbm-field {
+        min-width: 0;
+        margin-bottom: 0.75rem;
+    }
+
+    .fbm-field-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .fbm-check {
+        width: 1.125rem;
+        height: 1.125rem;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .fbm-switch {
+        position: relative;
+        flex: 0 0 auto;
+        width: 2.5rem;
+        height: 1.4rem;
+        padding: 0;
+        border: 0;
+        border-radius: 1rem;
+        background-color: var(--fbm-border);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+
+        &.is-on {
+            background-color: var(--fbm-success);
+        }
+
+        &.is-partial {
+            background-color: var(--fbm-warning);
+        }
+
+        &:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--fbm-primary);
+            outline-offset: 2px;
+        }
+    }
+
+    .fbm-switch-knob {
+        position: absolute;
+        top: 0.15rem;
+        inset-inline-start: 0.15rem;
+        width: 1.1rem;
+        height: 1.1rem;
+        border-radius: 50%;
+        background-color: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        transition: transform 0.15s ease;
+    }
+
+    .fbm-switch.is-on .fbm-switch-knob {
+        transform: translateX(1.1rem);
+    }
+
+    [dir=rtl] .fbm-switch.is-on .fbm-switch-knob {
+        transform: translateX(-1.1rem);
+    }
+
+    .fbm-problem {
+        grid-column: 1 / -1;
+        margin: 0;
+        color: var(--fbm-danger);
+        font-size: 0.875rem;
+    }
+
+    // The head of a page.
+    .fbm-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--fbm-gap);
+        margin-bottom: 1.25rem;
+    }
+
+    .fbm-header-title {
+        flex: 1 1 24rem;
+        min-width: 0;
+    }
+
+    .fbm-row-arrow {
+        align-self: center;
+    }
+
+    .fbm-header-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .fbm-header-subtitle {
+        margin: 0.35rem 0 0;
+    }
+
+    .fbm-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .fbm-route {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    // The figures at the top of a migration.
+    .fbm-tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+        gap: 0.875rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .fbm-tile {
+        --fbm-tone: var(--fbm-muted);
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        min-width: 0;
+        padding: 0.9rem 1rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        color: var(--fbm-text);
+        box-shadow: var(--fbm-shadow);
+        font: inherit;
+        text-align: start;
+
+        &.tone-primary {
+            --fbm-tone: var(--fbm-primary);
+        }
+
+        &.tone-success {
+            --fbm-tone: var(--fbm-success);
+        }
+
+        &.tone-warning {
+            --fbm-tone: var(--fbm-warning);
+        }
+
+        &.tone-danger {
+            --fbm-tone: var(--fbm-danger);
+        }
+
+        &.tone-info {
+            --fbm-tone: var(--fbm-info);
+        }
+
+        &.is-link {
+            cursor: pointer;
+            transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+            &:hover,
+            &:focus-visible {
+                border-color: var(--fbm-tone);
+                transform: translateY(-1px);
+            }
+        }
+
+        &.is-active {
+            border-color: var(--fbm-tone);
+            box-shadow: 0 0 0 2px var(--fbm-tone);
+        }
+    }
+
+    .fbm-tile-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .fbm-tile-label {
+        color: var(--fbm-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .fbm-tile-icon {
+        color: var(--fbm-tone);
+        font-size: 1.05rem;
+    }
+
+    .fbm-tile-value {
+        color: var(--fbm-tone);
+        font-size: 1.85rem;
+        font-weight: 650;
+        line-height: 1.15;
+    }
+
+    .fbm-tile.tone-neutral .fbm-tile-value {
+        color: var(--fbm-text);
+    }
+
+    .fbm-tile-hint {
+        color: var(--fbm-muted);
+        font-size: 0.8125rem;
+    }
+
+    // A section of a page.
+    .card {
+        margin-bottom: 1.25rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        box-shadow: var(--fbm-shadow);
+    }
+
+    .card-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid var(--fbm-border);
+    }
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-size: 1.0625rem;
+        font-weight: 650;
+    }
+
+    .fbm-panel-icon {
+        color: var(--fbm-muted);
+    }
+
+    .fbm-panel-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .fbm-panel-flush {
+        padding: 0;
+    }
+
+    .fbm-panel-intro {
+        margin-top: 0;
+    }
+
+    .badge.fbm-count {
+        display: inline-block;
+        min-width: 1.4rem;
+        margin-inline-start: 0.5rem;
+        padding: 0 0.45rem;
+        border-radius: 2rem;
+        background-color: var(--fbm-primary);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.4rem;
+        text-align: center;
+    }
+
+    // Tabs.
+    .nav-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--fbm-border);
+    }
+
+    .nav-link {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: -1px;
+        padding: 0.65rem 1rem;
+        border: 0;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        color: var(--fbm-muted);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--fbm-text);
+        }
+
+        &.is-on {
+            border-bottom-color: var(--fbm-primary);
+            color: var(--fbm-primary);
+        }
+
+        &.needs-attention .fbm-count {
+            background-color: var(--fbm-info);
+        }
+    }
+
+    // Tools above a list.
+    .fbm-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .fbm-search {
+        position: relative;
+        flex: 1 1 16rem;
+        min-width: 0;
+        max-width: 28rem;
+    }
+
+    .fbm-search-icon {
+        position: absolute;
+        top: 50%;
+        inset-inline-start: 0.8rem;
+        color: var(--fbm-muted);
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .fbm-search .form-control {
+        padding-inline-start: 2.4rem;
+        padding-inline-end: 2.2rem;
+        border-radius: 2rem;
+    }
+
+    .fbm-search-clear {
+        position: absolute;
+        top: 50%;
+        inset-inline-end: 0.5rem;
+        padding: 0.25rem;
+        border: 0;
+        background: transparent;
+        color: var(--fbm-muted);
+        transform: translateY(-50%);
+        cursor: pointer;
+    }
+
+    .fbm-perpage {
+        margin-inline-start: auto;
+    }
+
+    .fbm-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .fbm-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .badge.fbm-chip-count {
+        min-width: 1.25rem;
+        padding: 0 0.35rem;
+        border-radius: 2rem;
+        background-color: var(--fbm-surface);
+        color: var(--fbm-muted);
+        font-size: 0.75rem;
+        text-align: center;
+    }
+
+    .fbm-chip.active .fbm-chip-count {
+        background-color: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+
+    // Tables.
+    .table-responsive {
+        overflow-x: auto;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+    }
+
+    .table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+
+        // A row is told from the next by a line under it and by its hover (table-hover): no rule between the columns.
+        & th,
+        & td {
+            border-inline: 0;
+            border-top: 0;
+            border-inline-start: 0;
+            border-inline-end: 0;
+        }
+
+        & th {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--fbm-border);
+            background-color: var(--fbm-surface);
+            color: var(--fbm-muted);
+            font-size: 0.75rem;
+            font-weight: 650;
+            letter-spacing: 0.05em;
+            text-align: start;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        & td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--fbm-border);
+            vertical-align: middle;
+        }
+
+        & tr.is-out td {
+            opacity: 0.6;
+        }
+    }
+
+    .fbm-col-fit {
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    // The log is read page after page: its columns keep their width and each record takes one line (what does not fit ends in an
+    // ellipsis and is in the title), so the table never moves from one page or one filter to the next.
+    .fbm-log-table {
+        min-width: 56rem;
+        table-layout: fixed;
+
+        th,
+        td {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .badge {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+    }
+
+    .fbm-log-date {
+        width: 9.5rem;
+    }
+
+    .fbm-log-action {
+        width: 17rem;
+    }
+
+    .fbm-log-user {
+        width: 13rem;
+    }
+
+    .fbm-table-meta {
+        display: block;
+        color: var(--fbm-muted);
+        font-size: 0.8125rem;
+    }
+
+    .fbm-col-check {
+        width: 2.5rem;
+    }
+
+    .fbm-col-actions {
+        text-align: end;
+        white-space: nowrap;
+    }
+
+    .fbm-files-cell {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.4rem;
+    }
+
+    .fbm-file-name {
+        overflow-wrap: anywhere;
+    }
+
+    // Badges.
+    .badge {
+        --fbm-tone: var(--fbm-muted);
+        display: inline-flex;
+        align-items: center;
+        padding: 0.18rem 0.6rem;
+        border-radius: 2rem;
+        background-color: color-mix(in srgb, var(--fbm-tone) 14%, var(--fbm-bg));
+        color: var(--fbm-tone);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        white-space: nowrap;
+
+        &.tone-primary {
+            --fbm-tone: var(--fbm-primary);
+        }
+
+        &.tone-success {
+            --fbm-tone: var(--fbm-success);
+        }
+
+        &.tone-warning {
+            --fbm-tone: var(--fbm-warning);
+        }
+
+        &.tone-danger {
+            --fbm-tone: var(--fbm-danger);
+        }
+
+        &.tone-info {
+            --fbm-tone: var(--fbm-info);
+        }
+    }
+
+    // Alerts.
+    .alert {
+        --fbm-tone: var(--fbm-info);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding: 0.8rem 1rem;
+        border: 1px solid var(--fbm-border);
+        border-inline-start: 4px solid var(--fbm-tone);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-surface);
+        color: var(--fbm-text);
+
+        &.alert-success {
+            --fbm-tone: var(--fbm-success);
+        }
+
+        &.alert-warning {
+            --fbm-tone: var(--fbm-warning);
+        }
+
+        &.alert-danger {
+            --fbm-tone: var(--fbm-danger);
+        }
+
+        &.alert-secondary {
+            --fbm-tone: var(--fbm-muted);
+        }
+    }
+
+    .fbm-alert-icon {
+        color: var(--fbm-tone);
+        font-size: 1.1rem;
+    }
+
+    .fbm-alert-body {
+        flex: 1 1 14rem;
+        min-width: 0;
+    }
+
+    // Progress.
+    .progress {
+        --fbm-tone: var(--fbm-primary);
+        height: 0.5rem;
+        overflow: hidden;
+        border-radius: 1rem;
+        background-color: var(--fbm-border);
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: 1rem;
+        transition: width 0.4s ease;
+    }
+
+    .fbm-files-cell + .progress,
+    .badge + .progress {
+        margin-top: 0.4rem;
+    }
+
+    // Empty states and placeholders.
+    .fbm-empty {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 2.5rem 1rem;
+        border: 1px dashed var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-surface);
+        text-align: center;
+
+        &.is-plain {
+            padding: 1.5rem 1rem;
+            border: 0;
+            background: transparent;
+        }
+    }
+
+    .fbm-empty-icon {
+        margin-bottom: 0.75rem;
+        color: var(--fbm-muted);
+        font-size: 2.2rem;
+    }
+
+    .fbm-empty-text {
+        max-width: 32rem;
+        margin: 0.4rem auto 1rem;
+    }
+
+    .fbm-empty-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .fbm-skeleton {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .fbm-skeleton-row {
+        height: 3rem;
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-surface);
+        animation: filebank-pulse 1.1s ease-in-out infinite alternate;
+    }
+
+    // What can be done with what was chosen: it floats at the bottom of the screen.
+    .fbm-floating {
+        position: fixed;
+        bottom: 1.25rem;
+        inset-inline-start: 50%;
+        z-index: 1040;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        max-width: calc(100vw - 2rem);
+        padding: 0.6rem 0.9rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: 3rem;
+        background-color: var(--fbm-bg);
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+        transform: translateX(-50%);
+    }
+
+    [dir=rtl] .fbm-floating {
+        transform: translateX(50%);
+    }
+
+    .fbm-floating-summary {
+        font-weight: 650;
+    }
+
+    .fbm-floating-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .fbm-floating-clear {
+        padding: 0.3rem;
+        border: 0;
+        background: transparent;
+        color: var(--fbm-muted);
+        cursor: pointer;
+    }
+
+    // What the person can do with the migration now.
+    .fbm-action {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem 1.25rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        box-shadow: var(--fbm-shadow);
+
+        &.is-ready {
+            border-color: var(--fbm-success);
+            background-color: var(--fbm-surface);
+        }
+
+        &.is-running {
+            border-color: var(--fbm-primary);
+        }
+    }
+
+    .fbm-action-body {
+        display: flex;
+        flex: 1 1 18rem;
+        flex-direction: column;
+        gap: 0.4rem;
+        min-width: 0;
+    }
+
+    .fbm-notes-box {
+        margin-bottom: 1rem;
+    }
+
+    .fbm-notes-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.3rem 0;
+        border: 0;
+        background: transparent;
+        color: var(--fbm-info);
+        font: inherit;
+        font-weight: 550;
+        cursor: pointer;
+    }
+
+    .fbm-notes {
+        margin: 0.5rem 0 0;
+        padding-inline-start: 1.25rem;
+    }
+
+    .fbm-confirm-body p {
+        margin: 0 0 0.6rem;
+    }
+
+    .fbm-confirm-list {
+        margin: 0 0 1rem;
+        padding: 0;
+        list-style: none;
+
+        & li {
+            padding: 0.35rem 0;
+            border-bottom: 1px solid var(--fbm-border);
+        }
+
+        & li.is-warning {
+            color: var(--fbm-warning);
+        }
+    }
+
+    // The steps of the window that starts a migration.
+    // The editor of the parameters.
+    .fbm-sides {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+
+        &.has-problem .fbm-side {
+            border-color: var(--fbm-danger);
+        }
+    }
+
+    .fbm-side {
+        min-width: 0;
+        margin: 0;
+        padding: 0.8rem 0.9rem 0.2rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: 0.5rem;
+        background-color: var(--fbm-surface);
+    }
+
+    .fbm-side-title {
+        float: none;
+        width: auto;
+        margin: 0 0 0.6rem;
+        padding: 0;
+        color: var(--fbm-text);
+        font-size: 0.8125rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .fbm-rows {
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .fbm-row-card {
+        padding: 0.75rem 0.9rem 0.9rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+    }
+
+    .fbm-row-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .fbm-row-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.6rem;
+        height: 1.6rem;
+        border-radius: 50%;
+        background-color: var(--fbm-primary);
+        color: #fff;
+        font-size: 0.8125rem;
+        font-weight: 650;
+    }
+
+    .fbm-row-sides {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: start;
+        gap: 0.75rem;
+    }
+
+    .fbm-row-arrow {
+        color: var(--fbm-muted);
+    }
+
+    .fbm-row-add {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .fbm-pairs {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .fbm-pair {
+        display: grid;
+        grid-template-columns: 1.6rem minmax(0, 12rem) auto minmax(0, 12rem) auto;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
+
+        &.fbm-pair-head .form-label {
+            margin: 0;
+        }
+    }
+
+    .fbm-hint {
+        margin: 0.4rem 0 0;
+        font-size: 0.875rem;
+    }
+
+    .fbm-policies {
+        display: grid;
+        gap: 1.25rem;
+    }
+
+    .fbm-policy {
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .fbm-policy-title {
+        margin-bottom: 0.5rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+    }
+
+    // A choice that needs to be explained: a card with its name and what it does, the chosen one marked with the primary colour.
+    .fbm-choices {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+        gap: 0.75rem;
+    }
+
+    .fbm-choice {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin: 0;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        cursor: pointer;
+        transition: border-color 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease;
+
+        input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        &:hover {
+            border-color: var(--fbm-primary);
+        }
+
+        &:focus-within {
+            box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--fbm-primary) 25%, transparent);
+        }
+
+        &.is-on {
+            border-color: var(--fbm-primary);
+            background-color: color-mix(in srgb, var(--fbm-primary) 8%, var(--fbm-bg));
+        }
+    }
+
+    .fbm-choice-dot {
+        flex: none;
+        width: 1.1rem;
+        height: 1.1rem;
+        margin-top: 0.15rem;
+        border: 2px solid var(--fbm-border);
+        border-radius: 50%;
+        background-color: var(--fbm-bg);
+    }
+
+    .fbm-choice.is-on .fbm-choice-dot {
+        border-color: var(--fbm-primary);
+        background-color: var(--fbm-primary);
+        box-shadow: inset 0 0 0 3px var(--fbm-bg);
+    }
+
+    .fbm-choice-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-width: 0;
+    }
+
+    .fbm-choice-title {
+        font-weight: 600;
+    }
+
+    .fbm-choice-hint {
+        color: var(--fbm-muted);
+        font-size: 0.8125rem;
+    }
+
+    // The choice of a profile: a search and the profiles as cards, two or three to a row.
+    .fbm-picker {
+        display: grid;
+        gap: 0.75rem;
+
+        .fbm-search {
+            max-width: 28rem;
+        }
+
+        &.has-problem .fbm-choice {
+            border-color: var(--fbm-danger);
+        }
+    }
+
+    .fbm-profile-choices {
+        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    }
+
+    .fbm-select-auto {
+        width: auto;
+        max-width: 100%;
+    }
+
+    // The decision about the files that are already different, in the last step.
+    .fbm-conflict {
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--fbm-border);
+
+        .fbm-hint {
+            margin-bottom: 0.75rem;
+        }
+    }
+
+    .fbm-check-result {
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .fbm-check-scope {
+        margin: 0;
+    }
+
+    .fbm-wizard-hint {
+        margin: 1rem 0 0;
+    }
+
+    // What waits for a decision.
+    .fbm-natures {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .fbm-nature {
+        padding: 1rem 1.1rem;
+        border: 1px solid var(--fbm-border);
+        border-inline-start: 4px solid var(--fbm-info);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+    }
+
+    .fbm-nature-head {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .fbm-nature-icon {
+        color: var(--fbm-info);
+        font-size: 1.3rem;
+    }
+
+    .fbm-nature-help {
+        margin: 0.15rem 0 0;
+        font-size: 0.875rem;
+    }
+
+    .fbm-nature-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .fbm-decisions {
+        margin-top: 1rem;
+        border-top: 1px solid var(--fbm-border);
+    }
+
+    .fbm-decisions-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.7rem 0;
+    }
+
+    .fbm-decision-items {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .fbm-decision-item {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 0;
+        border-top: 1px solid var(--fbm-border);
+    }
+
+    .fbm-decision-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .fbm-decision-own {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        justify-content: flex-end;
+    }
+
+    // The folders.
+    .fbm-folders {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .fbm-folder {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) minmax(8rem, 12rem);
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem 0;
+        border-top: 1px solid var(--fbm-border);
+
+        &:first-child {
+            border-top: 0;
+        }
+    }
+
+    .fbm-folder-route {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        min-width: 0;
+    }
+
+    .fbm-folder-side {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .fbm-folder-count {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        font-size: 0.8125rem;
+    }
+
+    // The pages that list things: profiles, versions and the log.
+    // The buttons of a row, always on the right and with room between them; each one is an icon tinted with what it does.
+    .fbm-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .fbm-actions .btn-icon {
+        text-decoration: none;
+    }
+
+    .fbm-iconpill .icon,
+    .btn-icon .icon,
+    .fbm-actions .icon {
+        margin: 0;
+    }
+
+    .fbm-iconpill {
+        --fbm-tone: var(--fbm-text);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        min-height: 0;
+        height: 2rem;
+        padding: 0;
+        border: 1px solid transparent;
+        border-radius: 50%;
+        background-color: color-mix(in srgb, var(--fbm-tone) 14%, var(--fbm-bg));
+        color: var(--fbm-tone);
+
+        &.tone-primary {
+            --fbm-tone: var(--fbm-primary);
+        }
+
+        &.tone-success {
+            --fbm-tone: var(--fbm-success);
+        }
+
+        &.tone-warning {
+            --fbm-tone: var(--fbm-warning);
+        }
+
+        &.tone-danger {
+            --fbm-tone: var(--fbm-danger);
+        }
+
+        &.tone-info {
+            --fbm-tone: var(--fbm-info);
+        }
+
+        &:hover:not(:disabled),
+        &:focus-visible:not(:disabled) {
+            border-color: var(--fbm-tone);
+            background-color: color-mix(in srgb, var(--fbm-tone) 24%, var(--fbm-bg));
+            color: var(--fbm-tone);
+            box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.16);
+            transform: translateY(-1px);
+        }
+
+        // An action a row cannot take stays in its place, greyed, so the actions of every row line up.
+        &:disabled,
+        &.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
+
+    .text-nowrap {
+        white-space: nowrap;
+    }
+
+    .text-break {
+        overflow-wrap: anywhere;
+    }
+
+    // The name of a row, the link that opens it: the same weight and size in every table, with its details on a muted line under it.
+    .fbm-row-title {
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .fbm-row-title:hover,
+    .fbm-row-title:focus-visible {
+        text-decoration: underline;
+    }
+
+    .fbm-status {
+        --fbm-tone: var(--fbm-muted);
+        padding-inline-start: 0.5rem;
+
+        &::before {
+            content: "";
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            margin-inline-end: 0.4rem;
+            border-radius: 50%;
+            background-color: var(--fbm-tone);
+        }
+    }
+
+    tr[data-enabled="1"] .fbm-status {
+        --fbm-tone: var(--fbm-success);
+    }
+
+    // What can be done with the selected rows floats at the bottom of the screen, with how many are selected.
+    .fbm-bulkbar {
+        position: fixed;
+        bottom: 1.25rem;
+        inset-inline-start: 50%;
+        z-index: 1040;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem 0.75rem;
+        max-width: calc(100vw - 2rem);
+        padding: 0.6rem 0.9rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: 3rem;
+        background-color: var(--fbm-bg);
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+        transform: translateX(-50%);
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    [dir=rtl] .fbm-bulkbar {
+        transform: translateX(50%);
+    }
+
+    .fbm-bulkbar-title {
+        margin-inline-end: 0.5rem;
+        font-weight: 650;
+    }
+
+    .fbm-checkline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0;
+    }
+
+    .fbm-listbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+
+    .fbm-listbar-size,
+    .fbm-listbar-pages {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    // A table of a list always has the same height, whatever the size of its page, the filters or the rows it has: what does not fit
+    // scrolls inside with its head in sight, and a short page leaves the rest of the table empty. The bar under it is set apart.
+    .fbm-list-region .table-responsive,
+    [data-filebank-list] .table-responsive,
+    .fbm-list-scroll {
+        height: 60vh;
+        min-height: 20rem;
+        overflow-y: auto;
+        scroll-padding-top: 2.5rem;
+    }
+
+    .fbm-list-region > .fbm-empty,
+    [data-filebank-list] > .fbm-empty {
+        height: 60vh;
+        min-height: 20rem;
+    }
+
+    .fbm-list-region .table thead th,
+    [data-filebank-list] .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    // The arrows of the pager are bare chevrons, as in block_course_finder.
+    .fbm-pager-arrow {
+        width: auto;
+        min-height: 0;
+        height: auto;
+        padding: 0.25rem 0.4rem;
+        border: 0;
+        background: transparent;
+        color: var(--fbm-text);
+        box-shadow: none;
+
+        &:hover:not(:disabled):not(.disabled),
+        &:focus,
+        &:focus-visible,
+        &:active {
+            border: 0;
+            outline: 0;
+            background: transparent;
+            box-shadow: none;
+            transform: none;
+        }
+
+        &:hover:not(:disabled):not(.disabled),
+        &:focus-visible {
+            color: var(--fbm-primary);
+        }
+
+        &:disabled,
+        &.disabled {
+            color: var(--fbm-muted);
+            opacity: 0.45;
+        }
+    }
+
+    .fbm-listbar-label {
+        margin: 0;
+        color: var(--fbm-muted);
+        font-size: 0.875rem;
+    }
+
+    // The filters of a list: a button with the number of filters that are on floating over its corner, and a drop-down with them.
+    // It sits right after the search, or first in the row when there is no search.
+    .fbm-filterbox {
+        position: relative;
+        padding: 0;
+        border: 0;
+        background: transparent;
+
+        > summary {
+            position: relative;
+            list-style: none;
+            cursor: pointer;
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            .fbm-count {
+                position: absolute;
+                top: -0.45rem;
+                inset-inline-end: -0.45rem;
+                min-width: 1.15rem;
+                height: 1.15rem;
+                margin: 0;
+                padding: 0 0.3rem;
+                font-size: 0.7rem;
+                line-height: 1.15rem;
+            }
+        }
+
+        &[open] > summary,
+        &[data-active] > summary {
+            border-color: var(--fbm-primary);
+            background-color: color-mix(in srgb, var(--fbm-primary) 10%, var(--fbm-bg));
+            color: var(--fbm-primary);
+        }
+    }
+
+    // The filters that are on sit in a row of their own under the toolbar.
+    .fbm-toolbar .fbm-chips,
+    .fbm-toolbar + .fbm-chips {
+        flex-basis: 100%;
+        align-items: center;
+        margin-bottom: 0;
+    }
+
+    .fbm-filterpanel {
+        position: absolute;
+        inset-inline-start: 0;
+        top: calc(100% + 0.5rem);
+        z-index: 1050;
+        width: 22rem;
+        max-width: calc(100vw - 2rem);
+        padding: 1rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
+    }
+
+    // The actions of the page sit at the end of the toolbar of its list.
+    .fbm-toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-inline-start: auto;
+    }
+
+    .fbm-filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+
+        .fbm-chip .small {
+            margin-inline-start: 0.35rem;
+            opacity: 0.75;
+        }
+    }
+
+    .fbm-filter-head .btn-icon {
+        color: var(--fbm-primary);
+        text-decoration: none;
+
+        &:hover:not(.disabled):not(:disabled),
+        &:focus-visible:not(.disabled):not(:disabled) {
+            color: var(--fbm-primary);
+            text-decoration: none;
+        }
+
+        &.disabled,
+        &:disabled {
+            color: var(--fbm-muted);
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            text-decoration: none;
+        }
+    }
+
+    .fbm-filter-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .fbm-filter-heading {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .fbm-filter-title {
+        margin: 0 0 0.375rem;
+        color: var(--fbm-muted);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .fbm-filter-group {
+        min-width: 0;
+        margin: 0 0 0.75rem;
+        padding: 0;
+        border: 0;
+    }
+
+    .fbm-filter-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        padding: 0.3125rem 0.625rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.12s ease, box-shadow 0.12s ease;
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--fbm-primary) 10%, var(--fbm-bg));
+            box-shadow: inset 3px 0 0 var(--fbm-primary);
+        }
+
+        .small {
+            margin-inline-start: auto;
+        }
+    }
+
+    // The dates of a filter: two compact fields side by side, the calendar icon and the button that clears inside each.
+    .fbm-dates {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .fbm-dateinput {
+        position: relative;
+
+        .form-control {
+            padding-inline-start: 2.1rem;
+            padding-inline-end: 2rem;
+            background-color: var(--fbm-bg);
+            cursor: pointer;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .fbm-dateinput-icon {
+        position: absolute;
+        top: 50%;
+        inset-inline-start: 0.7rem;
+        color: var(--fbm-muted);
+        transform: translateY(-50%);
+        pointer-events: none;
+
+        .icon {
+            margin: 0;
+        }
+    }
+
+    // Without a date there is nothing to clear, and the text of the field takes the room of the button.
+    .fbm-dateinput-clear[hidden] + .form-control {
+        padding-inline-end: 0.75rem;
+    }
+
+    .fbm-dateinput-clear {
+        position: absolute;
+        top: 50%;
+        inset-inline-end: 0.2rem;
+        width: 1.75rem;
+        height: 1.75rem;
+        transform: translateY(-50%);
+    }
+
+    .fbm-filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+        align-items: end;
+        gap: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-surface);
+
+        & .fbm-field {
+            margin-bottom: 0;
+        }
+    }
+
+    .fbm-filters-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .table tr.is-changed td,
+    .table tr.is-changed th {
+        background-color: var(--fbm-surface);
+        box-shadow: inset 3px 0 0 var(--fbm-warning);
+    }
+
+    .table tr.is-active td {
+        background-color: var(--fbm-surface);
+    }
+
+    .fbm-compare {
+        margin-bottom: 1rem;
+    }
+
+    .fbm-compare code {
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.3rem;
+        background-color: var(--fbm-surface);
+        color: var(--fbm-text);
+        font-size: 0.8125rem;
+        word-break: break-word;
+    }
+
+    .fbm-definitions {
+        display: grid;
+        grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+        gap: 0.4rem 1rem;
+        margin: 0;
+
+        & dt {
+            font-weight: 600;
+        }
+
+        & dd {
+            margin: 0;
+        }
+    }
+
+    .fbm-details {
+        margin-top: 0.9rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--fbm-border);
+
+        & summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+    }
+
+    .fbm-policy-effective {
+        margin: 0 0 0.75rem;
+    }
+
+    // The forms of Moodle that the plugin shows inside its own pages: the profile editor and the import.
+    &.filebank-panel {
+        // Text fields are as wide as what goes in them, not the whole form; textareas and the editors keep the full width.
+        .mform .felement > input.form-control,
+        .mform .felement > .form-autocomplete-selection,
+        .mform .felement .form-autocomplete-input {
+            max-width: 30rem;
+        }
+
+        padding: 1.25rem 1.5rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        box-shadow: var(--fbm-shadow);
+    }
+
+    .fbm-segment {
+        display: inline-flex;
+        overflow: hidden;
+        border: 1px solid var(--fbm-border);
+        border-radius: 2rem;
+        background-color: var(--fbm-bg);
+    }
+
+    .fbm-segment-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.4rem;
+        height: 2.1rem;
+        padding: 0 0.7rem;
+        border: 0;
+        background: transparent;
+        color: var(--fbm-muted);
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--fbm-surface);
+            color: var(--fbm-text);
+        }
+
+        &.active,
+        &[aria-pressed=true] {
+            background-color: var(--fbm-primary);
+            color: #fff;
+        }
+
+        & .icon {
+            margin: 0;
+        }
+    }
+
+    .fbm-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--fbm-border);
+    }
+
+    .fbm-filter-foot {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--fbm-border);
+    }
+
+    .filebank-filter-menu {
+        padding: 0.9rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .filebank-filter-popover > summary {
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .filebank-search .fbm-search {
+        max-width: none;
+    }
+
+    .fbm-filters-catalog {
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    }
+
+    .fbm-field-wide {
+        grid-column: span 2;
+    }
+
+    .fbm-filters-more {
+        grid-column: 1 / -1;
+        padding: 0;
+        border: 0;
+    }
+
+    .fbm-filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+        gap: 0.75rem 1rem;
+        margin-top: 0.75rem;
+    }
+
+    .fbm-filters-actions {
+        grid-column: 1 / -1;
+    }
+
+    .table-responsive.fbm-flush {
+        border: 0;
+        border-radius: 0;
+    }
+
+    .h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 650;
+        line-height: 1.3;
+    }
+
+    // The page that starts a migration: the steps on the left and the open one on the right.
+    .fbm-wizard-body {
+        display: grid;
+        grid-template-columns: 16rem minmax(0, 1fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .fbm-stepper {
+        position: sticky;
+        top: 5rem;
+    }
+
+    .fbm-stepper-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .fbm-stepper-item {
+        position: relative;
+        padding-bottom: 0.25rem;
+
+        &:not(:last-child)::before {
+            content: "";
+            position: absolute;
+            top: 2.6rem;
+            bottom: -0.1rem;
+            inset-inline-start: 1.1rem;
+            width: 2px;
+            background-color: var(--fbm-border);
+        }
+
+        &.is-done:not(:last-child)::before {
+            background-color: var(--fbm-primary);
+        }
+    }
+
+    .fbm-stepper-button {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.45rem 0.5rem;
+        border: 0;
+        border-radius: 0.6rem;
+        background: transparent;
+        color: var(--fbm-text);
+        font: inherit;
+        text-align: start;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            background-color: var(--fbm-surface);
+        }
+
+        &:disabled {
+            cursor: default;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--fbm-primary);
+            outline-offset: 2px;
+        }
+    }
+
+    .fbm-stepper-dot {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 50%;
+        background-color: var(--fbm-border);
+        color: var(--fbm-text);
+        font-size: 0.875rem;
+        font-weight: 650;
+    }
+
+    .fbm-stepper-item.is-current .fbm-stepper-dot,
+    .fbm-stepper-item.is-done .fbm-stepper-dot {
+        background-color: var(--fbm-primary);
+        color: #fff;
+    }
+
+    .fbm-stepper-item.is-current .fbm-stepper-dot {
+        box-shadow: 0 0 0 4px var(--fbm-surface), 0 0 0 6px var(--fbm-primary);
+    }
+
+    .fbm-stepper-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding-top: 0.1rem;
+    }
+
+    .fbm-stepper-title {
+        font-weight: 650;
+    }
+
+    .fbm-stepper-item.is-todo .fbm-stepper-title {
+        color: var(--fbm-muted);
+    }
+
+    .fbm-stepper-hint {
+        color: var(--fbm-muted);
+        font-size: 0.8125rem;
+    }
+
+    .fbm-wizard-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 20rem;
+        padding: 1.5rem;
+        border: 1px solid var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-bg);
+        box-shadow: var(--fbm-shadow);
+    }
+
+    .fbm-wizard {
+        scroll-margin-top: 4.25rem;
+    }
+
+    .fbm-wizard-scroll {
+        padding: 0.35rem;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    // On a wide window the card of a step is as tall as the stepper beside it and a little more (the stepper sets the height of the
+    // row, the card takes it): a long step scrolls inside the card, and the buttons that go back and forward are its foot.
+    @media (min-width: 62rem) {
+        .fbm-wizard-body {
+            align-items: stretch;
+        }
+
+        .fbm-stepper {
+            position: static;
+            padding-bottom: 12rem;
+        }
+
+        .fbm-wizard-panel {
+            height: 0;
+            min-height: 100%;
+        }
+    }
+
+    .fbm-wizard-head {
+        display: flex;
+        gap: 0.9rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .fbm-wizard-icon {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 0.7rem;
+        background-color: var(--fbm-surface);
+        color: var(--fbm-primary);
+        font-size: 1.15rem;
+    }
+
+    .fbm-wizard-help {
+        margin: 0.15rem 0 0;
+    }
+
+    // Previous and next are always at the bottom of the panel, and stay in sight when the step is longer than the screen.
+    .fbm-wizard-foot {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-top: auto;
+        padding: 1rem 0 0.25rem;
+        border-top: 1px solid var(--fbm-border);
+        background-color: var(--fbm-bg);
+    }
+
+    .fbm-rows-empty {
+        padding: 1.5rem 1rem 0.5rem;
+        border: 1px dashed var(--fbm-border);
+        border-radius: var(--fbm-radius);
+        background-color: var(--fbm-surface);
+        text-align: center;
+
+        &.has-problem {
+            border-color: var(--fbm-danger);
+        }
+    }
+
+    @media (max-width: 991px) {
+        .fbm-wizard-body {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .fbm-stepper {
+            position: static;
+            overflow-x: auto;
+        }
+
+        .fbm-stepper-list {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .fbm-stepper-item::before {
+            display: none;
+        }
+
+        .fbm-stepper-hint {
+            display: none;
+        }
+
+        .fbm-stepper-button {
+            width: auto;
+            white-space: nowrap;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .fbm-sides,
+        .fbm-field-row {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .fbm-row-sides {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .fbm-row-arrow {
+            justify-self: center;
+            transform: rotate(90deg);
+        }
+
+        .fbm-decision-item {
+            grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .fbm-decision-own {
+            grid-column: 1 / -1;
+            justify-content: flex-start;
+        }
+
+        .fbm-folder {
+            grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .fbm-folder-count {
+            grid-column: 1 / -1;
+        }
+
+        .fbm-perpage {
+            margin-inline-start: 0;
+        }
+
+        .fbm-floating {
+            inset-inline-start: 1rem;
+            inset-inline-end: 1rem;
+            border-radius: 1rem;
+            transform: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .fbm-skeleton-row,
+        .progress-bar,
+        .fbm-switch,
+        .fbm-switch-knob,
+        .btn,
+        .fbm-tile {
+            animation: none;
+            transition: none;
+        }
+    }
+}
+
+// The calendar of the date filters is drawn at the end of the page, outside the wrapper of the plugin: it takes the colours of the
+// theme through its own class, and other pickers of the page are not touched.
+.daterangepicker.filebank-calendar {
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.625rem;
+    background-color: var(--bs-body-bg, #fff);
+    color: var(--bs-body-color, #212529);
+    font-family: inherit;
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
+
+    &::before,
+    &::after {
+        display: none;
+    }
+
+    .calendar-table {
+        border: 0;
+        background-color: transparent;
+    }
+
+    th,
+    td {
+        border-radius: 0.5rem;
+    }
+
+    td.off {
+        background-color: transparent;
+        color: var(--bs-secondary-color, #6c757d);
+    }
+
+    td.available:hover,
+    th.available:hover {
+        background-color: var(--bs-tertiary-bg, #f8f9fa);
+    }
+
+    td.active,
+    td.active:hover {
+        background-color: var(--bs-primary, #0f6cbf);
+        color: #fff;
+    }
+
+    select.monthselect,
+    select.yearselect {
+        padding: 0.15rem 0.35rem;
+        border: 1px solid var(--bs-border-color, #dee2e6);
+        border-radius: 0.5rem;
+        background-color: var(--bs-body-bg, #fff);
+        color: inherit;
+    }
+}

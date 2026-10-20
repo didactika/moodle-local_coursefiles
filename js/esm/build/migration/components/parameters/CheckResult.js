@@ -1,0 +1,12 @@
+import r from"../ui/Alert";import h from"../ui/ChoiceCards";import m from"../ui/EmptyState";import a from"../ui/Icon";import d from"../ui/Skeleton";import t from"../ui/StatTile";import{jsx as i,jsxs as c}from"react/jsx-runtime";/**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
+ * What a migration with the chosen parameters would do, counted before anything is stored. It never says that something failed:
+ * what does not match is listed as information and what needs a decision is only counted.
+ *
+ * @module     local_filebank/migration/components/parameters/CheckResult
+ * @copyright  2026 Didactika.org
+ * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */const _=({summary:e,loading:s,error:n,text:o,policy:p,onPolicy:f})=>n!==""?i(r,{tone:"danger",live:!0,children:n}):e?e.files===0&&!s?i(m,{plain:!0,icon:"folder-open",title:o("check_nothing_title"),text:o("check_nothing_text")}):c("div",{className:"fbm-check-result","data-region":"check-result",children:[c("div",{className:"fbm-tiles",children:[i(t,{label:o("summary_tocopy"),value:e.tocopy,tone:"success",icon:"copy"}),i(t,{label:o("summary_tooverwrite"),value:e.tooverwrite,tone:"warning",icon:"pen-to-square"}),i(t,{label:o("summary_existing"),value:e.existing,tone:"neutral",icon:"equals"}),i(t,{label:o("summary_left"),value:e.skipped,tone:"neutral",icon:"hand"})]}),c("p",{className:"text-muted fbm-check-scope",children:[i(a,{name:"folder-tree",gap:!0}),o("check_scope",{folders:e.folders,from:e.sourcecourses,to:e.targetcourses})]}),e.different>0&&c("section",{className:"fbm-conflict","data-region":"conflict-choice",children:[i("h4",{className:"h5",children:o("check_conflict_title",{n:e.different})}),i("p",{className:"text-muted fbm-hint",children:o("check_conflict_help")}),i(h,{label:o("policy_conflictpolicy"),name:"fbm-conflict-policy",value:p==="overwrite"?"overwrite":"skip",onChange:f,choices:["skip","overwrite"].map(l=>({value:l,label:o("policy_conflictpolicy_"+l),hint:o("policy_conflictpolicy_"+l+"_hint")}))})]}),!e.haswork&&i(r,{tone:"warning",children:o("check_no_work")}),e.notes.length>0&&i("ul",{className:"fbm-notes",children:e.notes.map(l=>c("li",{children:[i(a,{name:"circle-info",gap:!0}),l.label]},l.kind))})]}):i(d,{rows:3,label:o("loading")});var w=_;export{w as default};

@@ -1,7 +1,7 @@
-// This file is part of Moodle - https://moodle.org/
-// Moodle is free software under the GNU General Public License, version 3 or later.
-
 /**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
  * Native Moodle 5.3 React layout selector with theme-overridable markup.
  *
  * @module local_filebank/ViewSelector
@@ -42,7 +42,7 @@ export default function ViewSelector({initialLayout, views}: ViewSelectorProps) 
         ref={index === 0 ? firstButton : undefined}
         key={view.value}
         type="button"
-        className={`btn btn-sm btn-outline-secondary${active === view.value ? ' active' : ''}`}
+        className={`btn btn-sm btn-outline-secondary fbm-segment-button${active === view.value ? ' active' : ''}`}
         data-filebank-layout={view.value}
         data-filebank-react-view="true"
         aria-pressed={active === view.value}

@@ -1,6 +1,9 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 /**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
  * admin listeners.
  * @module local_filebank/local/admin/listeners
  * @copyright 2026 Didactika.org
@@ -11,11 +14,15 @@ import Selectors from "@moodle/lms/local_filebank/local/admin/selectors";
 import { listen } from "@moodle/lms/local_filebank/local/listeners";
 import { changePage } from "@moodle/lms/local_filebank/local/admin/actions";
 const registerBulk = /* @__PURE__ */ __name((form, actions) => {
-  const all = form.querySelector(Selectors.selectAll);
-  if (all) {
-    listen(all, "change", actions.selectAllChange);
-  }
-  form.querySelectorAll(Selectors.bulkChecks).forEach((check) => listen(check, "change", actions.update));
+  listen(form, "change", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLInputElement && target.matches(Selectors.selectAll)) {
+      actions.selectAllChange();
+    } else if (target instanceof HTMLInputElement && target.matches(Selectors.bulkChecks)) {
+      actions.update();
+    }
+  });
+  form.addEventListener("filebank:listchanged", actions.update);
   listen(form, "submit", actions.submit);
 }, "registerBulk");
 const registerHistory = /* @__PURE__ */ __name((history, actions) => {

@@ -1,7 +1,7 @@
-// This file is part of Moodle - https://moodle.org/
-// Moodle is free software under the GNU General Public License, version 3 or later.
-
 /**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
  * admin controller.
  * @module local_filebank/local/admin/controller
  * @copyright 2026 Didactika.org
@@ -12,6 +12,8 @@
 import Selectors from '@moodle/lms/local_filebank/local/admin/selectors';
 import {createBulkActions, createHistoryActions} from '@moodle/lms/local_filebank/local/admin/actions';
 import {registerBulk, registerHistory, registerPagination} from '@moodle/lms/local_filebank/local/admin/listeners';
+import {registerFilterMenus, registerLiveFilters} from '@moodle/lms/local_filebank/local/admin/filters';
+import {registerLists} from '@moodle/lms/local_filebank/local/admin/lists';
 
 /**
  * Initialize native administration controls.
@@ -30,4 +32,7 @@ export const init = () => {
         }
     });
     registerPagination();
+    registerLiveFilters();
+    registerFilterMenus();
+    registerLists();
 };

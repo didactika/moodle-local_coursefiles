@@ -220,10 +220,14 @@ class behat_local_filebank_steps_4 extends behat_local_filebank_base {
                 if (
                     !$this->getSession()->wait(
                         3000,
-                        'window.filebankCaptureReady&&!document.querySelector(".drawer.show,.modal-backdrop")'
+                        'window.filebankCaptureReady&&!document.querySelector(".drawer.show")'
                     )
                 ) {
-                    throw new \Exception('The native drawers did not close before the mobile capture.');
+                    $left = $this->getSession()->getDriver()->evaluateScript(
+                        'return String(window.filebankCaptureReady)+"|"+Array.from(document.querySelectorAll('
+                        . '".drawer.show,.modal-backdrop.show")).map(e=>e.className).join(",");'
+                    );
+                    throw new \Exception('The native drawers did not close before the mobile capture: ' . $left);
                 }
             }
             $this->getSession()->getDriver()->executeScript('window.scrollTo(0,0);');

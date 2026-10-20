@@ -60,7 +60,7 @@ final class plan_selection {
         $total = $DB->count_records('local_filebank_operation', ['planid' => $planid]);
         $included = $DB->count_records('local_filebank_operation', ['planid' => $planid, 'included' => 1]);
         return ['digest' => $plan->digest, 'checks' => $checks, 'groups' => $groups, 'total' => $total, 'included' => $included,
-            'emptycancelled' => $plan->state === 'cancelled' && !plan_history::has_work($planid),
+            'empty' => !plan_history::has_work($planid),
             'includedlabel' => get_string('includedcount', 'local_filebank', $included),
             'planstate' => \local_filebank\output\display::outcome($plan->state),
             'cancontinue' => $plan->state === 'reviewable' && plan_history::has_work($planid)
@@ -106,17 +106,11 @@ final class plan_selection {
             }
             $transaction = $DB->start_delegated_transaction();
             self::update($planid, $visible, $included, $action, $group);
+            self::keep_unsettled_out($planid);
             $document = json_decode($plan->configjson, true);
             $document['selectiondigest'] = self::digest($planid);
             $plan->configjson = json_encode($document, JSON_UNESCAPED_SLASHES);
             $plan->digest = hash('sha256', $plan->configjson);
-            $blocked = $DB->record_exists_select(
-                'local_filebank_operation',
-                'planid = ? AND included = 1 AND ' . $DB->sql_like('decision', '?'),
-                [$planid, 'blocked%']
-            );
-            $issues = array_filter($document['issues'] ?? [], static fn($issue) => $issue['blocking'] ?? true);
-            $plan->state = $issues || $blocked ? 'blocked' : (plan_history::has_work($planid) ? 'reviewable' : 'cancelled');
             $DB->update_record('local_filebank_plan', $plan);
             \local_filebank\local\logging\log::record(
                 'migration_selection_changed',
@@ -211,6 +205,23 @@ final class plan_selection {
     }
 
     /**
+     * Keep files that are waiting for a decision, or were left as they are, out of the migration whatever was selected: they are
+     * settled in their own way and never block the rest.
+     *
+     * @param int $planid The migration.
+     */
+    private static function keep_unsettled_out(int $planid): void {
+        global $DB;
+        $DB->set_field_select(
+            'local_filebank_operation',
+            'included',
+            0,
+            'planid = :planid AND included = 1 AND (' . $DB->sql_like('decision', ':blocked') . ' OR decision = :skipped)',
+            ['planid' => $planid, 'blocked' => 'blocked%', 'skipped' => 'skip_conflict']
+        );
+    }
+
+    /**
      * Update.
      *
      * @param int $planid Planid.
@@ -250,14 +261,25 @@ final class plan_selection {
      */
     private static function page(int $planid, array $visible, array $included): void {
         global $DB;
-        foreach ($visible as $id) {
-            $DB->get_record('local_filebank_operation', ['id' => $id, 'planid' => $planid], '*', MUST_EXIST);
-            $DB->set_field(
-                'local_filebank_operation',
-                'included',
-                in_array($id, $included, true) ? 1 : 0,
-                ['id' => $id]
-            );
+        $visible = array_values(array_unique(array_map('intval', $visible)));
+        if (!$visible) {
+            return;
+        }
+        [$insql, $params] = $DB->get_in_or_equal($visible, SQL_PARAMS_NAMED, 'visible');
+        $found = $DB->count_records_select(
+            'local_filebank_operation',
+            'planid = :planid AND id ' . $insql,
+            $params + ['planid' => $planid]
+        );
+        if ($found !== count($visible)) {
+            throw new \dml_missing_record_exception('local_filebank_operation');
+        }
+        $included = array_map('intval', $included);
+        foreach ([1 => array_intersect($visible, $included), 0 => array_diff($visible, $included)] as $value => $ids) {
+            if ($ids) {
+                [$insql, $params] = $DB->get_in_or_equal(array_values($ids), SQL_PARAMS_NAMED, 'chosen');
+                $DB->set_field_select('local_filebank_operation', 'included', $value, 'id ' . $insql, $params);
+            }
         }
     }
 

@@ -121,6 +121,33 @@ final class local_filebank_generator extends component_generator_base {
     }
 
     /**
+     * Create files of the source whose name is already taken by a different file in the destination, to settle them together.
+     * @param array $record Named fixture.
+     * @return array Fixture identifiers.
+     */
+    public function create_conflict_fixture(array $record): array {
+        global $DB, $USER;
+        $fixture = $this->create_migration_fixture($record);
+        $previoususer = $USER;
+        $this->set_user(get_admin());
+        try {
+            $courseid = $DB->get_field('course', 'id', ['shortname' => 'CB2025'], MUST_EXIST);
+            $folders = get_fast_modinfo($courseid)->get_instances_of('folder');
+            $folder = reset($folders);
+            for ($i = 0; $i < 12; $i++) {
+                $this->create_file($folder->id, 'mod_folder', 'clash-' . $i . '.txt', 'Source version ' . $i);
+                $this->create_file($fixture['targetcmid'], 'mod_folder', 'clash-' . $i . '.txt', 'Destination version ' . $i);
+            }
+            foreach (['CB2025', 'CB2026'] as $shortname) {
+                indexer::refresh($DB->get_field('course', 'id', ['shortname' => $shortname], MUST_EXIST));
+            }
+            return $fixture;
+        } finally {
+            $this->set_user($previoususer);
+        }
+    }
+
+    /**
      * Create more than one native page for administration and whole-plan selection.
      * @param array $record Named fixture.
      * @return array Fixture identifiers.
@@ -148,7 +175,7 @@ final class local_filebank_generator extends component_generator_base {
                 profiles::change_state([$id], 'disable');
             }
             for ($i = 0; $i < 26; $i++) {
-                \local_filebank\local\migration\migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+                \local_filebank\local\migration\migration_planner::preview($fixture['profileid'], '2025', '2026');
             }
             return $fixture;
         } finally {

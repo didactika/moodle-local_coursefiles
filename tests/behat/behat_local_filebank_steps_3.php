@@ -52,21 +52,6 @@ class behat_local_filebank_steps_3 extends behat_local_filebank_base {
     }
 
     /**
-     * Edit the actual row controls rather than posting an unrelated document.
-     *
-     * @When /^I set the FileBank destination folder rule to "([^"]*)"$/
-     * @param string $name Exact target folder name.
-     */
-    public function destination_folder_rule(string $name): void {
-        $this->getSession()->getDriver()->executeScript(
-            'const method=document.querySelector("[data-field=targetmethod]");method.value="equals";'
-            . 'method.dispatchEvent(new Event("input",{bubbles:true}));'
-            . 'const value=document.querySelector("[data-field=targetvalue]");value.value=' . json_encode($name) . ';'
-            . 'value.dispatchEvent(new Event("input",{bubbles:true}));'
-        );
-    }
-
-    /**
      * Reconfiguration keeps the initial reviewed record intact.
      *
      * @Then /^FileBank should retain "([0-9]+)" migration plans$/
@@ -106,14 +91,14 @@ class behat_local_filebank_steps_3 extends behat_local_filebank_base {
     public function profile_inputs_align(): void {
         $valid = $this->getSession()->getDriver()->evaluateScript(
             '(()=>{const names=["profilename","editmode","coursefield","coursepattern","familytemplate",'
-            . '"displaytemplate","pairdimensions","categoryids"];'
+            . '"displaytemplate","pairdimensions"];'
             . 'const left=names.map(name=>document.getElementById("id_"+name).getBoundingClientRect().left);'
             . 'return Math.max(...left)-Math.min(...left)<=2;})()'
         );
         if (!$valid) {
             $positions = $this->getSession()->getDriver()->evaluateScript(
                 'JSON.stringify(["profilename","editmode","coursefield","coursepattern","familytemplate",'
-                . '"displaytemplate","pairdimensions","categoryids"].map(name=>{'
+                . '"displaytemplate","pairdimensions"].map(name=>{'
                 . 'const input=document.getElementById("id_"+name);return {name,left:input.getBoundingClientRect().left,'
                 . 'width:input.getBoundingClientRect().width,display:getComputedStyle(input).display};}))'
             );

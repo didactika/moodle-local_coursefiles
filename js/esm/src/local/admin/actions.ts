@@ -1,19 +1,7 @@
-// This file is part of Moodle - https://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
-
 /**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
  * Native list selection, confirmation and shared pagination controls.
  * @module local_filebank/local/admin/actions
  * @copyright 2026 Didactika.org
@@ -28,6 +16,7 @@ import Notification from '@moodle/lms/local_filebank/compat/notification';
 import {loadFragment} from '@moodle/lms/local_filebank/local/repository';
 import {addToast} from '@moodle/lms/local_filebank/compat/toast';
 import {getStrings} from '@moodle/lms/core/stringUtils';
+import {swapList} from '@moodle/lms/local_filebank/local/admin/lists';
 
 /**
  * Create state and actions for one bulk form.
@@ -40,13 +29,18 @@ export const createBulkActions = (form: HTMLFormElement) => {
     }
     form.dataset.ready = 'true';
     const all = form.querySelector<HTMLInputElement>(Selectors.selectAll)!;
-    const checks = [...form.querySelectorAll<HTMLInputElement>(Selectors.bulkChecks)];
+    // The rows are read each time, because a list that changes page in place brings new ones.
+    const checksOf = () => [...form.querySelectorAll<HTMLInputElement>(Selectors.bulkChecks)];
     let saving = false;
     const update = () => {
-        const count = checks.filter(check => check.checked).length;
+        const count = checksOf().filter(check => check.checked).length;
         if (all) {
-            all.checked = checks.length > 0 && count === checks.length;
-            all.indeterminate = count > 0 && count < checks.length;
+            all.checked = checksOf().length > 0 && count === checksOf().length;
+            all.indeterminate = count > 0 && count < checksOf().length;
+        }
+        const counter = form.querySelector<HTMLElement>('[data-filebank-bulk-count]');
+        if (counter) {
+            counter.textContent = (counter.dataset.template ?? '').replace('__COUNT__', String(count));
         }
         const bulk = form.querySelector<HTMLElement>(Selectors.bulkActions)!;
         if (bulk) {
@@ -54,14 +48,14 @@ export const createBulkActions = (form: HTMLFormElement) => {
             bulk.querySelectorAll<HTMLButtonElement>(Selectors.button).forEach(button => {
                 button.disabled = count === 0 || saving;
                 if (form.hasAttribute('data-filebank-profiles') && ['enable', 'disable'].includes(button.value)) {
-                    button.hidden = !checks.some(check => check.checked
+                    button.hidden = !checksOf().some(check => check.checked
                         && check.closest<HTMLTableRowElement>(Selectors.tableRow)!.dataset.enabled === (button.value === 'enable' ? '0' : '1'));
                 }
             });
         }
     };
     const selectAllChange = () => {
-        checks.forEach(check => {
+        checksOf().forEach(check => {
             check.checked = all.checked;
         });
         update();
@@ -76,7 +70,7 @@ export const createBulkActions = (form: HTMLFormElement) => {
             if (saving) {
                 return;
             }
-            const ids = row.length ? [Number(row[1])] : checks.filter(check => check.checked)
+            const ids = row.length ? [Number(row[1])] : checksOf().filter(check => check.checked)
                 .map(check => Number(check.value));
             saving = true;
             form.setAttribute('aria-busy', 'true');
@@ -115,16 +109,14 @@ export const createBulkActions = (form: HTMLFormElement) => {
             }
             return;
         }
-        const destructive = button && (button.value === 'delete' || button.name === 'deleteplan'
-            || button.value.startsWith('delete:'));
+        const destructive = button && (button.value === 'delete' || button.value.startsWith('delete:'));
         if (!destructive || form.dataset.confirmed) {
             delete form.dataset.confirmed;
             return;
         }
         event.preventDefault();
         try {
-            const keys = ['confirm', form.hasAttribute('data-filebank-migrations')
-                ? 'migrationdeleteconfirm' : 'profilestateconfirm', 'delete', 'cancel'];
+            const keys = ['confirm', 'profilestateconfirm', 'delete', 'cancel'];
             const [title, message, yes, no] = await getStrings(keys.map(key => ({
                 key, component: key.endsWith('confirm') && key !== 'confirm' ? 'local_filebank' : 'core',
             })));
@@ -185,11 +177,11 @@ export const createHistoryActions = (history: HTMLElement) => {
  */
 export const changePage = (event: Event) => {
             const select = eventElement(event).closest<HTMLSelectElement>(Selectors.pageSize)!;
-            if (!select || select.closest<HTMLElement>(Selectors.migration)!) {
+            if (!select) {
                 return;
             }
             const url = new URL(select.dataset.url!, document.baseURI);
             url.searchParams.set('perpage', select.value);
             url.searchParams.set(select.dataset.pageparameter!, '0');
-            window.location.assign(url);
+            void swapList(select, url.toString());
         };
