@@ -13,7 +13,7 @@
 import {useRef, useState, type CSSProperties, type RefObject} from 'react';
 
 export interface KeptHeight {
-    ref: RefObject<HTMLDivElement>;
+    ref: RefObject<HTMLDivElement | null>;
     style: CSSProperties | undefined;
     /** Remember the height the list has now, before it changes page. */
     keep: () => void;

@@ -30,7 +30,7 @@ export const registerBulk = (form: HTMLFormElement, actions: NonNullable<ReturnT
             actions.update();
         }
     });
-    listen(form, 'filebank:listchanged', actions.update);
+    form.addEventListener('filebank:listchanged', actions.update);
     listen(form, 'submit', actions.submit);
 };
 

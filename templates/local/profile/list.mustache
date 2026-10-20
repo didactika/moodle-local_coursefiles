@@ -29,6 +29,7 @@
     </form>
     <form method="post" action="{{actionurl}}" id="filebank-profiles-form" data-filebank-profiles data-contextid="{{contextid}}">
         <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <div data-filebank-list="profiles">
         {{#hasprofiles}}<div class="fbm-bulkbar" role="group" aria-label="{{#str}}actions, core{{/str}}" data-filebank-bulk-actions hidden>
             <span class="fbm-bulkbar-title" role="status" data-filebank-bulk-count data-template="{{#str}}selectedcount, local_filebank, __COUNT__{{/str}}"></span>
             <button name="action" value="export" class="btn btn-outline-secondary btn-sm" disabled title="{{#str}}exportselectedprofiles, local_filebank{{/str}}" aria-label="{{#str}}exportselectedprofiles, local_filebank{{/str}}">{{#pix}}i/export, core{{/pix}}{{#str}}exportaction, local_filebank{{/str}}</button>
@@ -36,7 +37,6 @@
             <button name="action" value="disable" class="btn btn-outline-secondary btn-sm" disabled title="{{#str}}disableselected, local_filebank{{/str}}" aria-label="{{#str}}disableselected, local_filebank{{/str}}">{{#pix}}t/hide, core{{/pix}}{{#str}}disable, core{{/str}}</button>
             <button name="action" value="delete" class="btn btn-danger btn-sm" disabled title="{{#str}}deleteselected, local_filebank{{/str}}" aria-label="{{#str}}deleteselected, local_filebank{{/str}}">{{#pix}}t/delete, core{{/pix}}{{#str}}delete, core{{/str}}</button>
         </div>
-        <div data-filebank-list="profiles">
         <div class="table-responsive"><table class="table table-hover fbm-profiles-table">
             <thead><tr>
                 <th class="fbm-col-check"><input type="checkbox" class="fbm-check" data-filebank-selectall aria-label="{{#str}}selectall, core{{/str}}" title="{{#str}}selectall, core{{/str}}"></th>

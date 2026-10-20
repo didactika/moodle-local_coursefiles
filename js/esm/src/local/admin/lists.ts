@@ -34,7 +34,29 @@ export const swapList = async(origin: Element, url: string): Promise<void> => {
             window.location.assign(url);
             return;
         }
-        region.replaceChildren(...Array.from(next.childNodes, node => document.importNode(node, true)));
+        // The pager stays where it is, so the control the person is using is never taken away from under them: only its options,
+        // the range and the arrows are refreshed. Everything else of the region is replaced.
+        const pager = region.querySelector<HTMLElement>('.filebank-pagination');
+        const nextPager = next.querySelector<HTMLElement>('.filebank-pagination');
+        if (pager && nextPager) {
+            const select = pager.querySelector<HTMLSelectElement>('select');
+            const nextSelect = nextPager.querySelector<HTMLSelectElement>('select');
+            if (select && nextSelect) {
+                select.innerHTML = nextSelect.innerHTML;
+                select.value = nextSelect.value;
+                select.dataset.url = nextSelect.dataset.url || '';
+            }
+            const pages = pager.querySelector('.fbm-listbar-pages');
+            const nextPages = nextPager.querySelector('.fbm-listbar-pages');
+            if (pages && nextPages) {
+                pages.replaceWith(document.importNode(nextPages, true));
+            }
+            nextPager.remove();
+            Array.from(region.childNodes).filter(node => node !== pager).forEach(node => node.remove());
+            Array.from(next.childNodes).forEach(node => region.insertBefore(document.importNode(node, true), pager));
+        } else {
+            region.replaceChildren(...Array.from(next.childNodes, node => document.importNode(node, true)));
+        }
         const fresh = region.querySelector<HTMLElement>('.table-responsive');
         if (fresh && height > 0) {
             fresh.style.minHeight = `${height}px`;
