@@ -388,6 +388,15 @@ var FilebankMigration = (() => {
       return n2;
     }, t3);
   }
+  function g2() {
+    var n2 = d2(t2++, 11);
+    if (!n2.__) {
+      for (var u4 = r2.__v; null !== u4 && !u4.__m && null !== u4.__; ) u4 = u4.__;
+      var i4 = u4.__m || (u4.__m = [0, 0]);
+      n2.__ = "P" + i4[0] + "-" + i4[1]++;
+    }
+    return n2.__;
+  }
   function j2() {
     for (var n2; n2 = f2.shift(); ) if (n2.__P && n2.__H) try {
       n2.__H.__h.forEach(z2), n2.__H.__h.forEach(B2), n2.__H.__h = [];
@@ -638,11 +647,9 @@ var FilebankMigration = (() => {
   // node_modules/preact/compat/client.mjs
   function createRoot(container) {
     return {
-      // eslint-disable-next-line
       render: function(children) {
         $2(children, container);
       },
-      // eslint-disable-next-line
       unmount: function() {
         hn(container);
       }
@@ -657,6 +664,32 @@ var FilebankMigration = (() => {
       return () => window.clearTimeout(timer);
     }, [value, milliseconds]);
     return followed;
+  };
+
+  // js/src/migration/hooks/useKeptHeight.ts
+  var useKeptHeight = () => {
+    const ref = A2(null);
+    const [height, setHeight] = h2(0);
+    return {
+      ref,
+      style: height > 0 ? { minHeight: `${height}px` } : void 0,
+      keep: () => setHeight((current2) => {
+        var _a, _b;
+        return Math.max(current2, (_b = (_a = ref.current) == null ? void 0 : _a.offsetHeight) != null ? _b : 0);
+      }),
+      release: () => setHeight(0)
+    };
+  };
+
+  // js/src/migration/lib/paging.ts
+  var PAGE_SIZES = [12, 24, 48, 96];
+  var MAX_ALL = 500;
+  var pageSizeChoices = (total) => {
+    if (total <= PAGE_SIZES[0]) {
+      return [Math.max(1, total)];
+    }
+    const sizes = PAGE_SIZES.filter((size) => size < total);
+    return total <= MAX_ALL ? [...sizes, total] : sizes;
   };
 
   // js/src/migration/lib/errors.ts
@@ -874,7 +907,7 @@ var FilebankMigration = (() => {
   var Check_default = Check;
 
   // js/src/migration/components/ui/FilterMenu.tsx
-  var FilterMenu = ({ label, resetLabel, groups, afterSearch = true }) => {
+  var FilterMenu = ({ label, resetLabel, groups }) => {
     const box = A2(null);
     const applied = groups.filter((group) => group.value !== "");
     y2(() => {
@@ -896,77 +929,58 @@ var FilebankMigration = (() => {
         document.removeEventListener("keydown", escape);
       };
     }, []);
-    return /* @__PURE__ */ u3(b, { children: [
-      /* @__PURE__ */ u3(
-        "details",
-        {
-          ref: box,
-          className: `fbm-filterbox${afterSearch ? " fbm-filter-end" : ""}`,
-          "data-region": "filters",
-          "data-active": applied.length > 0 ? "true" : void 0,
-          children: [
-            /* @__PURE__ */ u3("summary", { className: "btn btn-outline-secondary", children: [
-              /* @__PURE__ */ u3(Icon_default, { name: "filter", gap: true }),
-              label,
-              applied.length > 0 && /* @__PURE__ */ u3("span", { className: "badge rounded-pill fbm-count", children: applied.length })
+    return /* @__PURE__ */ u3(
+      "details",
+      {
+        ref: box,
+        className: "fbm-filterbox",
+        "data-region": "filters",
+        "data-active": applied.length > 0 ? "true" : void 0,
+        children: [
+          /* @__PURE__ */ u3("summary", { className: "btn btn-outline-secondary", children: [
+            /* @__PURE__ */ u3(Icon_default, { name: "filter", gap: true }),
+            label,
+            applied.length > 0 && /* @__PURE__ */ u3("span", { className: "badge rounded-pill fbm-count", children: applied.length })
+          ] }),
+          /* @__PURE__ */ u3("div", { className: "fbm-filterpanel", children: [
+            /* @__PURE__ */ u3("div", { className: "fbm-filter-head", children: [
+              /* @__PURE__ */ u3("h3", { className: "fbm-filter-heading", children: label }),
+              /* @__PURE__ */ u3(
+                "button",
+                {
+                  type: "button",
+                  className: "btn btn-link btn-icon",
+                  title: resetLabel,
+                  disabled: applied.length === 0,
+                  onClick: () => applied.forEach((group) => group.onChange("")),
+                  children: [
+                    /* @__PURE__ */ u3(Icon_default, { name: "rotate-right" }),
+                    /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: resetLabel })
+                  ]
+                }
+              )
             ] }),
-            /* @__PURE__ */ u3("div", { className: "fbm-filterpanel", children: [
-              /* @__PURE__ */ u3("div", { className: "fbm-filter-head", children: [
-                /* @__PURE__ */ u3("h3", { className: "fbm-filter-heading", children: label }),
-                /* @__PURE__ */ u3(
-                  "button",
-                  {
-                    type: "button",
-                    className: "btn btn-outline-secondary fbm-iconpill",
-                    title: resetLabel,
-                    disabled: applied.length === 0,
-                    onClick: () => applied.forEach((group) => group.onChange("")),
-                    children: [
-                      /* @__PURE__ */ u3(Icon_default, { name: "rotate-right" }),
-                      /* @__PURE__ */ u3("span", { className: "filebank-visually-hidden", children: resetLabel })
-                    ]
-                  }
-                )
-              ] }),
-              groups.map((group) => /* @__PURE__ */ u3("fieldset", { className: "fbm-filter-group", children: [
-                /* @__PURE__ */ u3("legend", { className: "fbm-filter-title", children: group.label }),
-                group.options.map((option) => /* @__PURE__ */ u3("label", { className: "fbm-filter-option", children: [
-                  /* @__PURE__ */ u3(
-                    "input",
-                    {
-                      type: "radio",
-                      name: `fbm-filter-${group.id}`,
-                      checked: group.value === option.value,
-                      onChange: () => group.onChange(option.value)
-                    }
-                  ),
-                  /* @__PURE__ */ u3("span", { children: option.label }),
-                  option.count !== void 0 && /* @__PURE__ */ u3("span", { className: "text-muted small", children: option.count })
-                ] }, option.value))
-              ] }, group.id))
-            ] })
-          ]
-        }
-      ),
-      applied.length > 0 && /* @__PURE__ */ u3("div", { className: "fbm-chips", "data-region": "active-filters", children: applied.map((group) => {
-        var _a;
-        return /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            className: "btn btn-sm btn-outline-secondary rounded-pill fbm-chip",
-            onClick: () => group.onChange(""),
-            children: [
-              group.label,
-              ": ",
-              (_a = group.options.find((option) => option.value === group.value)) == null ? void 0 : _a.label,
-              /* @__PURE__ */ u3(Icon_default, { name: "xmark" })
-            ]
-          },
-          group.id
-        );
-      }) })
-    ] });
+            groups.map((group) => /* @__PURE__ */ u3("fieldset", { className: "fbm-filter-group", children: [
+              /* @__PURE__ */ u3("legend", { className: "fbm-filter-title", children: group.label }),
+              /* @__PURE__ */ u3("div", { className: "fbm-filter-chips", children: group.options.map((option) => /* @__PURE__ */ u3(
+                "button",
+                {
+                  type: "button",
+                  className: `btn btn-sm btn-outline-secondary rounded-pill fbm-chip${group.value === option.value ? " active" : ""}`,
+                  "aria-pressed": group.value === option.value,
+                  onClick: () => group.onChange(option.value),
+                  children: [
+                    option.label,
+                    option.count !== void 0 && /* @__PURE__ */ u3("span", { className: "small", children: option.count })
+                  ]
+                },
+                option.value
+              )) })
+            ] }, group.id))
+          ] })
+        ]
+      }
+    );
   };
   var FilterMenu_default = FilterMenu;
 
@@ -1108,9 +1122,10 @@ var FilebankMigration = (() => {
   var PageHeader_default = PageHeader;
 
   // js/src/migration/components/ui/Pagination.tsx
-  var Pagination = ({ page, perpage, total, onPage, text, sizes, onPerPage }) => {
+  var Pagination = ({ page, perpage, total, onPage, text, onPerPage }) => {
+    const id = g2();
     const pages = Math.max(1, Math.ceil(total / Math.max(1, perpage)));
-    const choose = sizes !== void 0 && onPerPage !== void 0 && total > 0 ? { sizes, onPerPage } : null;
+    const choose = onPerPage !== void 0 && total > 0 ? { sizes: pageSizeChoices(total), onPerPage } : null;
     if (pages < 2 && choose === null) {
       return null;
     }
@@ -1130,23 +1145,26 @@ var FilebankMigration = (() => {
     );
     return /* @__PURE__ */ u3("nav", { "aria-label": text("pagination_label"), className: "fbm-listbar fbm-pagination", children: [
       /* @__PURE__ */ u3("div", { className: "fbm-listbar-size", children: choose !== null && /* @__PURE__ */ u3(b, { children: [
-        /* @__PURE__ */ u3("span", { className: "fbm-listbar-label", children: text("per_page") }),
+        /* @__PURE__ */ u3("label", { className: "fbm-listbar-label", htmlFor: id, children: text("per_page") }),
         /* @__PURE__ */ u3(
           "select",
           {
+            id,
             className: "form-select form-select-sm rounded-pill",
-            "aria-label": text("per_page"),
             value: perpage,
             onChange: (event) => choose.onPerPage(Number(event.target.value)),
-            children: choose.sizes.map((size) => /* @__PURE__ */ u3("option", { value: size, children: size }, size))
+            children: [
+              !choose.sizes.includes(perpage) && /* @__PURE__ */ u3("option", { value: perpage, children: perpage }),
+              choose.sizes.map((size) => /* @__PURE__ */ u3("option", { value: size, children: size === total ? text("all") : size }, size))
+            ]
           }
         )
       ] }) }),
       /* @__PURE__ */ u3("div", { className: "fbm-listbar-pages", children: [
         /* @__PURE__ */ u3("span", { className: "text-muted small", "aria-live": "polite", children: text("pagination_range", { from, to, total }) }),
         /* @__PURE__ */ u3("div", { className: "fbm-actions", children: [
-          arrow(page - 1, page > 0, "chevron-left", text("pagination_previous")),
-          arrow(page + 1, page < pages - 1, "chevron-right", text("pagination_next"))
+          arrow(page - 1, page > 0, "arrow-left", text("pagination_previous")),
+          arrow(page + 1, page < pages - 1, "arrow-right", text("pagination_next"))
         ] })
       ] })
     ] });
@@ -1228,12 +1246,13 @@ var FilebankMigration = (() => {
 
   // js/src/migration/components/list/MigrationList.tsx
   var STATES = ["", "reviewable", "queued", "running", "partial", "completed", "cancelled"];
-  var MigrationList = ({ text, pagesizes, onOpen, onNew }) => {
-    var _a, _b, _c, _d, _e;
+  var MigrationList = ({ text, onOpen, onNew }) => {
+    var _a, _b, _c, _d;
     const [search, setSearch] = h2("");
     const [state, setState] = h2("");
     const [page, setPage] = h2(0);
-    const [perpage, setPerpage] = h2((_a = pagesizes[0]) != null ? _a : 10);
+    const [perpage, setPerpage] = h2(PAGE_SIZES[0]);
+    const kept = useKeptHeight();
     const [data, setData] = h2(null);
     const [error, setError] = h2("");
     const [selected, setSelected] = h2([]);
@@ -1253,8 +1272,9 @@ var FilebankMigration = (() => {
     }, [load2]);
     y2(() => {
       setPage(0);
+      kept.release();
     }, [query, state, perpage]);
-    const active = (_b = data == null ? void 0 : data.migrations.some((migration) => migration.state === "queued" || migration.state === "running")) != null ? _b : false;
+    const active = (_a = data == null ? void 0 : data.migrations.some((migration) => migration.state === "queued" || migration.state === "running")) != null ? _a : false;
     y2(() => {
       if (!active) {
         return void 0;
@@ -1266,7 +1286,7 @@ var FilebankMigration = (() => {
       var _a2, _b2;
       return (_b2 = (_a2 = data == null ? void 0 : data.counts.find((item) => item.state === (value === "" ? "all" : value))) == null ? void 0 : _a2.count) != null ? _b2 : 0;
     };
-    const rows = (_c = data == null ? void 0 : data.migrations) != null ? _c : [];
+    const rows = (_b = data == null ? void 0 : data.migrations) != null ? _b : [];
     const hasAny = data !== null && (countOf("") > 0 || search !== "" || state !== "");
     const chosen = selected.filter((id) => rows.some((row) => row.id === id));
     const deletable = rows.filter((row) => row.candelete);
@@ -1292,16 +1312,13 @@ var FilebankMigration = (() => {
         PageHeader_default,
         {
           title: text("list_title"),
-          subtitle: text("list_subtitle"),
-          actions: hasAny && /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-primary", onClick: onNew, "data-action": "new-migration", children: [
-            /* @__PURE__ */ u3(Icon_default, { name: "plus", gap: true }),
-            text("new_migration")
-          ] })
+          badges: countOf("") > 0 && /* @__PURE__ */ u3("span", { className: "badge rounded-pill fbm-count", children: countOf("") }),
+          subtitle: text("list_subtitle")
         }
       ),
       error !== "" && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: error }),
       data === null && error === "" && /* @__PURE__ */ u3(Skeleton_default, { rows: 5, label: text("loading") }),
-      data !== null && ((_d = data.counts.find((item) => item.state === "all")) == null ? void 0 : _d.count) === 0 && search === "" && state === "" && /* @__PURE__ */ u3(
+      data !== null && ((_c = data.counts.find((item) => item.state === "all")) == null ? void 0 : _c.count) === 0 && search === "" && state === "" && /* @__PURE__ */ u3(
         EmptyState_default,
         {
           icon: "right-left",
@@ -1333,9 +1350,13 @@ var FilebankMigration = (() => {
                 }))
               }]
             }
-          )
+          ),
+          /* @__PURE__ */ u3("div", { className: "fbm-toolbar-actions", children: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-primary", onClick: onNew, "data-action": "new-migration", children: [
+            /* @__PURE__ */ u3(Icon_default, { name: "plus", gap: true }),
+            text("new_migration")
+          ] }) })
         ] }),
-        rows.length === 0 ? /* @__PURE__ */ u3(EmptyState_default, { icon: "magnifying-glass", title: text("list_nomatch_title"), text: text("list_nomatch_text") }) : /* @__PURE__ */ u3("div", { className: "table-responsive", children: /* @__PURE__ */ u3("table", { className: "table table-hover", children: [
+        rows.length === 0 ? /* @__PURE__ */ u3(EmptyState_default, { icon: "magnifying-glass", title: text("list_nomatch_title"), text: text("list_nomatch_text") }) : /* @__PURE__ */ u3("div", { className: "table-responsive", ref: kept.ref, style: kept.style, children: /* @__PURE__ */ u3("table", { className: "table table-hover", children: [
           /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
             /* @__PURE__ */ u3("th", { className: "fbm-col-check", children: /* @__PURE__ */ u3(
               Check_default,
@@ -1364,14 +1385,10 @@ var FilebankMigration = (() => {
                 onChange: (checked) => setSelected(checked ? [...chosen, row.id] : chosen.filter((id) => id !== row.id))
               }
             ) }),
-            /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-link p-0 fbm-link", onClick: () => onOpen(row.id), children: [
-              /* @__PURE__ */ u3("strong", { children: [
-                "#",
-                row.id
-              ] }),
-              " ",
-              row.profile
-            ] }) }),
+            /* @__PURE__ */ u3("td", { children: [
+              /* @__PURE__ */ u3("button", { type: "button", className: "btn btn-link p-0 fbm-link fbm-row-title", onClick: () => onOpen(row.id), children: text("review_title", { n: row.id }) }),
+              /* @__PURE__ */ u3("span", { className: "fbm-table-meta", children: row.profile })
+            ] }),
             /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3("span", { className: "fbm-route", children: [
               /* @__PURE__ */ u3("span", { children: row.source }),
               /* @__PURE__ */ u3(Icon_default, { name: "arrow-right" }),
@@ -1405,9 +1422,11 @@ var FilebankMigration = (() => {
             page,
             perpage,
             total: data.total,
-            onPage: setPage,
+            onPage: (next) => {
+              kept.keep();
+              setPage(next);
+            },
             text,
-            sizes: pagesizes,
             onPerPage: setPerpage
           }
         )
@@ -1437,7 +1456,7 @@ var FilebankMigration = (() => {
           onConfirm: () => void remove(),
           onCancel: () => setAsking(null),
           children: [
-            /* @__PURE__ */ u3("p", { children: text("delete_text", { n: (_e = asking == null ? void 0 : asking.length) != null ? _e : 0 }) }),
+            /* @__PURE__ */ u3("p", { children: text("delete_text", { n: (_d = asking == null ? void 0 : asking.length) != null ? _d : 0 }) }),
             /* @__PURE__ */ u3("p", { className: "text-muted", children: text("delete_hint") })
           ]
         }
@@ -1684,18 +1703,19 @@ var FilebankMigration = (() => {
   var Panel_default = Panel;
 
   // js/src/migration/components/review/FilesPanel.tsx
-  var SIZES = [10, 25, 50];
   var BUCKETS = ["", "copy", "existing", "left"];
   var FilesPanel = ({ migration, text, bucket, onBucket, busy, onSelect }) => {
     var _a, _b;
     const [search, setSearch] = h2("");
     const [page, setPage] = h2(0);
-    const [perpage, setPerpage] = h2(SIZES[1]);
+    const [perpage, setPerpage] = h2(PAGE_SIZES[0]);
+    const kept = useKeptHeight();
     const [data, setData] = h2(null);
     const [error, setError] = h2("");
     const query = useDebounced(search, 250);
     y2(() => {
       setPage(0);
+      kept.release();
     }, [bucket, query, perpage]);
     y2(() => {
       let current2 = true;
@@ -1774,7 +1794,7 @@ var FilebankMigration = (() => {
           ] }),
           data === null && error === "" && /* @__PURE__ */ u3(Skeleton_default, { rows: 6, label: text("loading") }),
           data !== null && files.length === 0 && /* @__PURE__ */ u3(EmptyState_default, { plain: true, icon: "file-circle-question", title: text("files_empty_title"), text: text("files_empty_text") }),
-          files.length > 0 && /* @__PURE__ */ u3("div", { className: "table-responsive", children: /* @__PURE__ */ u3("table", { className: "table table-hover fbm-files", children: [
+          files.length > 0 && /* @__PURE__ */ u3("div", { className: "table-responsive", ref: kept.ref, style: kept.style, children: /* @__PURE__ */ u3("table", { className: "table table-hover fbm-files", children: [
             /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
               /* @__PURE__ */ u3("th", { className: "fbm-col-check", children: /* @__PURE__ */ u3(
                 Check_default,
@@ -1827,9 +1847,11 @@ var FilebankMigration = (() => {
               page,
               perpage,
               total: (_b = data == null ? void 0 : data.total) != null ? _b : 0,
-              onPage: setPage,
+              onPage: (next) => {
+                kept.keep();
+                setPage(next);
+              },
               text,
-              sizes: SIZES,
               onPerPage: setPerpage
             }
           )
@@ -1857,20 +1879,22 @@ var FilebankMigration = (() => {
   var Switch_default = Switch;
 
   // js/src/migration/components/review/FoldersPanel.tsx
-  var PAGE_SIZE = 20;
   var FoldersPanel = ({ migration, text, busy, onSelect }) => {
     var _a;
     const [search, setSearch] = h2("");
     const [page, setPage] = h2(0);
+    const [perpage, setPerpage] = h2(PAGE_SIZES[0]);
+    const kept = useKeptHeight();
     const [data, setData] = h2(null);
     const [error, setError] = h2("");
     const query = useDebounced(search, 250);
     y2(() => {
       setPage(0);
-    }, [query]);
+      kept.release();
+    }, [query, perpage]);
     y2(() => {
       let current2 = true;
-      void getFolders(migration.id, query, page, PAGE_SIZE).then((read2) => {
+      void getFolders(migration.id, query, page, perpage).then((read2) => {
         if (current2) {
           setData(read2);
           setError("");
@@ -1883,14 +1907,14 @@ var FilebankMigration = (() => {
       return () => {
         current2 = false;
       };
-    }, [migration.id, migration.digest, query, page]);
+    }, [migration.id, migration.digest, query, page, perpage]);
     const editable = migration.editable && !busy;
     return /* @__PURE__ */ u3(Panel_default, { title: text("tab_folders"), icon: "folder-tree", count: data == null ? void 0 : data.total, region: "folders", children: [
       error !== "" && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: error }),
       /* @__PURE__ */ u3("div", { className: "fbm-toolbar", children: /* @__PURE__ */ u3(SearchBox_default, { id: "fbm-folders-search", value: search, onChange: setSearch, placeholder: text("folders_search"), clearLabel: text("clear") }) }),
       data === null && error === "" && /* @__PURE__ */ u3(Skeleton_default, { rows: 4, label: text("loading") }),
       data !== null && data.folders.length === 0 && /* @__PURE__ */ u3(EmptyState_default, { plain: true, icon: "folder-open", title: text("folders_empty_title"), text: text("folders_empty_text") }),
-      data !== null && data.folders.length > 0 && /* @__PURE__ */ u3("ul", { className: "fbm-folders", children: data.folders.map((folder) => /* @__PURE__ */ u3("li", { className: "fbm-folder", children: [
+      data !== null && data.folders.length > 0 && /* @__PURE__ */ u3("div", { ref: kept.ref, style: kept.style, children: /* @__PURE__ */ u3("ul", { className: "fbm-folders", children: data.folders.map((folder) => /* @__PURE__ */ u3("li", { className: "fbm-folder", children: [
         /* @__PURE__ */ u3(
           Switch_default,
           {
@@ -1916,8 +1940,21 @@ var FilebankMigration = (() => {
           /* @__PURE__ */ u3("span", { children: text("folder_included", { included: folder.included, total: folder.total }) }),
           /* @__PURE__ */ u3(Progress_default, { value: folder.included, max: Math.max(1, folder.total), label: text("progress"), tone: "success" })
         ] })
-      ] }, `${folder.sourcecourseid}:${folder.sourcecmid}:${folder.targetcourse}:${folder.targetfolder}`)) }),
-      /* @__PURE__ */ u3(Pagination_default, { page, perpage: PAGE_SIZE, total: (_a = data == null ? void 0 : data.total) != null ? _a : 0, onPage: setPage, text })
+      ] }, `${folder.sourcecourseid}:${folder.sourcecmid}:${folder.targetcourse}:${folder.targetfolder}`)) }) }),
+      /* @__PURE__ */ u3(
+        Pagination_default,
+        {
+          page,
+          perpage,
+          total: (_a = data == null ? void 0 : data.total) != null ? _a : 0,
+          onPage: (next) => {
+            kept.keep();
+            setPage(next);
+          },
+          text,
+          onPerPage: setPerpage
+        }
+      )
     ] });
   };
   var FoldersPanel_default = FoldersPanel;
@@ -3088,7 +3125,7 @@ var FilebankMigration = (() => {
         route.planid
       );
     } else {
-      screen = /* @__PURE__ */ u3(MigrationList_default, { text, pagesizes: props.pagesizes, onOpen: route.openReview, onNew: () => route.openNew() });
+      screen = /* @__PURE__ */ u3(MigrationList_default, { text, onOpen: route.openReview, onNew: () => route.openNew() });
     }
     return /* @__PURE__ */ u3("div", { className: "filebank-migration", "data-region": "fbm-app", children: [
       error !== "" && /* @__PURE__ */ u3(Alert_default, { tone: "danger", live: true, children: error }),

@@ -19,7 +19,6 @@ export interface MigrationProps {
     planid: number;
     /** Where the list and the migrations live, without the query. */
     pageurl: string;
-    pagesizes: number[];
     strings: Record<string, string>;
 }
 

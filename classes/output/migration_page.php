@@ -59,7 +59,6 @@ class migration_page {
         return [
             'planid' => $planid,
             'pageurl' => (new \moodle_url('/local/filebank/admin/migration.php'))->out(false),
-            'pagesizes' => [10, 25, 50],
             'strings' => (object) self::strings(),
         ];
     }

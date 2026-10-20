@@ -3,8 +3,8 @@
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
  * The filters of a list: a button with the filter icon and the number of filters that are on floating over its corner, and a
- * drop-down with a title, a button that resets them and the choices. A choice applies as soon as it is made, and the filters that
- * are on are also shown outside as chips that take one away. It is the same drop-down that the pages drawn by the server use.
+ * drop-down with a title, a button that resets them and the choices of each filter as chips. A choice applies as soon as it is
+ * made. It is the same drop-down that the pages drawn by the server use.
  *
  * @module     local_filebank/migration/components/ui/FilterMenu
  * @copyright  2026 Didactika.org
@@ -34,11 +34,9 @@ interface FilterMenuProps {
     label: string;
     resetLabel: string;
     groups: FilterGroup[];
-    /** The list has a search before the filters, so the button goes to the end of the row. */
-    afterSearch?: boolean;
 }
 
-const FilterMenu = ({label, resetLabel, groups, afterSearch = true}: FilterMenuProps) => {
+const FilterMenu = ({label, resetLabel, groups}: FilterMenuProps) => {
     const box = useRef<HTMLDetailsElement>(null);
     const applied = groups.filter((group) => group.value !== '');
 
@@ -63,10 +61,9 @@ const FilterMenu = ({label, resetLabel, groups, afterSearch = true}: FilterMenuP
         };
     }, []);
 
-    return <>
-        <details
+    return <details
             ref={box}
-            className={`fbm-filterbox${afterSearch ? ' fbm-filter-end' : ''}`}
+            className="fbm-filterbox"
             data-region="filters"
             data-active={applied.length > 0 ? 'true' : undefined}
         >
@@ -79,7 +76,7 @@ const FilterMenu = ({label, resetLabel, groups, afterSearch = true}: FilterMenuP
                     <h3 className="fbm-filter-heading">{label}</h3>
                     <button
                         type="button"
-                        className="btn btn-outline-secondary fbm-iconpill"
+                        className="btn btn-link btn-icon"
                         title={resetLabel}
                         disabled={applied.length === 0}
                         onClick={() => applied.forEach((group) => group.onChange(''))}
@@ -89,31 +86,21 @@ const FilterMenu = ({label, resetLabel, groups, afterSearch = true}: FilterMenuP
                 </div>
                 {groups.map((group) => <fieldset key={group.id} className="fbm-filter-group">
                     <legend className="fbm-filter-title">{group.label}</legend>
-                    {group.options.map((option) => <label key={option.value} className="fbm-filter-option">
-                        <input
-                            type="radio"
-                            name={`fbm-filter-${group.id}`}
-                            checked={group.value === option.value}
-                            onChange={() => group.onChange(option.value)}
-                        />
-                        <span>{option.label}</span>
-                        {option.count !== undefined && <span className="text-muted small">{option.count}</span>}
-                    </label>)}
+                    <div className="fbm-filter-chips">
+                        {group.options.map((option) => <button
+                            key={option.value}
+                            type="button"
+                            className={`btn btn-sm btn-outline-secondary rounded-pill fbm-chip${group.value === option.value ? ' active' : ''}`}
+                            aria-pressed={group.value === option.value}
+                            onClick={() => group.onChange(option.value)}
+                        >
+                            {option.label}
+                            {option.count !== undefined && <span className="small">{option.count}</span>}
+                        </button>)}
+                    </div>
                 </fieldset>)}
             </div>
-        </details>
-        {applied.length > 0 && <div className="fbm-chips" data-region="active-filters">
-            {applied.map((group) => <button
-                key={group.id}
-                type="button"
-                className="btn btn-sm btn-outline-secondary rounded-pill fbm-chip"
-                onClick={() => group.onChange('')}
-            >
-                {group.label}: {group.options.find((option) => option.value === group.value)?.label}
-                <Icon name="xmark" />
-            </button>)}
-        </div>}
-    </>;
+        </details>;
 };
 
 export default FilterMenu;

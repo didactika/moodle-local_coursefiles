@@ -10,6 +10,8 @@
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+import {useId} from 'react';
+import {pageSizeChoices} from '../../lib/paging';
 import type {Text} from '../../types';
 import Icon from './Icon';
 
@@ -20,14 +22,14 @@ interface PaginationProps {
     total: number;
     onPage: (page: number) => void;
     text: Text;
-    /** The sizes of a page to choose from, when the person can choose. */
-    sizes?: number[];
+    /** Change the size of a page; without it the size is fixed and not offered. */
     onPerPage?: (size: number) => void;
 }
 
-const Pagination = ({page, perpage, total, onPage, text, sizes, onPerPage}: PaginationProps) => {
+const Pagination = ({page, perpage, total, onPage, text, onPerPage}: PaginationProps) => {
+    const id = useId();
     const pages = Math.max(1, Math.ceil(total / Math.max(1, perpage)));
-    const choose = sizes !== undefined && onPerPage !== undefined && total > 0 ? {sizes, onPerPage} : null;
+    const choose = onPerPage !== undefined && total > 0 ? {sizes: pageSizeChoices(total), onPerPage} : null;
     if (pages < 2 && choose === null) {
         return null;
     }
@@ -47,22 +49,23 @@ const Pagination = ({page, perpage, total, onPage, text, sizes, onPerPage}: Pagi
     return <nav aria-label={text('pagination_label')} className="fbm-listbar fbm-pagination">
         <div className="fbm-listbar-size">
             {choose !== null && <>
-                <span className="fbm-listbar-label">{text('per_page')}</span>
+                <label className="fbm-listbar-label" htmlFor={id}>{text('per_page')}</label>
                 <select
+                    id={id}
                     className="form-select form-select-sm rounded-pill"
-                    aria-label={text('per_page')}
                     value={perpage}
                     onChange={(event) => choose.onPerPage(Number(event.target.value))}
                 >
-                    {choose.sizes.map((size) => <option key={size} value={size}>{size}</option>)}
+                    {!choose.sizes.includes(perpage) && <option value={perpage}>{perpage}</option>}
+                    {choose.sizes.map((size) => <option key={size} value={size}>{size === total ? text('all') : size}</option>)}
                 </select>
             </>}
         </div>
         <div className="fbm-listbar-pages">
             <span className="text-muted small" aria-live="polite">{text('pagination_range', {from, to, total})}</span>
             <div className="fbm-actions">
-                {arrow(page - 1, page > 0, 'chevron-left', text('pagination_previous'))}
-                {arrow(page + 1, page < pages - 1, 'chevron-right', text('pagination_next'))}
+                {arrow(page - 1, page > 0, 'arrow-left', text('pagination_previous'))}
+                {arrow(page + 1, page < pages - 1, 'arrow-right', text('pagination_next'))}
             </div>
         </div>
     </nav>;

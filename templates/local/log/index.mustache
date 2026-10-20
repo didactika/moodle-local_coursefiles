@@ -20,12 +20,12 @@
             <span class="fbm-search-icon">{{#pix}}a/search, core{{/pix}}</span>
             <input type="search" id="filebank-log-reference" name="entityuuid" value="{{entityuuid}}" maxlength="36" class="form-control rounded-pill" aria-label="{{#str}}logreference, local_filebank{{/str}}" placeholder="{{#str}}logreference, local_filebank{{/str}}" autocomplete="off" data-filebank-live-text>
         </div>
-        <details class="fbm-filterbox fbm-filter-end"{{#hasactive}} data-active{{/hasactive}}>
+        <details class="fbm-filterbox"{{#hasactive}} data-active{{/hasactive}}>
             <summary class="btn btn-outline-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}{{#hasactive}}<span class="badge rounded-pill fbm-count">{{activecount}}</span>{{/hasactive}}</summary>
             <div class="fbm-filterpanel">
                 <div class="fbm-filter-head">
                     <h3 class="fbm-filter-heading">{{#str}}filters, core{{/str}}</h3>
-                    <a class="btn btn-outline-secondary fbm-iconpill" href="{{clearurl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
+                    <a class="btn btn-link btn-icon" href="{{clearurl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
                 </div>
                 <div class="fbm-field">
                     <label for="filebank-log-action" class="form-label">{{#str}}logaction, local_filebank{{/str}}</label>
@@ -55,12 +55,10 @@
                 <noscript><button class="btn btn-primary" type="submit">{{#str}}filter{{/str}}</button></noscript>
             </div>
         </details>
-        {{{filterhelp}}}
     </form>
-    {{#hasactive}}<div class="fbm-chips" data-region="active-filters">
-        {{#activefilters}}<a class="btn btn-sm btn-outline-secondary rounded-pill fbm-chip" href="{{removeurl}}" title="{{#str}}clear, core{{/str}}">{{label}}{{#pix}}e/cancel, core{{/pix}}</a>{{/activefilters}}
-    </div>{{/hasactive}}
+    <div data-filebank-list="log">
     {{#hasrecords}}<div class="table-responsive"><table class="table table-hover fbm-log-table"><thead><tr><th>{{#str}}date, core{{/str}}</th><th>{{#str}}logaction, local_filebank{{/str}}</th><th>{{#str}}user, core{{/str}}</th><th>{{#str}}logreference, local_filebank{{/str}}</th></tr></thead><tbody>{{#records}}<tr><td class="text-nowrap">{{date}}</td><td><span class="badge rounded-pill tone-neutral">{{action}}</span></td><td>{{user}}</td><td class="small text-break font-monospace">{{reference}}</td></tr>{{/records}}</tbody></table></div>{{/hasrecords}}
     {{^hasrecords}}<div class="fbm-empty"><h4 class="h4">{{#str}}logempty, local_filebank{{/str}}</h4></div>{{/hasrecords}}
     {{{pagination}}}
+    </div>
 </section>

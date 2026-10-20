@@ -66,7 +66,6 @@ if ($profileid) {
 $data = ['contextid' => context_system::instance()->id, 'profiles' => [],
     'newprofileurl' => (new moodle_url('/local/filebank/admin/profile.php'))->out(false),
     'importurl' => (new moodle_url('/local/filebank/admin/profile_import.php'))->out(false),
-    'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_filebank'),
     'actionurl' => $PAGE->url->out(false), 'search' => $search, 'sesskey' => sesskey(), 'perpage' => $perpage];
 $condition = 'p.deleted = 0';
 $params = [];

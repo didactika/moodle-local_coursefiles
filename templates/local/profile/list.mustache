@@ -13,11 +13,6 @@
             <div class="fbm-header-line"><h2 class="h2">{{#str}}profiles, local_filebank{{/str}}</h2>{{#total}}<span class="badge rounded-pill fbm-count">{{total}}</span>{{/total}}</div>
             <p class="text-muted fbm-header-subtitle">{{#str}}profilesintro, local_filebank{{/str}}</p>
         </div>
-        <div class="fbm-header-actions">
-            <a class="btn btn-primary" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_filebank{{/str}}</a>
-            <a class="btn btn-outline-secondary" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_filebank{{/str}}</a>
-            {{#hasprofiles}}<button class="btn btn-outline-secondary" name="action" value="exportall" form="filebank-profiles-form">{{#pix}}i/export, core{{/pix}}{{#str}}exportallprofiles, local_filebank{{/str}}</button>{{/hasprofiles}}
-        </div>
     </header>
     <form method="get" action="{{actionurl}}" class="fbm-toolbar" data-filebank-live-filters>
         <input type="hidden" name="perpage" value="{{perpage}}">
@@ -26,7 +21,11 @@
             <span class="fbm-search-icon">{{#pix}}a/search, core{{/pix}}</span>
             <input type="search" id="filebank-profile-search" name="q" value="{{search}}" class="form-control rounded-pill" aria-label="{{#str}}search, core{{/str}}" placeholder="{{#str}}search, core{{/str}}" autocomplete="off" data-filebank-live-text>
         </div>
-        {{{filterhelp}}}
+        <div class="fbm-toolbar-actions">
+            <a class="btn btn-primary" href="{{newprofileurl}}">{{#pix}}t/add, core{{/pix}}{{#str}}newprofile, local_filebank{{/str}}</a>
+            <a class="btn btn-outline-secondary" href="{{importurl}}">{{#pix}}i/import, core{{/pix}}{{#str}}importprofiles, local_filebank{{/str}}</a>
+            {{#hasprofiles}}<button class="btn btn-outline-secondary" name="action" value="exportall" form="filebank-profiles-form">{{#pix}}i/export, core{{/pix}}{{#str}}exportallprofiles, local_filebank{{/str}}</button>{{/hasprofiles}}
+        </div>
     </form>
     <form method="post" action="{{actionurl}}" id="filebank-profiles-form" data-filebank-profiles data-contextid="{{contextid}}">
         <input type="hidden" name="sesskey" value="{{sesskey}}">
@@ -37,6 +36,7 @@
             <button name="action" value="disable" class="btn btn-outline-secondary btn-sm" disabled title="{{#str}}disableselected, local_filebank{{/str}}" aria-label="{{#str}}disableselected, local_filebank{{/str}}">{{#pix}}t/hide, core{{/pix}}{{#str}}disable, core{{/str}}</button>
             <button name="action" value="delete" class="btn btn-danger btn-sm" disabled title="{{#str}}deleteselected, local_filebank{{/str}}" aria-label="{{#str}}deleteselected, local_filebank{{/str}}">{{#pix}}t/delete, core{{/pix}}{{#str}}delete, core{{/str}}</button>
         </div>
+        <div data-filebank-list="profiles">
         <div class="table-responsive"><table class="table table-hover fbm-profiles-table">
             <thead><tr>
                 <th class="fbm-col-check"><input type="checkbox" class="fbm-check" data-filebank-selectall aria-label="{{#str}}selectall, core{{/str}}" title="{{#str}}selectall, core{{/str}}"></th>
@@ -50,7 +50,7 @@
                 <tr data-profile-id="{{id}}" data-enabled="{{#enabled}}1{{/enabled}}{{^enabled}}0{{/enabled}}">
                     <td class="fbm-col-check"><input type="checkbox" class="fbm-check" name="profiles[]" value="{{id}}" aria-label="{{#str}}selectprofile, local_filebank{{/str}}"></td>
                     <td>
-                        <a class="fbm-profile-name" href="{{url}}">{{{name}}}</a>
+                        <a class="fbm-profile-name fbm-row-title" href="{{url}}">{{{name}}}</a>
                         <span class="fbm-table-meta">{{stats}}</span>
                     </td>
                     <td>
@@ -70,5 +70,6 @@
         </table></div>{{/hasprofiles}}
         {{^hasprofiles}}<div class="fbm-empty"><h4 class="h4">{{#str}}noprofile, local_filebank{{/str}}</h4><p class="text-muted fbm-empty-text">{{#str}}profilesintro, local_filebank{{/str}}</p></div>{{/hasprofiles}}
         {{{pagination}}}
+        </div>
     </form>
 </section>

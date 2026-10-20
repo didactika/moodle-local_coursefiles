@@ -751,7 +751,7 @@
         align-items: center;
         padding: 0.18rem 0.6rem;
         border-radius: 2rem;
-        background-color: var(--fbm-surface);
+        background-color: color-mix(in srgb, var(--fbm-tone) 14%, var(--fbm-bg));
         color: var(--fbm-tone);
         font-size: 0.8125rem;
         font-weight: 600;
@@ -1488,13 +1488,14 @@
         overflow-wrap: anywhere;
     }
 
-    .fbm-profile-name {
-        font-weight: 650;
+    // The name of a row, the link that opens it: the same weight and size in every table, with its details on a muted line under it.
+    .fbm-row-title {
+        font-weight: 600;
         text-decoration: none;
     }
 
-    .fbm-profile-name:hover,
-    .fbm-profile-name:focus-visible {
+    .fbm-row-title:hover,
+    .fbm-row-title:focus-visible {
         text-decoration: underline;
     }
 
@@ -1581,16 +1582,12 @@
     }
 
     // The filters of a list: a button with the number of filters that are on floating over its corner, and a drop-down with them.
-    // With a search the button goes to the end of the row; without one it is the first thing of the row.
+    // It sits right after the search, or first in the row when there is no search.
     .fbm-filterbox {
         position: relative;
         padding: 0;
         border: 0;
         background: transparent;
-
-        &.fbm-filter-end {
-            margin-inline-start: auto;
-        }
 
         > summary {
             position: relative;
@@ -1644,9 +1641,24 @@
         box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
     }
 
-    .fbm-filter-end .fbm-filterpanel {
-        inset-inline-start: auto;
-        inset-inline-end: 0;
+    // The actions of the page sit at the end of the toolbar of its list.
+    .fbm-toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-inline-start: auto;
+    }
+
+    .fbm-filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+
+        .fbm-chip .small {
+            margin-inline-start: 0.35rem;
+            opacity: 0.75;
+        }
     }
 
     .fbm-filter-head {
@@ -2130,9 +2142,6 @@
 
     // Previous and next are always at the bottom of the panel, and stay in sight when the step is longer than the screen.
     .fbm-wizard-foot {
-        position: sticky;
-        bottom: 0;
-        z-index: 3;
         display: flex;
         justify-content: space-between;
         gap: 0.5rem;

@@ -53,7 +53,7 @@ final class migration_files {
         if (!in_array($bucket, self::BUCKETS, true)) {
             throw new \invalid_parameter_exception('Unknown file group');
         }
-        $perpage = max(1, min(100, $perpage));
+        $perpage = max(1, min(\local_filebank\output\pagination::MAX_ALL, $perpage));
         $page = max(0, $page);
         [$where, $params] = self::filter($planid, $bucket, $search);
         $total = $DB->count_records_sql('SELECT COUNT(1) FROM {local_filebank_operation} o WHERE ' . $where, $params);
@@ -86,7 +86,7 @@ final class migration_files {
     public static function folders(int $planid, string $search, int $page, int $perpage): array {
         global $DB;
         require_capability('local/filebank:planmigration', \context_system::instance());
-        $perpage = max(1, min(100, $perpage));
+        $perpage = max(1, min(\local_filebank\output\pagination::MAX_ALL, $perpage));
         [$where, $params] = self::filter($planid, '', $search);
         $total = $DB->count_records_sql(
             'SELECT COUNT(1) FROM (SELECT 1 FROM {local_filebank_operation} o WHERE ' . $where

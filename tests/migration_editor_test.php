@@ -44,6 +44,7 @@ final class migration_editor_test extends \advanced_testcase {
      * The options of a migration from the published materials of 2025 into the target materials of 2026.
      *
      * @param string $source The name of the source folder.
+     * @param string $conflict What happens with a file that is already different in the destination.
      * @return array The options of the planner.
      */
     private function options(string $source = 'Published materials', string $conflict = 'skip'): array {

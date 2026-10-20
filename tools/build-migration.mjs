@@ -72,6 +72,8 @@ const bundle = result.outputFiles[0].text
     .replace(/\r\n/g, '\n')
     .replace(/^\/\/# sourceMappingURL=.*$/gm, '')
     .replace(/^(\s*\/\/ )(?:[^\n]*\/)?node_modules\//gm, '$1node_modules/')
+    // The whole module is out of the linter, so the directives that the libraries carry inside it would be reported as unused.
+    .replace(/^\s*\/\/ eslint-disable.*\n/gm, '')
     .trimEnd();
 const header = `// This file is part of Moodle - https://moodle.org/
 //

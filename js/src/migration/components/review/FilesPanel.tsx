@@ -12,6 +12,8 @@
  */
 import {useEffect, useState} from 'react';
 import {useDebounced} from '../../hooks/useDebounced';
+import {useKeptHeight} from '../../hooks/useKeptHeight';
+import {PAGE_SIZES} from '../../lib/paging';
 import {describeError} from '../../lib/errors';
 import {getFiles} from '../../services/api';
 import type {Bucket, FilePage, Migration, Text} from '../../types';
@@ -27,7 +29,6 @@ import Skeleton from '../ui/Skeleton';
 import StatusBadge from '../ui/StatusBadge';
 
 /** The pages of files are at most as long as a selection that the server accepts for one page. */
-const SIZES = [10, 25, 50];
 
 interface FilesPanelProps {
     migration: Migration;
@@ -44,13 +45,15 @@ const BUCKETS: Bucket[] = ['', 'copy', 'existing', 'left'];
 const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPanelProps) => {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
-    const [perpage, setPerpage] = useState(SIZES[1]);
+    const [perpage, setPerpage] = useState(PAGE_SIZES[0]);
+    const kept = useKeptHeight();
     const [data, setData] = useState<FilePage | null>(null);
     const [error, setError] = useState('');
     const query = useDebounced(search, 250);
 
     useEffect(() => {
         setPage(0);
+        kept.release();
     }, [bucket, query, perpage]);
 
     useEffect(() => {
@@ -124,7 +127,7 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
         </div>
         {data === null && error === '' && <Skeleton rows={6} label={text('loading')} />}
         {data !== null && files.length === 0 && <EmptyState plain icon="file-circle-question" title={text('files_empty_title')} text={text('files_empty_text')} />}
-        {files.length > 0 && <div className="table-responsive">
+        {files.length > 0 && <div className="table-responsive" ref={kept.ref} style={kept.style}>
             <table className="table table-hover fbm-files">
                 <thead>
                     <tr>
@@ -173,9 +176,11 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
             page={page}
             perpage={perpage}
             total={data?.total ?? 0}
-            onPage={setPage}
+            onPage={(next) => {
+                kept.keep();
+                setPage(next);
+            }}
             text={text}
-            sizes={SIZES}
             onPerPage={setPerpage}
         />
     </Panel>;
