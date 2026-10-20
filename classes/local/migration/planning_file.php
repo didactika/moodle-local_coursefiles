@@ -59,7 +59,6 @@ final class planning_file {
         $targetdata = $context['targetdata'];
         $targetkey = $context['targetkey'];
         $config = $context['config'];
-        $filechoices = $context['filechoices'];
         $excluded = $context['excluded'];
         $profileid = $context['profileid'];
         $loaded = $context['loaded'];
@@ -82,13 +81,7 @@ final class planning_file {
         );
         $existingdata = $existing ? copy_decision::snapshot($existing) : null;
         [$decision, $duplicate] = self::decision($file, $source, $existingdata, $config, $targetcontent);
-        if ($decision === 'copy' || $decision === 'overwrite') {
-            try {
-                author_policy::require_native_copy($file, $cm->course, $targetcourse);
-            } catch (\moodle_exception $exception) {
-                $decision = 'blocked_policy';
-            }
-        }
+        $decision = self::policy_checked($decision, $file, (int) $cm->course, $targetcourse);
         $snapshot = ['source' => $source, 'sourcecourse' => $sourcecourse,
         'sourceshortname' => $sourcecourseinfo->shortname,
         'targetshortname' => $targetcourseinfo->shortname,
@@ -96,16 +89,56 @@ final class planning_file {
         'sourcefoldername' => $sourcecm->name, 'existing' => $existingdata,
         'duplicate' => $duplicate,
         'sourceidentity' => $sourceidentity,
-        'targetidentity' => $targetidentity];
+        'targetidentity' => $targetidentity,
+        'different' => $existingdata !== null && copy_decision::classify($source, $existingdata) === 'blocked_content'];
         $opkey = hash('sha256', $file->get_pathnamehash() . ':' . ($targetkey ?: $target->id));
         $choicekey = $file->get_pathnamehash() . ':' . $targetcourse;
-        if (($filechoices[$choicekey] ?? '') === 'overwrite' && $decision === 'blocked_content') {
-            author_policy::require_native_copy($file, $cm->course, $targetcourse);
-            $decision = 'overwrite';
-        }
+        $decision = self::settled($decision);
         return ['sourcehash' => $file->get_pathnamehash(), 'targetcmid' => $target->id,
         'decision' => $decision, 'snapshot' => $snapshot,
-        'included' => !in_array($choicekey, $excluded, true), 'opkey' => $opkey];
+        'included' => !in_array($choicekey, $excluded, true) && !self::unsettled($decision),
+        'opkey' => $opkey];
+    }
+
+    /**
+     * Hold back a file that the author policy does not allow to be copied.
+     *
+     * @param string $decision What was decided so far.
+     * @param \stored_file $file The source file.
+     * @param int $sourcecourse The course the file comes from.
+     * @param int $targetcourse The course it would go to.
+     * @return string blocked_policy when the file would be written and the policy refuses it; the decision otherwise.
+     */
+    private static function policy_checked(string $decision, \stored_file $file, int $sourcecourse, int $targetcourse): string {
+        if ($decision !== 'copy' && $decision !== 'overwrite') {
+            return $decision;
+        }
+        try {
+            author_policy::require_native_copy($file, $sourcecourse, $targetcourse);
+        } catch (\moodle_exception $exception) {
+            return 'blocked_policy';
+        }
+        return $decision;
+    }
+
+    /**
+     * A file that would need a person to decide stays as it is in the destination, so no migration waits for anybody.
+     *
+     * @param string $decision What was decided so far.
+     * @return string skip_conflict for a file that was held back; the decision otherwise.
+     */
+    private static function settled(string $decision): string {
+        return str_starts_with($decision, 'blocked_') ? 'skip_conflict' : $decision;
+    }
+
+    /**
+     * Whether a decision keeps the file out of the migration until a person changes it.
+     *
+     * @param string $decision The decision.
+     * @return bool True for a conflict that was left as it is.
+     */
+    private static function unsettled(string $decision): bool {
+        return $decision === 'skip_conflict';
     }
 
     /**
@@ -130,6 +163,8 @@ final class planning_file {
         $duplicate = null;
         if ($decision === 'blocked_content' && ($config['same_path_different_content'] ?? '') === 'overwrite') {
                 $decision = 'overwrite';
+        } else if ($decision === 'blocked_content' && ($config['same_path_different_content'] ?? '') === 'skip') {
+            $decision = 'skip_conflict';
         } else if ($decision === 'blocked_attribution' && ($config['identical_content'] ?? '') === 'skip') {
             $decision = 'skip_content';
             $duplicate = $existingdata;

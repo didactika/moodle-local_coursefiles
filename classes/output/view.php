@@ -34,10 +34,8 @@ final class view implements \renderable, \templatable {
      */
     private const TEMPLATES = [
         'navigation' => 'local/navigation/tabs',
-        'migration_setup' => 'local/migration/setup',
         'profile_summary' => 'local/profile/summary',
         'catalog' => 'local/catalog/index',
-        'migration_report' => 'local/migration/report',
         'policy' => 'local/policy/course',
         'profile_list' => 'local/profile/list',
         'log' => 'local/log/index',
@@ -82,11 +80,6 @@ final class view implements \renderable, \templatable {
      * @return array Plain data.
      */
     public function export_for_template(\renderer_base $output): array {
-        if ($this->template === 'local/migration/report' && !isset($this->data['courses'])) {
-            $data = $this->data;
-            $data['courses'] = array_map(static fn($group) => $group + ['folders' => [$group]], $data['groups'] ?? []);
-            return $data;
-        }
         if ($this->template === 'local/navigation/tabs') {
             $root = \navigation_node::create(get_string('pluginname', 'local_filebank'));
             foreach ($this->data['tabs'] as $index => $tab) {

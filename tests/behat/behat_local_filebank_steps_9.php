@@ -61,55 +61,48 @@ class behat_local_filebank_steps_9 extends behat_local_filebank_base {
     }
 
     /**
-     * Wait for the serialized small-state response before checking saved decisions.
-     * @Then /^I wait for the FileBank migration selection to save$/
+     * Capture the part of an administration page that holds an element, at desktop and mobile widths.
+     *
+     * @Then /^I capture FileBank administration "([^"]*)" at "([^"]*)"$/
+     * @param string $name Screenshot basename.
+     * @param string $selector CSS selector of the element to bring into view.
      */
-    public function migration_selection_saved(): void {
-        $this->spin(
-            function () {
-                return $this->getSession()->evaluateScript(
-                    "(function() {const root = document.querySelector('[data-region=filebank-migration]');"
-                    . "return root && root.dataset.ready === 'true' && Number(root.dataset.pending || 0) === 0;})()"
-                );
-            },
-            null,
-            20
-        );
-    }
-
-    /**
-     * Remember the real DOM node before a selection-only request.
-     * @When /^I remember the visible FileBank migration item$/
-     */
-    public function remember_migration_item(): void {
-        $this->getSession()->executeScript(
-            'window.filebankRememberedItem = document.querySelector("[data-filebank-operation]");'
-        );
-    }
-
-    /**
-     * Selection-only responses must not replace the visible files.
-     * @Then /^the visible FileBank migration item should be preserved$/
-     */
-    public function migration_item_preserved(): void {
-        if (
-            !$this->getSession()->evaluateScript(
-                'window.filebankRememberedItem === document.querySelector("[data-filebank-operation]")'
-            )
-        ) {
-            throw new \Exception('Selecting a file replaced its visible DOM node.');
+    public function capture_administration_at(string $name, string $selector): void {
+        foreach (['desktop' => 1366, 'mobile' => 480] as $size => $width) {
+            $this->getSession()->resizeWindow($width, 1000);
+            $this->getSession()->getDriver()->executeScript(
+                'document.querySelector(' . json_encode($selector) . ').scrollIntoView({block: "start"});'
+                . 'window.scrollBy(0, -80);'
+            );
+            file_put_contents('/tmp/filebank-admin-' . $name . '-' . $size . '.png', $this->getSession()->getScreenshot());
         }
+        $this->getSession()->resizeWindow(1366, 1000);
     }
 
     /**
-     * Migration bulk deletion is available only for an explicit current-page selection.
-     * @Then /^FileBank migration bulk actions should be "(hidden|visible)"$/
-     * @param string $expected Expected visibility.
+     * Go through the steps of the page that starts a migration with one correspondence, and stop at the check of the last step.
+     *
+     * @When /^I set up a FileBank migration of "([^"]*)" into "([^"]*)" from "([^"]*)" to "([^"]*)"$/
+     * @param string $source Exact name of the source folder.
+     * @param string $target Exact name of the destination folder.
+     * @param string $from Edition of the source courses.
+     * @param string $to Edition of the destination courses.
      */
-    public function migration_bulk_actions(string $expected): void {
-        $control = $this->getSession()->getPage()->find('css', '[data-filebank-migrations] [data-filebank-bulk-actions]');
-        if (!$control || $control->isVisible() !== ($expected === 'visible')) {
-            throw new \Exception('Migration bulk actions do not follow the explicit selection.');
+    public function set_up_migration(string $source, string $target, string $from, string $to): void {
+        $click = static fn(string $selector): array => [$selector, 'css_element'];
+        $this->execute('behat_general::i_click_on', $click("[data-action='new-migration']"));
+        $this->execute('behat_general::i_click_on', $click("[data-action='next-step']"));
+        $this->execute('behat_forms::i_set_the_field_to', ['fbm-source-edition', $from]);
+        $this->execute('behat_forms::i_set_the_field_to', ['fbm-target-edition', $to]);
+        $this->execute('behat_general::i_click_on', $click("[data-action='next-step']"));
+        $this->execute('behat_general::i_click_on', $click("[data-action='add-correspondence']"));
+        $this->execute('behat_forms::i_set_the_field_to', ['fbm-c0-source-value', $source]);
+        $this->execute('behat_forms::i_set_the_field_to', ['fbm-c0-target-value', $target]);
+        // Folders, sections and the policies each take one click to leave, and the last one opens the check.
+        for ($step = 0; $step < 3; $step++) {
+            $this->execute('behat_general::i_click_on', $click("[data-action='next-step']"));
         }
+        $result = "[data-region='check-result'],[data-region='empty-state']";
+        $this->execute('behat_general::wait_until_exists', [$result, 'css_element']);
     }
 }

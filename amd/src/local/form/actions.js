@@ -70,7 +70,7 @@ export const createRows = async id => {
                 label.className = 'filebank-row-label text-muted';
                 label.textContent = column.label;
                 const help = document.createElement('span');
-                help.innerHTML = column.help || '';
+                help.append(...new DOMParser().parseFromString(column.help || '', 'text/html').body.childNodes);
                 label.append(help);
                 cell.append(label);
                 const input = document.createElement(column.options ? 'select' : 'input');
@@ -93,7 +93,7 @@ export const createRows = async id => {
                 if (column.type === 'checkbox') {
                     input.className = 'filebank-row-check';
                 } else {
-                    input.className = column.options ? 'custom-select custom-select-sm' : 'form-control form-control-sm';
+                    input.className = column.options ? 'form-select w-100' : 'form-control';
                 }
                 if (column.type !== 'checkbox') {
                     input.value = value[column.key] || column.options?.[0]?.value || '';

@@ -12,6 +12,8 @@
 import Selectors from 'local_filebank/local/admin/selectors';
 import {createBulkActions, createHistoryActions} from 'local_filebank/local/admin/actions';
 import {registerBulk, registerHistory, registerPagination} from 'local_filebank/local/admin/listeners';
+import {registerFilterMenus, registerLiveFilters} from 'local_filebank/local/admin/filters';
+import {registerLists} from 'local_filebank/local/admin/lists';
 
 /**
  * Initialize native administration controls.
@@ -30,4 +32,7 @@ export const init = () => {
         }
     });
     registerPagination();
+    registerLiveFilters();
+    registerFilterMenus();
+    registerLists();
 };

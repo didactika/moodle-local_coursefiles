@@ -1,0 +1,18 @@
+{
+  "name": "moodle-local_filebank-migration-ui",
+  "private": true,
+  "description": "Builds the migration screens of local_filebank for Moodle 4.0 to 5.2 from the TypeScript that Moodle 5.3 compiles on main.",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "build": "node tools/build-migration.mjs",
+    "check": "node tools/build-migration.mjs --check",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "esbuild": "0.24.0",
+    "preact": "10.24.3",
+    "typescript": "5.6.3"
+  }
+}

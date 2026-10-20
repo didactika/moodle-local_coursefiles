@@ -20,11 +20,16 @@ import {changePage} from 'local_filebank/local/admin/actions';
  * @param {Object} actions Scoped actions created for this rendered feature.
  */
 export const registerBulk = (form, actions) => {
-    const all = form.querySelector(Selectors.selectAll);
-    if (all) {
-        listen(all, 'change', actions.selectAllChange);
-    }
-    form.querySelectorAll(Selectors.bulkChecks).forEach(check => listen(check, 'change', actions.update));
+    // One listener on the form, so the rows that a page brings in place are listened to as well.
+    listen(form, 'change', event => {
+        const target = event.target;
+        if (target instanceof HTMLInputElement && target.matches(Selectors.selectAll)) {
+            actions.selectAllChange();
+        } else if (target instanceof HTMLInputElement && target.matches(Selectors.bulkChecks)) {
+            actions.update();
+        }
+    });
+    form.addEventListener('filebank:listchanged', actions.update);
     listen(form, 'submit', actions.submit);
 };
 

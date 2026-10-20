@@ -7,14 +7,14 @@
     Context: filename, size, origincount, occurrences.
     Example context (json): {"filename":"slides.pdf","size":"120 KB","origincount":2,"occurrences":[]}
 }}
-<article class="card mb-3 filebank-material" data-region="filebank-material">
-    <div class="card-body">
-        <div class="d-flex flex-wrap justify-content-between mb-2">
-            <h3 class="h5 mb-2 text-break">{{#pix}}i/files, core{{/pix}} {{filename}}</h3>
-            <span class="small text-muted">{{size}} · {{#str}}origincount, local_filebank, {{origincount}}{{/str}}</span>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-striped mb-0">
+<article class="card filebank-material" data-region="filebank-material">
+    <header class="card-header">
+        <h3 class="card-title text-break">{{#pix}}i/files, core{{/pix}} {{filename}}</h3>
+        <span class="small text-muted">{{size}} · {{#str}}origincount, local_filebank, {{origincount}}{{/str}}</span>
+    </header>
+    <div class="fbm-panel-flush">
+        <div class="table-responsive fbm-flush">
+            <table class="table table-hover">
                 <caption class="filebank-visually-hidden">{{#str}}originscaption, local_filebank, {{filename}}{{/str}}</caption>
                 <thead><tr>
                     <th scope="col">{{#str}}shortnamecourse, core{{/str}}</th>

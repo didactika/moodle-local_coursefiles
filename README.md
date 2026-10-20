@@ -6,7 +6,7 @@
 
 *Find and reuse public course files across related courses*
 
-[![Release](https://img.shields.io/github/v/release/didactika/moodle-local_filebank?filter=v4.0.*&style=flat-square)](https://github.com/didactika/moodle-local_filebank/releases)
+[![Release](https://img.shields.io/github/v/release/didactika/moodle-local_filebank?filter=v*-m400&style=flat-square)](https://github.com/didactika/moodle-local_filebank/releases)
 [![Moodle](https://img.shields.io/badge/Moodle-4.0%E2%80%935.2-f98012?style=flat-square&logo=moodle&logoColor=white)](https://moodle.org)
 [![PHP](https://img.shields.io/badge/PHP-8.0+-777bb4?style=flat-square&logo=php&logoColor=white)](https://www.php.net)
 [![License](https://img.shields.io/badge/License-GPL_v3-blue?style=flat-square)](LICENSE)
@@ -31,13 +31,13 @@ Profiles define which courses belong together using named regular-expression cap
 | Existing content | Material already used in the destination is excluded before browsing |
 | Review | Resulting-file tree, removal checks and pencil dialogs for destination names |
 | Profiles | Guided editing, import/export, retained versions, comparison and restoration |
-| Migrations | Source filters and activity correspondences, paginated review, conflict choices and background execution |
+| Migrations | A page with steps that checks what a migration would do before it is created and asks, in the last step, what happens with the files that are already different in the destination; a review of the files and folders, and background execution |
 | Authorship | Original declarations preserved at copy time, with configurable protection and provenance |
 | History | Bounded log, migration and inactive profile-version retention |
 
 ## Installation
 
-**Requirements:** Moodle 4.0–5.2, PHP 8.0 or newer, and the database requirements of the selected Moodle release. This distribution’s release is **4.0.0**.
+**Requirements:** Moodle 4.0–5.2, PHP 8.0 or newer, and the database requirements of the selected Moodle release.
 
 **From a release:** download the matching release ZIPs of both FileBank components, open **Site administration → Plugins → Install plugins**, upload the packages and follow the prompts.
 
@@ -59,7 +59,7 @@ php admin/cli/upgrade.php --non-interactive
 2. Enable the FileBank repository and configure publication and authorship permissions.
 3. Teachers open **Add files**, choose FileBank, filter the public library and select material.
 4. Review the resulting files, import them and save the owning activity form.
-5. For a site migration, open **Migrations**, configure source and destination rules, resolve conflicts and queue the reviewed set.
+5. For a site migration, open **Migrations**, choose the courses and the folder correspondences, check what it would do, say what happens with the files that are already different in the destination, create it and start it.
 
 ## Configuration
 
@@ -70,10 +70,16 @@ Settings are located at **Site administration → Plugins → Local plugins → 
 | Course profiles | Identify related courses and configure up to nine named-capture search filters |
 | Publication | Choose which supported public file areas are available |
 | Authorship | Preserve the original declaration, or block workflows that cannot enforce the selected protection |
-| Migration wizard | Choose source activity types, folder correspondences, missing-destination creation and conflict handling |
+| Migration window | Choose the courses, the folder correspondences, how sections match and what to do when a folder is missing or a different file is already there |
 | Retention | Limit the lifetime of logs, migration history and inactive profile versions |
 
 The repository instance’s visible name is also used as the browser heading. Editable-with-provenance permits copying while retaining the original author in the history. Strict protection blocks workflows where later native author edits cannot be prevented.
+
+## Theming
+
+The screens are drawn with the Bootstrap classes that Moodle themes already style (`btn`, `card`, `badge`, `table`, `nav-tabs`, `alert`, `pagination`, `form-control`, `form-select`), so a theme restyles them as it restyles the rest of the site and needs no knowledge of this plugin. Only the names of Bootstrap 5 are used, because Moodle 5 flags the ones of Bootstrap 4 as deprecated; on Bootstrap 4 the same classes get the same look from the plugin's own rules.
+
+The plugin adds its design as rules scoped to `.filebank-ui` (and `.filebank-migration`), such as `.filebank-ui .btn-primary`, which beat the defaults of Bootstrap and whose specificity is only that of two classes. A theme changes one by declaring the property with `!important` on the Bootstrap class (for example `.btn-primary { border-radius: 0 !important; }`, which restyles every primary button of the site, this plugin's included) or with a selector of the same weight, such as `.filebank-ui .btn-primary`. Colours come from the variables of the theme (`--bs-primary`, `--bs-success`, `--bs-border-color`, ...), so changing the palette of the theme changes the plugin. Badges are tinted by the plugin from those colours and are the only element that does not take its colour straight from a Bootstrap class.
 
 ## Troubleshooting
 
@@ -82,7 +88,7 @@ The repository instance’s visible name is also used as the browser heading. Ed
 | No material appears | Check the active profile, matching course identifiers, publication rules and source permissions |
 | An expected file is absent | It may already be used in the destination, or the native control may reject its type |
 | Locked material cannot be copied | The selected author policy requires protection that the workflow cannot enforce |
-| A migration is blocked | Resolve the reported course, destination or file conflict in its review screen |
+| Nothing would be migrated | Edit its parameters: the migration is worked out again where it is, and what the source does not have is not an error |
 | A queued migration does not run | Check cron and the scheduled/ad hoc task log |
 
 ## Getting help

@@ -45,8 +45,8 @@ final class migration_queue {
         global $DB;
         self::reviewed($plan, $digest);
         if (!plan_history::has_work($plan->id)) {
-            $DB->set_field('local_filebank_plan', 'state', 'cancelled', ['id' => $plan->id]);
-            log::record('migration_empty_cancelled', $plan->uuid, []);
+            // Nothing to write: the migration stays as it is so its parameters can still be changed.
+            log::record('migration_empty_skipped', $plan->uuid, []);
             return false;
         }
         if (

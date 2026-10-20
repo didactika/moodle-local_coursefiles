@@ -3,25 +3,25 @@
     @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
     @template local_filebank/local/selection/review
-    Reviewed resulting files with editable destination names.
-    Example context (json): {"action":"/local/filebank/selection/review.php","backurl":"#","count":2,"nodes":[],"approved":false}
+    Review of the selected files as a tree, with renames, removal and the approval to import them.
+    Example context (json): {"backurl":"#","count":0,"nodes":[],"action":"#","sesskey":"example","scope":"example"}
 }}
-<main class="filebank-browser filebank-selection-review p-3">
+<main class="filebank-ui filebank-browser filebank-selection-review p-3">
     <div class="filebank-heading d-flex align-items-center justify-content-between flex-wrap mb-2">
-        <a href="{{backurl}}" class="btn btn-sm btn-outline-secondary filebank-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a>
-        <h2 class="h6 mb-0">{{#str}}batchreview, local_filebank{{/str}}</h2>
+        <a href="{{backurl}}" class="btn btn-outline-secondary btn-sm filebank-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a>
+        <h2 class="h4">{{#str}}batchreview, local_filebank{{/str}}</h2>
         <span class="small text-muted">{{count}} {{#str}}files, core{{/str}}</span>
     </div>
-    {{#renameerror}}<div class="alert alert-danger" role="alert">{{renameerror}}</div>{{/renameerror}}
-    {{#error}}<div class="alert alert-danger" role="alert">{{error}}</div>{{/error}}
+    {{#renameerror}}<div class="alert alert-danger" role="alert"><div class="fbm-alert-body">{{renameerror}}</div></div>{{/renameerror}}
+    {{#error}}<div class="alert alert-danger" role="alert"><div class="fbm-alert-body">{{error}}</div></div>{{/error}}
     {{^error}}
     <form method="post" action="{{action}}" class="filebank-review-form" id="filebank-review-form">
         <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="scope" value="{{scope}}">
         <div class="filebank-results"><ul class="filebank-tree filebank-tree-root">{{#nodes}}{{> local_filebank/local/selection/review_node}}{{/nodes}}</ul></div>
     </form>
-    <div class="filebank-footer d-flex align-items-center justify-content-between flex-wrap mt-2 pt-2 pb-1 border-top">
-        {{#approved}}<button type="button" data-filebank-confirm disabled class="btn btn-sm btn-primary">{{#str}}importselection, local_filebank{{/str}}</button>{{/approved}}
+    <div class="filebank-footer fbm-footer">
+        {{#approved}}<button type="button" data-filebank-confirm disabled class="btn btn-primary">{{#str}}importselection, local_filebank{{/str}}</button>{{/approved}}
         <span data-filebank-status role="status" class="small text-muted"></span>
-        <button name="removeselected" value="1" form="filebank-review-form" data-filebank-remove-selected hidden disabled class="btn btn-sm btn-outline-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_filebank{{/str}}</button>
+        <button name="removeselected" value="1" form="filebank-review-form" data-filebank-remove-selected hidden disabled class="btn btn-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_filebank{{/str}}</button>
     </div>{{/error}}
 </main>

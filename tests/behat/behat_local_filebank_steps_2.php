@@ -116,7 +116,7 @@ class behat_local_filebank_steps_2 extends behat_local_filebank_base {
             $correct = $this->getSession()->getDriver()->evaluateScript(
                 '(()=>{const back=document.querySelector(".filebank-admin .filebank-back");'
                 . 'return Math.abs(back.getBoundingClientRect().left-back.parentElement.getBoundingClientRect().left)<2'
-                . '&&back.classList.contains("btn-outline-secondary")&&!!back.querySelector(".icon");})()'
+                . '&&back.classList.contains("fbm-back")&&!!back.querySelector(".icon");})()'
             );
             if (!$correct) {
                 throw new \Exception('Profile history Back does not follow the shared native leading-edge action.');

@@ -40,7 +40,7 @@ final class migration_rules {
 
         $config = ['identical_content' => 'skip', 'section_match' => ['strategy' => $data['sectionstrategy'] ?? 'ordinal'],
             'same_content_different_path' => $data['duplicatepolicy'] ?? 'skip-and-report',
-            'missing_target' => $data['missingtarget'] ?? 'block',
+            'missing_target' => $data['missingtarget'] ?? 'create',
             'same_path_different_content' => $data['conflictpolicy'] ?? 'block', 'correspondences' => []];
         foreach (row_data::decode($data['correspondencesjson'] ?? '[]', 20) as $row) {
             $rule = self::correspondence($row);
@@ -48,14 +48,65 @@ final class migration_rules {
         }
         if (
             !$config['correspondences'] || !in_array($config['section_match']['strategy'], ['ordinal', 'name', 'mapping'], true)
-            || !in_array($config['missing_target'], ['block', 'create'], true)
-            || !in_array($config['same_path_different_content'], ['block', 'overwrite'], true)
+            || !in_array($config['missing_target'], ['block', 'create', 'skip'], true)
+            || !in_array($config['same_path_different_content'], ['block', 'overwrite', 'skip'], true)
             || !in_array($config['same_content_different_path'], ['skip-and-report', 'keep'], true)
         ) {
             throw new \moodle_exception('invalidprofile', 'local_filebank');
         }
         self::mapping($config, $data);
         return $config;
+    }
+
+    /**
+     * Decode the rules as the migration screens send them.
+     *
+     * @param array $ui The rules: correspondences, sectionstrategy, sectionmap and the three policies.
+     * @return array Validated migration rules.
+     */
+    public static function from_ui(array $ui): array {
+        return self::from_form([
+            'correspondencesjson' => json_encode(array_values($ui['correspondences'] ?? [])),
+            'sectionmapjson' => json_encode(array_values($ui['sectionmap'] ?? [])),
+            'sectionstrategy' => $ui['sectionstrategy'] ?? 'ordinal',
+            'duplicatepolicy' => $ui['duplicatepolicy'] ?? 'skip-and-report',
+            'missingtarget' => $ui['missingtarget'] ?? 'create',
+            'conflictpolicy' => $ui['conflictpolicy'] ?? 'block',
+        ]);
+    }
+
+    /**
+     * Describe stored migration rules the way the migration screens edit them.
+     *
+     * @param array $config Stored migration rules; with none, there is no correspondence and the person adds them.
+     * @return array The rules: correspondences, sectionstrategy, sectionmap and the three policies.
+     */
+    public static function to_ui(array $config): array {
+        $rows = [];
+        // A profile can describe its single correspondence directly, without the list.
+        $rules = $config['correspondences'] ?? (isset($config['source_module'], $config['target_module']) ? [$config] : []);
+        foreach ($rules as $rule) {
+            $row = [];
+            foreach (['source', 'target'] as $side) {
+                $predicate = $rule[$side . '_module'] ?? ['equals' => ''];
+                if ($side === 'source') {
+                    $row['sourcetype'] = $predicate['type'] ?? 'folder';
+                }
+                $method = isset($predicate['pattern']) ? 'pattern' : (isset($predicate['template']) ? 'template' : 'equals');
+                $row[$side . 'field'] = $predicate['field'] ?? 'name';
+                $row[$side . 'method'] = $method;
+                $row[$side . 'value'] = (string) ($predicate[$method] ?? '');
+            }
+            $rows[] = $row;
+        }
+        $map = [];
+        foreach ($config['section_match']['map'] ?? [] as $source => $target) {
+            $map[] = ['source' => (string) $source, 'target' => (string) $target];
+        }
+        return ['correspondences' => $rows, 'sectionstrategy' => $config['section_match']['strategy'] ?? 'ordinal',
+            'sectionmap' => $map, 'duplicatepolicy' => $config['same_content_different_path'] ?? 'skip-and-report',
+            'missingtarget' => $config['missing_target'] ?? 'create',
+            'conflictpolicy' => ($config['same_path_different_content'] ?? '') === 'overwrite' ? 'overwrite' : 'skip'];
     }
 
     /**

@@ -1,30 +1,20 @@
 # Changelog
 
-## [4.0.1] - 2026-10-13
+## [Unreleased]
 
-- Number the version of the plugin with the lowest Moodle version of its line as a suffix, as a numeric string, so each maintenance line has its own and a newer line always has the higher one.
-- Publish the releases automatically from `main` and the `MOODLE_*_STABLE` branches, keeping the latest release on `main`.
-- Test the two ends of the supported range and the LTS releases between them, and cancel a run that a newer push supersedes.
+- Show how many of the filters hidden under "More filters" are applied, as a count on the corner of the funnel icon, the same one the other plugins use.
 
-## [4.0.0] - 2026-10-11
+## [1.0.0-m400] - 2026-10-11
 
-- Initial public FileBank distribution for Moodle 4.0–5.2.
-- Related-course profiles with configurable capture filters, version history, comparison and restore.
-- Native public-file selection in cards, list and lazy tree views with recursive folders and destination limits.
-- Reviewed background migrations, conflict choices, original authorship records and configurable history retention.
-- Organized AMD feature modules and compatibility adapters for legacy native APIs.
-- Restore the native picker header, size and mobile layout when switching away from FileBank.
-- Own native picker cleanup in the parent document so repository changes also restore presentation in Chrome.
-- Align filename/filter controls and responsive correspondence inputs with native theme components.
-- Validate generated CSS without automatic corrections and complete Mustache validation contexts.
-- Keep profile examples in the central documentation and generate portable test data inside Moodle's test environment.
-- Bound native import paths before storage writes, retaining stable parent folders and source metadata when folder labels exceed the native path budget.
-- Match CI stylesheet compilation to the installed Moodle Node runtime and support legacy Tiny toolbar controls in native acceptance tests.
-- Correct shared AMD promise/return contracts and strict lint warnings without suppressing checks.
-- Install rendered Save/Cancel modal content through the cross-version API before showing it, fixing rename dialogs on Moodle 4.3.
-- Separate validation, native listing and copy preparation into focused services without removing regression coverage.
-- Enforce clean PHP Mess Detector reports and zero coding/documentation warnings in both maintenance lines.
-- Use the official checksum-verified Moodle Plugin CI 4.5.11 artifact and password-authenticated PostgreSQL initialization.
-- Refresh browser compatibility metadata with Node 22 and restore the core's own frontend build runtime.
-- Install the initial public schema without obsolete upgrade callbacks.
-- Preserve the CI archive suffix behind the command link and fail warning-only Mustache validation instead of accepting skipped child checks.
+First release of the Moodle 4.0 to 5.2 line, on `MOODLE_400_STABLE`. The Moodle 5.3 line is on `main` (1.0.0-m503).
+
+### Added
+
+- Profiles of related courses, defined by named regular-expression captures that can also become search filters, with guided editing, import and export, retained versions, comparison and restoration.
+- A file picker with cards, list and lazy tree views, recursive multiple selection of the public material of other courses (Folder, File, Assignment handouts and other registered providers), destination limits, and material already used in the destination excluded before browsing.
+- A review of the resulting file tree before copying, with removal checks and dialogs for destination names.
+- Migrations between courses with source filters and activity correspondences. A window checks what a migration would do before it is created, so parameters that find nothing to migrate are changed without creating one. What does not match (a folder the source does not have, a destination without courses, a hidden folder) is counted as information and is never an error. What happens with the files that are already different in the destination is decided in the last step, where it is known how many there are, so a migration never waits for a decision once it exists and one with nothing to write is not created; every change, including new parameters, is saved in the same migration, which is only duplicated by the button that says so. The lists of choices are bounded (ten profiles at a time, searched by name, and the last ten migrations of a profile to take its folders from). The screens are the same application as in the 5.3 line, drawn by Preact, which gets everything from web services, with paginated files and folders and execution in the background.
+- Original authorship declarations preserved at copy time, with configurable protection and provenance.
+- The screens use the Bootstrap classes of the theme, with the design of the plugin as rules scoped to `.filebank-ui`, so a theme restyles buttons, cards, badges, tables and the rest as it restyles the site (see Theming in the README).
+- A bounded log and configurable retention of logs, migrations and inactive profile versions.
+- The interface is written in AMD modules and Mustache templates, and the migration screens in TypeScript that is built into one AMD module, with the same features as the 5.3 line.
