@@ -200,248 +200,254 @@ const MigrationList = /* @__PURE__ */ __name(({ text, onOpen, onNew }) => {
         lineNumber: 124,
         columnNumber: 13
       }),
-      rows.length === 0 ? /* @__PURE__ */ jsxDEV(EmptyState, { icon: "magnifying-glass", title: text("list_nomatch_title"), text: text("list_nomatch_text") }, void 0, false, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-        lineNumber: 148,
-        columnNumber: 19
-      }) : /* @__PURE__ */ jsxDEV("div", { className: "table-responsive", ref: kept.ref, style: kept.style, children: /* @__PURE__ */ jsxDEV("table", { className: "table table-hover", children: [
-        /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { children: [
-          /* @__PURE__ */ jsxDEV("th", { className: "fbm-col-check", children: /* @__PURE__ */ jsxDEV(
-            Check,
-            {
-              label: text("select_all_page"),
-              checked: deletable.length > 0 && deletable.every((row) => chosen.includes(row.id)),
-              partial: chosen.length > 0,
-              disabled: deletable.length === 0,
-              onChange: (checked) => setSelected(checked ? deletable.map((row) => row.id) : [])
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 154,
-              columnNumber: 37
-            }
-          ) }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 153,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("th", { children: text("col_migration") }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 162,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("th", { children: text("col_route") }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 163,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("th", { children: text("col_files") }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 164,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("th", { children: text("col_state") }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 165,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("th", { children: text("col_created") }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 166,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("th", { children: /* @__PURE__ */ jsxDEV("span", { className: "filebank-visually-hidden", children: text("col_actions") }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 167,
-            columnNumber: 37
-          }) }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 167,
-            columnNumber: 33
-          })
-        ] }, void 0, true, {
+      /* @__PURE__ */ jsxDEV("div", { className: "fbm-list-region", children: [
+        rows.length === 0 ? /* @__PURE__ */ jsxDEV(EmptyState, { icon: "magnifying-glass", title: text("list_nomatch_title"), text: text("list_nomatch_text") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-          lineNumber: 152,
-          columnNumber: 29
-        }) }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-          lineNumber: 151,
-          columnNumber: 25
-        }),
-        /* @__PURE__ */ jsxDEV("tbody", { children: rows.map((row) => /* @__PURE__ */ jsxDEV("tr", { "data-migration": row.id, children: [
-          /* @__PURE__ */ jsxDEV("td", { className: "fbm-col-check", children: /* @__PURE__ */ jsxDEV(
-            Check,
-            {
-              label: text("select_row", { n: row.id }),
-              checked: chosen.includes(row.id),
-              disabled: !row.candelete,
-              onChange: (checked) => setSelected(checked ? [...chosen, row.id] : chosen.filter((id) => id !== row.id))
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 173,
-              columnNumber: 37
-            }
-          ) }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 172,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("td", { children: [
-            /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-link p-0 fbm-link fbm-row-title", onClick: () => onOpen(row.id), children: text("review_title", { n: row.id }) }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 181,
-              columnNumber: 37
-            }),
-            /* @__PURE__ */ jsxDEV("span", { className: "fbm-table-meta", children: row.profile }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 184,
-              columnNumber: 37
-            })
-          ] }, void 0, true, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 180,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("span", { className: "fbm-route", children: [
-            /* @__PURE__ */ jsxDEV("span", { children: row.source }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 188,
-              columnNumber: 41
-            }),
-            /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-right" }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 188,
-              columnNumber: 66
-            }),
-            /* @__PURE__ */ jsxDEV("span", { children: row.target }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 188,
-              columnNumber: 93
-            })
-          ] }, void 0, true, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 187,
-            columnNumber: 37
-          }) }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 186,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("span", { className: "fbm-files-cell", children: [
-            /* @__PURE__ */ jsxDEV("strong", { children: row.towrite }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 193,
-              columnNumber: 41
-            }),
-            /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: text("list_of_files", { n: row.files }) }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 194,
-              columnNumber: 41
-            })
-          ] }, void 0, true, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 192,
-            columnNumber: 37
-          }) }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 191,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("td", { children: [
-            /* @__PURE__ */ jsxDEV(StatusBadge, { status: row.state, label: row.statelabel }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 198,
-              columnNumber: 37
-            }),
-            (row.state === "running" || row.state === "queued") && /* @__PURE__ */ jsxDEV(
-              Progress,
+          lineNumber: 149,
+          columnNumber: 19
+        }) : /* @__PURE__ */ jsxDEV("div", { className: "table-responsive", ref: kept.ref, style: kept.style, children: /* @__PURE__ */ jsxDEV("table", { className: "table table-hover", children: [
+          /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { children: [
+            /* @__PURE__ */ jsxDEV("th", { className: "fbm-col-check", children: /* @__PURE__ */ jsxDEV(
+              Check,
               {
-                value: row.done,
-                max: Math.max(1, row.towrite),
-                label: text("progress")
+                label: text("select_all_page"),
+                checked: deletable.length > 0 && deletable.every((row) => chosen.includes(row.id)),
+                partial: chosen.length > 0,
+                disabled: deletable.length === 0,
+                onChange: (checked) => setSelected(checked ? deletable.map((row) => row.id) : [])
               },
               void 0,
               false,
               {
                 fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-                lineNumber: 199,
-                columnNumber: 93
+                lineNumber: 155,
+                columnNumber: 37
               }
-            )
-          ] }, void 0, true, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 197,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("td", { className: "text-muted", children: row.datelabel }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 205,
-            columnNumber: 33
-          }),
-          /* @__PURE__ */ jsxDEV("td", { className: "fbm-col-actions", children: /* @__PURE__ */ jsxDEV("div", { className: "fbm-actions", children: [
-            /* @__PURE__ */ jsxDEV(IconButton, { icon: "eye", label: text("open"), tone: "primary", onClick: () => onOpen(row.id) }, void 0, false, {
+            ) }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 208,
-              columnNumber: 41
+              lineNumber: 154,
+              columnNumber: 33
             }),
-            row.candelete && /* @__PURE__ */ jsxDEV(IconButton, { icon: "trash", label: text("delete"), tone: "danger", onClick: () => setAsking([row.id]) }, void 0, false, {
+            /* @__PURE__ */ jsxDEV("th", { children: text("col_migration") }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-              lineNumber: 209,
-              columnNumber: 59
+              lineNumber: 163,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("th", { children: text("col_route") }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 164,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("th", { children: text("col_files") }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 165,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("th", { children: text("col_state") }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 166,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("th", { children: text("col_created") }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 167,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("th", { children: /* @__PURE__ */ jsxDEV("span", { className: "filebank-visually-hidden", children: text("col_actions") }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 168,
+              columnNumber: 37
+            }) }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 168,
+              columnNumber: 33
             })
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 207,
-            columnNumber: 37
+            lineNumber: 153,
+            columnNumber: 29
           }) }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 206,
-            columnNumber: 33
+            lineNumber: 152,
+            columnNumber: 25
+          }),
+          /* @__PURE__ */ jsxDEV("tbody", { children: rows.map((row) => /* @__PURE__ */ jsxDEV("tr", { "data-migration": row.id, children: [
+            /* @__PURE__ */ jsxDEV("td", { className: "fbm-col-check", children: /* @__PURE__ */ jsxDEV(
+              Check,
+              {
+                label: text("select_row", { n: row.id }),
+                checked: chosen.includes(row.id),
+                disabled: !row.candelete,
+                onChange: (checked) => setSelected(checked ? [...chosen, row.id] : chosen.filter((id) => id !== row.id))
+              },
+              void 0,
+              false,
+              {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 174,
+                columnNumber: 37
+              }
+            ) }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 173,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("td", { children: [
+              /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-link p-0 fbm-link fbm-row-title", onClick: () => onOpen(row.id), children: text("review_title", { n: row.id }) }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 182,
+                columnNumber: 37
+              }),
+              /* @__PURE__ */ jsxDEV("span", { className: "fbm-table-meta", children: row.profile }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 185,
+                columnNumber: 37
+              })
+            ] }, void 0, true, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 181,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("span", { className: "fbm-route", children: [
+              /* @__PURE__ */ jsxDEV("span", { children: row.source }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 189,
+                columnNumber: 41
+              }),
+              /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-right" }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 189,
+                columnNumber: 66
+              }),
+              /* @__PURE__ */ jsxDEV("span", { children: row.target }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 189,
+                columnNumber: 93
+              })
+            ] }, void 0, true, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 188,
+              columnNumber: 37
+            }) }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 187,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("span", { className: "fbm-files-cell", children: [
+              /* @__PURE__ */ jsxDEV("strong", { children: row.towrite }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 194,
+                columnNumber: 41
+              }),
+              /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: text("list_of_files", { n: row.files }) }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 195,
+                columnNumber: 41
+              })
+            ] }, void 0, true, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 193,
+              columnNumber: 37
+            }) }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 192,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("td", { children: [
+              /* @__PURE__ */ jsxDEV(StatusBadge, { status: row.state, label: row.statelabel }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 199,
+                columnNumber: 37
+              }),
+              (row.state === "running" || row.state === "queued") && /* @__PURE__ */ jsxDEV(
+                Progress,
+                {
+                  value: row.done,
+                  max: Math.max(1, row.towrite),
+                  label: text("progress")
+                },
+                void 0,
+                false,
+                {
+                  fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                  lineNumber: 200,
+                  columnNumber: 93
+                }
+              )
+            ] }, void 0, true, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 198,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("td", { className: "text-muted", children: row.datelabel }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 206,
+              columnNumber: 33
+            }),
+            /* @__PURE__ */ jsxDEV("td", { className: "fbm-col-actions", children: /* @__PURE__ */ jsxDEV("div", { className: "fbm-actions", children: [
+              /* @__PURE__ */ jsxDEV(IconButton, { icon: "eye", label: text("open"), tone: "primary", onClick: () => onOpen(row.id) }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 209,
+                columnNumber: 41
+              }),
+              row.candelete && /* @__PURE__ */ jsxDEV(IconButton, { icon: "trash", label: text("delete"), tone: "danger", onClick: () => setAsking([row.id]) }, void 0, false, {
+                fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+                lineNumber: 210,
+                columnNumber: 59
+              })
+            ] }, void 0, true, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 208,
+              columnNumber: 37
+            }) }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+              lineNumber: 207,
+              columnNumber: 33
+            })
+          ] }, row.id, true, {
+            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+            lineNumber: 172,
+            columnNumber: 48
+          })) }, void 0, false, {
+            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+            lineNumber: 171,
+            columnNumber: 25
           })
-        ] }, row.id, true, {
+        ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-          lineNumber: 171,
-          columnNumber: 48
-        })) }, void 0, false, {
+          lineNumber: 151,
+          columnNumber: 21
+        }) }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-          lineNumber: 170,
-          columnNumber: 25
-        })
+          lineNumber: 150,
+          columnNumber: 19
+        }),
+        /* @__PURE__ */ jsxDEV(
+          Pagination,
+          {
+            page,
+            perpage,
+            total: data.total,
+            onPage: (next) => {
+              kept.keep();
+              setPage(next);
+            },
+            text,
+            onPerPage: setPerpage
+          },
+          void 0,
+          false,
+          {
+            fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
+            lineNumber: 217,
+            columnNumber: 13
+          }
+        )
       ] }, void 0, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-        lineNumber: 150,
-        columnNumber: 21
-      }) }, void 0, false, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-        lineNumber: 149,
-        columnNumber: 19
-      }),
-      /* @__PURE__ */ jsxDEV(
-        Pagination,
-        {
-          page,
-          perpage,
-          total: data.total,
-          onPage: (next) => {
-            kept.keep();
-            setPage(next);
-          },
-          text,
-          onPerPage: setPerpage
-        },
-        void 0,
-        false,
-        {
-          fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-          lineNumber: 216,
-          columnNumber: 13
-        }
-      )
+        lineNumber: 147,
+        columnNumber: 13
+      })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
       lineNumber: 123,
@@ -456,13 +462,13 @@ const MigrationList = /* @__PURE__ */ __name(({ text, onOpen, onNew }) => {
         children: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-sm btn-danger", onClick: () => setAsking(chosen), children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: "trash", gap: true }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 234,
+            lineNumber: 236,
             columnNumber: 17
           }),
           text("delete_selected")
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-          lineNumber: 233,
+          lineNumber: 235,
           columnNumber: 13
         })
       },
@@ -470,7 +476,7 @@ const MigrationList = /* @__PURE__ */ __name(({ text, onOpen, onNew }) => {
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-        lineNumber: 228,
+        lineNumber: 230,
         columnNumber: 31
       }
     ),
@@ -489,12 +495,12 @@ const MigrationList = /* @__PURE__ */ __name(({ text, onOpen, onNew }) => {
         children: [
           /* @__PURE__ */ jsxDEV("p", { children: text("delete_text", { n: asking?.length ?? 0 }) }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 248,
+            lineNumber: 250,
             columnNumber: 13
           }),
           /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: text("delete_hint") }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-            lineNumber: 249,
+            lineNumber: 251,
             columnNumber: 13
           })
         ]
@@ -503,7 +509,7 @@ const MigrationList = /* @__PURE__ */ __name(({ text, onOpen, onNew }) => {
       true,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/list/MigrationList.tsx",
-        lineNumber: 237,
+        lineNumber: 239,
         columnNumber: 9
       }
     )

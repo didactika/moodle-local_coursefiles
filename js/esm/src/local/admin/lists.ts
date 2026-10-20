@@ -16,13 +16,15 @@
  *
  * @param origin The control that asked for the page, inside the region.
  * @param url The address of the page.
+ * @param keep Keep the height of the list (another page) or let it take its own (another size).
  */
-export const swapList = async(origin: Element, url: string): Promise<void> => {
+export const swapList = async(origin: Element, url: string, keep = true): Promise<void> => {
     const region = origin.closest<HTMLElement>('[data-filebank-list]');
     if (!region) {
         window.location.assign(url);
         return;
     }
+    // The table keeps the size it has now, so a page with fewer rows does not make the page jump.
     const table = region.querySelector<HTMLElement>('.table-responsive');
     const height = table ? table.offsetHeight : 0;
     region.setAttribute('aria-busy', 'true');
@@ -58,8 +60,8 @@ export const swapList = async(origin: Element, url: string): Promise<void> => {
             region.replaceChildren(...Array.from(next.childNodes, node => document.importNode(node, true)));
         }
         const fresh = region.querySelector<HTMLElement>('.table-responsive');
-        if (fresh && height > 0) {
-            fresh.style.minHeight = `${height}px`;
+        if (fresh) {
+            fresh.style.minHeight = keep && height > 0 ? `${height}px` : '';
         }
         window.history.replaceState(window.history.state, '', url);
         region.dispatchEvent(new CustomEvent('filebank:listchanged', {bubbles: true}));

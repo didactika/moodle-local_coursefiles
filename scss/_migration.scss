@@ -704,10 +704,6 @@
             vertical-align: middle;
         }
 
-        & tbody tr:last-child td {
-            border-bottom: 0;
-        }
-
         & tr.is-out td {
             opacity: 0.6;
         }
@@ -1254,19 +1250,22 @@
         font-size: 0.8125rem;
     }
 
-    // The choice of a profile: a search and a short list under it.
+    // The choice of a profile: a search and the profiles as cards, two or three to a row.
     .fbm-picker {
         display: grid;
         gap: 0.75rem;
-        max-width: 36rem;
 
         .fbm-search {
-            max-width: none;
+            max-width: 28rem;
+        }
+
+        &.has-problem .fbm-choice {
+            border-color: var(--fbm-danger);
         }
     }
 
-    .fbm-picker-list .list-group-item {
-        text-align: start;
+    .fbm-profile-choices {
+        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     }
 
     .fbm-select-auto {
@@ -1575,6 +1574,56 @@
         gap: 0.6rem;
     }
 
+    // A table keeps the size it had when it goes to a page with fewer rows, and scrolls inside, with its head in sight, when a page
+    // has more rows than fit in the window. The bar under it is always set apart from it.
+    .fbm-list-region .table-responsive,
+    [data-filebank-list] .table-responsive {
+        max-height: 70vh;
+        overflow-y: auto;
+        scroll-padding-top: 2.5rem;
+    }
+
+    .fbm-list-region .table thead th,
+    [data-filebank-list] .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    // The arrows of the pager are bare chevrons, as in block_course_finder.
+    .fbm-pager-arrow {
+        width: auto;
+        min-height: 0;
+        height: auto;
+        padding: 0.25rem 0.4rem;
+        border: 0;
+        background: transparent;
+        color: var(--fbm-text);
+        box-shadow: none;
+
+        &:hover:not(:disabled):not(.disabled),
+        &:focus,
+        &:focus-visible,
+        &:active {
+            border: 0;
+            outline: 0;
+            background: transparent;
+            box-shadow: none;
+            transform: none;
+        }
+
+        &:hover:not(:disabled):not(.disabled),
+        &:focus-visible {
+            color: var(--fbm-primary);
+        }
+
+        &:disabled,
+        &.disabled {
+            color: var(--fbm-muted);
+            opacity: 0.45;
+        }
+    }
+
     .fbm-listbar-label {
         margin: 0;
         color: var(--fbm-muted);
@@ -1711,16 +1760,45 @@
         }
     }
 
-    // A date that is asked for on its own, with a calendar and a way to take it away.
-    .fbm-datefield {
-        .input-group {
-            flex-wrap: nowrap;
-        }
+    // The dates of a filter: two compact fields side by side, the calendar icon and the button that clears inside each.
+    .fbm-dates {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
 
-        input[readonly] {
+    .fbm-dateinput {
+        position: relative;
+
+        .form-control {
+            padding-inline-start: 2.1rem;
+            padding-inline-end: 2rem;
             background-color: var(--fbm-bg);
             cursor: pointer;
+            text-overflow: ellipsis;
         }
+    }
+
+    .fbm-dateinput-icon {
+        position: absolute;
+        top: 50%;
+        inset-inline-start: 0.7rem;
+        color: var(--fbm-muted);
+        transform: translateY(-50%);
+        pointer-events: none;
+
+        .icon {
+            margin: 0;
+        }
+    }
+
+    .fbm-dateinput-clear {
+        position: absolute;
+        top: 50%;
+        inset-inline-end: 0.2rem;
+        width: 1.75rem;
+        height: 1.75rem;
+        transform: translateY(-50%);
     }
 
     .fbm-filters {
@@ -2091,29 +2169,21 @@
         overflow-y: auto;
     }
 
-    // On a window that is big enough the wizard is as tall as the window, under the bar of Moodle: the page does not scroll, the
-    // step does, and the buttons that go back and forward are the foot of the panel.
-    @media (min-width: 62rem) and (min-height: 36rem) {
-        .fbm-wizard {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 5rem);
-        }
-
+    // On a wide window the card of a step is as tall as the stepper beside it and a little more (the stepper sets the height of the
+    // row, the card takes it): a long step scrolls inside the card, and the buttons that go back and forward are its foot.
+    @media (min-width: 62rem) {
         .fbm-wizard-body {
-            flex: 1 1 auto;
-            grid-template-rows: minmax(0, 1fr);
-            min-height: 0;
             align-items: stretch;
         }
 
         .fbm-stepper {
             position: static;
-            overflow-y: auto;
+            padding-bottom: 3rem;
         }
 
         .fbm-wizard-panel {
-            min-height: 0;
+            height: 0;
+            min-height: 100%;
         }
     }
 
@@ -2246,5 +2316,56 @@
             animation: none;
             transition: none;
         }
+    }
+}
+
+// The calendar of the date filters is drawn at the end of the page, outside the wrapper of the plugin: it takes the colours of the
+// theme through its own class, and other pickers of the page are not touched.
+.daterangepicker.filebank-calendar {
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.625rem;
+    background-color: var(--bs-body-bg, #fff);
+    color: var(--bs-body-color, #212529);
+    font-family: inherit;
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
+
+    &::before,
+    &::after {
+        display: none;
+    }
+
+    .calendar-table {
+        border: 0;
+        background-color: transparent;
+    }
+
+    th,
+    td {
+        border-radius: 0.5rem;
+    }
+
+    td.off {
+        background-color: transparent;
+        color: var(--bs-secondary-color, #6c757d);
+    }
+
+    td.available:hover,
+    th.available:hover {
+        background-color: var(--bs-tertiary-bg, #f8f9fa);
+    }
+
+    td.active,
+    td.active:hover {
+        background-color: var(--bs-primary, #0f6cbf);
+        color: #fff;
+    }
+
+    select.monthselect,
+    select.yearselect {
+        padding: 0.15rem 0.35rem;
+        border: 1px solid var(--bs-border-color, #dee2e6);
+        border-radius: 0.5rem;
+        background-color: var(--bs-body-bg, #fff);
+        color: inherit;
     }
 }

@@ -2,8 +2,8 @@
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
- * The choice of the profile of a migration. A site can have many profiles, so the list never shows more than ten: the first ones
- * by name, or the ones that match what is typed in the search above it.
+ * The choice of the profile of a migration: a search and the profiles as cards to choose from, each with what it recognises. A site
+ * can have many profiles, so never more than ten are shown: the first ones by name, or the ones that match the search.
  *
  * @module     local_filebank/migration/components/parameters/ProfilePicker
  * @copyright  2026 Didactika.org
@@ -14,6 +14,9 @@ import {useEffect, useRef, useState} from 'react';
 import {useDebounced} from '../../hooks/useDebounced';
 import type {ProfileOption, Text} from '../../types';
 import Icon from '../ui/Icon';
+
+/** How many profiles a list of choices shows at most. */
+const SHOWN = 10;
 
 interface ProfilePickerProps {
     profiles: ProfileOption[];
@@ -41,6 +44,8 @@ const ProfilePicker = ({profiles, chosen, locked, invalid, onPick, onSearch, tex
         onSearch(followed.trim());
     }, [followed]);
 
+    const shown = locked ? profiles.filter((profile) => profile.id === chosen) : profiles;
+
     return <div className={`fbm-picker${invalid ? ' has-problem' : ''}`} data-region="profile-picker">
         {!locked && <div className="fbm-search">
             <span className="fbm-search-icon"><Icon name="magnifying-glass" /></span>
@@ -54,20 +59,29 @@ const ProfilePicker = ({profiles, chosen, locked, invalid, onPick, onSearch, tex
                 onChange={(event) => setQuery(event.target.value)}
             />
         </div>}
-        <div className="list-group fbm-picker-list" role="listbox" aria-label={text('wizard_profile')}>
-            {profiles.map((profile) => <button
-                key={profile.id}
-                type="button"
-                role="option"
-                aria-selected={profile.id === chosen}
-                className={`list-group-item list-group-item-action${profile.id === chosen ? ' active' : ''}`}
-                disabled={locked && profile.id !== chosen}
-                onClick={() => onPick(profile)}
-            >
-                {profile.id === chosen && <Icon name="check" gap />}{profile.name}
-            </button>)}
-            {profiles.length === 0 && <p className="text-muted fbm-hint">{text('profile_none')}</p>}
+        <div className="fbm-choices fbm-profile-choices" role="radiogroup" aria-label={text('wizard_profile')}>
+            {shown.map((profile) => <label key={profile.id} className={`fbm-choice${profile.id === chosen ? ' is-on' : ''}`}>
+                <input
+                    type="radio"
+                    name="fbm-profile"
+                    value={profile.id}
+                    checked={profile.id === chosen}
+                    disabled={locked}
+                    onChange={() => onPick(profile)}
+                />
+                <span className="fbm-choice-dot" aria-hidden="true" />
+                <span className="fbm-choice-text">
+                    <span className="fbm-choice-title">{profile.name}</span>
+                    <span className="fbm-choice-hint">
+                        {profile.dimensions.length > 0
+                            ? profile.dimensions.map((dimension) => dimension.label).join(' · ')
+                            : text('profile_no_filters')}
+                    </span>
+                </span>
+            </label>)}
         </div>
+        {shown.length === 0 && <p className="text-muted fbm-hint">{text('profile_none')}</p>}
+        {!locked && shown.length >= SHOWN && <p className="text-muted fbm-hint">{text('profile_more', {n: SHOWN})}</p>}
     </div>;
 };
 

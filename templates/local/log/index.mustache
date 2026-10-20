@@ -27,31 +27,32 @@
                     <h3 class="fbm-filter-heading">{{#str}}filters, core{{/str}}</h3>
                     <a class="btn btn-link btn-icon" href="{{clearurl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
                 </div>
-                <div class="fbm-field">
-                    <label for="filebank-log-action" class="form-label">{{#str}}logaction, local_filebank{{/str}}</label>
+                <fieldset class="fbm-filter-group">
+                    <legend class="fbm-filter-title"><label for="filebank-log-action" class="m-0">{{#str}}logaction, local_filebank{{/str}}</label></legend>
                     <select id="filebank-log-action" name="action" class="form-select w-100">
                         <option value="">{{#str}}logallactions, local_filebank{{/str}}</option>
                         {{#options}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/options}}
                     </select>
-                </div>
-                <div class="fbm-field fbm-datefield" data-filebank-date>
-                    <label for="filebank-log-from" class="form-label">{{#str}}logfrom, local_filebank{{/str}}</label>
-                    <div class="input-group">
-                        <span class="input-group-text">{{#pix}}i/calendar, core{{/pix}}</span>
-                        <input type="text" id="filebank-log-from" class="form-control" readonly autocomplete="off" placeholder="{{#str}}anydate, local_filebank{{/str}}" value="{{fromlabel}}" data-filebank-date-display>
-                        <button type="button" class="btn btn-outline-secondary" data-filebank-date-clear{{^from}} hidden{{/from}} title="{{#str}}clear, core{{/str}}">{{#pix}}e/cancel, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}clear, core{{/str}}</span></button>
+                </fieldset>
+                <fieldset class="fbm-filter-group">
+                    <legend class="fbm-filter-title">{{#str}}date{{/str}}</legend>
+                    <div class="fbm-dates">
+                        <div class="fbm-dateinput" data-filebank-date>
+                            <label for="filebank-log-from" class="filebank-visually-hidden">{{#str}}logfrom, local_filebank{{/str}}</label>
+                            <span class="fbm-dateinput-icon">{{#pix}}i/calendar, core{{/pix}}</span>
+                            <input type="text" id="filebank-log-from" class="form-control" readonly autocomplete="off" placeholder="{{#str}}logfrom, local_filebank{{/str}}" value="{{fromlabel}}" data-filebank-date-display>
+                            <button type="button" class="btn btn-link btn-icon fbm-dateinput-clear" data-filebank-date-clear{{^from}} hidden{{/from}} title="{{#str}}clear, core{{/str}}">{{#pix}}e/cancel, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}clear, core{{/str}}</span></button>
+                            <input type="hidden" name="from" value="{{from}}" data-filebank-date-value>
+                        </div>
+                        <div class="fbm-dateinput" data-filebank-date>
+                            <label for="filebank-log-until" class="filebank-visually-hidden">{{#str}}loguntil, local_filebank{{/str}}</label>
+                            <span class="fbm-dateinput-icon">{{#pix}}i/calendar, core{{/pix}}</span>
+                            <input type="text" id="filebank-log-until" class="form-control" readonly autocomplete="off" placeholder="{{#str}}loguntil, local_filebank{{/str}}" value="{{untillabel}}" data-filebank-date-display>
+                            <button type="button" class="btn btn-link btn-icon fbm-dateinput-clear" data-filebank-date-clear{{^until}} hidden{{/until}} title="{{#str}}clear, core{{/str}}">{{#pix}}e/cancel, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}clear, core{{/str}}</span></button>
+                            <input type="hidden" name="until" value="{{until}}" data-filebank-date-value>
+                        </div>
                     </div>
-                    <input type="hidden" name="from" value="{{from}}" data-filebank-date-value>
-                </div>
-                <div class="fbm-field fbm-datefield" data-filebank-date>
-                    <label for="filebank-log-until" class="form-label">{{#str}}loguntil, local_filebank{{/str}}</label>
-                    <div class="input-group">
-                        <span class="input-group-text">{{#pix}}i/calendar, core{{/pix}}</span>
-                        <input type="text" id="filebank-log-until" class="form-control" readonly autocomplete="off" placeholder="{{#str}}anydate, local_filebank{{/str}}" value="{{untillabel}}" data-filebank-date-display>
-                        <button type="button" class="btn btn-outline-secondary" data-filebank-date-clear{{^until}} hidden{{/until}} title="{{#str}}clear, core{{/str}}">{{#pix}}e/cancel, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}clear, core{{/str}}</span></button>
-                    </div>
-                    <input type="hidden" name="until" value="{{until}}" data-filebank-date-value>
-                </div>
+                </fieldset>
                 <noscript><button class="btn btn-primary" type="submit">{{#str}}filter{{/str}}</button></noscript>
             </div>
         </details>

@@ -12,7 +12,7 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
  * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-const swapList = /* @__PURE__ */ __name(async (origin, url) => {
+const swapList = /* @__PURE__ */ __name(async (origin, url, keep = true) => {
   const region = origin.closest("[data-filebank-list]");
   if (!region) {
     window.location.assign(url);
@@ -51,8 +51,8 @@ const swapList = /* @__PURE__ */ __name(async (origin, url) => {
       region.replaceChildren(...Array.from(next.childNodes, (node) => document.importNode(node, true)));
     }
     const fresh = region.querySelector(".table-responsive");
-    if (fresh && height > 0) {
-      fresh.style.minHeight = `${height}px`;
+    if (fresh) {
+      fresh.style.minHeight = keep && height > 0 ? `${height}px` : "";
     }
     window.history.replaceState(window.history.state, "", url);
     region.dispatchEvent(new CustomEvent("filebank:listchanged", { bubbles: true }));

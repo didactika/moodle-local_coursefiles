@@ -159,7 +159,7 @@ const changePage = /* @__PURE__ */ __name((event) => {
   const url = new URL(select.dataset.url, document.baseURI);
   url.searchParams.set("perpage", select.value);
   url.searchParams.set(select.dataset.pageparameter, "0");
-  void swapList(select, url.toString());
+  void swapList(select, url.toString(), false);
 }, "changePage");
 export {
   changePage,

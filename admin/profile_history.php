@@ -39,8 +39,8 @@ if (data_submitted()) {
     redirect($url, get_string('versionrestored', 'local_filebank'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 $page = max(0, optional_param('page', 0, PARAM_INT));
-$perpage = \local_filebank\output\pagination::size();
 $total = $DB->count_records('local_filebank_revision', ['profileid' => $profileid]);
+$perpage = \local_filebank\output\pagination::rows(\local_filebank\output\pagination::size(), $total);
 $page = \local_filebank\output\pagination::clamp($total, $page, $perpage);
 $records = $DB->get_records(
     'local_filebank_revision',

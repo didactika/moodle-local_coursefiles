@@ -89,8 +89,8 @@ Feature: Clear administration tabs and immutable migration previews
     Given I log in as "admin"
     When I navigate to "Reports > FileBank material reuse" in site administration
     And I click on ".filebank-log .fbm-filterbox summary" "css_element"
-    Then I should see "From date"
-    And I should see "Through date"
+    Then "From date" "field" should exist
+    And "Through date" "field" should exist
     And I set the field "Action" to "profile_activated"
     And I wait until ".filebank-log .fbm-filterbox[data-active]" "css_element" exists
     Then I should see "Profile activated"

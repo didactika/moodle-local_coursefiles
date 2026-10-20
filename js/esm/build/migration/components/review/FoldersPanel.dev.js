@@ -81,117 +81,123 @@ const FoldersPanel = /* @__PURE__ */ __name(({ migration, text, busy, onSelect }
       lineNumber: 75,
       columnNumber: 56
     }),
-    data !== null && data.folders.length > 0 && /* @__PURE__ */ jsxDEV("div", { ref: kept.ref, style: kept.style, children: /* @__PURE__ */ jsxDEV("ul", { className: "fbm-folders", children: data.folders.map((folder) => /* @__PURE__ */ jsxDEV("li", { className: "fbm-folder", children: [
+    /* @__PURE__ */ jsxDEV("div", { className: "fbm-list-region", children: [
+      data !== null && data.folders.length > 0 && /* @__PURE__ */ jsxDEV("div", { ref: kept.ref, style: kept.style, children: /* @__PURE__ */ jsxDEV("ul", { className: "fbm-folders", children: data.folders.map((folder) => /* @__PURE__ */ jsxDEV("li", { className: "fbm-folder", children: [
+        /* @__PURE__ */ jsxDEV(
+          Switch,
+          {
+            label: text("folder_switch", { name: folder.sourcefolder }),
+            checked: folder.total > 0 && folder.included === folder.total,
+            partial: folder.included > 0 && folder.included < folder.total,
+            disabled: !editable,
+            onChange: (included) => onSelect(folder, included)
+          },
+          void 0,
+          false,
+          {
+            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+            lineNumber: 79,
+            columnNumber: 17
+          }
+        ),
+        /* @__PURE__ */ jsxDEV("div", { className: "fbm-folder-route", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "fbm-folder-side", children: [
+            /* @__PURE__ */ jsxDEV("strong", { children: folder.sourcecourse }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+              lineNumber: 88,
+              columnNumber: 25
+            }),
+            /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: folder.sourcefolder }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+              lineNumber: 89,
+              columnNumber: 25
+            })
+          ] }, void 0, true, {
+            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+            lineNumber: 87,
+            columnNumber: 21
+          }),
+          /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-right" }, void 0, false, {
+            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+            lineNumber: 91,
+            columnNumber: 21
+          }),
+          /* @__PURE__ */ jsxDEV("span", { className: "fbm-folder-side", children: [
+            /* @__PURE__ */ jsxDEV("strong", { children: folder.targetcourse }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+              lineNumber: 93,
+              columnNumber: 25
+            }),
+            /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: folder.targetfolder }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+              lineNumber: 94,
+              columnNumber: 25
+            })
+          ] }, void 0, true, {
+            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+            lineNumber: 92,
+            columnNumber: 21
+          })
+        ] }, void 0, true, {
+          fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+          lineNumber: 86,
+          columnNumber: 17
+        }),
+        /* @__PURE__ */ jsxDEV("div", { className: "fbm-folder-count", children: [
+          /* @__PURE__ */ jsxDEV("span", { children: text("folder_included", { included: folder.included, total: folder.total }) }, void 0, false, {
+            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+            lineNumber: 98,
+            columnNumber: 21
+          }),
+          /* @__PURE__ */ jsxDEV(Progress, { value: folder.included, max: Math.max(1, folder.total), label: text("progress"), tone: "success" }, void 0, false, {
+            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+            lineNumber: 99,
+            columnNumber: 21
+          })
+        ] }, void 0, true, {
+          fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+          lineNumber: 97,
+          columnNumber: 17
+        })
+      ] }, `${folder.sourcecourseid}:${folder.sourcecmid}:${folder.targetcourse}:${folder.targetfolder}`, true, {
+        fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+        lineNumber: 78,
+        columnNumber: 43
+      })) }, void 0, false, {
+        fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+        lineNumber: 77,
+        columnNumber: 93
+      }) }, void 0, false, {
+        fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
+        lineNumber: 77,
+        columnNumber: 54
+      }),
       /* @__PURE__ */ jsxDEV(
-        Switch,
+        Pagination,
         {
-          label: text("folder_switch", { name: folder.sourcefolder }),
-          checked: folder.total > 0 && folder.included === folder.total,
-          partial: folder.included > 0 && folder.included < folder.total,
-          disabled: !editable,
-          onChange: (included) => onSelect(folder, included)
+          page,
+          perpage,
+          total: data?.total ?? 0,
+          onPage: (next) => {
+            kept.keep();
+            setPage(next);
+          },
+          text,
+          onPerPage: setPerpage
         },
         void 0,
         false,
         {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-          lineNumber: 78,
-          columnNumber: 17
+          lineNumber: 103,
+          columnNumber: 9
         }
-      ),
-      /* @__PURE__ */ jsxDEV("div", { className: "fbm-folder-route", children: [
-        /* @__PURE__ */ jsxDEV("span", { className: "fbm-folder-side", children: [
-          /* @__PURE__ */ jsxDEV("strong", { children: folder.sourcecourse }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-            lineNumber: 87,
-            columnNumber: 25
-          }),
-          /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: folder.sourcefolder }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-            lineNumber: 88,
-            columnNumber: 25
-          })
-        ] }, void 0, true, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-          lineNumber: 86,
-          columnNumber: 21
-        }),
-        /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-right" }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-          lineNumber: 90,
-          columnNumber: 21
-        }),
-        /* @__PURE__ */ jsxDEV("span", { className: "fbm-folder-side", children: [
-          /* @__PURE__ */ jsxDEV("strong", { children: folder.targetcourse }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-            lineNumber: 92,
-            columnNumber: 25
-          }),
-          /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: folder.targetfolder }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-            lineNumber: 93,
-            columnNumber: 25
-          })
-        ] }, void 0, true, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-          lineNumber: 91,
-          columnNumber: 21
-        })
-      ] }, void 0, true, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-        lineNumber: 85,
-        columnNumber: 17
-      }),
-      /* @__PURE__ */ jsxDEV("div", { className: "fbm-folder-count", children: [
-        /* @__PURE__ */ jsxDEV("span", { children: text("folder_included", { included: folder.included, total: folder.total }) }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-          lineNumber: 97,
-          columnNumber: 21
-        }),
-        /* @__PURE__ */ jsxDEV(Progress, { value: folder.included, max: Math.max(1, folder.total), label: text("progress"), tone: "success" }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-          lineNumber: 98,
-          columnNumber: 21
-        })
-      ] }, void 0, true, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-        lineNumber: 96,
-        columnNumber: 17
-      })
-    ] }, `${folder.sourcecourseid}:${folder.sourcecmid}:${folder.targetcourse}:${folder.targetfolder}`, true, {
-      fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-      lineNumber: 77,
-      columnNumber: 43
-    })) }, void 0, false, {
+      )
+    ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
       lineNumber: 76,
-      columnNumber: 93
-    }) }, void 0, false, {
-      fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-      lineNumber: 76,
-      columnNumber: 54
-    }),
-    /* @__PURE__ */ jsxDEV(
-      Pagination,
-      {
-        page,
-        perpage,
-        total: data?.total ?? 0,
-        onPage: (next) => {
-          kept.keep();
-          setPage(next);
-        },
-        text,
-        onPerPage: setPerpage
-      },
-      void 0,
-      false,
-      {
-        fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
-        lineNumber: 102,
-        columnNumber: 9
-      }
-    )
+      columnNumber: 9
+    })
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
     lineNumber: 69,
