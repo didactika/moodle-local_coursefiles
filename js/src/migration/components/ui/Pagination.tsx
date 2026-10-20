@@ -10,7 +10,7 @@
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import {useId} from 'react';
+import {useEffect, useId} from 'react';
 import {pageSizeChoices} from '../../lib/paging';
 import type {Text} from '../../types';
 import Icon from './Icon';
@@ -30,6 +30,14 @@ const Pagination = ({page, perpage, total, onPage, text, onPerPage}: PaginationP
     const id = useId();
     const pages = Math.max(1, Math.ceil(total / Math.max(1, perpage)));
     const choose = onPerPage !== undefined && total > 0 ? {sizes: pageSizeChoices(total), onPerPage} : null;
+    // The size is always one of those offered: the whole list when it asks for as many rows or more, else the first size.
+    const shown = choose === null || choose.sizes.includes(perpage) ? perpage
+        : (perpage >= total && choose.sizes.includes(total) ? total : choose.sizes[0]);
+    useEffect(() => {
+        if (choose !== null && shown !== perpage) {
+            choose.onPerPage(shown);
+        }
+    }, [shown, perpage]);
     if (pages < 2 && choose === null) {
         return null;
     }
@@ -37,7 +45,7 @@ const Pagination = ({page, perpage, total, onPage, text, onPerPage}: PaginationP
     const to = Math.min((page + 1) * perpage, total);
     const arrow = (target: number, enabled: boolean, icon: string, title: string) => <button
         type="button"
-        className="btn btn-link btn-icon"
+        className="btn btn-link btn-icon fbm-pager-arrow"
         title={title}
         aria-label={title}
         disabled={!enabled}
@@ -53,10 +61,9 @@ const Pagination = ({page, perpage, total, onPage, text, onPerPage}: PaginationP
                 <select
                     id={id}
                     className="form-select form-select-sm rounded-pill"
-                    value={perpage}
+                    value={shown}
                     onChange={(event) => choose.onPerPage(Number(event.target.value))}
                 >
-                    {!choose.sizes.includes(perpage) && <option value={perpage}>{perpage}</option>}
                     {choose.sizes.map((size) => <option key={size} value={size}>{size === total ? text('all') : size}</option>)}
                 </select>
             </>}
@@ -64,8 +71,8 @@ const Pagination = ({page, perpage, total, onPage, text, onPerPage}: PaginationP
         <div className="fbm-listbar-pages">
             <span className="text-muted small" aria-live="polite">{text('pagination_range', {from, to, total})}</span>
             <div className="fbm-actions">
-                {arrow(page - 1, page > 0, 'arrow-left', text('pagination_previous'))}
-                {arrow(page + 1, page < pages - 1, 'arrow-right', text('pagination_next'))}
+                {arrow(page - 1, page > 0, 'chevron-left', text('pagination_previous'))}
+                {arrow(page + 1, page < pages - 1, 'chevron-right', text('pagination_next'))}
             </div>
         </div>
     </nav>;

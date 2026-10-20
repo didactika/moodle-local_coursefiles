@@ -144,6 +144,7 @@ const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
                     </button>
                 </div>
             </div>
+            <div className="fbm-list-region">
             {rows.length === 0
                 ? <EmptyState icon="magnifying-glass" title={text('list_nomatch_title')} text={text('list_nomatch_text')} />
                 : <div className="table-responsive" ref={kept.ref} style={kept.style}>
@@ -224,6 +225,7 @@ const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
                 text={text}
                 onPerPage={setPerpage}
             />
+            </div>
         </>}
         {chosen.length > 0 && <FloatingBar
             summary={text('selected_n', {n: chosen.length})}

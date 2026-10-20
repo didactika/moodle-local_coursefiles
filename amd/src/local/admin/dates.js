@@ -66,6 +66,7 @@ export const init = () => {
             locale: {format: FORMAT, daysOfWeek: data.weekdaysMin(), monthNames: data.months(), firstDay: data.firstDayOfWeek()},
         });
         const picker = $(display).data('daterangepicker');
+        picker.container.addClass('filebank-calendar');
         $(display).on('show.daterangepicker', () => {
             // The first date cannot be after the second, nor the second before the first.
             const limit = other ? partsOf(other).value.value : '';

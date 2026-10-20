@@ -127,6 +127,7 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
         </div>
         {data === null && error === '' && <Skeleton rows={6} label={text('loading')} />}
         {data !== null && files.length === 0 && <EmptyState plain icon="file-circle-question" title={text('files_empty_title')} text={text('files_empty_text')} />}
+        <div className="fbm-list-region">
         {files.length > 0 && <div className="table-responsive" ref={kept.ref} style={kept.style}>
             <table className="table table-hover fbm-files">
                 <thead>
@@ -183,6 +184,7 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
             text={text}
             onPerPage={setPerpage}
         />
+        </div>
     </Panel>;
 };
 

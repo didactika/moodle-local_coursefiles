@@ -57,7 +57,7 @@ if (data_submitted()) {
     send_file($json, 'filebank-profiles.json', 0, 0, true, true, 'application/json');
 }
 $page = max(0, optional_param('page', 0, PARAM_INT));
-$perpage = \local_filebank\output\pagination::size();
+$asked = \local_filebank\output\pagination::size();
 $search = optional_param('q', '', PARAM_TEXT);
 $profileid = optional_param('profileid', 0, PARAM_INT);
 if ($profileid) {
@@ -66,7 +66,7 @@ if ($profileid) {
 $data = ['contextid' => context_system::instance()->id, 'profiles' => [],
     'newprofileurl' => (new moodle_url('/local/filebank/admin/profile.php'))->out(false),
     'importurl' => (new moodle_url('/local/filebank/admin/profile_import.php'))->out(false),
-    'actionurl' => $PAGE->url->out(false), 'search' => $search, 'sesskey' => sesskey(), 'perpage' => $perpage];
+    'actionurl' => $PAGE->url->out(false), 'search' => $search, 'sesskey' => sesskey()];
 $condition = 'p.deleted = 0';
 $params = [];
 if ($search !== '') {
@@ -74,6 +74,8 @@ if ($search !== '') {
     $params['search'] = '%' . $DB->sql_like_escape($search) . '%';
 }
 $total = $DB->count_records_sql('SELECT COUNT(1) FROM {local_filebank} p WHERE ' . $condition, $params);
+$perpage = \local_filebank\output\pagination::rows($asked, $total);
+$data['perpage'] = \local_filebank\output\pagination::value($perpage, $total);
 $page = \local_filebank\output\pagination::clamp($total, $page, $perpage);
 $data['total'] = $total;
 $data['pagination'] = \local_filebank\output\pagination::render(

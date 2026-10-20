@@ -73,6 +73,7 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
         </div>
         {data === null && error === '' && <Skeleton rows={4} label={text('loading')} />}
         {data !== null && data.folders.length === 0 && <EmptyState plain icon="folder-open" title={text('folders_empty_title')} text={text('folders_empty_text')} />}
+        <div className="fbm-list-region">
         {data !== null && data.folders.length > 0 && <div ref={kept.ref} style={kept.style}><ul className="fbm-folders">
             {data.folders.map((folder) => <li key={`${folder.sourcecourseid}:${folder.sourcecmid}:${folder.targetcourse}:${folder.targetfolder}`} className="fbm-folder">
                 <Switch
@@ -110,6 +111,7 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
             text={text}
             onPerPage={setPerpage}
         />
+        </div>
     </Panel>;
 };
 

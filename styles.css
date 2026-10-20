@@ -1770,11 +1770,6 @@ body.filebank-embedded,
     vertical-align: middle;
 }
 
-.filebank-migration .table tbody tr:last-child td,
-.filebank-ui .table tbody tr:last-child td {
-    border-bottom: 0;
-}
-
 .filebank-migration .table tr.is-out td,
 .filebank-ui .table tr.is-out td {
     opacity: 0.6;
@@ -2399,17 +2394,21 @@ body.filebank-embedded,
 .filebank-ui .fbm-picker {
     display: grid;
     gap: 0.75rem;
-    max-width: 36rem;
 }
 
 .filebank-migration .fbm-picker .fbm-search,
 .filebank-ui .fbm-picker .fbm-search {
-    max-width: none;
+    max-width: 28rem;
 }
 
-.filebank-migration .fbm-picker-list .list-group-item,
-.filebank-ui .fbm-picker-list .list-group-item {
-    text-align: start;
+.filebank-migration .fbm-picker.has-problem .fbm-choice,
+.filebank-ui .fbm-picker.has-problem .fbm-choice {
+    border-color: var(--fbm-danger);
+}
+
+.filebank-migration .fbm-profile-choices,
+.filebank-ui .fbm-profile-choices {
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
 }
 
 .filebank-migration .fbm-select-auto,
@@ -2764,6 +2763,66 @@ body.filebank-embedded,
     gap: 0.6rem;
 }
 
+.filebank-migration .fbm-list-region .table-responsive,
+.filebank-migration [data-filebank-list] .table-responsive,
+.filebank-ui .fbm-list-region .table-responsive,
+.filebank-ui [data-filebank-list] .table-responsive {
+    max-height: 70vh;
+    overflow-y: auto;
+    scroll-padding-top: 2.5rem;
+}
+
+.filebank-migration .fbm-list-region .table thead th,
+.filebank-migration [data-filebank-list] .table thead th,
+.filebank-ui .fbm-list-region .table thead th,
+.filebank-ui [data-filebank-list] .table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.filebank-migration .fbm-pager-arrow,
+.filebank-ui .fbm-pager-arrow {
+    width: auto;
+    min-height: 0;
+    height: auto;
+    padding: 0.25rem 0.4rem;
+    border: 0;
+    background: transparent;
+    color: var(--fbm-text);
+    box-shadow: none;
+}
+
+.filebank-migration .fbm-pager-arrow:hover:not(:disabled):not(.disabled),
+.filebank-migration .fbm-pager-arrow:focus,
+.filebank-migration .fbm-pager-arrow:focus-visible,
+.filebank-migration .fbm-pager-arrow:active,
+.filebank-ui .fbm-pager-arrow:hover:not(:disabled):not(.disabled),
+.filebank-ui .fbm-pager-arrow:focus,
+.filebank-ui .fbm-pager-arrow:focus-visible,
+.filebank-ui .fbm-pager-arrow:active {
+    border: 0;
+    outline: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+}
+
+.filebank-migration .fbm-pager-arrow:hover:not(:disabled):not(.disabled),
+.filebank-migration .fbm-pager-arrow:focus-visible,
+.filebank-ui .fbm-pager-arrow:hover:not(:disabled):not(.disabled),
+.filebank-ui .fbm-pager-arrow:focus-visible {
+    color: var(--fbm-primary);
+}
+
+.filebank-migration .fbm-pager-arrow:disabled,
+.filebank-migration .fbm-pager-arrow.disabled,
+.filebank-ui .fbm-pager-arrow:disabled,
+.filebank-ui .fbm-pager-arrow.disabled {
+    color: var(--fbm-muted);
+    opacity: 0.45;
+}
+
 .filebank-migration .fbm-listbar-label,
 .filebank-ui .fbm-listbar-label {
     margin: 0;
@@ -2916,15 +2975,50 @@ body.filebank-embedded,
     margin-inline-start: auto;
 }
 
-.filebank-migration .fbm-datefield .input-group,
-.filebank-ui .fbm-datefield .input-group {
-    flex-wrap: nowrap;
+.filebank-migration .fbm-dates,
+.filebank-ui .fbm-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
 }
 
-.filebank-migration .fbm-datefield input[readonly],
-.filebank-ui .fbm-datefield input[readonly] {
+.filebank-migration .fbm-dateinput,
+.filebank-ui .fbm-dateinput {
+    position: relative;
+}
+
+.filebank-migration .fbm-dateinput .form-control,
+.filebank-ui .fbm-dateinput .form-control {
+    padding-inline-start: 2.1rem;
+    padding-inline-end: 2rem;
     background-color: var(--fbm-bg);
     cursor: pointer;
+    text-overflow: ellipsis;
+}
+
+.filebank-migration .fbm-dateinput-icon,
+.filebank-ui .fbm-dateinput-icon {
+    position: absolute;
+    top: 50%;
+    inset-inline-start: 0.7rem;
+    color: var(--fbm-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.filebank-migration .fbm-dateinput-icon .icon,
+.filebank-ui .fbm-dateinput-icon .icon {
+    margin: 0;
+}
+
+.filebank-migration .fbm-dateinput-clear,
+.filebank-ui .fbm-dateinput-clear {
+    position: absolute;
+    top: 50%;
+    inset-inline-end: 0.2rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    transform: translateY(-50%);
 }
 
 .filebank-migration .fbm-filters,
@@ -3362,32 +3456,23 @@ body.filebank-embedded,
     overflow-y: auto;
 }
 
-@media (min-width: 62rem) and (min-height: 36rem) {
-
-    .filebank-migration .fbm-wizard,
-    .filebank-ui .fbm-wizard {
-        display: flex;
-        flex-direction: column;
-        height: calc(100vh - 5rem);
-    }
+@media (min-width: 62rem) {
 
     .filebank-migration .fbm-wizard-body,
     .filebank-ui .fbm-wizard-body {
-        flex: 1 1 auto;
-        grid-template-rows: minmax(0, 1fr);
-        min-height: 0;
         align-items: stretch;
     }
 
     .filebank-migration .fbm-stepper,
     .filebank-ui .fbm-stepper {
         position: static;
-        overflow-y: auto;
+        padding-bottom: 3rem;
     }
 
     .filebank-migration .fbm-wizard-panel,
     .filebank-ui .fbm-wizard-panel {
-        min-height: 0;
+        height: 0;
+        min-height: 100%;
     }
 }
 
@@ -3550,6 +3635,55 @@ body.filebank-embedded,
         animation: none;
         transition: none;
     }
+}
+
+.daterangepicker.filebank-calendar {
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.625rem;
+    background-color: var(--bs-body-bg, #fff);
+    color: var(--bs-body-color, #212529);
+    font-family: inherit;
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
+}
+
+.daterangepicker.filebank-calendar::before,
+.daterangepicker.filebank-calendar::after {
+    display: none;
+}
+
+.daterangepicker.filebank-calendar .calendar-table {
+    border: 0;
+    background-color: transparent;
+}
+
+.daterangepicker.filebank-calendar th,
+.daterangepicker.filebank-calendar td {
+    border-radius: 0.5rem;
+}
+
+.daterangepicker.filebank-calendar td.off {
+    background-color: transparent;
+    color: var(--bs-secondary-color, #6c757d);
+}
+
+.daterangepicker.filebank-calendar td.available:hover,
+.daterangepicker.filebank-calendar th.available:hover {
+    background-color: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+.daterangepicker.filebank-calendar td.active,
+.daterangepicker.filebank-calendar td.active:hover {
+    background-color: var(--bs-primary, #0f6cbf);
+    color: #fff;
+}
+
+.daterangepicker.filebank-calendar select.monthselect,
+.daterangepicker.filebank-calendar select.yearselect {
+    padding: 0.15rem 0.35rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.5rem;
+    background-color: var(--bs-body-bg, #fff);
+    color: inherit;
 }
 
 /* Editable rows wrap intrinsically to the available form-column width. */

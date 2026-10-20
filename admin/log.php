@@ -48,7 +48,8 @@ $url = new moodle_url('/local/filebank/admin/log.php', [
     'action' => $action, 'entityuuid' => $entityuuid, 'from' => $from, 'until' => $until, 'before' => $before,
 ]);
 $PAGE->set_url($url);
-$perpage = \local_filebank\output\pagination::size();
+$asked = \local_filebank\output\pagination::size();
+$perpage = $asked === \local_filebank\output\pagination::ALL ? \local_filebank\output\pagination::MAX_ALL : $asked;
 $page = \local_filebank\local\logging\log::page(
     $action,
     $entityuuid,
@@ -58,6 +59,19 @@ $page = \local_filebank\local\logging\log::page(
     $dates['until'],
     max(0, optional_param('page', 0, PARAM_INT))
 );
+$rows = \local_filebank\output\pagination::rows($asked, $page['total']);
+if ($rows !== $perpage) {
+    $perpage = $rows;
+    $page = \local_filebank\local\logging\log::page(
+        $action,
+        $entityuuid,
+        $before,
+        $perpage,
+        $dates['from'],
+        $dates['until'],
+        max(0, optional_param('page', 0, PARAM_INT))
+    );
+}
 $PAGE->requires->js_call_amd('local_filebank/administration', 'init');
 $PAGE->requires->js_call_amd('local_filebank/local/admin/dates', 'init');
 // The stylesheet of the calendar has to be in the page before the header goes out.
@@ -109,7 +123,7 @@ echo $PAGE->get_renderer('local_filebank')->render(\local_filebank\output\naviga
 echo $renderer->render(new \local_filebank\output\view('log', [
     'formurl' => (new moodle_url('/local/filebank/admin/log.php'))->out(false),
     'options' => $options, 'entityuuid' => $entityuuid, 'records' => $records,
-    'perpage' => $perpage,
+    'perpage' => \local_filebank\output\pagination::value($perpage, $page['total']),
     'pagination' => \local_filebank\output\pagination::render($page['total'], $page['page'], $perpage, $url),
     'activefilters' => $active, 'activecount' => count($active), 'hasactive' => (bool)$active,
     'lang' => current_language(),
