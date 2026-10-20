@@ -59,7 +59,7 @@ final class migration_catalog {
         if ($state !== '' && !in_array($state, self::STATES, true)) {
             throw new \invalid_parameter_exception('Unknown migration status');
         }
-        $perpage = max(1, min(100, $perpage));
+        $perpage = max(1, min(\local_filebank\output\pagination::MAX_ALL, $perpage));
         $conditions = ['1 = 1'];
         $params = [];
         if ($search !== '') {

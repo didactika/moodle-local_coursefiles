@@ -73,7 +73,6 @@ foreach ($profiles as $profile) {
     $options[$profile->id] = $profile->name;
 }
 $data = [
-    'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_filebank'),
     'publicationhelp' => $OUTPUT->help_icon('publicationmodule', 'local_filebank'),
     'actionurl' => $PAGE->url->out(false), 'courseid' => $courseid, 'profileid' => $profileid,
     'sesskey' => sesskey(), 'profiles' => display::options($options, (string)$profileid),

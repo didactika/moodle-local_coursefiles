@@ -8,17 +8,17 @@
 }}
 <nav class="filebank-pagination fbm-listbar" aria-label="{{#str}}pagination, local_filebank{{/str}}">
     <div class="fbm-listbar-size">
-        <label for="{{id}}" class="fbm-listbar-label">{{#str}}pagesize, local_filebank{{/str}}</label> {{{help}}}
+        <label for="{{id}}" class="fbm-listbar-label">{{#str}}pagesize, local_filebank{{/str}}</label>
         <select id="{{id}}" class="form-select form-select-sm rounded-pill filebank-page-size" data-filebank-pagesize data-url="{{url}}" data-pageparameter="{{pageparameter}}">
-            {{#sizes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{value}}</option>{{/sizes}}
+            {{#sizes}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/sizes}}
         </select>
     </div>
-    <div class="fbm-listbar-pages"><span class="text-muted small" aria-live="polite">{{summary}} · {{pagelabel}}</span>
+    <div class="fbm-listbar-pages"><span class="text-muted small" aria-live="polite">{{summary}}</span>
         <div class="fbm-actions">
             {{#previousurl}}<a href="{{previousurl}}" class="btn btn-link btn-icon" title="{{#str}}previous, core{{/str}}" aria-label="{{#str}}previous, core{{/str}}">{{#pix}}t/left, core{{/pix}}</a>{{/previousurl}}
-            {{^previousurl}}<span class="btn btn-link btn-icon disabled" aria-disabled="true" aria-label="{{#str}}previous, core{{/str}}">{{#pix}}t/left, core{{/pix}}</span>{{/previousurl}}
+            {{^previousurl}}<span class="btn btn-link btn-icon disabled" aria-disabled="true">{{#pix}}t/left, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}previous, core{{/str}}</span></span>{{/previousurl}}
             {{#nexturl}}<a href="{{nexturl}}" class="btn btn-link btn-icon" title="{{#str}}next, core{{/str}}" aria-label="{{#str}}next, core{{/str}}">{{#pix}}t/right, core{{/pix}}</a>{{/nexturl}}
-            {{^nexturl}}<span class="btn btn-link btn-icon disabled" aria-disabled="true" aria-label="{{#str}}next, core{{/str}}">{{#pix}}t/right, core{{/pix}}</span>{{/nexturl}}
+            {{^nexturl}}<span class="btn btn-link btn-icon disabled" aria-disabled="true">{{#pix}}t/right, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}next, core{{/str}}</span></span>{{/nexturl}}
         </div>
     </div>
 </nav>

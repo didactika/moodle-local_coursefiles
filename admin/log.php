@@ -109,7 +109,7 @@ echo $PAGE->get_renderer('local_filebank')->render(\local_filebank\output\naviga
 echo $renderer->render(new \local_filebank\output\view('log', [
     'formurl' => (new moodle_url('/local/filebank/admin/log.php'))->out(false),
     'options' => $options, 'entityuuid' => $entityuuid, 'records' => $records,
-    'perpage' => $perpage, 'filterhelp' => $OUTPUT->help_icon('listfilters', 'local_filebank'),
+    'perpage' => $perpage,
     'pagination' => \local_filebank\output\pagination::render($page['total'], $page['page'], $perpage, $url),
     'activefilters' => $active, 'activecount' => count($active), 'hasactive' => (bool)$active,
     'lang' => current_language(),

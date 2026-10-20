@@ -11,6 +11,8 @@
  */
 import {useEffect, useState} from 'react';
 import {useDebounced} from '../../hooks/useDebounced';
+import {useKeptHeight} from '../../hooks/useKeptHeight';
+import {PAGE_SIZES} from '../../lib/paging';
 import {describeError} from '../../lib/errors';
 import {getFolders} from '../../services/api';
 import type {FolderPage, Migration, MigrationFolder, Text} from '../../types';
@@ -24,8 +26,6 @@ import SearchBox from '../ui/SearchBox';
 import Skeleton from '../ui/Skeleton';
 import Switch from '../ui/Switch';
 
-const PAGE_SIZE = 20;
-
 interface FoldersPanelProps {
     migration: Migration;
     text: Text;
@@ -36,17 +36,20 @@ interface FoldersPanelProps {
 const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
+    const [perpage, setPerpage] = useState(PAGE_SIZES[0]);
+    const kept = useKeptHeight();
     const [data, setData] = useState<FolderPage | null>(null);
     const [error, setError] = useState('');
     const query = useDebounced(search, 250);
 
     useEffect(() => {
         setPage(0);
-    }, [query]);
+        kept.release();
+    }, [query, perpage]);
 
     useEffect(() => {
         let current = true;
-        void getFolders(migration.id, query, page, PAGE_SIZE).then((read) => {
+        void getFolders(migration.id, query, page, perpage).then((read) => {
             if (current) {
                 setData(read);
                 setError('');
@@ -59,7 +62,7 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
         return () => {
             current = false;
         };
-    }, [migration.id, migration.digest, query, page]);
+    }, [migration.id, migration.digest, query, page, perpage]);
 
     const editable = migration.editable && !busy;
 
@@ -70,7 +73,7 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
         </div>
         {data === null && error === '' && <Skeleton rows={4} label={text('loading')} />}
         {data !== null && data.folders.length === 0 && <EmptyState plain icon="folder-open" title={text('folders_empty_title')} text={text('folders_empty_text')} />}
-        {data !== null && data.folders.length > 0 && <ul className="fbm-folders">
+        {data !== null && data.folders.length > 0 && <div ref={kept.ref} style={kept.style}><ul className="fbm-folders">
             {data.folders.map((folder) => <li key={`${folder.sourcecourseid}:${folder.sourcecmid}:${folder.targetcourse}:${folder.targetfolder}`} className="fbm-folder">
                 <Switch
                     label={text('folder_switch', {name: folder.sourcefolder})}
@@ -95,8 +98,18 @@ const FoldersPanel = ({migration, text, busy, onSelect}: FoldersPanelProps) => {
                     <Progress value={folder.included} max={Math.max(1, folder.total)} label={text('progress')} tone="success" />
                 </div>
             </li>)}
-        </ul>}
-        <Pagination page={page} perpage={PAGE_SIZE} total={data?.total ?? 0} onPage={setPage} text={text} />
+        </ul></div>}
+        <Pagination
+            page={page}
+            perpage={perpage}
+            total={data?.total ?? 0}
+            onPage={(next) => {
+                kept.keep();
+                setPage(next);
+            }}
+            text={text}
+            onPerPage={setPerpage}
+        />
     </Panel>;
 };
 

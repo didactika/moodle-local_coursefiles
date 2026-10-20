@@ -78,7 +78,7 @@ function Migration(props) {
       this
     );
   } else {
-    screen = /* @__PURE__ */ jsxDEV(MigrationList, { text, pagesizes: props.pagesizes, onOpen: route.openReview, onNew: () => route.openNew() }, void 0, false, {
+    screen = /* @__PURE__ */ jsxDEV(MigrationList, { text, onOpen: route.openReview, onNew: () => route.openNew() }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/Migration.tsx",
       lineNumber: 71,
       columnNumber: 18

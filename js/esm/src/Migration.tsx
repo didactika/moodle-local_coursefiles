@@ -68,7 +68,7 @@ export default function Migration(props: MigrationProps) {
             onNew={() => route.openNew(route.planid)}
         />;
     } else {
-        screen = <MigrationList text={text} pagesizes={props.pagesizes} onOpen={route.openReview} onNew={() => route.openNew()} />;
+        screen = <MigrationList text={text} onOpen={route.openReview} onNew={() => route.openNew()} />;
     }
 
     return <div className="filebank-migration" data-region="fbm-app">

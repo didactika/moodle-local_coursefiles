@@ -14,6 +14,7 @@ import Selectors from "@moodle/lms/local_filebank/local/admin/selectors";
 import { createBulkActions, createHistoryActions } from "@moodle/lms/local_filebank/local/admin/actions";
 import { registerBulk, registerHistory, registerPagination } from "@moodle/lms/local_filebank/local/admin/listeners";
 import { registerFilterMenus, registerLiveFilters } from "@moodle/lms/local_filebank/local/admin/filters";
+import { registerLists } from "@moodle/lms/local_filebank/local/admin/lists";
 const init = /* @__PURE__ */ __name(() => {
   document.querySelectorAll(Selectors.bulkForms).forEach((form) => {
     const actions = createBulkActions(form);
@@ -30,6 +31,7 @@ const init = /* @__PURE__ */ __name(() => {
   registerPagination();
   registerLiveFilters();
   registerFilterMenus();
+  registerLists();
 }, "init");
 export {
   init

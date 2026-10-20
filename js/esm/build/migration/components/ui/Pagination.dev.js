@@ -13,10 +13,13 @@ import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+import { useId } from "react";
+import { pageSizeChoices } from "../../lib/paging";
 import Icon from "./Icon";
-const Pagination = /* @__PURE__ */ __name(({ page, perpage, total, onPage, text, sizes, onPerPage }) => {
+const Pagination = /* @__PURE__ */ __name(({ page, perpage, total, onPage, text, onPerPage }) => {
+  const id = useId();
   const pages = Math.max(1, Math.ceil(total / Math.max(1, perpage)));
-  const choose = sizes !== void 0 && onPerPage !== void 0 && total > 0 ? { sizes, onPerPage } : null;
+  const choose = onPerPage !== void 0 && total > 0 ? { sizes: pageSizeChoices(total), onPerPage } : null;
   if (pages < 2 && choose === null) {
     return null;
   }
@@ -33,7 +36,7 @@ const Pagination = /* @__PURE__ */ __name(({ page, perpage, total, onPage, text,
       onClick: () => onPage(target),
       children: /* @__PURE__ */ jsxDEV(Icon, { name: icon }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-        lineNumber: 44,
+        lineNumber: 46,
         columnNumber: 9
       })
     },
@@ -41,69 +44,76 @@ const Pagination = /* @__PURE__ */ __name(({ page, perpage, total, onPage, text,
     false,
     {
       fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-      lineNumber: 36,
+      lineNumber: 38,
       columnNumber: 86
     }
   ), "arrow");
   return /* @__PURE__ */ jsxDEV("nav", { "aria-label": text("pagination_label"), className: "fbm-listbar fbm-pagination", children: [
     /* @__PURE__ */ jsxDEV("div", { className: "fbm-listbar-size", children: choose !== null && /* @__PURE__ */ jsxDEV(Fragment, { children: [
-      /* @__PURE__ */ jsxDEV("span", { className: "fbm-listbar-label", children: text("per_page") }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("label", { className: "fbm-listbar-label", htmlFor: id, children: text("per_page") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-        lineNumber: 50,
+        lineNumber: 52,
         columnNumber: 17
       }),
       /* @__PURE__ */ jsxDEV(
         "select",
         {
+          id,
           className: "form-select form-select-sm rounded-pill",
-          "aria-label": text("per_page"),
           value: perpage,
           onChange: (event) => choose.onPerPage(Number(event.target.value)),
-          children: choose.sizes.map((size) => /* @__PURE__ */ jsxDEV("option", { value: size, children: size }, size, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-            lineNumber: 57,
-            columnNumber: 49
-          }))
+          children: [
+            !choose.sizes.includes(perpage) && /* @__PURE__ */ jsxDEV("option", { value: perpage, children: perpage }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
+              lineNumber: 59,
+              columnNumber: 57
+            }),
+            choose.sizes.map((size) => /* @__PURE__ */ jsxDEV("option", { value: size, children: size === total ? text("all") : size }, size, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
+              lineNumber: 60,
+              columnNumber: 49
+            }))
+          ]
         },
         void 0,
-        false,
+        true,
         {
           fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-          lineNumber: 51,
+          lineNumber: 53,
           columnNumber: 17
         }
       )
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-      lineNumber: 49,
+      lineNumber: 51,
       columnNumber: 33
     }) }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-      lineNumber: 48,
+      lineNumber: 50,
       columnNumber: 9
     }),
     /* @__PURE__ */ jsxDEV("div", { className: "fbm-listbar-pages", children: [
       /* @__PURE__ */ jsxDEV("span", { className: "text-muted small", "aria-live": "polite", children: text("pagination_range", { from, to, total }) }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-        lineNumber: 62,
+        lineNumber: 65,
         columnNumber: 13
       }),
       /* @__PURE__ */ jsxDEV("div", { className: "fbm-actions", children: [
-        arrow(page - 1, page > 0, "chevron-left", text("pagination_previous")),
-        arrow(page + 1, page < pages - 1, "chevron-right", text("pagination_next"))
+        arrow(page - 1, page > 0, "arrow-left", text("pagination_previous")),
+        arrow(page + 1, page < pages - 1, "arrow-right", text("pagination_next"))
       ] }, void 0, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-        lineNumber: 63,
+        lineNumber: 66,
         columnNumber: 13
       })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-      lineNumber: 61,
+      lineNumber: 64,
       columnNumber: 9
     })
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/ui/Pagination.tsx",
-    lineNumber: 47,
+    lineNumber: 49,
     columnNumber: 12
   });
 }, "Pagination");

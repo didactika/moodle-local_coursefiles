@@ -14,12 +14,12 @@
         <span class="fbm-search-icon">{{#pix}}a/search, core{{/pix}}</span>
         <input type="search" class="form-control rounded-pill" name="q" id="cb-query" value="{{filters.q}}" aria-label="{{#str}}filenamefilter, local_filebank{{/str}}" placeholder="{{#str}}filenamefilter, local_filebank{{/str}}" autocomplete="off" data-filebank-live-text>
     </div>
-    <details class="fbm-filterbox fbm-filter-end"{{#advancedcount}} data-active{{/advancedcount}}>
+    <details class="fbm-filterbox"{{#advancedcount}} data-active{{/advancedcount}}>
         <summary class="btn btn-outline-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}{{#advancedcount}}<span class="badge rounded-pill fbm-count" data-region="filters-count">{{advancedcount}}</span><span class="filebank-visually-hidden">{{#str}}filtersapplied, local_filebank, {{advancedcount}}{{/str}}</span>{{/advancedcount}}</summary>
         <div class="fbm-filterpanel">
             <div class="fbm-filter-head">
                 <h3 class="fbm-filter-heading">{{#str}}filters, core{{/str}}</h3>
-                <a class="btn btn-outline-secondary fbm-iconpill" href="{{reseturl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
+                <a class="btn btn-link btn-icon" href="{{reseturl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
             </div>
             {{#multipleprofiles}}<div class="fbm-field">
                 <label for="cb-profile" class="form-label">{{#str}}profile, local_filebank{{/str}}</label>
@@ -50,5 +50,4 @@
             <noscript><button class="btn btn-primary" type="submit">{{#str}}search, core{{/str}}</button></noscript>
         </div>
     </details>
-    {{{filterhelp}}}
 </form>

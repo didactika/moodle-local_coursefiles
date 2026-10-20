@@ -92,7 +92,7 @@ Feature: Clear administration tabs and immutable migration previews
     Then I should see "From date"
     And I should see "Through date"
     And I set the field "Action" to "profile_activated"
-    And I wait until "[data-region='active-filters']" "css_element" exists
+    And I wait until ".filebank-log .fbm-filterbox[data-active]" "css_element" exists
     Then I should see "Profile activated"
     And I capture FileBank administration "log"
 

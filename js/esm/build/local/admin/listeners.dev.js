@@ -14,11 +14,15 @@ import Selectors from "@moodle/lms/local_filebank/local/admin/selectors";
 import { listen } from "@moodle/lms/local_filebank/local/listeners";
 import { changePage } from "@moodle/lms/local_filebank/local/admin/actions";
 const registerBulk = /* @__PURE__ */ __name((form, actions) => {
-  const all = form.querySelector(Selectors.selectAll);
-  if (all) {
-    listen(all, "change", actions.selectAllChange);
-  }
-  form.querySelectorAll(Selectors.bulkChecks).forEach((check) => listen(check, "change", actions.update));
+  listen(form, "change", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLInputElement && target.matches(Selectors.selectAll)) {
+      actions.selectAllChange();
+    } else if (target instanceof HTMLInputElement && target.matches(Selectors.bulkChecks)) {
+      actions.update();
+    }
+  });
+  listen(form, "filebank:listchanged", actions.update);
   listen(form, "submit", actions.submit);
 }, "registerBulk");
 const registerHistory = /* @__PURE__ */ __name((history, actions) => {

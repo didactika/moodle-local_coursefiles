@@ -11,6 +11,8 @@
  */
 import {useCallback, useEffect, useState} from 'react';
 import {useDebounced} from '../../hooks/useDebounced';
+import {useKeptHeight} from '../../hooks/useKeptHeight';
+import {PAGE_SIZES} from '../../lib/paging';
 import {describeError} from '../../lib/errors';
 import {deleteMigrations, listMigrations} from '../../services/api';
 import type {MigrationPage, Text} from '../../types';
@@ -31,18 +33,18 @@ import StatusBadge from '../ui/StatusBadge';
 
 interface MigrationListProps {
     text: Text;
-    pagesizes: number[];
     onOpen: (id: number) => void;
     onNew: () => void;
 }
 
 const STATES = ['', 'reviewable', 'queued', 'running', 'partial', 'completed', 'cancelled'];
 
-const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => {
+const MigrationList = ({text, onOpen, onNew}: MigrationListProps) => {
     const [search, setSearch] = useState('');
     const [state, setState] = useState('');
     const [page, setPage] = useState(0);
-    const [perpage, setPerpage] = useState(pagesizes[0] ?? 10);
+    const [perpage, setPerpage] = useState(PAGE_SIZES[0]);
+    const kept = useKeptHeight();
     const [data, setData] = useState<MigrationPage | null>(null);
     const [error, setError] = useState('');
     const [selected, setSelected] = useState<number[]>([]);
@@ -65,6 +67,7 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
 
     useEffect(() => {
         setPage(0);
+        kept.release();
     }, [query, state, perpage]);
 
     // A migration that is running changes while the list is open.
@@ -104,10 +107,8 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
     return <div className="fbm-list" data-region="migration-list">
         <PageHeader
             title={text('list_title')}
+            badges={countOf('') > 0 && <span className="badge rounded-pill fbm-count">{countOf('')}</span>}
             subtitle={text('list_subtitle')}
-            actions={hasAny && <button type="button" className="btn btn-primary" onClick={onNew} data-action="new-migration">
-                <Icon name="plus" gap />{text('new_migration')}
-            </button>}
         />
         {error !== '' && <Alert tone="danger" live>{error}</Alert>}
         {data === null && error === '' && <Skeleton rows={5} label={text('loading')} />}
@@ -137,10 +138,15 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
                         })),
                     }]}
                 />
+                <div className="fbm-toolbar-actions">
+                    <button type="button" className="btn btn-primary" onClick={onNew} data-action="new-migration">
+                        <Icon name="plus" gap />{text('new_migration')}
+                    </button>
+                </div>
             </div>
             {rows.length === 0
                 ? <EmptyState icon="magnifying-glass" title={text('list_nomatch_title')} text={text('list_nomatch_text')} />
-                : <div className="table-responsive">
+                : <div className="table-responsive" ref={kept.ref} style={kept.style}>
                     <table className="table table-hover">
                         <thead>
                             <tr>
@@ -172,9 +178,10 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
                                     />
                                 </td>
                                 <td>
-                                    <button type="button" className="btn btn-link p-0 fbm-link" onClick={() => onOpen(row.id)}>
-                                        <strong>#{row.id}</strong> {row.profile}
+                                    <button type="button" className="btn btn-link p-0 fbm-link fbm-row-title" onClick={() => onOpen(row.id)}>
+                                        {text('review_title', {n: row.id})}
                                     </button>
+                                    <span className="fbm-table-meta">{row.profile}</span>
                                 </td>
                                 <td>
                                     <span className="fbm-route">
@@ -210,9 +217,11 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
                 page={page}
                 perpage={perpage}
                 total={data.total}
-                onPage={setPage}
+                onPage={(next) => {
+                    kept.keep();
+                    setPage(next);
+                }}
                 text={text}
-                sizes={pagesizes}
                 onPerPage={setPerpage}
             />
         </>}

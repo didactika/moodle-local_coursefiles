@@ -21,11 +21,16 @@ import type {createBulkActions, createHistoryActions} from '@moodle/lms/local_fi
  * @param {Object} actions Scoped actions created for this rendered feature.
  */
 export const registerBulk = (form: HTMLFormElement, actions: NonNullable<ReturnType<typeof createBulkActions>>) => {
-    const all = form.querySelector<HTMLInputElement>(Selectors.selectAll);
-    if (all) {
-        listen(all, 'change', actions.selectAllChange);
-    }
-    form.querySelectorAll(Selectors.bulkChecks).forEach(check => listen(check, 'change', actions.update));
+    // One listener on the form, so the rows that a page brings in place are listened to as well.
+    listen(form, 'change', (event: Event) => {
+        const target = event.target;
+        if (target instanceof HTMLInputElement && target.matches(Selectors.selectAll)) {
+            actions.selectAllChange();
+        } else if (target instanceof HTMLInputElement && target.matches(Selectors.bulkChecks)) {
+            actions.update();
+        }
+    });
+    listen(form, 'filebank:listchanged', actions.update);
     listen(form, 'submit', actions.submit);
 };
 

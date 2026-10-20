@@ -16,6 +16,7 @@ import Notification from '@moodle/lms/local_filebank/compat/notification';
 import {loadFragment} from '@moodle/lms/local_filebank/local/repository';
 import {addToast} from '@moodle/lms/local_filebank/compat/toast';
 import {getStrings} from '@moodle/lms/core/stringUtils';
+import {swapList} from '@moodle/lms/local_filebank/local/admin/lists';
 
 /**
  * Create state and actions for one bulk form.
@@ -28,13 +29,14 @@ export const createBulkActions = (form: HTMLFormElement) => {
     }
     form.dataset.ready = 'true';
     const all = form.querySelector<HTMLInputElement>(Selectors.selectAll)!;
-    const checks = [...form.querySelectorAll<HTMLInputElement>(Selectors.bulkChecks)];
+    // The rows are read each time, because a list that changes page in place brings new ones.
+    const checksOf = () => [...form.querySelectorAll<HTMLInputElement>(Selectors.bulkChecks)];
     let saving = false;
     const update = () => {
-        const count = checks.filter(check => check.checked).length;
+        const count = checksOf().filter(check => check.checked).length;
         if (all) {
-            all.checked = checks.length > 0 && count === checks.length;
-            all.indeterminate = count > 0 && count < checks.length;
+            all.checked = checksOf().length > 0 && count === checksOf().length;
+            all.indeterminate = count > 0 && count < checksOf().length;
         }
         const counter = form.querySelector<HTMLElement>('[data-filebank-bulk-count]');
         if (counter) {
@@ -46,14 +48,14 @@ export const createBulkActions = (form: HTMLFormElement) => {
             bulk.querySelectorAll<HTMLButtonElement>(Selectors.button).forEach(button => {
                 button.disabled = count === 0 || saving;
                 if (form.hasAttribute('data-filebank-profiles') && ['enable', 'disable'].includes(button.value)) {
-                    button.hidden = !checks.some(check => check.checked
+                    button.hidden = !checksOf().some(check => check.checked
                         && check.closest<HTMLTableRowElement>(Selectors.tableRow)!.dataset.enabled === (button.value === 'enable' ? '0' : '1'));
                 }
             });
         }
     };
     const selectAllChange = () => {
-        checks.forEach(check => {
+        checksOf().forEach(check => {
             check.checked = all.checked;
         });
         update();
@@ -68,7 +70,7 @@ export const createBulkActions = (form: HTMLFormElement) => {
             if (saving) {
                 return;
             }
-            const ids = row.length ? [Number(row[1])] : checks.filter(check => check.checked)
+            const ids = row.length ? [Number(row[1])] : checksOf().filter(check => check.checked)
                 .map(check => Number(check.value));
             saving = true;
             form.setAttribute('aria-busy', 'true');
@@ -181,5 +183,5 @@ export const changePage = (event: Event) => {
             const url = new URL(select.dataset.url!, document.baseURI);
             url.searchParams.set('perpage', select.value);
             url.searchParams.set(select.dataset.pageparameter!, '0');
-            window.location.assign(url);
+            void swapList(select, url.toString());
         };

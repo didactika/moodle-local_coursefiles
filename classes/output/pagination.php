@@ -24,14 +24,33 @@ namespace local_filebank\output;
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class pagination {
+    /** @var int[] The sizes a page can have, as block_course_finder offers them. */
+    public const SIZES = [12, 24, 48, 96];
+
+    /** @var int The most rows that "All" shows, so a long list never loads at once. */
+    public const MAX_ALL = 500;
+
     /**
-     * Read a supported page size.
+     * Read a supported page size: one of the sizes, or "All" (a number up to the bound).
      * @param int $default Default size.
      * @return int Page size.
      */
-    public static function size(int $default = 25): int {
+    public static function size(int $default = 12): int {
         $size = optional_param('perpage', $default, PARAM_INT);
-        return in_array($size, [10, 25, 50], true) ? $size : $default;
+        return in_array($size, self::SIZES, true) || ($size > 0 && $size <= self::MAX_ALL) ? $size : $default;
+    }
+
+    /**
+     * The sizes to offer for a list: those smaller than the list and the whole list, when it is not too long.
+     * @param int $total Result count.
+     * @return int[] The sizes.
+     */
+    public static function choices(int $total): array {
+        if ($total <= self::SIZES[0]) {
+            return [max(1, $total)];
+        }
+        $sizes = array_values(array_filter(self::SIZES, static fn(int $size): bool => $size < $total));
+        return $total <= self::MAX_ALL ? array_merge($sizes, [$total]) : $sizes;
     }
 
     /**
@@ -60,16 +79,13 @@ final class pagination {
         $url = new \moodle_url($url, ['perpage' => $size]);
         $data = ['id' => \html_writer::random_id('mp-page-'), 'url' => $url->out(false),
             'pageparameter' => $parameter, 'sizes' => [],
-            'help' => $OUTPUT->help_icon('pagesize', 'local_filebank'),
             'summary' => get_string('paginationrange', 'local_filebank', (object)[
                 'first' => $total ? $page * $size + 1 : 0, 'last' => min($total, ($page + 1) * $size), 'total' => $total,
             ]),
-            'pagelabel' => get_string('paginationpage', 'local_filebank', (object)[
-                'page' => $page + 1, 'pages' => max(1, (int)ceil($total / $size)),
-            ]),
         ];
-        foreach ([10, 25, 50] as $value) {
-            $data['sizes'][] = ['value' => $value, 'selected' => $value === $size];
+        foreach (self::choices($total) as $value) {
+            $data['sizes'][] = ['value' => $value, 'selected' => $value === $size,
+                'label' => $value === $total ? get_string('all') : (string) $value];
         }
         foreach (['previous' => $page - 1, 'next' => $page + 1] as $key => $number) {
             if ($number >= 0 && $number * $size < $total) {

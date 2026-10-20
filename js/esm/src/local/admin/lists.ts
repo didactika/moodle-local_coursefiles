@@ -1,0 +1,67 @@
+/**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
+ * Lists of server pages that change page in place: the arrows and the size of a page fetch the next page and replace only the
+ * region of the list (its table and its pager), keeping its height so a shorter last page does not make the page jump.
+ *
+ * @module local_filebank/local/admin/lists
+ * @copyright 2026 Didactika.org
+ * @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/**
+ * Replace the region of a list with the one of another page.
+ *
+ * @param origin The control that asked for the page, inside the region.
+ * @param url The address of the page.
+ */
+export const swapList = async(origin: Element, url: string): Promise<void> => {
+    const region = origin.closest<HTMLElement>('[data-filebank-list]');
+    if (!region) {
+        window.location.assign(url);
+        return;
+    }
+    const table = region.querySelector<HTMLElement>('.table-responsive');
+    const height = table ? table.offsetHeight : 0;
+    region.setAttribute('aria-busy', 'true');
+    try {
+        const response = await fetch(url, {credentials: 'same-origin'});
+        const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const next = page.querySelector(`[data-filebank-list="${region.dataset.filebankList}"]`);
+        if (!response.ok || !next) {
+            window.location.assign(url);
+            return;
+        }
+        region.replaceChildren(...Array.from(next.childNodes, node => document.importNode(node, true)));
+        const fresh = region.querySelector<HTMLElement>('.table-responsive');
+        if (fresh && height > 0) {
+            fresh.style.minHeight = `${height}px`;
+        }
+        window.history.replaceState(window.history.state, '', url);
+        region.dispatchEvent(new CustomEvent('filebank:listchanged', {bubbles: true}));
+    } catch (problem) {
+        window.location.assign(url);
+    } finally {
+        region.removeAttribute('aria-busy');
+    }
+};
+
+/**
+ * Make the arrows of the lists of the page change page in place.
+ */
+export const registerLists = (): void => {
+    if (document.body.dataset.filebankLists) {
+        return;
+    }
+    document.body.dataset.filebankLists = 'true';
+    document.addEventListener('click', event => {
+        const link = event.target instanceof Element
+            ? event.target.closest<HTMLAnchorElement>('[data-filebank-list] .filebank-pagination a[href]') : null;
+        if (link) {
+            event.preventDefault();
+            void swapList(link, link.href);
+        }
+    });
+};

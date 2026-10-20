@@ -1824,7 +1824,7 @@ body.filebank-embedded,
     align-items: center;
     padding: 0.18rem 0.6rem;
     border-radius: 2rem;
-    background-color: var(--fbm-surface);
+    background-color: color-mix(in srgb, var(--fbm-tone) 14%, var(--fbm-bg));
     color: var(--fbm-tone);
     font-size: 0.8125rem;
     font-weight: 600;
@@ -2665,16 +2665,16 @@ body.filebank-embedded,
     overflow-wrap: anywhere;
 }
 
-.filebank-migration .fbm-profile-name,
-.filebank-ui .fbm-profile-name {
-    font-weight: 650;
+.filebank-migration .fbm-row-title,
+.filebank-ui .fbm-row-title {
+    font-weight: 600;
     text-decoration: none;
 }
 
-.filebank-migration .fbm-profile-name:hover,
-.filebank-migration .fbm-profile-name:focus-visible,
-.filebank-ui .fbm-profile-name:hover,
-.filebank-ui .fbm-profile-name:focus-visible {
+.filebank-migration .fbm-row-title:hover,
+.filebank-migration .fbm-row-title:focus-visible,
+.filebank-ui .fbm-row-title:hover,
+.filebank-ui .fbm-row-title:focus-visible {
     text-decoration: underline;
 }
 
@@ -2779,11 +2779,6 @@ body.filebank-embedded,
     background: transparent;
 }
 
-.filebank-migration .fbm-filterbox.fbm-filter-end,
-.filebank-ui .fbm-filterbox.fbm-filter-end {
-    margin-inline-start: auto;
-}
-
 .filebank-migration .fbm-filterbox > summary,
 .filebank-ui .fbm-filterbox > summary {
     position: relative;
@@ -2842,10 +2837,26 @@ body.filebank-embedded,
     box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
 }
 
-.filebank-migration .fbm-filter-end .fbm-filterpanel,
-.filebank-ui .fbm-filter-end .fbm-filterpanel {
-    inset-inline-start: auto;
-    inset-inline-end: 0;
+.filebank-migration .fbm-toolbar-actions,
+.filebank-ui .fbm-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-inline-start: auto;
+}
+
+.filebank-migration .fbm-filter-chips,
+.filebank-ui .fbm-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.filebank-migration .fbm-filter-chips .fbm-chip .small,
+.filebank-ui .fbm-filter-chips .fbm-chip .small {
+    margin-inline-start: 0.35rem;
+    opacity: 0.75;
 }
 
 .filebank-migration .fbm-filter-head,
@@ -3408,9 +3419,6 @@ body.filebank-embedded,
 
 .filebank-migration .fbm-wizard-foot,
 .filebank-ui .fbm-wizard-foot {
-    position: sticky;
-    bottom: 0;
-    z-index: 3;
     display: flex;
     justify-content: space-between;
     gap: 0.5rem;

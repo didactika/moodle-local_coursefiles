@@ -64,7 +64,7 @@ final class log {
     ): array {
         global $DB;
         require_capability('local/filebank:viewlog', \context_system::instance());
-        $limit = max(1, min(100, $limit));
+        $limit = max(1, min(\local_filebank\output\pagination::MAX_ALL, $limit));
         $where = ['1 = 1'];
         $params = [];
         foreach (['action' => $action, 'entityuuid' => $entityuuid] as $field => $value) {

@@ -73,7 +73,6 @@ class migration_page implements react_component_renderable, \renderable {
         return (object) [
             'planid' => $this->planid,
             'pageurl' => (new \moodle_url('/local/filebank/admin/migration.php'))->out(false),
-            'pagesizes' => [10, 25, 50],
             'strings' => (object) self::strings(),
         ];
     }

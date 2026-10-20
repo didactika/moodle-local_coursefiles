@@ -22,8 +22,8 @@ Feature: Decide what happens with the files in conflict before the migration is 
     And FileBank should retain "1" migration plans
     And I capture FileBank administration "conflicts-kept"
     When I click on "[data-region='files'] .fbm-filterbox summary" "css_element"
-    And I click on "Left as they are" "radio"
-    Then I should see "Left as they are" in the "[data-region='active-filters']" "css_element"
+    And I click on "Left as they are" "button" in the "[data-region='files'] .fbm-filterpanel" "css_element"
+    Then I wait until "[data-region='files'] .fbm-filterbox[data-active]" "css_element" exists
 
   Scenario: Files in conflict are overwritten when that is chosen and the migration runs
     When I click on "Overwrite it" "text" in the "[data-region='conflict-choice']" "css_element"
