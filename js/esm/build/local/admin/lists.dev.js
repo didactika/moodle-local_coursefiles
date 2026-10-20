@@ -56,7 +56,9 @@ const swapList = /* @__PURE__ */ __name(async (origin, url) => {
       const select = pager.querySelector("select");
       const nextSelect = nextPager.querySelector("select");
       if (select && nextSelect) {
-        select.innerHTML = nextSelect.innerHTML;
+        if (select.innerHTML !== nextSelect.innerHTML) {
+          select.innerHTML = nextSelect.innerHTML;
+        }
         select.value = nextSelect.value;
         select.dataset.url = nextSelect.dataset.url || "";
       }
