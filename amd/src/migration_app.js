@@ -54,7 +54,7 @@ var FilebankMigration = (() => {
     mount: () => mount
   });
 
-  // ../fb400-nm/node_modules/preact/dist/preact.module.js
+  // node_modules/preact/dist/preact.module.js
   var n;
   var l;
   var u;
@@ -314,7 +314,7 @@ var FilebankMigration = (() => {
     return n2.__v.__b - l3.__v.__b;
   }, M.__r = 0, e = 0, c = F(false), s = F(true), a = 0;
 
-  // ../fb400-nm/node_modules/preact/hooks/dist/hooks.module.js
+  // node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
   var u2;
@@ -458,7 +458,7 @@ var FilebankMigration = (() => {
     return "function" == typeof t3 ? t3(n2) : t3;
   }
 
-  // ../fb400-nm/node_modules/preact/compat/dist/compat.module.js
+  // node_modules/preact/compat/dist/compat.module.js
   function g3(n2, t3) {
     for (var e3 in n2) if ("__source" !== e3 && !(e3 in t3)) return true;
     for (var r3 in t3) if ("__source" !== r3 && n2[r3] !== t3[r3]) return true;
@@ -635,7 +635,7 @@ var FilebankMigration = (() => {
     return !!n2.__k && (B(null, n2), true);
   }
 
-  // ../fb400-nm/node_modules/preact/compat/client.mjs
+  // node_modules/preact/compat/client.mjs
   function createRoot(container) {
     return {
       // eslint-disable-next-line
@@ -786,7 +786,7 @@ var FilebankMigration = (() => {
     return `fa fa-${(_a = NAMES[name]) != null ? _a : name}`;
   };
 
-  // ../fb400-nm/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  // node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
   var f3 = 0;
   var i3 = Array.isArray;
   function u3(e3, t3, n2, o3, i4, u4) {

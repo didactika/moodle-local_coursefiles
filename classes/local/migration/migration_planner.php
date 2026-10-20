@@ -107,7 +107,7 @@ final class migration_planner {
         array $options = []
     ): array {
         $draft = self::compute($profileid, $sourceedition, $targetedition, $scopekey, $options);
-        return migration_summary::of($draft['document'], $draft['operations']);
+        return migration_summary::summarise($draft['document'], $draft['operations']);
     }
 
     /**

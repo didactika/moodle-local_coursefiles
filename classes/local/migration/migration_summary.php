@@ -38,7 +38,7 @@ final class migration_summary {
      * @param array[] $operations The operations that were worked out.
      * @return array The counters.
      */
-    public static function of(array $document, array $operations): array {
+    public static function summarise(array $document, array $operations): array {
         $summary = self::empty();
         $folders = [];
         $courses = [];

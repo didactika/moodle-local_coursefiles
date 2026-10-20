@@ -67,7 +67,12 @@ const result = await build({
     plugins: [substitutions],
 });
 
-const bundle = result.outputFiles[0].text.replace(/\r\n/g, '\n').replace(/^\/\/# sourceMappingURL=.*$/gm, '').trimEnd();
+// esbuild names each file in a comment, and node_modules may be a link to a folder elsewhere, so the comment would say where it is.
+const bundle = result.outputFiles[0].text
+    .replace(/\r\n/g, '\n')
+    .replace(/^\/\/# sourceMappingURL=.*$/gm, '')
+    .replace(/^(\s*\/\/ )(?:[^\n]*\/)?node_modules\//gm, '$1node_modules/')
+    .trimEnd();
 const header = `// This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify

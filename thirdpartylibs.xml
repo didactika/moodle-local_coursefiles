@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <libraries>
     <library>
-        <location>amd/src/migration_app.js</location>
+        <location>amd/build/migration_app.min.js</location>
         <name>Preact</name>
-        <description>The part of Preact that the migration screens use, built into the module together with them from js/src by tools/build-migration.mjs.</description>
+        <description>The part of Preact that the migration screens use, built into the module together with them from js/src by tools/build-migration.mjs (the source module amd/src/migration_app.js is generated, so it is not listed: Moodle ignores listed files and its linter then warns about it).</description>
         <version>10.24.3</version>
         <license>MIT</license>
         <repository>https://github.com/preactjs/preact</repository>
