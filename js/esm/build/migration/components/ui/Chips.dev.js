@@ -16,7 +16,7 @@ const Chips = /* @__PURE__ */ __name(({ label, value, chips, onChange }) => /* @
   "button",
   {
     type: "button",
-    className: `btn btn-sm btn-outline-secondary rounded-pill fbm-chip${chip.value === value ? " active" : ""}`,
+    className: `btn btn-sm btn-outline-secondary fbm-chip${chip.value === value ? " active" : ""}`,
     "aria-pressed": chip.value === value,
     onClick: () => onChange(chip.value),
     children: [

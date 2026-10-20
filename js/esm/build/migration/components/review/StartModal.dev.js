@@ -21,7 +21,6 @@ const StartModal = /* @__PURE__ */ __name(({ open, migration, text, busy, onConf
     ConfirmModal,
     {
       open,
-      icon: "play",
       busy,
       title: text("start_title", { n: migration.id }),
       confirmLabel: text("start"),
@@ -33,55 +32,55 @@ const StartModal = /* @__PURE__ */ __name(({ open, migration, text, busy, onConf
           /* @__PURE__ */ jsxDEV("li", { children: [
             /* @__PURE__ */ jsxDEV("strong", { children: summary.tocopy }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-              lineNumber: 39,
+              lineNumber: 38,
               columnNumber: 17
             }),
             " ",
             text("start_copy")
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-            lineNumber: 39,
+            lineNumber: 38,
             columnNumber: 13
           }),
           summary.tooverwrite > 0 && /* @__PURE__ */ jsxDEV("li", { className: "is-warning", children: [
             /* @__PURE__ */ jsxDEV("strong", { children: summary.tooverwrite }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-              lineNumber: 40,
+              lineNumber: 39,
               columnNumber: 68
             }),
             " ",
             text("start_overwrite")
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-            lineNumber: 40,
+            lineNumber: 39,
             columnNumber: 41
           }),
           /* @__PURE__ */ jsxDEV("li", { className: "text-muted", children: [
             /* @__PURE__ */ jsxDEV("strong", { children: summary.existing }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-              lineNumber: 41,
+              lineNumber: 40,
               columnNumber: 40
             }),
             " ",
             text("start_existing")
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-            lineNumber: 41,
+            lineNumber: 40,
             columnNumber: 13
           })
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-          lineNumber: 38,
+          lineNumber: 37,
           columnNumber: 9
         }),
         summary.tooverwrite > 0 && /* @__PURE__ */ jsxDEV(Alert, { tone: "warning", children: text("start_overwrite_warning") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-          lineNumber: 43,
+          lineNumber: 42,
           columnNumber: 37
         }),
         /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: text("start_background") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-          lineNumber: 44,
+          lineNumber: 43,
           columnNumber: 9
         })
       ]

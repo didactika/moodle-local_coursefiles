@@ -196,10 +196,10 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
             lineNumber: 111,
             columnNumber: 17
           }),
-          !migration.run?.active && /* @__PURE__ */ jsxDEV(IconButton, { icon: "trash", label: text("delete"), tone: "danger", onClick: () => setDeleting(true) }, void 0, false, {
+          /* @__PURE__ */ jsxDEV(IconButton, { icon: "trash", label: text("delete"), tone: "danger", disabled: Boolean(migration.run?.active), onClick: () => setDeleting(true) }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
             lineNumber: 114,
-            columnNumber: 44
+            columnNumber: 17
           })
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
@@ -355,7 +355,6 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       {
         open: stopping,
         tone: "danger",
-        icon: "stop",
         busy,
         title: text("stop_title"),
         confirmLabel: text("run_stop"),
@@ -364,7 +363,7 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
         onCancel: () => setStopping(false),
         children: /* @__PURE__ */ jsxDEV("p", { children: text("stop_text") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-          lineNumber: 183,
+          lineNumber: 182,
           columnNumber: 13
         })
       },
@@ -381,7 +380,6 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       {
         open: deleting,
         tone: "danger",
-        icon: "triangle-exclamation",
         title: text("delete_title"),
         confirmLabel: text("delete"),
         cancelLabel: text("cancel"),
@@ -390,12 +388,12 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
         children: [
           /* @__PURE__ */ jsxDEV("p", { children: text("delete_text", { n: 1 }) }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 195,
+            lineNumber: 193,
             columnNumber: 13
           }),
           /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: text("delete_hint") }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 196,
+            lineNumber: 194,
             columnNumber: 13
           })
         ]
@@ -404,7 +402,7 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       true,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 185,
+        lineNumber: 184,
         columnNumber: 9
       }
     )

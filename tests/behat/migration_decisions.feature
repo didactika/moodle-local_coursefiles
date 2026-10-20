@@ -34,7 +34,7 @@ Feature: Decide what happens with the files in conflict before the migration is 
     And FileBank should retain "1" migration plans
     When I press "Start migration"
     And I capture FileBank administration "start-confirm"
-    And I click on "Start" "button" in the "dialog" "css_element"
+    And I click on "Start" "button" in the ".modal" "css_element"
     And I run all adhoc tasks
     And I wait "3" seconds
     And I reload the page

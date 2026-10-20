@@ -10,12 +10,12 @@
 <section class="filebank-ui filebank-admin filebank-profiles">
     <header class="fbm-header">
         <div class="fbm-header-title">
-            <div class="fbm-header-line"><h2 class="h2">{{#str}}profiles, local_filebank{{/str}}</h2>{{#total}}<span class="badge rounded-pill fbm-count">{{total}}</span>{{/total}}</div>
+            <div class="fbm-header-line" data-filebank-refresh="profiles-count"><h2 class="h2">{{#str}}profiles, local_filebank{{/str}}</h2>{{#total}}<span class="badge rounded-pill fbm-count">{{total}}</span>{{/total}}</div>
             <p class="text-muted fbm-header-subtitle">{{#str}}profilesintro, local_filebank{{/str}}</p>
         </div>
     </header>
-    <form method="get" action="{{actionurl}}" class="fbm-toolbar" data-filebank-live-filters>
-        <input type="hidden" name="perpage" value="{{perpage}}">
+    <form method="get" action="{{actionurl}}" class="fbm-toolbar" data-filebank-live-filters data-filebank-target="profiles">
+        <input type="hidden" name="perpage" value="{{perpage}}" data-filebank-refresh="profiles-perpage">
         <div class="fbm-search">
             <label for="filebank-profile-search" class="filebank-visually-hidden">{{#str}}search, core{{/str}}</label>
             <span class="fbm-search-icon">{{#pix}}a/search, core{{/pix}}</span>

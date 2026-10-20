@@ -8,4 +8,4 @@ import{jsx as n,jsxs as i}from"react/jsx-runtime";/**
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */const o=({label:l,value:a,chips:t,onChange:s})=>n("div",{className:"fbm-chips",role:"group","aria-label":l,children:t.map(e=>i("button",{type:"button",className:`btn btn-sm btn-outline-secondary rounded-pill fbm-chip${e.value===a?" active":""}`,"aria-pressed":e.value===a,onClick:()=>s(e.value),children:[e.label,e.count!==void 0&&n("span",{className:"badge rounded-pill fbm-chip-count",children:e.count})]},e.value))});var u=o;export{u as default};
+ */const o=({label:t,value:a,chips:s,onChange:l})=>n("div",{className:"fbm-chips",role:"group","aria-label":t,children:s.map(e=>i("button",{type:"button",className:`btn btn-sm btn-outline-secondary fbm-chip${e.value===a?" active":""}`,"aria-pressed":e.value===a,onClick:()=>l(e.value),children:[e.label,e.count!==void 0&&n("span",{className:"badge rounded-pill fbm-chip-count",children:e.count})]},e.value))});var u=o;export{u as default};

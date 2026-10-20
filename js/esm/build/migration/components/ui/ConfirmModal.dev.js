@@ -1,19 +1,22 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
+import { jsxDEV } from "react/jsx-dev-runtime";
 /**
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
- * A question that must be answered before something that is hard to undo, in a dialog that takes the focus and closes with Escape.
+ * A question before something that matters, in the save and cancel modal of Moodle: its header, its buttons and its look are the
+ * ones of the theme, and only its body is drawn here. Cancel, its close button and Escape answer no.
  *
  * @module     local_filebank/migration/components/ui/ConfirmModal
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Icon from "./Icon";
-import Modal from "./Modal";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { requireAsync } from "@moodle/lms/core/amd";
+const unwrap = /* @__PURE__ */ __name((module) => module.default ?? module, "unwrap");
 const ConfirmModal = /* @__PURE__ */ __name(({
   open,
   title,
@@ -23,65 +26,73 @@ const ConfirmModal = /* @__PURE__ */ __name(({
   onConfirm,
   onCancel,
   tone = "primary",
-  icon = "circle-question",
   busy = false
-}) => /* @__PURE__ */ jsxDEV(
-  Modal,
-  {
-    open,
-    size: "small",
-    busy,
-    title: /* @__PURE__ */ jsxDEV(Fragment, { children: [
-      /* @__PURE__ */ jsxDEV(Icon, { name: icon, gap: true }, void 0, false, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
-        lineNumber: 37,
-        columnNumber: 14
-      }),
-      title
-    ] }, void 0, true, {
-      fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
-      lineNumber: 37,
-      columnNumber: 12
-    }),
-    onClose: onCancel,
-    closeLabel: cancelLabel,
-    footer: /* @__PURE__ */ jsxDEV(Fragment, { children: [
-      /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: onCancel, disabled: busy, children: cancelLabel }, void 0, false, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
-        lineNumber: 41,
-        columnNumber: 9
-      }),
-      /* @__PURE__ */ jsxDEV("button", { type: "button", className: `btn btn-${tone}`, onClick: onConfirm, disabled: busy, children: [
-        busy && /* @__PURE__ */ jsxDEV(Icon, { name: "spinner", gap: true, spin: true }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
-          lineNumber: 43,
-          columnNumber: 22
-        }),
-        confirmLabel
-      ] }, void 0, true, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
-        lineNumber: 42,
-        columnNumber: 9
-      })
-    ] }, void 0, true, {
-      fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
-      lineNumber: 40,
-      columnNumber: 13
-    }),
-    children: /* @__PURE__ */ jsxDEV("div", { className: "fbm-confirm-body", children }, void 0, false, {
-      fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
-      lineNumber: 47,
-      columnNumber: 5
-    })
-  },
-  void 0,
-  false,
-  {
+}) => {
+  const [body, setBody] = useState(null);
+  const current = useRef(null);
+  const answers = useRef({ onConfirm, onCancel });
+  answers.current = { onConfirm, onCancel };
+  useEffect(() => {
+    if (!open) {
+      return void 0;
+    }
+    let alive = true;
+    let made = null;
+    void (async () => {
+      const [factory, events] = await Promise.all([
+        requireAsync("core/modal_save_cancel").then(unwrap),
+        requireAsync("core/modal_events").then(unwrap)
+      ]);
+      const modal = await factory.create({ title, body: "", removeOnClose: true });
+      if (!alive) {
+        modal.destroy();
+        return;
+      }
+      made = modal;
+      current.current = modal;
+      modal.setSaveButtonText(confirmLabel);
+      const root = modal.getRoot();
+      const save = root[0].querySelector('[data-action="save"]');
+      if (save && tone !== "primary") {
+        save.classList.replace("btn-primary", `btn-${tone}`);
+      }
+      const cancel = root[0].querySelector('[data-action="cancel"]');
+      if (cancel) {
+        cancel.textContent = cancelLabel;
+      }
+      root.on(events.save, (event) => {
+        event.preventDefault();
+        answers.current.onConfirm();
+      });
+      root.on(events.hidden, () => {
+        if (current.current === modal) {
+          current.current = null;
+          answers.current.onCancel();
+        }
+      });
+      modal.show();
+      setBody(modal.getBody()[0]);
+    })();
+    return () => {
+      alive = false;
+      setBody(null);
+      if (made && current.current === made) {
+        current.current = null;
+        made.hide();
+      }
+    };
+  }, [open]);
+  useEffect(() => {
+    body?.closest(".modal-content")?.querySelectorAll(".modal-footer button, .modal-header button").forEach((button) => {
+      button.disabled = busy;
+    });
+  }, [busy, body]);
+  return body ? createPortal(/* @__PURE__ */ jsxDEV("div", { className: "filebank-ui fbm-confirm-body", children }, void 0, false, {
     fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
-    lineNumber: 33,
-    columnNumber: 26
-  }
-), "ConfirmModal");
+    lineNumber: 128,
+    columnNumber: 32
+  }), body) : null;
+}, "ConfirmModal");
 var ConfirmModal_default = ConfirmModal;
 export {
   ConfirmModal_default as default

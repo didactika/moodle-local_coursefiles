@@ -90,7 +90,7 @@ const FilterMenu = ({label, resetLabel, groups}: FilterMenuProps) => {
                         {group.options.map((option) => <button
                             key={option.value}
                             type="button"
-                            className={`btn btn-sm btn-outline-secondary rounded-pill fbm-chip${group.value === option.value ? ' active' : ''}`}
+                            className={`btn btn-sm btn-outline-secondary fbm-chip${group.value === option.value ? ' active' : ''}`}
                             aria-pressed={group.value === option.value}
                             onClick={() => group.onChange(option.value)}
                         >

@@ -2,7 +2,8 @@
 //
 // The plugin has to look right on Bootstrap 4 (Moodle 4.0 to 4.3) and on Bootstrap 5 (Moodle 4.4 and later), so every colour
 // is a variable of the plugin that takes the value of the variable of Bootstrap 5, then the one of Bootstrap 4, then a colour
-// of its own. The buttons and fields are drawn by the plugin, because they differ between the two versions of Bootstrap.
+// of its own. Buttons, fields, forms and dialogs are the ones of Moodle, drawn by the theme; the plugin only rounds the chrome of
+// its lists (the toolbar over a table, the actions of a row and the pager under it) and lays out its own components.
 
 .filebank-migration,
 .filebank-ui {
@@ -59,93 +60,16 @@
         line-height: 1.3;
     }
 
-    // Buttons. The family is plain, with one colour for what matters most on the page.
-    .btn {
-        --fbm-tone: var(--fbm-text);
+    // Buttons are the ones of the theme. The chrome of a list (its toolbar) is rounded, like the pager and the actions of its rows.
+    .fbm-toolbar .btn {
+        border-radius: 50rem;
+    }
+
+    .fbm-toolbar .btn,
+    .fbm-floatbar .btn {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
         gap: 0.25rem;
-        min-height: 2.375rem;
-        padding: 0.4rem 0.95rem;
-        border: 1px solid var(--fbm-border);
-        border-radius: 2rem;
-        background-color: var(--fbm-bg);
-        color: var(--fbm-tone);
-        font-size: 0.9375rem;
-        font-weight: 550;
-        line-height: 1.2;
-        text-decoration: none;
-        white-space: normal;
-        cursor: pointer;
-        transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
-
-        &:hover:not(:disabled),
-        &:focus-visible:not(:disabled) {
-            border-color: var(--fbm-tone);
-            background-color: var(--fbm-surface);
-            color: var(--fbm-tone);
-            text-decoration: none;
-        }
-
-        &:focus-visible {
-            outline: 2px solid var(--fbm-primary);
-            outline-offset: 2px;
-        }
-
-        &:active:not(:disabled) {
-            transform: translateY(1px);
-        }
-
-        &:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-        }
-    }
-
-    .btn-primary,
-    .btn-success,
-    .btn-danger,
-    .btn-warning {
-        border-color: transparent;
-        background-color: var(--fbm-solid);
-        color: #fff;
-
-        &:hover:not(:disabled),
-        &:focus-visible:not(:disabled) {
-            border-color: transparent;
-            background-color: var(--fbm-solid);
-            color: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 0 0 99px rgba(0, 0, 0, 0.12);
-        }
-    }
-
-    .btn-primary {
-        --fbm-solid: var(--fbm-primary);
-    }
-
-    .btn-success {
-        --fbm-solid: var(--fbm-success);
-    }
-
-    .btn-danger {
-        --fbm-solid: var(--fbm-danger);
-    }
-
-    .btn-warning {
-        --fbm-solid: #b26a00;
-    }
-
-    .btn-sm {
-        min-height: 2rem;
-        padding: 0.2rem 0.7rem;
-        font-size: 0.8125rem;
-    }
-
-    .btn-lg {
-        min-height: 2.875rem;
-        padding: 0.55rem 1.4rem;
-        font-size: 1rem;
     }
 
     .btn-icon {
@@ -178,21 +102,6 @@
         }
     }
 
-    .btn-link {
-        padding: 0;
-        border: 0;
-        background: transparent;
-        color: var(--fbm-primary);
-        font: inherit;
-        text-align: start;
-        cursor: pointer;
-
-        &:hover,
-        &:focus-visible {
-            text-decoration: underline;
-        }
-    }
-
     .fbm-back {
         display: inline-flex;
         align-items: center;
@@ -210,15 +119,7 @@
         }
     }
 
-    // Fields.
-    .form-label {
-        display: inline-block;
-        margin-bottom: 0.25rem;
-        color: var(--fbm-muted);
-        font-size: 0.8125rem;
-        font-weight: 600;
-    }
-
+    // Fields are the ones of the theme; the plugin only lays them out.
     .fbm-field {
         min-width: 0;
         margin-bottom: 0.75rem;
@@ -228,40 +129,6 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.75rem;
-    }
-
-    .form-control,
-    .form-select {
-        display: block;
-        width: 100%;
-        min-height: 2.375rem;
-        padding: 0.35rem 0.75rem;
-        border: 1px solid var(--fbm-border);
-        border-radius: 0.5rem;
-        background-color: var(--fbm-bg);
-        color: var(--fbm-text);
-        font: inherit;
-
-        &:focus {
-            border-color: var(--fbm-primary);
-            outline: 2px solid var(--fbm-primary);
-            outline-offset: -1px;
-        }
-
-        &.is-invalid {
-            border-color: var(--fbm-danger);
-        }
-
-        &:disabled {
-            background-color: var(--fbm-surface);
-            cursor: not-allowed;
-        }
-    }
-
-    .form-select {
-        width: auto;
-        max-width: 100%;
-        padding-inline-end: 2rem;
     }
 
     .fbm-check {
@@ -627,25 +494,6 @@
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
-        padding: 0.3rem 0.8rem;
-        border: 1px solid var(--fbm-border);
-        border-radius: 2rem;
-        background-color: var(--fbm-bg);
-        color: var(--fbm-text);
-        font: inherit;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: background-color 0.15s ease, border-color 0.15s ease;
-
-        &:hover {
-            border-color: var(--fbm-primary);
-        }
-
-        &.active {
-            border-color: var(--fbm-primary);
-            background-color: var(--fbm-primary);
-            color: #fff;
-        }
     }
 
     .badge.fbm-chip-count {
@@ -712,6 +560,39 @@
     .fbm-col-fit {
         width: 1%;
         white-space: nowrap;
+    }
+
+    // The log is read page after page: its columns keep their width and each record takes one line (what does not fit ends in an
+    // ellipsis and is in the title), so the table never moves from one page or one filter to the next.
+    .fbm-log-table {
+        min-width: 56rem;
+        table-layout: fixed;
+
+        th,
+        td {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .badge {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+    }
+
+    .fbm-log-date {
+        width: 9.5rem;
+    }
+
+    .fbm-log-action {
+        width: 17rem;
+    }
+
+    .fbm-log-user {
+        width: 13rem;
     }
 
     .fbm-table-meta {
@@ -838,6 +719,9 @@
 
     // Empty states and placeholders.
     .fbm-empty {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         padding: 2.5rem 1rem;
         border: 1px dashed var(--fbm-border);
         border-radius: var(--fbm-radius);
@@ -974,66 +858,6 @@
     .fbm-notes {
         margin: 0.5rem 0 0;
         padding-inline-start: 1.25rem;
-    }
-
-    // The window.
-    .fbm-dialog {
-        width: calc(100vw - 2rem);
-        max-height: calc(100vh - 3rem);
-        padding: 0;
-        border: 0;
-        border-radius: 0.875rem;
-        background-color: var(--fbm-bg);
-        color: var(--fbm-text);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-
-        &::backdrop {
-            background-color: rgba(15, 23, 42, 0.55);
-        }
-
-        &.fbm-dialog-small {
-            max-width: 30rem;
-        }
-
-        &.fbm-dialog-medium {
-            max-width: 42rem;
-        }
-
-        &.fbm-dialog-large {
-            max-width: 62rem;
-        }
-    }
-
-    .fbm-dialog-body {
-        display: flex;
-        flex-direction: column;
-        max-height: calc(100vh - 3rem);
-    }
-
-    .fbm-dialog-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid var(--fbm-border);
-    }
-
-    .fbm-dialog-scroll {
-        flex: 1 1 auto;
-        padding: 1.25rem;
-        overflow-y: auto;
-    }
-
-    .fbm-dialog-foot {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 0.5rem;
-        padding: 0.9rem 1.25rem;
-        border-top: 1px solid var(--fbm-border);
-        background-color: var(--fbm-surface);
-        border-radius: 0 0 0.875rem 0.875rem;
     }
 
     .fbm-confirm-body p {
@@ -1477,6 +1301,13 @@
             box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.16);
             transform: translateY(-1px);
         }
+
+        // An action a row cannot take stays in its place, greyed, so the actions of every row line up.
+        &:disabled,
+        &.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
     }
 
     .text-nowrap {
@@ -1574,13 +1405,21 @@
         gap: 0.6rem;
     }
 
-    // A table keeps the size it had when it goes to a page with fewer rows, and scrolls inside, with its head in sight, when a page
-    // has more rows than fit in the window. The bar under it is always set apart from it.
+    // A table of a list always has the same height, whatever the size of its page, the filters or the rows it has: what does not fit
+    // scrolls inside with its head in sight, and a short page leaves the rest of the table empty. The bar under it is set apart.
     .fbm-list-region .table-responsive,
-    [data-filebank-list] .table-responsive {
-        max-height: 70vh;
+    [data-filebank-list] .table-responsive,
+    .fbm-list-scroll {
+        height: 60vh;
+        min-height: 20rem;
         overflow-y: auto;
         scroll-padding-top: 2.5rem;
+    }
+
+    .fbm-list-region > .fbm-empty,
+    [data-filebank-list] > .fbm-empty {
+        height: 60vh;
+        min-height: 20rem;
     }
 
     .fbm-list-region .table thead th,
@@ -1681,7 +1520,7 @@
         inset-inline-start: 0;
         top: calc(100% + 0.5rem);
         z-index: 1050;
-        width: 20rem;
+        width: 22rem;
         max-width: calc(100vw - 2rem);
         padding: 1rem;
         border: 1px solid var(--fbm-border);
@@ -1792,6 +1631,11 @@
         }
     }
 
+    // Without a date there is nothing to clear, and the text of the field takes the room of the button.
+    .fbm-dateinput-clear[hidden] + .form-control {
+        padding-inline-end: 0.75rem;
+    }
+
     .fbm-dateinput-clear {
         position: absolute;
         top: 50%;
@@ -1883,49 +1727,6 @@
         border-radius: var(--fbm-radius);
         background-color: var(--fbm-bg);
         box-shadow: var(--fbm-shadow);
-    }
-
-    .mform .fitem {
-        margin-bottom: 0.85rem;
-    }
-
-    .mform label,
-    .mform .col-form-label {
-        font-weight: 600;
-    }
-
-    .mform .form-control,
-    .mform select,
-    .mform textarea,
-    .mform input[type=text],
-    .mform input[type=number],
-    .mform input[type=search],
-    .mform input[type=date] {
-        min-height: 2.375rem;
-        padding: 0.35rem 0.75rem;
-        border: 1px solid var(--fbm-border);
-        border-radius: 0.5rem;
-        background-color: var(--fbm-bg);
-        color: var(--fbm-text);
-    }
-
-    .mform select {
-        padding-inline-end: 2rem;
-    }
-
-    .mform .form-control:focus,
-    .mform select:focus,
-    .mform textarea:focus {
-        border-color: var(--fbm-primary);
-        outline: 2px solid var(--fbm-primary);
-        outline-offset: -1px;
-    }
-
-    .mform .btn {
-        min-height: 2.375rem;
-        padding: 0.4rem 1.1rem;
-        border-radius: 2rem;
-        font-weight: 550;
     }
 
     .fbm-segment {

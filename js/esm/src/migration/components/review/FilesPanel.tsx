@@ -12,7 +12,6 @@
  */
 import {useEffect, useState} from 'react';
 import {useDebounced} from '../../hooks/useDebounced';
-import {useKeptHeight} from '../../hooks/useKeptHeight';
 import {PAGE_SIZES} from '../../lib/paging';
 import {describeError} from '../../lib/errors';
 import {getFiles} from '../../services/api';
@@ -46,14 +45,12 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
     const [perpage, setPerpage] = useState(PAGE_SIZES[0]);
-    const kept = useKeptHeight();
     const [data, setData] = useState<FilePage | null>(null);
     const [error, setError] = useState('');
     const query = useDebounced(search, 250);
 
     useEffect(() => {
         setPage(0);
-        kept.release();
     }, [bucket, query, perpage]);
 
     useEffect(() => {
@@ -128,7 +125,7 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
         {data === null && error === '' && <Skeleton rows={6} label={text('loading')} />}
         {data !== null && files.length === 0 && <EmptyState plain icon="file-circle-question" title={text('files_empty_title')} text={text('files_empty_text')} />}
         <div className="fbm-list-region">
-        {files.length > 0 && <div className="table-responsive" ref={kept.ref} style={kept.style}>
+        {files.length > 0 && <div className="table-responsive">
             <table className="table table-hover fbm-files">
                 <thead>
                     <tr>
@@ -178,7 +175,6 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
             perpage={perpage}
             total={data?.total ?? 0}
             onPage={(next) => {
-                kept.keep();
                 setPage(next);
             }}
             text={text}

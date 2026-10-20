@@ -15,7 +15,6 @@ import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
  */
 import { useEffect, useState } from "react";
 import { useDebounced } from "../../hooks/useDebounced";
-import { useKeptHeight } from "../../hooks/useKeptHeight";
 import { PAGE_SIZES } from "../../lib/paging";
 import { describeError } from "../../lib/errors";
 import { getFiles } from "../../services/api";
@@ -34,13 +33,11 @@ const FilesPanel = /* @__PURE__ */ __name(({ migration, text, bucket, onBucket, 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [perpage, setPerpage] = useState(PAGE_SIZES[0]);
-  const kept = useKeptHeight();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const query = useDebounced(search, 250);
   useEffect(() => {
     setPage(0);
-    kept.release();
   }, [bucket, query, perpage]);
   useEffect(() => {
     let current = true;
@@ -85,42 +82,42 @@ const FilesPanel = /* @__PURE__ */ __name(({ migration, text, bucket, onBucket, 
         /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary btn-sm", disabled: busy, onClick: () => onSelect("all"), children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: "square-check", gap: true }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-            lineNumber: 102,
+            lineNumber: 99,
             columnNumber: 17
           }),
           text("include_all")
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-          lineNumber: 101,
+          lineNumber: 98,
           columnNumber: 13
         }),
         /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary btn-sm", disabled: busy, onClick: () => onSelect("none"), children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: "square", gap: true }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-            lineNumber: 105,
+            lineNumber: 102,
             columnNumber: 17
           }),
           text("exclude_all")
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-          lineNumber: 104,
+          lineNumber: 101,
           columnNumber: 13
         })
       ] }, void 0, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-        lineNumber: 100,
+        lineNumber: 97,
         columnNumber: 40
       }),
       children: [
         error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, children: error }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-          lineNumber: 109,
+          lineNumber: 106,
           columnNumber: 26
         }),
         /* @__PURE__ */ jsxDEV("div", { className: "fbm-toolbar", children: [
           /* @__PURE__ */ jsxDEV(SearchBox, { id: "fbm-files-search", value: search, onChange: setSearch, placeholder: text("files_search"), clearLabel: text("clear") }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-            lineNumber: 111,
+            lineNumber: 108,
             columnNumber: 13
           }),
           /* @__PURE__ */ jsxDEV(
@@ -144,27 +141,27 @@ const FilesPanel = /* @__PURE__ */ __name(({ migration, text, bucket, onBucket, 
             false,
             {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-              lineNumber: 112,
+              lineNumber: 109,
               columnNumber: 13
             }
           )
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-          lineNumber: 110,
+          lineNumber: 107,
           columnNumber: 9
         }),
         data === null && error === "" && /* @__PURE__ */ jsxDEV(Skeleton, { rows: 6, label: text("loading") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-          lineNumber: 128,
+          lineNumber: 125,
           columnNumber: 43
         }),
         data !== null && files.length === 0 && /* @__PURE__ */ jsxDEV(EmptyState, { plain: true, icon: "file-circle-question", title: text("files_empty_title"), text: text("files_empty_text") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-          lineNumber: 129,
+          lineNumber: 126,
           columnNumber: 49
         }),
         /* @__PURE__ */ jsxDEV("div", { className: "fbm-list-region", children: [
-          files.length > 0 && /* @__PURE__ */ jsxDEV("div", { className: "table-responsive", ref: kept.ref, style: kept.style, children: /* @__PURE__ */ jsxDEV("table", { className: "table table-hover fbm-files", children: [
+          files.length > 0 && /* @__PURE__ */ jsxDEV("div", { className: "table-responsive", children: /* @__PURE__ */ jsxDEV("table", { className: "table table-hover fbm-files", children: [
             /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { children: [
               /* @__PURE__ */ jsxDEV("th", { className: "fbm-col-check", children: /* @__PURE__ */ jsxDEV(
                 Check,
@@ -179,46 +176,46 @@ const FilesPanel = /* @__PURE__ */ __name(({ migration, text, bucket, onBucket, 
                 false,
                 {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 136,
+                  lineNumber: 133,
                   columnNumber: 29
                 }
               ) }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 135,
+                lineNumber: 132,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV("th", { children: text("col_file") }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 144,
+                lineNumber: 141,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV("th", { children: text("col_from") }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 145,
+                lineNumber: 142,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV("th", { children: text("col_to") }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 146,
+                lineNumber: 143,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV("th", { children: text("col_decision") }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 147,
+                lineNumber: 144,
                 columnNumber: 25
               }),
               showsRun && /* @__PURE__ */ jsxDEV("th", { children: text("col_result") }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 148,
+                lineNumber: 145,
                 columnNumber: 38
               })
             ] }, void 0, true, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-              lineNumber: 134,
+              lineNumber: 131,
               columnNumber: 21
             }) }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-              lineNumber: 133,
+              lineNumber: 130,
               columnNumber: 17
             }),
             /* @__PURE__ */ jsxDEV("tbody", { children: files.map((file) => /* @__PURE__ */ jsxDEV("tr", { className: file.included ? "" : "is-out", "data-file": file.id, children: [
@@ -234,103 +231,103 @@ const FilesPanel = /* @__PURE__ */ __name(({ migration, text, bucket, onBucket, 
                 false,
                 {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 154,
+                  lineNumber: 151,
                   columnNumber: 29
                 }
               ) }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 153,
+                lineNumber: 150,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV("td", { children: [
                 /* @__PURE__ */ jsxDEV("strong", { className: "fbm-file-name", children: file.filename }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 162,
+                  lineNumber: 159,
                   columnNumber: 29
                 }),
                 file.filepath !== "/" && /* @__PURE__ */ jsxDEV("span", { className: "text-muted small d-block", children: file.filepath }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 163,
+                  lineNumber: 160,
                   columnNumber: 55
                 })
               ] }, void 0, true, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 161,
+                lineNumber: 158,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV("td", { children: [
                 /* @__PURE__ */ jsxDEV("span", { className: "d-block", children: file.sourcecourse }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 165,
+                  lineNumber: 162,
                   columnNumber: 29
                 }),
                 /* @__PURE__ */ jsxDEV("span", { className: "text-muted small", children: file.sourcefolder }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 165,
+                  lineNumber: 162,
                   columnNumber: 81
                 })
               ] }, void 0, true, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 165,
+                lineNumber: 162,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV("td", { children: [
                 /* @__PURE__ */ jsxDEV("span", { className: "d-block", children: file.targetcourse }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 166,
+                  lineNumber: 163,
                   columnNumber: 29
                 }),
                 /* @__PURE__ */ jsxDEV("span", { className: "text-muted small", children: file.targetfolder }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 166,
+                  lineNumber: 163,
                   columnNumber: 81
                 })
               ] }, void 0, true, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 166,
+                lineNumber: 163,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV(StatusBadge, { status: file.decision, label: file.decisionlabel }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 167,
+                lineNumber: 164,
                 columnNumber: 29
               }) }, void 0, false, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 167,
+                lineNumber: 164,
                 columnNumber: 25
               }),
               showsRun && /* @__PURE__ */ jsxDEV("td", { children: [
                 file.included && /* @__PURE__ */ jsxDEV(StatusBadge, { status: file.state, label: file.statelabel }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 169,
+                  lineNumber: 166,
                   columnNumber: 47
                 }),
                 file.result !== "" && /* @__PURE__ */ jsxDEV("span", { className: "text-muted small d-block", children: file.result }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                  lineNumber: 170,
+                  lineNumber: 167,
                   columnNumber: 52
                 })
               ] }, void 0, true, {
                 fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-                lineNumber: 168,
+                lineNumber: 165,
                 columnNumber: 38
               })
             ] }, file.id, true, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-              lineNumber: 152,
+              lineNumber: 149,
               columnNumber: 42
             })) }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-              lineNumber: 151,
+              lineNumber: 148,
               columnNumber: 17
             })
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-            lineNumber: 132,
+            lineNumber: 129,
             columnNumber: 13
           }) }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-            lineNumber: 131,
+            lineNumber: 128,
             columnNumber: 30
           }),
           /* @__PURE__ */ jsxDEV(
@@ -340,7 +337,6 @@ const FilesPanel = /* @__PURE__ */ __name(({ migration, text, bucket, onBucket, 
               perpage,
               total: data?.total ?? 0,
               onPage: (next) => {
-                kept.keep();
                 setPage(next);
               },
               text,
@@ -350,13 +346,13 @@ const FilesPanel = /* @__PURE__ */ __name(({ migration, text, bucket, onBucket, 
             false,
             {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-              lineNumber: 176,
+              lineNumber: 173,
               columnNumber: 9
             }
           )
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-          lineNumber: 130,
+          lineNumber: 127,
           columnNumber: 9
         })
       ]
@@ -365,7 +361,7 @@ const FilesPanel = /* @__PURE__ */ __name(({ migration, text, bucket, onBucket, 
     true,
     {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/FilesPanel.tsx",
-      lineNumber: 95,
+      lineNumber: 92,
       columnNumber: 12
     }
   );
