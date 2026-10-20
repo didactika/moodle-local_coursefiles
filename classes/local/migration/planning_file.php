@@ -82,13 +82,7 @@ final class planning_file {
         );
         $existingdata = $existing ? copy_decision::snapshot($existing) : null;
         [$decision, $duplicate] = self::decision($file, $source, $existingdata, $config, $targetcontent);
-        if ($decision === 'copy' || $decision === 'overwrite') {
-            try {
-                author_policy::require_native_copy($file, $cm->course, $targetcourse);
-            } catch (\moodle_exception $exception) {
-                $decision = 'blocked_policy';
-            }
-        }
+        $decision = self::policy_checked($decision, $file, (int) $cm->course, $targetcourse);
         $snapshot = ['source' => $source, 'sourcecourse' => $sourcecourse,
         'sourceshortname' => $sourcecourseinfo->shortname,
         'targetshortname' => $targetcourseinfo->shortname,
@@ -99,13 +93,70 @@ final class planning_file {
         'targetidentity' => $targetidentity];
         $opkey = hash('sha256', $file->get_pathnamehash() . ':' . ($targetkey ?: $target->id));
         $choicekey = $file->get_pathnamehash() . ':' . $targetcourse;
-        if (($filechoices[$choicekey] ?? '') === 'overwrite' && $decision === 'blocked_content') {
-            author_policy::require_native_copy($file, $cm->course, $targetcourse);
-            $decision = 'overwrite';
-        }
+        $decision = self::chosen($decision, $filechoices[$choicekey] ?? '', $file, (int) $cm->course, $targetcourse);
         return ['sourcehash' => $file->get_pathnamehash(), 'targetcmid' => $target->id,
         'decision' => $decision, 'snapshot' => $snapshot,
-        'included' => !in_array($choicekey, $excluded, true), 'opkey' => $opkey];
+        'included' => !in_array($choicekey, $excluded, true) && !self::unsettled($decision),
+        'opkey' => $opkey];
+    }
+
+    /**
+     * Hold back a file that the author policy does not allow to be copied.
+     *
+     * @param string $decision What was decided so far.
+     * @param \stored_file $file The source file.
+     * @param int $sourcecourse The course the file comes from.
+     * @param int $targetcourse The course it would go to.
+     * @return string blocked_policy when the file would be written and the policy refuses it; the decision otherwise.
+     */
+    private static function policy_checked(string $decision, \stored_file $file, int $sourcecourse, int $targetcourse): string {
+        if ($decision !== 'copy' && $decision !== 'overwrite') {
+            return $decision;
+        }
+        try {
+            author_policy::require_native_copy($file, $sourcecourse, $targetcourse);
+        } catch (\moodle_exception $exception) {
+            return 'blocked_policy';
+        }
+        return $decision;
+    }
+
+    /**
+     * Apply what the person chose for a file that is in conflict.
+     *
+     * @param string $decision What was decided without the person.
+     * @param string $choice overwrite, skip or an empty string.
+     * @param \stored_file $file The source file.
+     * @param int $sourcecourse The course the file comes from.
+     * @param int $targetcourse The course it would go to.
+     * @return string The decision; skip_conflict for a conflict left as it is and overwrite for one that was overwritten.
+     */
+    private static function chosen(
+        string $decision,
+        string $choice,
+        \stored_file $file,
+        int $sourcecourse,
+        int $targetcourse
+    ): string {
+        if ($choice === 'skip' && str_starts_with($decision, 'blocked_')) {
+            // The conflict is settled and the file stays out of the migration.
+            return 'skip_conflict';
+        }
+        if ($choice === 'overwrite' && $decision === 'blocked_content') {
+            author_policy::require_native_copy($file, $sourcecourse, $targetcourse);
+            return 'overwrite';
+        }
+        return $decision;
+    }
+
+    /**
+     * Whether a decision keeps the file out of the migration until a person changes it.
+     *
+     * @param string $decision The decision.
+     * @return bool True for a conflict or a conflict that was left as it is.
+     */
+    private static function unsettled(string $decision): bool {
+        return str_starts_with($decision, 'blocked_') || $decision === 'skip_conflict';
     }
 
     /**

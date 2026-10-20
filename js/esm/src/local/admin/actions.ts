@@ -103,16 +103,14 @@ export const createBulkActions = (form: HTMLFormElement) => {
             }
             return;
         }
-        const destructive = button && (button.value === 'delete' || button.name === 'deleteplan'
-            || button.value.startsWith('delete:'));
+        const destructive = button && (button.value === 'delete' || button.value.startsWith('delete:'));
         if (!destructive || form.dataset.confirmed) {
             delete form.dataset.confirmed;
             return;
         }
         event.preventDefault();
         try {
-            const keys = ['confirm', form.hasAttribute('data-filebank-migrations')
-                ? 'migrationdeleteconfirm' : 'profilestateconfirm', 'delete', 'cancel'];
+            const keys = ['confirm', 'profilestateconfirm', 'delete', 'cancel'];
             const [title, message, yes, no] = await getStrings(keys.map(key => ({
                 key, component: key.endsWith('confirm') && key !== 'confirm' ? 'local_filebank' : 'core',
             })));
@@ -173,7 +171,7 @@ export const createHistoryActions = (history: HTMLElement) => {
  */
 export const changePage = (event: Event) => {
             const select = eventElement(event).closest<HTMLSelectElement>(Selectors.pageSize)!;
-            if (!select || select.closest<HTMLElement>(Selectors.migration)!) {
+            if (!select) {
                 return;
             }
             const url = new URL(select.dataset.url!, document.baseURI);

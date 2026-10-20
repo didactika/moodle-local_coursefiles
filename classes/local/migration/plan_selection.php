@@ -60,7 +60,7 @@ final class plan_selection {
         $total = $DB->count_records('local_filebank_operation', ['planid' => $planid]);
         $included = $DB->count_records('local_filebank_operation', ['planid' => $planid, 'included' => 1]);
         return ['digest' => $plan->digest, 'checks' => $checks, 'groups' => $groups, 'total' => $total, 'included' => $included,
-            'emptycancelled' => $plan->state === 'cancelled' && !plan_history::has_work($planid),
+            'empty' => !plan_history::has_work($planid),
             'includedlabel' => get_string('includedcount', 'local_filebank', $included),
             'planstate' => \local_filebank\output\display::outcome($plan->state),
             'cancontinue' => $plan->state === 'reviewable' && plan_history::has_work($planid)
@@ -106,17 +106,11 @@ final class plan_selection {
             }
             $transaction = $DB->start_delegated_transaction();
             self::update($planid, $visible, $included, $action, $group);
+            self::keep_unsettled_out($planid);
             $document = json_decode($plan->configjson, true);
             $document['selectiondigest'] = self::digest($planid);
             $plan->configjson = json_encode($document, JSON_UNESCAPED_SLASHES);
             $plan->digest = hash('sha256', $plan->configjson);
-            $blocked = $DB->record_exists_select(
-                'local_filebank_operation',
-                'planid = ? AND included = 1 AND ' . $DB->sql_like('decision', '?'),
-                [$planid, 'blocked%']
-            );
-            $issues = array_filter($document['issues'] ?? [], static fn($issue) => $issue['blocking'] ?? true);
-            $plan->state = $issues || $blocked ? 'blocked' : (plan_history::has_work($planid) ? 'reviewable' : 'cancelled');
             $DB->update_record('local_filebank_plan', $plan);
             \local_filebank\local\logging\log::record(
                 'migration_selection_changed',
@@ -208,6 +202,23 @@ final class plan_selection {
             $groups[] = ['courseid' => $id, 'cmid' => 0] + $counts;
         }
         return $groups;
+    }
+
+    /**
+     * Keep files that are waiting for a decision, or were left as they are, out of the migration whatever was selected: they are
+     * settled in their own way and never block the rest.
+     *
+     * @param int $planid The migration.
+     */
+    private static function keep_unsettled_out(int $planid): void {
+        global $DB;
+        $DB->set_field_select(
+            'local_filebank_operation',
+            'included',
+            0,
+            'planid = :planid AND included = 1 AND (' . $DB->sql_like('decision', ':blocked') . ' OR decision = :skipped)',
+            ['planid' => $planid, 'blocked' => 'blocked%', 'skipped' => 'skip_conflict']
+        );
     }
 
     /**

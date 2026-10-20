@@ -31,7 +31,7 @@ Profiles define which courses belong together using named regular-expression cap
 | Existing content | Material already used in the destination is excluded before browsing |
 | Review | Resulting-file tree, removal checks and pencil dialogs for destination names |
 | Profiles | Guided editing, import/export, retained versions, comparison and restoration |
-| Migrations | Source filters and activity correspondences, paginated review, conflict choices and background execution |
+| Migrations | A window that checks what a migration would do before it is created, a review with decisions settled all at once inside the same migration, and background execution |
 | Authorship | Original declarations preserved at copy time, with configurable protection and provenance |
 | History | Bounded log, migration and inactive profile-version retention |
 
@@ -60,7 +60,7 @@ php admin/cli/upgrade.php --non-interactive
 2. Enable the FileBank repository and configure publication and authorship permissions.
 3. Teachers open **Add files**, choose FileBank, filter the public library and select material.
 4. Review the resulting files, import them and save the owning activity form.
-5. For a site migration, open **Migrations**, configure source and destination rules, resolve conflicts and queue the reviewed set.
+5. For a site migration, open **Migrations**, choose the courses and the folder correspondences, check what it would do, create it, settle what needs a decision and start it.
 
 ## Configuration
 
@@ -71,7 +71,7 @@ Settings are located at **Site administration → Plugins → Local plugins → 
 | Course profiles | Identify related courses and configure up to nine named-capture search filters |
 | Publication | Choose which supported public file areas are available |
 | Authorship | Preserve the original declaration, or block workflows that cannot enforce the selected protection |
-| Migration wizard | Choose source activity types, folder correspondences, missing-destination creation and conflict handling |
+| Migration window | Choose the courses, the folder correspondences, how sections match and what to do when a folder is missing or a different file is already there |
 | Retention | Limit the lifetime of logs, migration history and inactive profile versions |
 
 The repository instance’s visible name is also used as the browser heading. Editable-with-provenance permits copying while retaining the original author in the history. Strict protection blocks workflows where later native author edits cannot be prevented.
@@ -83,7 +83,7 @@ The repository instance’s visible name is also used as the browser heading. Ed
 | No material appears | Check the active profile, matching course identifiers, publication rules and source permissions |
 | An expected file is absent | It may already be used in the destination, or the native control may reject its type |
 | Locked material cannot be copied | The selected author policy requires protection that the workflow cannot enforce |
-| A migration is blocked | Resolve the reported course, destination or file conflict in its review screen |
+| Nothing would be migrated | Edit its parameters: the migration is worked out again where it is, and what the source does not have is not an error |
 | A queued migration does not run | Check cron and the scheduled/ad hoc task log |
 
 ## Getting help

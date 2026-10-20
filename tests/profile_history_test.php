@@ -116,7 +116,7 @@ final class profile_history_test extends \advanced_testcase {
         $this->setAdminUser();
         $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Pinned version']);
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026');
         [, , $rules] = profiles::load($fixture['profileid']);
         $config = $rules->get_config();
         $config['name'] = 'Second name';
@@ -138,7 +138,7 @@ final class profile_history_test extends \advanced_testcase {
         $this->setAdminUser();
         $fixture = $this->getDataGenerator()->get_plugin_generator('local_filebank')
             ->create_migration_fixture(['name' => 'Safe removal']);
-        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
+        $plan = migration_planner::preview($fixture['profileid'], '2025', '2026');
         $run = migration_executor::queue($plan->id, $plan->digest);
         try {
             plan_history::delete($plan->id);
@@ -147,8 +147,8 @@ final class profile_history_test extends \advanced_testcase {
             $this->assertSame('migrationinuse', $exception->errorcode);
         }
         migration_executor::execute($run);
-        $empty = migration_planner::preview($fixture['profileid'], '2025', '2026', true);
-        $this->assertSame('cancelled', $empty->state);
+        $empty = migration_planner::preview($fixture['profileid'], '2025', '2026');
+        $this->assertSame('reviewable', $empty->state);
         $this->assertFalse(plan_history::has_work($empty->id));
         $files = $DB->get_records_menu('files', ['component' => 'mod_folder'], 'id', 'id, contenthash');
         plan_history::delete($empty->id);

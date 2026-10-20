@@ -61,55 +61,21 @@ class behat_local_filebank_steps_9 extends behat_local_filebank_base {
     }
 
     /**
-     * Wait for the serialized small-state response before checking saved decisions.
-     * @Then /^I wait for the FileBank migration selection to save$/
+     * Capture the part of an administration page that holds an element, at desktop and mobile widths.
+     *
+     * @Then /^I capture FileBank administration "([^"]*)" at "([^"]*)"$/
+     * @param string $name Screenshot basename.
+     * @param string $selector CSS selector of the element to bring into view.
      */
-    public function migration_selection_saved(): void {
-        $this->spin(
-            function () {
-                return $this->getSession()->evaluateScript(
-                    "(function() {const root = document.querySelector('[data-region=filebank-migration]');"
-                    . "return root && root.dataset.ready === 'true' && Number(root.dataset.pending || 0) === 0;})()"
-                );
-            },
-            null,
-            20
-        );
-    }
-
-    /**
-     * Remember the real DOM node before a selection-only request.
-     * @When /^I remember the visible FileBank migration item$/
-     */
-    public function remember_migration_item(): void {
-        $this->getSession()->executeScript(
-            'window.filebankRememberedItem = document.querySelector("[data-filebank-operation]");'
-        );
-    }
-
-    /**
-     * Selection-only responses must not replace the visible files.
-     * @Then /^the visible FileBank migration item should be preserved$/
-     */
-    public function migration_item_preserved(): void {
-        if (
-            !$this->getSession()->evaluateScript(
-                'window.filebankRememberedItem === document.querySelector("[data-filebank-operation]")'
-            )
-        ) {
-            throw new \Exception('Selecting a file replaced its visible DOM node.');
+    public function capture_administration_at(string $name, string $selector): void {
+        foreach (['desktop' => 1366, 'mobile' => 480] as $size => $width) {
+            $this->getSession()->resizeWindow($width, 1000);
+            $this->getSession()->getDriver()->executeScript(
+                'document.querySelector(' . json_encode($selector) . ').scrollIntoView({block: "start"});'
+                . 'window.scrollBy(0, -80);'
+            );
+            file_put_contents('/tmp/filebank-admin-' . $name . '-' . $size . '.png', $this->getSession()->getScreenshot());
         }
-    }
-
-    /**
-     * Migration bulk deletion is available only for an explicit current-page selection.
-     * @Then /^FileBank migration bulk actions should be "(hidden|visible)"$/
-     * @param string $expected Expected visibility.
-     */
-    public function migration_bulk_actions(string $expected): void {
-        $control = $this->getSession()->getPage()->find('css', '[data-filebank-migrations] [data-filebank-bulk-actions]');
-        if (!$control || $control->isVisible() !== ($expected === 'visible')) {
-            throw new \Exception('Migration bulk actions do not follow the explicit selection.');
-        }
+        $this->getSession()->resizeWindow(1366, 1000);
     }
 }

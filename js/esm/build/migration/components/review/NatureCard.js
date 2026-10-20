@@ -1,0 +1,12 @@
+import{useState as c}from"react";import y from"../ui/ConfirmModal";import p from"../ui/Icon";import g from"./DecisionList";import{jsx as n,jsxs as t}from"react/jsx-runtime";/**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
+ * One kind of thing that waits for a decision, with what can be done to all of it at once. Two hundred files that are in conflict
+ * in the same way are settled with one click and one question, and can still be looked at one by one.
+ *
+ * @module     local_filebank/migration/components/review/NatureCard
+ * @copyright  2026 Didactika.org
+ * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */const _=({migrationId:b,digest:d,nature:e,text:o,busy:s,onResolve:m})=>{const[i,f]=c(!1),[l,r]=c(""),u=e.choices.find(a=>a.value===l)?.label??"",N=async()=>{await m(e,[],l)&&r("")};return t("section",{className:"fbm-nature","data-nature":e.nature,children:[t("header",{className:"fbm-nature-head",children:[n("span",{className:"fbm-nature-icon",children:n(p,{name:e.kind==="file"?"file-circle-exclamation":"folder-open"})}),t("div",{className:"fbm-nature-title",children:[t("h4",{className:"fbm-h4",children:[e.label,n("span",{className:"fbm-count",children:e.count})]}),n("p",{className:"fbm-muted fbm-nature-help",children:o("nature_help_"+e.kind)})]})]}),t("div",{className:"fbm-nature-actions",children:[e.choices.map(a=>t("button",{type:"button",className:`fbm-btn ${a.value==="overwrite"?"fbm-btn-warning":"fbm-btn-primary"}`,disabled:s,onClick:()=>r(a.value),"data-choice":a.value,children:[o("apply_all",{n:e.count}),": ",a.label]},a.value)),t("button",{type:"button",className:"fbm-btn","aria-expanded":i,onClick:()=>f(!i),children:[n(p,{name:i?"chevron-up":"list",gap:!0}),o(i?"hide_list":"review_one_by_one")]})]}),i&&n(g,{migrationId:b,digest:d,nature:e,text:o,busy:s,onApply:(a,v)=>void m(e,a,v)}),t(y,{open:l!=="",tone:l==="overwrite"?"warning":"primary",icon:l==="overwrite"?"triangle-exclamation":"circle-question",busy:s,title:o("apply_all_title",{n:e.count}),confirmLabel:o("apply"),cancelLabel:o("cancel"),onConfirm:()=>void N(),onCancel:()=>r(""),children:[n("p",{children:n("strong",{children:e.label})}),n("p",{children:u}),n("p",{className:"fbm-muted",children:o("apply_all_text",{n:e.count})})]})]})};var I=_;export{I as default};

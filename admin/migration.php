@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Bulk migration configuration and saved previews.
+ * The migrations: their list, the window that starts one and the page of each one.
  *
  * @package local_filebank
  * @copyright 2026 Didactika.org
@@ -26,126 +26,14 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use local_filebank\output\display;
+use local_filebank\output\migration_page;
 use local_filebank\output\navigation;
-use local_filebank\output\view;
 
+$planid = optional_param('id', 0, PARAM_INT);
 admin_externalpage_setup('local_filebank_migration');
-$planid = optional_param('planid', 0, PARAM_INT);
-if ($planid) {
-    redirect(new moodle_url('/local/filebank/admin/migration_review.php', ['planid' => $planid]));
-}
-if (
-    !optional_param('new', false, PARAM_BOOL) && !optional_param('profileid', 0, PARAM_INT)
-    && !optional_param('step', '', PARAM_ALPHA)
-) {
-    require(__DIR__ . '/migration_list.php');
-    exit;
-}
-$profiles = $DB->get_records('local_filebank', ['enabled' => 1], 'name');
-$profileid = optional_param('profileid', 0, PARAM_INT);
-$step = optional_param('step', 'profile', PARAM_ALPHA);
-if (!in_array($step, ['profile', 'scope'], true)) {
-    throw new invalid_parameter_exception('Unknown migration step');
-}
-if (!$profileid && $profiles) {
-    $profileid = (int)reset($profiles)->id;
-}
-$form = null;
-$data = ['profiles' => [], 'hasprofiles' => (bool)$profiles,
-    'profilehelp' => $OUTPUT->help_icon('migrationprofile', 'local_filebank'),
-    'actionurl' => (new moodle_url('/local/filebank/admin/migration.php'))->out(false)];
-foreach ($profiles as $profile) {
-    $data['profiles'][] = ['value' => $profile->id, 'label' => display::name($profile->name),
-        'selected' => $profile->id == $profileid];
-}
-if ($profileid && $step === 'scope') {
-    [$profile, $revision, $rules] = \local_filebank\local\profile\profiles::load($profileid);
-    $config = $rules->get_config();
-    $dimensions = \local_filebank\local\migration\course_scope::choices($rules);
-    $data['hasscope'] = (bool)$dimensions;
-    $form = new \local_filebank\form\migration_form(null, [
-        'profileid' => $profileid, 'dimensions' => $dimensions,
-        'ordinal' => ($config['migration']['section_match']['strategy'] ?? 'ordinal') === 'ordinal',
-        'migration' => $config['migration'] ?? []]);
-    if ($form && ($submitted = $form->get_data())) {
-        if ((int)$submitted->profileid !== $profileid) {
-            throw new invalid_parameter_exception('The selected profile changed');
-        }
-        $plan = \local_filebank\local\migration\migration_planner::preview(
-            $profileid,
-            implode(' / ', array_filter((array)($submitted->sourcefilters ?? []))),
-            implode(' / ', array_filter((array)($submitted->targetfilters ?? []))),
-            !empty($submitted->layoutconfirmed),
-            '',
-            ['migration' => \local_filebank\local\migration\migration_rules::from_form((array)$submitted),
-                'filters' => ['source' => (array)($submitted->sourcefilters ?? []),
-                    'target' => (array)($submitted->targetfilters ?? [])]]
-        );
-        redirect(new moodle_url('/local/filebank/admin/migration_review.php', ['planid' => $plan->id]));
-    }
-    if ($form && !$form->is_submitted()) {
-        $defaults = ['sourcefilters' => [], 'targetfilters' => []];
-        $previousplanid = optional_param('fromplan', 0, PARAM_INT);
-        if ($previousplanid) {
-            $previous = $DB->get_record(
-                'local_filebank_plan',
-                ['id' => $previousplanid, 'profileid' => $profileid],
-                '*',
-                MUST_EXIST
-            );
-            $document = json_decode($previous->configjson, true);
-            $defaults['sourcefilters'] = $document['filters']['source'] ?? [];
-            $defaults['targetfilters'] = $document['filters']['target'] ?? [];
-            $previousrules = $document['migration'] ?? [];
-            if (!empty($previousrules['correspondences'])) {
-                $rows = [];
-                foreach ($previousrules['correspondences'] as $rule) {
-                    $row = [];
-                    foreach (['source', 'target'] as $side) {
-                        $predicate = $rule[$side . '_module'];
-                        $method = isset($predicate['pattern']) ? 'pattern'
-                            : (isset($predicate['template']) ? 'template' : 'equals');
-                        $row[$side . 'field'] = $predicate['field'];
-                        $row[$side . 'method'] = $method;
-                        $row[$side . 'value'] = $predicate[$method];
-                    }
-                    $rows[] = $row;
-                }
-                $defaults['correspondencesjson'] = json_encode($rows);
-            }
-            $sectionrows = [];
-            foreach ($previousrules['section_match']['map'] ?? [] as $source => $target) {
-                $sectionrows[] = ['source' => (string)$source, 'target' => (string)$target];
-            }
-            $defaults['sectionmapjson'] = json_encode($sectionrows);
-            $defaults['sectionstrategy'] = $previousrules['section_match']['strategy'] ?? 'ordinal';
-            $defaults['duplicatepolicy'] = $previousrules['same_content_different_path'] ?? 'skip-and-report';
-            $defaults['missingtarget'] = $previousrules['missing_target'] ?? 'block';
-            $defaults['conflictpolicy'] = $previousrules['same_path_different_content'] ?? 'block';
-            $defaults['layoutconfirmed'] = $document['layoutconfirmed'] ?? false;
-        }
-        $form->set_data($defaults);
-    }
-}
-
-$data['chooseprofile'] = $step === 'profile';
-$data['choosescope'] = $step === 'scope';
-$data['listurl'] = (new moodle_url('/local/filebank/admin/migration.php'))->out(false);
-$profileurl = new moodle_url('/local/filebank/admin/migration.php', ['profileid' => $profileid, 'new' => 1]);
-$data['profileurl'] = $profileurl->out(false);
-$data['scopebackurl'] = (new moodle_url(
-    '/local/filebank/admin/migration.php',
-    ['profileid' => $profileid, 'new' => 1, 'step' => 'profile']
-))->out(false);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_filebank'));
-$renderer = $PAGE->get_renderer('local_filebank');
-echo $renderer->render(navigation::site('migration'));
-echo $renderer->render(new view('migration_setup', $data));
-if ($form !== null) {
-    echo html_writer::start_div('filebank-admin filebank-panel');
-    $form->display();
-    echo html_writer::end_div();
-}
+echo $PAGE->get_renderer('local_filebank')->render(navigation::site('migration'));
+echo migration_page::placeholder();
+echo $OUTPUT->render(new migration_page($planid));
 echo $OUTPUT->footer();
