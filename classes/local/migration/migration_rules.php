@@ -49,7 +49,7 @@ final class migration_rules {
         if (
             !$config['correspondences'] || !in_array($config['section_match']['strategy'], ['ordinal', 'name', 'mapping'], true)
             || !in_array($config['missing_target'], ['block', 'create', 'skip'], true)
-            || !in_array($config['same_path_different_content'], ['block', 'overwrite'], true)
+            || !in_array($config['same_path_different_content'], ['block', 'overwrite', 'skip'], true)
             || !in_array($config['same_content_different_path'], ['skip-and-report', 'keep'], true)
         ) {
             throw new \moodle_exception('invalidprofile', 'local_filebank');
@@ -106,7 +106,7 @@ final class migration_rules {
         return ['correspondences' => $rows, 'sectionstrategy' => $config['section_match']['strategy'] ?? 'ordinal',
             'sectionmap' => $map, 'duplicatepolicy' => $config['same_content_different_path'] ?? 'skip-and-report',
             'missingtarget' => $config['missing_target'] ?? 'create',
-            'conflictpolicy' => $config['same_path_different_content'] ?? 'block'];
+            'conflictpolicy' => ($config['same_path_different_content'] ?? '') === 'overwrite' ? 'overwrite' : 'skip'];
     }
 
     /**

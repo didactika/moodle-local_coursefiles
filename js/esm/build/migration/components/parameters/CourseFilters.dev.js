@@ -24,7 +24,7 @@ const CourseFilters = /* @__PURE__ */ __name(({ dimensions, parameters, onChange
     onChange({ ...parameters, [side]: next });
   }, "set");
   if (dimensions.length === 0) {
-    return /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted", children: text("wizard_no_filters") }, void 0, false, {
+    return /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: text("wizard_no_filters") }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CourseFilters.tsx",
       lineNumber: 36,
       columnNumber: 16
@@ -45,7 +45,7 @@ const CourseFilters = /* @__PURE__ */ __name(({ dimensions, parameters, onChange
         columnNumber: 13
       }),
       dimensions.map((dimension) => /* @__PURE__ */ jsxDEV("div", { className: "fbm-field", children: [
-        /* @__PURE__ */ jsxDEV("label", { className: "fbm-label", htmlFor: `fbm-${side}-${dimension.key}`, children: dimension.label }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("label", { className: "form-label", htmlFor: `fbm-${side}-${dimension.key}`, children: dimension.label }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CourseFilters.tsx",
           lineNumber: 46,
           columnNumber: 17
@@ -55,7 +55,7 @@ const CourseFilters = /* @__PURE__ */ __name(({ dimensions, parameters, onChange
           {
             id: `fbm-${side}-${dimension.key}`,
             type: "text",
-            className: "fbm-input",
+            className: "form-control",
             maxLength: 255,
             value: parameters[side][dimension.key] ?? "",
             placeholder: text("wizard_any"),

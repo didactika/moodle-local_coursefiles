@@ -23,23 +23,18 @@ export interface MigrationProps {
     strings: Record<string, string>;
 }
 
-export interface Choice {
-    value: string;
-    label: string;
-}
-
 export interface Summary {
     files: number;
     tocopy: number;
     tooverwrite: number;
     existing: number;
-    conflicts: number;
     skipped: number;
     included: number;
     folders: number;
     sourcecourses: number;
     targetcourses: number;
-    openissues: number;
+    /** Files that already have a different file in the destination, whatever is decided about them. */
+    different: number;
     haswork: boolean;
     notes: Array<{kind: string; count: number; label: string}>;
 }
@@ -48,14 +43,6 @@ export interface FilterValue {
     key: string;
     label: string;
     value: string;
-}
-
-export interface Nature {
-    kind: 'file' | 'issue';
-    nature: string;
-    count: number;
-    label: string;
-    choices: Choice[];
 }
 
 export interface RunState {
@@ -87,7 +74,6 @@ export interface Migration {
     target: string;
     filters: {source: FilterValue[]; target: FilterValue[]};
     rules: string;
-    natures: Nature[];
     run?: RunState;
 }
 
@@ -102,7 +88,6 @@ export interface ListedMigration {
     datelabel: string;
     files: number;
     towrite: number;
-    conflicts: number;
     done: number;
     candelete: boolean;
 }
@@ -128,19 +113,8 @@ export interface ProfileOption {
 export interface Options {
     profiles: ProfileOption[];
     modules: Array<{value: string; label: string}>;
-}
-
-export interface DecisionItem {
-    id: number;
-    label: string;
-    context: string;
-    detail: string;
-    choices: Choice[];
-}
-
-export interface DecisionPage {
-    total: number;
-    items: DecisionItem[];
+    /** The last migrations of the chosen profile, to take their folders from. */
+    previous: Array<{id: number; label: string}>;
 }
 
 export interface MigrationFile {
@@ -162,7 +136,7 @@ export interface MigrationFile {
     license: string;
 }
 
-export type Bucket = '' | 'copy' | 'existing' | 'conflict' | 'left';
+export type Bucket = '' | 'copy' | 'existing' | 'left';
 
 export interface FilePage {
     counts: Array<{bucket: string; count: number}>;

@@ -12,7 +12,7 @@
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import {useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import MigrationList from './migration/components/list/MigrationList';
 import Review from './migration/components/review/Review';
 import Alert from './migration/components/ui/Alert';
@@ -41,6 +41,11 @@ export default function Migration(props: MigrationProps) {
         getOptions().then(setOptions).catch((problem: unknown) => setError(describeError(problem)));
     }, []);
 
+    // The lists of choices are bounded, so a search or a change of profile asks for the ones that fit.
+    const loadOptions = useCallback((search: string, profileid: number) => {
+        getOptions(search, profileid).then(setOptions).catch((problem: unknown) => setError(describeError(problem)));
+    }, []);
+
     let screen;
     if (route.mode === 'new' || route.mode === 'edit') {
         screen = <MigrationWizard
@@ -51,6 +56,7 @@ export default function Migration(props: MigrationProps) {
             text={text}
             onClose={() => (route.mode === 'edit' ? route.openReview(route.planid) : route.openList())}
             onDone={route.openReview}
+            onOptions={loadOptions}
         />;
     } else if (route.mode === 'review') {
         screen = <Review

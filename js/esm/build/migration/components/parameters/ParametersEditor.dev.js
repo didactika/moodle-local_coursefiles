@@ -14,45 +14,35 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { parametersFor, profileRules } from "../../lib/parameters";
+import { parametersFor, parametersOf } from "../../lib/parameters";
+import { getMigration } from "../../services/api";
 import CorrespondenceRows from "./CorrespondenceRows";
 import CourseFilters from "./CourseFilters";
 import PolicyFields from "./PolicyFields";
+import ProfilePicker from "./ProfilePicker";
 import SectionRules from "./SectionRules";
-const ParametersEditor = /* @__PURE__ */ __name(({ step, options, parameters, onChange, text, lockProfile = false, problems }) => {
+const ParametersEditor = /* @__PURE__ */ __name(({ step, options, parameters, onChange, onOptions, text, lockProfile = false, problems }) => {
   const profile = options.profiles.find((item) => item.id === parameters.profileid);
   if (step === "profile") {
     return /* @__PURE__ */ jsxDEV(
-      "select",
+      ProfilePicker,
       {
-        className: `fbm-select fbm-select-wide${problems.includes("profile") ? " is-invalid" : ""}`,
-        "aria-label": text("wizard_profile"),
-        value: parameters.profileid,
-        disabled: lockProfile,
-        onChange: (event) => {
-          const next = options.profiles.find((item) => item.id === Number(event.target.value));
-          if (next) {
-            onChange(parametersFor(next));
-          }
+        profiles: options.profiles,
+        chosen: parameters.profileid,
+        locked: lockProfile,
+        invalid: problems.includes("profile"),
+        onPick: (next) => {
+          onChange(parametersFor(next));
+          onOptions("", next.id);
         },
-        children: [
-          parameters.profileid <= 0 && /* @__PURE__ */ jsxDEV("option", { value: 0, children: text("wizard_profile_choose") }, void 0, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/parameters/ParametersEditor.tsx",
-            lineNumber: 49,
-            columnNumber: 43
-          }),
-          options.profiles.map((item) => /* @__PURE__ */ jsxDEV("option", { value: item.id, children: item.name }, item.id, false, {
-            fileName: "public/local/filebank/js/esm/src/migration/components/parameters/ParametersEditor.tsx",
-            lineNumber: 50,
-            columnNumber: 45
-          }))
-        ]
+        onSearch: (query) => onOptions(query, parameters.profileid),
+        text
       },
       void 0,
-      true,
+      false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/ParametersEditor.tsx",
-        lineNumber: 37,
+        lineNumber: 41,
         columnNumber: 16
       }
     );
@@ -74,17 +64,22 @@ const ParametersEditor = /* @__PURE__ */ __name(({ step, options, parameters, on
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/ParametersEditor.tsx",
-        lineNumber: 57,
+        lineNumber: 58,
         columnNumber: 16
       }
     );
   }
   if (step === "folders") {
+    const reuse = /* @__PURE__ */ __name(async (id) => {
+      const earlier = parametersOf(await getMigration(id));
+      onChange({ ...parameters, rules: { ...parameters.rules, correspondences: earlier.rules.correspondences } });
+    }, "reuse");
     return /* @__PURE__ */ jsxDEV(
       CorrespondenceRows,
       {
         rows: parameters.rules.correspondences,
-        profileRows: profileRules(profile).correspondences,
+        previous: options.previous,
+        onReuse: (id) => void reuse(id).catch(() => void 0),
         modules: options.modules,
         onChange: (correspondences) => onChange({ ...parameters, rules: { ...parameters.rules, correspondences } }),
         text,
@@ -94,7 +89,7 @@ const ParametersEditor = /* @__PURE__ */ __name(({ step, options, parameters, on
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/ParametersEditor.tsx",
-        lineNumber: 66,
+        lineNumber: 71,
         columnNumber: 16
       }
     );
@@ -112,14 +107,14 @@ const ParametersEditor = /* @__PURE__ */ __name(({ step, options, parameters, on
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/ParametersEditor.tsx",
-        lineNumber: 76,
+        lineNumber: 82,
         columnNumber: 16
       }
     );
   }
   return /* @__PURE__ */ jsxDEV(PolicyFields, { rules: parameters.rules, onChange: (rules) => onChange({ ...parameters, rules }), text }, void 0, false, {
     fileName: "public/local/filebank/js/esm/src/migration/components/parameters/ParametersEditor.tsx",
-    lineNumber: 83,
+    lineNumber: 89,
     columnNumber: 12
   });
 }, "ParametersEditor");

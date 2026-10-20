@@ -25,7 +25,7 @@ const SearchBox = ({value, onChange, placeholder, clearLabel, id}: SearchBoxProp
         type="search"
         id={id}
         value={value}
-        className="fbm-input fbm-search-input"
+        className="form-control rounded-pill"
         placeholder={placeholder}
         aria-label={placeholder}
         autoComplete="off"
@@ -37,7 +37,7 @@ const SearchBox = ({value, onChange, placeholder, clearLabel, id}: SearchBoxProp
         }}
     />
     {value !== '' && <button type="button" className="fbm-search-clear" onClick={() => onChange('')} title={clearLabel}>
-        <Icon name="xmark" /><span className="fbm-sr">{clearLabel}</span>
+        <Icon name="xmark" /><span className="filebank-visually-hidden">{clearLabel}</span>
     </button>}
 </div>;
 

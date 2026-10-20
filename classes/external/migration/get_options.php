@@ -42,17 +42,26 @@ class get_options extends external_api {
      * @return external_function_parameters Description.
      */
     public static function execute_parameters(): external_function_parameters {
-        return new external_function_parameters([]);
+        return new external_function_parameters([
+            'search' => new external_value(PARAM_TEXT, 'Part of the name of the profiles to offer', VALUE_DEFAULT, ''),
+            'profileid' => new external_value(PARAM_INT, 'The profile that is already chosen', VALUE_DEFAULT, 0),
+        ]);
     }
 
     /**
      * Read the options.
      *
-     * @return array The profiles and the kinds of source a rule can read.
+     * @param string $search Part of the name of the profiles to offer.
+     * @param int $profileid The profile that is already chosen.
+     * @return array The profiles, the kinds of source a rule can read and the earlier migrations of the chosen profile.
      */
-    public static function execute(): array {
+    public static function execute(string $search = '', int $profileid = 0): array {
+        ['search' => $search, 'profileid' => $profileid] = self::validate_parameters(
+            self::execute_parameters(),
+            ['search' => $search, 'profileid' => $profileid]
+        );
         self::validate_context(\context_system::instance());
-        return migration_catalog::options();
+        return migration_catalog::options($search, $profileid);
     }
 
     /**
@@ -83,6 +92,13 @@ class get_options extends external_api {
                     'label' => new external_value(PARAM_TEXT, 'Name of the kind of source'),
                 ]),
                 'What a correspondence can read'
+            ),
+            'previous' => new external_multiple_structure(
+                new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Migration'),
+                    'label' => new external_value(PARAM_TEXT, 'A short name of the migration'),
+                ]),
+                'The last migrations of the chosen profile'
             ),
         ]);
     }

@@ -4,43 +4,63 @@
     @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
     @template local_filebank/local/log/index
     Filtered site action log. Record values are escaped; details are not displayed.
-    Example context (json): {"formurl":"/local/filebank/admin/log.php","records":[],"hasrecords":false}
+    Example context (json): {"formurl":"/local/filebank/admin/log.php","lang":"en","records":[],"hasrecords":false,"hasactive":true,"activecount":1,"activefilters":[{"label":"Action: Profile activated","removeurl":"#"}],"clearurl":"#","from":"2026-10-01","fromlabel":"1 Oct 2026","until":"","untillabel":""}
 }}
 <section class="filebank-ui filebank-admin filebank-log">
     <header class="fbm-header">
         <div class="fbm-header-title">
-            <div class="fbm-header-line"><h2 class="fbm-h2">{{#str}}log, local_filebank{{/str}}</h2></div>
-            <p class="fbm-muted fbm-header-subtitle">{{#str}}logintro, local_filebank{{/str}}</p>
+            <div class="fbm-header-line"><h2 class="h2">{{#str}}log, local_filebank{{/str}}</h2></div>
+            <p class="text-muted fbm-header-subtitle">{{#str}}logintro, local_filebank{{/str}}</p>
         </div>
     </header>
-    <form method="get" action="{{formurl}}" class="fbm-filters">
+    <form method="get" action="{{formurl}}" class="fbm-toolbar" data-filebank-live-filters data-lang="{{lang}}">
         <input type="hidden" name="perpage" value="{{perpage}}">
-        <div class="fbm-field">
-            <label for="filebank-log-action" class="fbm-label">{{#str}}logaction, local_filebank{{/str}}</label>
-            <select id="filebank-log-action" name="action" class="fbm-select fbm-select-fill">
-                <option value="">{{#str}}logallactions, local_filebank{{/str}}</option>
-                {{#options}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/options}}
-            </select>
+        <div class="fbm-search">
+            <label for="filebank-log-reference" class="filebank-visually-hidden">{{#str}}logreference, local_filebank{{/str}}</label>
+            <span class="fbm-search-icon">{{#pix}}a/search, core{{/pix}}</span>
+            <input type="search" id="filebank-log-reference" name="entityuuid" value="{{entityuuid}}" maxlength="36" class="form-control rounded-pill" aria-label="{{#str}}logreference, local_filebank{{/str}}" placeholder="{{#str}}logreference, local_filebank{{/str}}" autocomplete="off" data-filebank-live-text>
         </div>
-        <div class="fbm-field">
-            <label for="filebank-log-reference" class="fbm-label">{{#str}}logreference, local_filebank{{/str}}</label>
-            <input id="filebank-log-reference" name="entityuuid" value="{{entityuuid}}" maxlength="36" class="fbm-input">
-        </div>
-        <div class="fbm-field">
-            <label for="filebank-log-from" class="fbm-label">{{#str}}logfrom, local_filebank{{/str}}</label>
-            <input id="filebank-log-from" type="date" name="from" value="{{from}}" class="fbm-input">
-        </div>
-        <div class="fbm-field">
-            <label for="filebank-log-until" class="fbm-label">{{#str}}loguntil, local_filebank{{/str}}</label>
-            <input id="filebank-log-until" type="date" name="until" value="{{until}}" class="fbm-input">
-        </div>
-        <div class="fbm-filters-actions">
-            <button class="fbm-btn fbm-btn-primary" type="submit">{{#pix}}i/filter, core{{/pix}}{{#str}}filter{{/str}}</button>
-            <a class="fbm-btn" href="{{clearurl}}">{{#str}}clear, core{{/str}}</a>
-                {{{filterhelp}}}
-        </div>
+        <details class="fbm-filterbox fbm-filter-end"{{#hasactive}} data-active{{/hasactive}}>
+            <summary class="btn btn-outline-secondary">{{#pix}}i/filter, core{{/pix}}{{#str}}filters, core{{/str}}{{#hasactive}}<span class="badge rounded-pill fbm-count">{{activecount}}</span>{{/hasactive}}</summary>
+            <div class="fbm-filterpanel">
+                <div class="fbm-filter-head">
+                    <h3 class="fbm-filter-heading">{{#str}}filters, core{{/str}}</h3>
+                    <a class="btn btn-outline-secondary fbm-iconpill" href="{{clearurl}}" title="{{#str}}resetfilters, local_filebank{{/str}}">{{#pix}}i/reload, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}resetfilters, local_filebank{{/str}}</span></a>
+                </div>
+                <div class="fbm-field">
+                    <label for="filebank-log-action" class="form-label">{{#str}}logaction, local_filebank{{/str}}</label>
+                    <select id="filebank-log-action" name="action" class="form-select w-100">
+                        <option value="">{{#str}}logallactions, local_filebank{{/str}}</option>
+                        {{#options}}<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>{{/options}}
+                    </select>
+                </div>
+                <div class="fbm-field fbm-datefield" data-filebank-date>
+                    <label for="filebank-log-from" class="form-label">{{#str}}logfrom, local_filebank{{/str}}</label>
+                    <div class="input-group">
+                        <span class="input-group-text">{{#pix}}i/calendar, core{{/pix}}</span>
+                        <input type="text" id="filebank-log-from" class="form-control" readonly autocomplete="off" placeholder="{{#str}}anydate, local_filebank{{/str}}" value="{{fromlabel}}" data-filebank-date-display>
+                        <button type="button" class="btn btn-outline-secondary" data-filebank-date-clear{{^from}} hidden{{/from}} title="{{#str}}clear, core{{/str}}">{{#pix}}e/cancel, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}clear, core{{/str}}</span></button>
+                    </div>
+                    <input type="hidden" name="from" value="{{from}}" data-filebank-date-value>
+                </div>
+                <div class="fbm-field fbm-datefield" data-filebank-date>
+                    <label for="filebank-log-until" class="form-label">{{#str}}loguntil, local_filebank{{/str}}</label>
+                    <div class="input-group">
+                        <span class="input-group-text">{{#pix}}i/calendar, core{{/pix}}</span>
+                        <input type="text" id="filebank-log-until" class="form-control" readonly autocomplete="off" placeholder="{{#str}}anydate, local_filebank{{/str}}" value="{{untillabel}}" data-filebank-date-display>
+                        <button type="button" class="btn btn-outline-secondary" data-filebank-date-clear{{^until}} hidden{{/until}} title="{{#str}}clear, core{{/str}}">{{#pix}}e/cancel, core{{/pix}}<span class="filebank-visually-hidden">{{#str}}clear, core{{/str}}</span></button>
+                    </div>
+                    <input type="hidden" name="until" value="{{until}}" data-filebank-date-value>
+                </div>
+                <noscript><button class="btn btn-primary" type="submit">{{#str}}filter{{/str}}</button></noscript>
+            </div>
+        </details>
+        {{{filterhelp}}}
     </form>
-    {{#hasrecords}}<div class="fbm-table-wrap"><table class="fbm-table fbm-log-table"><thead><tr><th>{{#str}}date, core{{/str}}</th><th>{{#str}}logaction, local_filebank{{/str}}</th><th>{{#str}}user, core{{/str}}</th><th>{{#str}}logreference, local_filebank{{/str}}</th></tr></thead><tbody>{{#records}}<tr><td class="fbm-nowrap">{{date}}</td><td><span class="fbm-badge fbm-badge-action">{{action}}</span></td><td>{{user}}</td><td class="fbm-small fbm-break fbm-mono">{{reference}}</td></tr>{{/records}}</tbody></table></div>{{/hasrecords}}
-    {{^hasrecords}}<div class="fbm-empty"><h4 class="fbm-h4">{{#str}}logempty, local_filebank{{/str}}</h4></div>{{/hasrecords}}
+    {{#hasactive}}<div class="fbm-chips" data-region="active-filters">
+        {{#activefilters}}<a class="btn btn-sm btn-outline-secondary rounded-pill fbm-chip" href="{{removeurl}}" title="{{#str}}clear, core{{/str}}">{{label}}{{#pix}}e/cancel, core{{/pix}}</a>{{/activefilters}}
+    </div>{{/hasactive}}
+    {{#hasrecords}}<div class="table-responsive"><table class="table table-hover fbm-log-table"><thead><tr><th>{{#str}}date, core{{/str}}</th><th>{{#str}}logaction, local_filebank{{/str}}</th><th>{{#str}}user, core{{/str}}</th><th>{{#str}}logreference, local_filebank{{/str}}</th></tr></thead><tbody>{{#records}}<tr><td class="text-nowrap">{{date}}</td><td><span class="badge rounded-pill tone-neutral">{{action}}</span></td><td>{{user}}</td><td class="small text-break font-monospace">{{reference}}</td></tr>{{/records}}</tbody></table></div>{{/hasrecords}}
+    {{^hasrecords}}<div class="fbm-empty"><h4 class="h4">{{#str}}logempty, local_filebank{{/str}}</h4></div>{{/hasrecords}}
     {{{pagination}}}
 </section>

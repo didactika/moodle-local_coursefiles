@@ -17,7 +17,7 @@ import {getFiles} from '../../services/api';
 import type {Bucket, FilePage, Migration, Text} from '../../types';
 import Alert from '../ui/Alert';
 import Check from '../ui/Check';
-import Chips from '../ui/Chips';
+import FilterMenu from '../ui/FilterMenu';
 import EmptyState from '../ui/EmptyState';
 import Icon from '../ui/Icon';
 import Panel from '../ui/Panel';
@@ -39,7 +39,7 @@ interface FilesPanelProps {
     onSelect: (action: 'page' | 'all' | 'none', visible?: number[], included?: number[]) => void;
 }
 
-const BUCKETS: Bucket[] = ['', 'copy', 'existing', 'conflict', 'left'];
+const BUCKETS: Bucket[] = ['', 'copy', 'existing', 'left'];
 
 const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPanelProps) => {
     const [search, setSearch] = useState('');
@@ -95,10 +95,10 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
         count={countOf('')}
         region="files"
         actions={migration.editable && <>
-            <button type="button" className="fbm-btn fbm-btn-small" disabled={busy} onClick={() => onSelect('all')}>
+            <button type="button" className="btn btn-outline-secondary btn-sm" disabled={busy} onClick={() => onSelect('all')}>
                 <Icon name="square-check" gap />{text('include_all')}
             </button>
-            <button type="button" className="fbm-btn fbm-btn-small" disabled={busy} onClick={() => onSelect('none')}>
+            <button type="button" className="btn btn-outline-secondary btn-sm" disabled={busy} onClick={() => onSelect('none')}>
                 <Icon name="square" gap />{text('exclude_all')}
             </button>
         </>}
@@ -106,24 +106,26 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
         {error !== '' && <Alert tone="danger" live>{error}</Alert>}
         <div className="fbm-toolbar">
             <SearchBox id="fbm-files-search" value={search} onChange={setSearch} placeholder={text('files_search')} clearLabel={text('clear')} />
-            <select className="fbm-select fbm-perpage" aria-label={text('per_page')} value={perpage} onChange={(event) => setPerpage(Number(event.target.value))}>
-                {SIZES.map((size) => <option key={size} value={size}>{text('per_page_n', {n: size})}</option>)}
-            </select>
+            <FilterMenu
+                label={text('filters')}
+                resetLabel={text('filters_reset')}
+                groups={[{
+                    id: 'bucket',
+                    label: text('files_groups'),
+                    value: bucket,
+                    onChange: (value) => onBucket(value as Bucket),
+                    options: BUCKETS.map((value) => ({
+                        value,
+                        label: text(value === '' ? 'all' : 'bucket_' + value),
+                        count: countOf(value),
+                    })),
+                }]}
+            />
         </div>
-        <Chips
-            label={text('files_groups')}
-            value={bucket}
-            onChange={(value) => onBucket(value as Bucket)}
-            chips={BUCKETS.map((value) => ({
-                value,
-                label: text(value === '' ? 'all' : 'bucket_' + value),
-                count: countOf(value),
-            }))}
-        />
         {data === null && error === '' && <Skeleton rows={6} label={text('loading')} />}
         {data !== null && files.length === 0 && <EmptyState plain icon="file-circle-question" title={text('files_empty_title')} text={text('files_empty_text')} />}
-        {files.length > 0 && <div className="fbm-table-wrap">
-            <table className="fbm-table fbm-files">
+        {files.length > 0 && <div className="table-responsive">
+            <table className="table table-hover fbm-files">
                 <thead>
                     <tr>
                         <th className="fbm-col-check">
@@ -154,20 +156,28 @@ const FilesPanel = ({migration, text, bucket, onBucket, busy, onSelect}: FilesPa
                         </td>
                         <td>
                             <strong className="fbm-file-name">{file.filename}</strong>
-                            {file.filepath !== '/' && <span className="fbm-muted fbm-small fbm-block">{file.filepath}</span>}
+                            {file.filepath !== '/' && <span className="text-muted small d-block">{file.filepath}</span>}
                         </td>
-                        <td><span className="fbm-block">{file.sourcecourse}</span><span className="fbm-muted fbm-small">{file.sourcefolder}</span></td>
-                        <td><span className="fbm-block">{file.targetcourse}</span><span className="fbm-muted fbm-small">{file.targetfolder}</span></td>
+                        <td><span className="d-block">{file.sourcecourse}</span><span className="text-muted small">{file.sourcefolder}</span></td>
+                        <td><span className="d-block">{file.targetcourse}</span><span className="text-muted small">{file.targetfolder}</span></td>
                         <td><StatusBadge status={file.decision} label={file.decisionlabel} /></td>
                         {showsRun && <td>
                             {file.included && <StatusBadge status={file.state} label={file.statelabel} />}
-                            {file.result !== '' && <span className="fbm-muted fbm-small fbm-block">{file.result}</span>}
+                            {file.result !== '' && <span className="text-muted small d-block">{file.result}</span>}
                         </td>}
                     </tr>)}
                 </tbody>
             </table>
         </div>}
-        <Pagination page={page} perpage={perpage} total={data?.total ?? 0} onPage={setPage} text={text} />
+        <Pagination
+            page={page}
+            perpage={perpage}
+            total={data?.total ?? 0}
+            onPage={setPage}
+            text={text}
+            sizes={SIZES}
+            onPerPage={setPerpage}
+        />
     </Panel>;
 };
 

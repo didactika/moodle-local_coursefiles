@@ -14,7 +14,7 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  */
 const Progress = /* @__PURE__ */ __name(({ value, max, label, tone = "primary" }) => {
   const percent = max > 0 ? Math.min(100, Math.round(value / max * 100)) : 0;
-  return /* @__PURE__ */ jsxDEV("div", { className: `fbm-progress tone-${tone}`, role: "progressbar", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, children: /* @__PURE__ */ jsxDEV("div", { className: "fbm-progress-fill", style: { width: `${percent}%` } }, void 0, false, {
+  return /* @__PURE__ */ jsxDEV("div", { className: "progress", role: "progressbar", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": max, "aria-valuenow": value, children: /* @__PURE__ */ jsxDEV("div", { className: `progress-bar bg-${tone === "neutral" ? "secondary" : tone}`, style: { width: `${percent}%` } }, void 0, false, {
     fileName: "public/local/filebank/js/esm/src/migration/components/ui/Progress.tsx",
     lineNumber: 24,
     columnNumber: 9

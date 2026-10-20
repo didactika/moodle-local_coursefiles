@@ -13,9 +13,9 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import Icon from "./Icon";
-const Panel = /* @__PURE__ */ __name(({ title, icon, count, actions, flush = false, region, children }) => /* @__PURE__ */ jsxDEV("section", { className: "fbm-panel", "data-region": region, children: [
-  /* @__PURE__ */ jsxDEV("header", { className: "fbm-panel-head", children: [
-    /* @__PURE__ */ jsxDEV("h3", { className: "fbm-panel-title", children: [
+const Panel = /* @__PURE__ */ __name(({ title, icon, count, actions, flush = false, region, children }) => /* @__PURE__ */ jsxDEV("section", { className: "card", "data-region": region, children: [
+  /* @__PURE__ */ jsxDEV("header", { className: "card-header d-flex flex-wrap align-items-center justify-content-between", children: [
+    /* @__PURE__ */ jsxDEV("h3", { className: "card-title h5 mb-0 d-flex align-items-center", children: [
       /* @__PURE__ */ jsxDEV("span", { className: "fbm-panel-icon", children: /* @__PURE__ */ jsxDEV(Icon, { name: icon, gap: true }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/Panel.tsx",
         lineNumber: 29,
@@ -26,7 +26,7 @@ const Panel = /* @__PURE__ */ __name(({ title, icon, count, actions, flush = fal
         columnNumber: 13
       }),
       title,
-      count !== void 0 && /* @__PURE__ */ jsxDEV("span", { className: "fbm-count", children: count }, void 0, false, {
+      count !== void 0 && /* @__PURE__ */ jsxDEV("span", { className: "badge rounded-pill fbm-count", children: count }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/Panel.tsx",
         lineNumber: 31,
         columnNumber: 37
@@ -46,7 +46,7 @@ const Panel = /* @__PURE__ */ __name(({ title, icon, count, actions, flush = fal
     lineNumber: 27,
     columnNumber: 5
   }),
-  /* @__PURE__ */ jsxDEV("div", { className: flush ? "fbm-panel-flush" : "fbm-panel-body", children }, void 0, false, {
+  /* @__PURE__ */ jsxDEV("div", { className: flush ? "card-body p-0" : "card-body", children }, void 0, false, {
     fileName: "public/local/filebank/js/esm/src/migration/components/ui/Panel.tsx",
     lineNumber: 35,
     columnNumber: 5

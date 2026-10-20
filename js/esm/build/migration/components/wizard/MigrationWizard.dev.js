@@ -41,7 +41,7 @@ const STEP_ICONS = {
   policies: "sliders",
   check: "clipboard-check"
 };
-const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, onClose, onDone, text }) => {
+const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, onClose, onDone, onOptions, text }) => {
   const [parameters, setParameters] = useState(null);
   const [source, setSource] = useState(null);
   const [step, setStep] = useState(0);
@@ -53,6 +53,8 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
   const [error, setError] = useState("");
   const [leaving, setLeaving] = useState(false);
   const initial = useRef("");
+  const root = useRef(null);
+  const ready = options !== null && parameters !== null;
   const steps = STEP_KEYS;
   useEffect(() => {
     if (!options) {
@@ -81,6 +83,17 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
       current = false;
     };
   }, [options, migrationId]);
+  useEffect(() => {
+    if (ready && window.matchMedia("(min-width: 62rem) and (min-height: 36rem)").matches) {
+      root.current?.scrollIntoView({ block: "start" });
+    }
+  }, [ready]);
+  const chosen = parameters?.profileid ?? 0;
+  useEffect(() => {
+    if (chosen > 0) {
+      onOptions("", chosen);
+    }
+  }, [chosen]);
   const dirty = parameters !== null && keyOf(parameters) !== initial.current;
   useEffect(() => {
     if (!dirty) {
@@ -93,43 +106,43 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
   const heading = mode === "edit" ? text("edit_title") : text("wizard_title");
-  const back = /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-back", onClick: () => dirty ? setLeaving(true) : onClose(), children: [
+  const back = /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-link btn-sm p-0 fbm-back", onClick: () => dirty ? setLeaving(true) : onClose(), children: [
     /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-left", gap: true }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-      lineNumber: 111,
+      lineNumber: 130,
       columnNumber: 9
     }),
     text(mode === "edit" ? "back_to_migration" : "back_to_list")
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-    lineNumber: 110,
+    lineNumber: 129,
     columnNumber: 18
   });
   if (!options || !parameters) {
     return /* @__PURE__ */ jsxDEV("div", { className: "fbm-wizard", children: [
       /* @__PURE__ */ jsxDEV(PageHeader, { title: heading, back }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-        lineNumber: 116,
+        lineNumber: 135,
         columnNumber: 13
       }),
       error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, children: error }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-        lineNumber: 117,
+        lineNumber: 136,
         columnNumber: 30
       }),
       options && options.profiles.length === 0 && /* @__PURE__ */ jsxDEV(Alert, { tone: "warning", children: text("wizard_no_profiles") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-        lineNumber: 118,
+        lineNumber: 137,
         columnNumber: 58
       }),
       error === "" && (!options || options.profiles.length > 0) && /* @__PURE__ */ jsxDEV(Skeleton, { rows: 5, label: text("loading") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-        lineNumber: 119,
+        lineNumber: 138,
         columnNumber: 75
       })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-      lineNumber: 115,
+      lineNumber: 134,
       columnNumber: 16
     });
   }
@@ -140,16 +153,15 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
     setParameters(next2);
     setSummary(null);
   }, "change");
-  const runCheck = /* @__PURE__ */ __name(async () => {
+  const runCheck = /* @__PURE__ */ __name(async (asked = parameters, keepResult = false) => {
     setChecking(true);
-    setSummary(null);
+    if (!keepResult) {
+      setSummary(null);
+    }
     setError("");
-    const asked = keyOf(parameters);
     try {
-      const result = await checkMigration(parameters);
-      if (asked === keyOf(parameters)) {
-        setSummary(result);
-      }
+      const result = await checkMigration(asked);
+      setSummary(result);
     } catch (problem) {
       setError(describeError(problem));
     } finally {
@@ -191,8 +203,8 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
       setSaving(false);
     }
   }, "save");
-  const canSave = summary !== null && (mode === "edit" || summary.files > 0 || summary.openissues > 0);
-  return /* @__PURE__ */ jsxDEV("div", { className: "fbm-wizard", "data-region": "migration-wizard", "data-mode": mode, children: [
+  const canSave = summary !== null && summary.haswork && !checking;
+  return /* @__PURE__ */ jsxDEV("div", { className: "fbm-wizard", "data-region": "migration-wizard", "data-mode": mode, ref: root, children: [
     /* @__PURE__ */ jsxDEV(
       PageHeader,
       {
@@ -204,110 +216,134 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-        lineNumber: 190,
+        lineNumber: 210,
         columnNumber: 9
       }
     ),
     /* @__PURE__ */ jsxDEV("div", { className: "fbm-wizard-body", children: [
       /* @__PURE__ */ jsxDEV(Stepper, { steps, current: step, reached, onGo: go, text }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-        lineNumber: 196,
+        lineNumber: 216,
         columnNumber: 13
       }),
       /* @__PURE__ */ jsxDEV("section", { className: "fbm-wizard-panel", "aria-live": "polite", children: [
         /* @__PURE__ */ jsxDEV("header", { className: "fbm-wizard-head", children: [
           /* @__PURE__ */ jsxDEV("span", { className: "fbm-wizard-icon", children: /* @__PURE__ */ jsxDEV(Icon, { name: STEP_ICONS[key] }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-            lineNumber: 199,
+            lineNumber: 219,
             columnNumber: 55
           }) }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-            lineNumber: 199,
+            lineNumber: 219,
             columnNumber: 21
           }),
           /* @__PURE__ */ jsxDEV("div", { children: [
-            /* @__PURE__ */ jsxDEV("h3", { className: "fbm-h3", children: text("step_" + key) }, void 0, false, {
+            /* @__PURE__ */ jsxDEV("h3", { className: "h3", children: text("step_" + key) }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-              lineNumber: 201,
+              lineNumber: 221,
               columnNumber: 25
             }),
-            /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted fbm-wizard-help", children: text("step_" + key + "_help") }, void 0, false, {
+            /* @__PURE__ */ jsxDEV("p", { className: "text-muted fbm-wizard-help", children: text("step_" + key + "_help") }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-              lineNumber: 202,
+              lineNumber: 222,
               columnNumber: 25
             })
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-            lineNumber: 200,
+            lineNumber: 220,
             columnNumber: 21
           })
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-          lineNumber: 198,
+          lineNumber: 218,
           columnNumber: 17
         }),
-        error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, children: error }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-          lineNumber: 205,
-          columnNumber: 34
-        }),
-        key === "check" ? /* @__PURE__ */ jsxDEV(CheckResult, { summary, loading: checking, error: "", text }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-          lineNumber: 207,
-          columnNumber: 23
-        }) : /* @__PURE__ */ jsxDEV(
-          ParametersEditor,
-          {
-            step: key,
-            options,
-            parameters,
-            onChange: change,
-            text,
-            lockProfile: mode === "edit",
-            problems
-          },
-          void 0,
-          false,
-          {
+        /* @__PURE__ */ jsxDEV("div", { className: "fbm-wizard-scroll", children: [
+          error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, children: error }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-            lineNumber: 208,
-            columnNumber: 23
-          }
-        ),
-        key === "check" && summary !== null && !canSave && /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted fbm-wizard-hint", children: text("wizard_change_hint") }, void 0, false, {
+            lineNumber: 226,
+            columnNumber: 34
+          }),
+          key === "check" ? /* @__PURE__ */ jsxDEV(
+            CheckResult,
+            {
+              summary,
+              loading: checking,
+              error: "",
+              text,
+              policy: parameters.rules.conflictpolicy,
+              onPolicy: (conflictpolicy) => {
+                const next2 = { ...parameters, rules: { ...parameters.rules, conflictpolicy } };
+                setParameters(next2);
+                void runCheck(next2, true);
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
+              lineNumber: 228,
+              columnNumber: 23
+            }
+          ) : /* @__PURE__ */ jsxDEV(
+            ParametersEditor,
+            {
+              step: key,
+              options,
+              parameters,
+              onChange: change,
+              onOptions,
+              text,
+              lockProfile: mode === "edit",
+              problems
+            },
+            void 0,
+            false,
+            {
+              fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
+              lineNumber: 240,
+              columnNumber: 23
+            }
+          ),
+          key === "check" && summary !== null && !canSave && /* @__PURE__ */ jsxDEV("p", { className: "text-muted fbm-wizard-hint", children: text("wizard_change_hint") }, void 0, false, {
+            fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
+            lineNumber: 250,
+            columnNumber: 69
+          })
+        ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-          lineNumber: 217,
-          columnNumber: 69
+          lineNumber: 225,
+          columnNumber: 17
         }),
         /* @__PURE__ */ jsxDEV("footer", { className: "fbm-wizard-foot", children: [
-          /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn", onClick: () => go(step - 1), disabled: step === 0 || saving, children: [
+          /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: () => go(step - 1), disabled: step === 0 || saving, children: [
             /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-left", gap: true }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-              lineNumber: 220,
+              lineNumber: 254,
               columnNumber: 25
             }),
             text("wizard_previous")
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-            lineNumber: 219,
+            lineNumber: 253,
             columnNumber: 21
           }),
           last ? /* @__PURE__ */ jsxDEV(
             "button",
             {
               type: "button",
-              className: "fbm-btn fbm-btn-primary",
+              className: "btn btn-primary",
               onClick: () => void save(),
               disabled: !canSave || saving,
               "data-action": "save-migration",
               children: [
                 saving ? /* @__PURE__ */ jsxDEV(Icon, { name: "spinner", gap: true, spin: true }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-                  lineNumber: 230,
+                  lineNumber: 264,
                   columnNumber: 39
                 }) : /* @__PURE__ */ jsxDEV(Icon, { name: "check", gap: true }, void 0, false, {
                   fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-                  lineNumber: 230,
+                  lineNumber: 264,
                   columnNumber: 74
                 }),
                 text(mode === "edit" ? "edit_save" : "wizard_create")
@@ -317,34 +353,34 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
             true,
             {
               fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-              lineNumber: 223,
+              lineNumber: 257,
               columnNumber: 27
             }
-          ) : /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn fbm-btn-primary", onClick: next, "data-action": "next-step", children: [
+          ) : /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: next, "data-action": "next-step", children: [
             text(steps[step + 1] === "check" ? "wizard_check" : "wizard_next"),
             /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-right" }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-              lineNumber: 234,
+              lineNumber: 268,
               columnNumber: 97
             })
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-            lineNumber: 233,
+            lineNumber: 267,
             columnNumber: 27
           })
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-          lineNumber: 218,
+          lineNumber: 252,
           columnNumber: 17
         })
       ] }, void 0, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-        lineNumber: 197,
+        lineNumber: 217,
         columnNumber: 13
       })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-      lineNumber: 195,
+      lineNumber: 215,
       columnNumber: 9
     }),
     /* @__PURE__ */ jsxDEV(
@@ -363,7 +399,7 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
         onCancel: () => setLeaving(false),
         children: /* @__PURE__ */ jsxDEV("p", { children: text("discard_text") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-          lineNumber: 252,
+          lineNumber: 286,
           columnNumber: 13
         })
       },
@@ -371,13 +407,13 @@ const MigrationWizard = /* @__PURE__ */ __name(({ mode, options, migrationId, on
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-        lineNumber: 239,
+        lineNumber: 273,
         columnNumber: 9
       }
     )
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/wizard/MigrationWizard.tsx",
-    lineNumber: 189,
+    lineNumber: 209,
     columnNumber: 12
   });
 }, "MigrationWizard");

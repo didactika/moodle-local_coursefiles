@@ -45,7 +45,7 @@ const Notes = /* @__PURE__ */ __name(({ notes, text }) => {
         lineNumber: 35,
         columnNumber: 34
       })),
-      /* @__PURE__ */ jsxDEV("li", { className: "fbm-muted", children: text("notes_footer") }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("li", { className: "text-muted", children: text("notes_footer") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Notes.tsx",
         lineNumber: 36,
         columnNumber: 13

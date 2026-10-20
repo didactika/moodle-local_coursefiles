@@ -38,8 +38,8 @@ const ConfirmModal = ({
     onClose={onCancel}
     closeLabel={cancelLabel}
     footer={<>
-        <button type="button" className="fbm-btn" onClick={onCancel} disabled={busy}>{cancelLabel}</button>
-        <button type="button" className={`fbm-btn fbm-btn-${tone}`} onClick={onConfirm} disabled={busy}>
+        <button type="button" className="btn btn-outline-secondary" onClick={onCancel} disabled={busy}>{cancelLabel}</button>
+        <button type="button" className={`btn btn-${tone}`} onClick={onConfirm} disabled={busy}>
             {busy && <Icon name="spinner" gap spin />}{confirmLabel}
         </button>
     </>}

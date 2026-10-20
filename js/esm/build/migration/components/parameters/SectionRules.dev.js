@@ -14,8 +14,9 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import { MAX_SECTION_PAIRS } from "../../lib/parameters";
-import Chips from "../ui/Chips";
+import ChoiceCards from "../ui/ChoiceCards";
 import Icon from "../ui/Icon";
+import IconButton from "../ui/IconButton";
 const STRATEGIES = ["ordinal", "name", "mapping"];
 const SectionRules = /* @__PURE__ */ __name(({ rules, onChange, text, missing }) => {
   const pairs = rules.sectionmap;
@@ -23,122 +24,147 @@ const SectionRules = /* @__PURE__ */ __name(({ rules, onChange, text, missing })
     ...rules,
     sectionmap: pairs.map((pair, position) => position === index ? { ...pair, [key]: value } : pair)
   }), "setPair");
+  const invalid = /* @__PURE__ */ __name((value) => missing && !/^[1-9][0-9]*$/.test(value), "invalid");
   return /* @__PURE__ */ jsxDEV("div", { className: "fbm-sections", children: [
     /* @__PURE__ */ jsxDEV(
-      Chips,
+      ChoiceCards,
       {
         label: text("rules_sections"),
+        name: "fbm-section-strategy",
         value: rules.sectionstrategy,
         onChange: (sectionstrategy) => onChange({
           ...rules,
           sectionstrategy,
           sectionmap: sectionstrategy === "mapping" && pairs.length === 0 ? [{ source: "", target: "" }] : pairs
         }),
-        chips: STRATEGIES.map((value) => ({ value, label: text("rules_sections_" + value) }))
+        choices: STRATEGIES.map((value) => ({
+          value,
+          label: text("rules_sections_" + value),
+          hint: text("rules_sections_" + value + "_hint")
+        }))
       },
       void 0,
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-        lineNumber: 35,
+        lineNumber: 37,
         columnNumber: 9
       }
     ),
-    /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted fbm-hint", children: text("rules_sections_" + rules.sectionstrategy + "_hint") }, void 0, false, {
-      fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-      lineNumber: 45,
-      columnNumber: 9
-    }),
     rules.sectionstrategy === "mapping" && /* @__PURE__ */ jsxDEV("div", { className: "fbm-pairs", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "fbm-pair fbm-pair-head", "aria-hidden": "true", children: [
+        /* @__PURE__ */ jsxDEV("span", {}, void 0, false, {
+          fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
+          lineNumber: 54,
+          columnNumber: 17
+        }),
+        /* @__PURE__ */ jsxDEV("span", { className: "form-label", children: text("rules_section_source") }, void 0, false, {
+          fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
+          lineNumber: 55,
+          columnNumber: 17
+        }),
+        /* @__PURE__ */ jsxDEV("span", {}, void 0, false, {
+          fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
+          lineNumber: 56,
+          columnNumber: 17
+        }),
+        /* @__PURE__ */ jsxDEV("span", { className: "form-label", children: text("rules_section_target") }, void 0, false, {
+          fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
+          lineNumber: 57,
+          columnNumber: 17
+        }),
+        /* @__PURE__ */ jsxDEV("span", {}, void 0, false, {
+          fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
+          lineNumber: 58,
+          columnNumber: 17
+        })
+      ] }, void 0, true, {
+        fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
+        lineNumber: 53,
+        columnNumber: 13
+      }),
       pairs.map((pair, index) => /* @__PURE__ */ jsxDEV("div", { className: "fbm-pair", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "fbm-row-number", children: index + 1 }, void 0, false, {
+          fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
+          lineNumber: 61,
+          columnNumber: 17
+        }),
         /* @__PURE__ */ jsxDEV(
           "input",
           {
-            type: "text",
+            type: "number",
+            min: 1,
             inputMode: "numeric",
-            className: `fbm-input${missing && !/^[1-9][0-9]*$/.test(pair.source) ? " is-invalid" : ""}`,
+            className: `form-control${invalid(pair.source) ? " is-invalid" : ""}`,
             value: pair.source,
             "aria-label": text("rules_section_source"),
-            placeholder: text("rules_section_source"),
             onChange: (event) => setPair(index, "source", event.target.value)
           },
           void 0,
           false,
           {
             fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-            lineNumber: 48,
+            lineNumber: 62,
             columnNumber: 17
           }
         ),
         /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-right" }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-          lineNumber: 57,
+          lineNumber: 71,
           columnNumber: 17
         }),
         /* @__PURE__ */ jsxDEV(
           "input",
           {
-            type: "text",
+            type: "number",
+            min: 1,
             inputMode: "numeric",
-            className: `fbm-input${missing && !/^[1-9][0-9]*$/.test(pair.target) ? " is-invalid" : ""}`,
+            className: `form-control${invalid(pair.target) ? " is-invalid" : ""}`,
             value: pair.target,
             "aria-label": text("rules_section_target"),
-            placeholder: text("rules_section_target"),
             onChange: (event) => setPair(index, "target", event.target.value)
           },
           void 0,
           false,
           {
             fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-            lineNumber: 58,
+            lineNumber: 72,
             columnNumber: 17
           }
         ),
         /* @__PURE__ */ jsxDEV(
-          "button",
+          IconButton,
           {
-            type: "button",
-            className: "fbm-iconbtn",
-            title: text("rules_remove"),
-            onClick: () => onChange({ ...rules, sectionmap: pairs.filter((_, position) => position !== index) }),
-            children: [
-              /* @__PURE__ */ jsxDEV(Icon, { name: "trash" }, void 0, false, {
-                fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-                lineNumber: 73,
-                columnNumber: 21
-              }),
-              /* @__PURE__ */ jsxDEV("span", { className: "fbm-sr", children: text("rules_remove") }, void 0, false, {
-                fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-                lineNumber: 73,
-                columnNumber: 42
-              })
-            ]
+            icon: "trash",
+            label: text("rules_remove"),
+            tone: "danger",
+            onClick: () => onChange({ ...rules, sectionmap: pairs.filter((_, position) => position !== index) })
           },
           void 0,
-          true,
+          false,
           {
             fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-            lineNumber: 67,
+            lineNumber: 81,
             columnNumber: 17
           }
         )
       ] }, index, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-        lineNumber: 47,
+        lineNumber: 60,
         columnNumber: 41
       })),
-      /* @__PURE__ */ jsxDEV(
+      /* @__PURE__ */ jsxDEV("div", { className: "fbm-row-add", children: /* @__PURE__ */ jsxDEV(
         "button",
         {
           type: "button",
-          className: "fbm-btn",
+          className: "btn btn-outline-secondary",
           disabled: pairs.length >= MAX_SECTION_PAIRS,
           onClick: () => onChange({ ...rules, sectionmap: [...pairs, { source: "", target: "" }] }),
           children: [
             /* @__PURE__ */ jsxDEV(Icon, { name: "plus", gap: true }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-              lineNumber: 82,
-              columnNumber: 17
+              lineNumber: 95,
+              columnNumber: 21
             }),
             text("rules_section_add")
           ]
@@ -147,18 +173,22 @@ const SectionRules = /* @__PURE__ */ __name(({ rules, onChange, text, missing })
         true,
         {
           fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-          lineNumber: 76,
-          columnNumber: 13
+          lineNumber: 89,
+          columnNumber: 17
         }
-      )
+      ) }, void 0, false, {
+        fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
+        lineNumber: 88,
+        columnNumber: 13
+      })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-      lineNumber: 46,
+      lineNumber: 52,
       columnNumber: 49
     })
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/parameters/SectionRules.tsx",
-    lineNumber: 34,
+    lineNumber: 36,
     columnNumber: 12
   });
 }, "SectionRules");

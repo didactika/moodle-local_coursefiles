@@ -39,14 +39,12 @@ final class planning_materials {
      * @param array $pair Pair.
      * @param array $request Request.
      * @param array $operations Operations.
-     * @param array $issues Issues.
      * @param array $creations Creations.
      */
     public static function pair(
         array $pair,
         array $request,
         array &$operations,
-        array &$issues,
         array &$creations
     ): void {
         [, , $rules] = $request['loaded'];
@@ -60,7 +58,8 @@ final class planning_materials {
             return;
         }
         if (count($pair['source']) !== 1 || count($pair['target']) !== 1) {
-            $issues[] = ['reason' => 'ambiguous_course_pair', 'courses' => $pair, 'blocking' => false];
+            // More than one course on a side, or none that is single: it is not guessed, and it is counted as left out.
+            $request['notes']->add(migration_notes::NOT_RESOLVED);
             return;
         }
         $sourcecourse = $pair['source'][0];
@@ -80,7 +79,7 @@ final class planning_materials {
             'targetidentity'
         );
         foreach ($config['correspondences'] ?? [$config] as $correspondence) {
-            self::correspondence($correspondence, $request, $sourcescope, $operations, $issues, $creations);
+            self::correspondence($correspondence, $request, $sourcescope, $operations, $creations);
         }
     }
 
@@ -91,7 +90,6 @@ final class planning_materials {
      * @param array $request Request.
      * @param array $sourcescope Sourcescope.
      * @param array $operations Operations.
-     * @param array $issues Issues.
      * @param array $creations Creations.
      */
     private static function correspondence(
@@ -99,7 +97,6 @@ final class planning_materials {
         array $request,
         array &$sourcescope,
         array &$operations,
-        array &$issues,
         array &$creations
     ): void {
         $matched = false;
@@ -110,7 +107,6 @@ final class planning_materials {
                 $request,
                 $sourcescope,
                 $operations,
-                $issues,
                 $creations
             ) || $matched;
         }
@@ -128,7 +124,6 @@ final class planning_materials {
      * @param array $request Request.
      * @param array $sourcescope Sourcescope.
      * @param array $operations Operations.
-     * @param array $issues Issues.
      * @param array $creations Creations.
      * @return bool Result.
      */
@@ -138,14 +133,11 @@ final class planning_materials {
         array $request,
         array &$sourcescope,
         array &$operations,
-        array &$issues,
         array &$creations
     ): bool {
 
         [$profile, $revision, $rules] = $request['loaded'];
         $config = $request['config'];
-        $placements = $request['placements'];
-        $filechoices = $request['filechoices'];
         $excluded = $request['excluded'];
         $profileid = $request['profileid'];
         $sourcecourse = $request['sourcecourse'];
@@ -162,11 +154,7 @@ final class planning_materials {
             $request['notes']->add(migration_notes::NOT_PUBLIC);
             return true;
         }
-        $placementkey = $sourcecm->id . ':' . $targetcourse;
-        $override = $placements[$placementkey] ?? [];
-        if (!empty($override['exclude'])) {
-            return true;
-        }
+        $override = [];
         $captures += ['name' => $sourcecm->name, 'idnumber' => $sourcecm->idnumber];
         try {
             // Authorize public leaves before producing destination errors or creation requests.
@@ -208,7 +196,6 @@ final class planning_materials {
                     'targetdata',
                     'targetkey',
                     'config',
-                    'filechoices',
                     'excluded',
                     'profileid',
                     'sourcecm'
@@ -220,9 +207,7 @@ final class planning_materials {
         } catch (skipped_source $skipped) {
             $request['notes']->add(migration_notes::NO_DESTINATION_FOLDER);
         } catch (\moodle_exception $exception) {
-            $issues[] = ['sourcecmid' => $sourcecm->id, 'sourcecourseid' => $sourcecourse,
-            'targetcourseid' => $targetcourse,
-            'reason' => $exception->errorcode, 'blocking' => false];
+            $request['notes']->add(migration_notes::NOT_RESOLVED);
         }
         return true;
     }

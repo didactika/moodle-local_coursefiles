@@ -13,7 +13,7 @@
 import type {Bucket, Summary, Text} from '../../types';
 import StatTile from '../ui/StatTile';
 
-export type Tab = 'decisions' | 'files' | 'folders';
+export type Tab = 'files' | 'folders';
 
 interface SummaryTilesProps {
     summary: Summary;
@@ -24,7 +24,6 @@ interface SummaryTilesProps {
 }
 
 const SummaryTiles = ({summary, text, onFiles, onTab, active}: SummaryTilesProps) => {
-    const decisions = summary.conflicts + summary.openissues;
     const onFilesTab = active.tab === 'files';
     return <div className="fbm-tiles" data-region="summary">
         <StatTile
@@ -55,13 +54,13 @@ const SummaryTiles = ({summary, text, onFiles, onTab, active}: SummaryTilesProps
             onClick={() => onFiles('existing')}
         />
         <StatTile
-            label={text('summary_conflicts')}
-            value={decisions}
-            tone={decisions > 0 ? 'info' : 'neutral'}
-            icon="hand-pointer"
-            hint={decisions > 0 ? text('summary_conflicts_hint') : text('summary_conflicts_none')}
-            active={active.tab === 'decisions'}
-            onClick={() => onTab('decisions')}
+            label={text('summary_left')}
+            value={summary.skipped}
+            tone="neutral"
+            icon="hand"
+            hint={text('summary_left_hint')}
+            active={onFilesTab && active.bucket === 'left'}
+            onClick={() => onFiles('left')}
         />
         <StatTile
             label={text('summary_folders')}

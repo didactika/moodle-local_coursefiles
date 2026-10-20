@@ -59,7 +59,6 @@ final class planning_file {
         $targetdata = $context['targetdata'];
         $targetkey = $context['targetkey'];
         $config = $context['config'];
-        $filechoices = $context['filechoices'];
         $excluded = $context['excluded'];
         $profileid = $context['profileid'];
         $loaded = $context['loaded'];
@@ -90,10 +89,11 @@ final class planning_file {
         'sourcefoldername' => $sourcecm->name, 'existing' => $existingdata,
         'duplicate' => $duplicate,
         'sourceidentity' => $sourceidentity,
-        'targetidentity' => $targetidentity];
+        'targetidentity' => $targetidentity,
+        'different' => $existingdata !== null && copy_decision::classify($source, $existingdata) === 'blocked_content'];
         $opkey = hash('sha256', $file->get_pathnamehash() . ':' . ($targetkey ?: $target->id));
         $choicekey = $file->get_pathnamehash() . ':' . $targetcourse;
-        $decision = self::chosen($decision, $filechoices[$choicekey] ?? '', $file, (int) $cm->course, $targetcourse);
+        $decision = self::settled($decision);
         return ['sourcehash' => $file->get_pathnamehash(), 'targetcmid' => $target->id,
         'decision' => $decision, 'snapshot' => $snapshot,
         'included' => !in_array($choicekey, $excluded, true) && !self::unsettled($decision),
@@ -122,41 +122,23 @@ final class planning_file {
     }
 
     /**
-     * Apply what the person chose for a file that is in conflict.
+     * A file that would need a person to decide stays as it is in the destination, so no migration waits for anybody.
      *
-     * @param string $decision What was decided without the person.
-     * @param string $choice overwrite, skip or an empty string.
-     * @param \stored_file $file The source file.
-     * @param int $sourcecourse The course the file comes from.
-     * @param int $targetcourse The course it would go to.
-     * @return string The decision; skip_conflict for a conflict left as it is and overwrite for one that was overwritten.
+     * @param string $decision What was decided so far.
+     * @return string skip_conflict for a file that was held back; the decision otherwise.
      */
-    private static function chosen(
-        string $decision,
-        string $choice,
-        \stored_file $file,
-        int $sourcecourse,
-        int $targetcourse
-    ): string {
-        if ($choice === 'skip' && str_starts_with($decision, 'blocked_')) {
-            // The conflict is settled and the file stays out of the migration.
-            return 'skip_conflict';
-        }
-        if ($choice === 'overwrite' && $decision === 'blocked_content') {
-            author_policy::require_native_copy($file, $sourcecourse, $targetcourse);
-            return 'overwrite';
-        }
-        return $decision;
+    private static function settled(string $decision): string {
+        return str_starts_with($decision, 'blocked_') ? 'skip_conflict' : $decision;
     }
 
     /**
      * Whether a decision keeps the file out of the migration until a person changes it.
      *
      * @param string $decision The decision.
-     * @return bool True for a conflict or a conflict that was left as it is.
+     * @return bool True for a conflict that was left as it is.
      */
     private static function unsettled(string $decision): bool {
-        return str_starts_with($decision, 'blocked_') || $decision === 'skip_conflict';
+        return $decision === 'skip_conflict';
     }
 
     /**
@@ -181,6 +163,8 @@ final class planning_file {
         $duplicate = null;
         if ($decision === 'blocked_content' && ($config['same_path_different_content'] ?? '') === 'overwrite') {
                 $decision = 'overwrite';
+        } else if ($decision === 'blocked_content' && ($config['same_path_different_content'] ?? '') === 'skip') {
+            $decision = 'skip_conflict';
         } else if ($decision === 'blocked_attribution' && ($config['identical_content'] ?? '') === 'skip') {
             $decision = 'skip_content';
             $duplicate = $existingdata;

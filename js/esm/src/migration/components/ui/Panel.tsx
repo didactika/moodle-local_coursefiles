@@ -23,16 +23,16 @@ interface PanelProps {
     children: ReactNode;
 }
 
-const Panel = ({title, icon, count, actions, flush = false, region, children}: PanelProps) => <section className="fbm-panel" data-region={region}>
-    <header className="fbm-panel-head">
-        <h3 className="fbm-panel-title">
+const Panel = ({title, icon, count, actions, flush = false, region, children}: PanelProps) => <section className="card" data-region={region}>
+    <header className="card-header d-flex flex-wrap align-items-center justify-content-between">
+        <h3 className="card-title h5 mb-0 d-flex align-items-center">
             <span className="fbm-panel-icon"><Icon name={icon} gap /></span>
             {title}
-            {count !== undefined && <span className="fbm-count">{count}</span>}
+            {count !== undefined && <span className="badge rounded-pill fbm-count">{count}</span>}
         </h3>
         {actions && <div className="fbm-panel-actions">{actions}</div>}
     </header>
-    <div className={flush ? 'fbm-panel-flush' : 'fbm-panel-body'}>{children}</div>
+    <div className={flush ? 'card-body p-0' : 'card-body'}>{children}</div>
 </section>;
 
 export default Panel;

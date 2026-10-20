@@ -79,7 +79,7 @@ export const createRows = async(id: string) => {
                     }
                 }
                 input.className = column.type === 'checkbox' ? 'filebank-row-check'
-                    : (column.options ? 'fbm-select fbm-select-fill' : 'fbm-input');
+                    : (column.options ? 'form-select w-100' : 'form-control');
                 if (column.type !== 'checkbox') {
                     input.value = String(value[column.key] || column.options?.[0]?.value || '');
                 }

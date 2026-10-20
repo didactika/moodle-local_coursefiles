@@ -27,6 +27,10 @@
     "eject": "risky",
     "wrap": "risky"
   },
+  "migration/components/parameters/ProfilePicker": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "migration/components/parameters/SectionRules": {
     "eject": "risky",
     "wrap": "risky"
@@ -35,27 +39,11 @@
     "eject": "risky",
     "wrap": "risky"
   },
-  "migration/components/review/DecisionList": {
-    "eject": "risky",
-    "wrap": "risky"
-  },
-  "migration/components/review/DecisionsPanel": {
-    "eject": "risky",
-    "wrap": "risky"
-  },
-  "migration/components/review/EditParametersModal": {
-    "eject": "risky",
-    "wrap": "risky"
-  },
   "migration/components/review/FilesPanel": {
     "eject": "risky",
     "wrap": "risky"
   },
   "migration/components/review/FoldersPanel": {
-    "eject": "risky",
-    "wrap": "risky"
-  },
-  "migration/components/review/NatureCard": {
     "eject": "risky",
     "wrap": "risky"
   },
@@ -87,6 +75,10 @@
     "eject": "risky",
     "wrap": "risky"
   },
+  "migration/components/ui/ChoiceCards": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "migration/components/ui/ConfirmModal": {
     "eject": "risky",
     "wrap": "risky"
@@ -95,11 +87,19 @@
     "eject": "risky",
     "wrap": "risky"
   },
+  "migration/components/ui/FilterMenu": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "migration/components/ui/FloatingBar": {
     "eject": "risky",
     "wrap": "risky"
   },
   "migration/components/ui/Icon": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "migration/components/ui/IconButton": {
     "eject": "risky",
     "wrap": "risky"
   },

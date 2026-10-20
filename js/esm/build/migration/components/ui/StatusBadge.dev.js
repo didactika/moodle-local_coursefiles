@@ -12,6 +12,7 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+import { badgeClasses } from "../../lib/tones";
 import Icon from "./Icon";
 const LOOKS = {
   reviewable: { tone: "info", icon: "clipboard-check" },
@@ -38,16 +39,16 @@ const lookOf = /* @__PURE__ */ __name((status) => {
 }, "lookOf");
 const StatusBadge = /* @__PURE__ */ __name(({ status, label }) => {
   const look = lookOf(status);
-  return /* @__PURE__ */ jsxDEV("span", { className: `fbm-badge tone-${look.tone}`, children: [
+  return /* @__PURE__ */ jsxDEV("span", { className: badgeClasses(look.tone), children: [
     /* @__PURE__ */ jsxDEV(Icon, { name: look.icon, gap: true, spin: status === "running" }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/ui/StatusBadge.tsx",
-      lineNumber: 59,
+      lineNumber: 60,
       columnNumber: 9
     }),
     label
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/ui/StatusBadge.tsx",
-    lineNumber: 58,
+    lineNumber: 59,
     columnNumber: 12
   });
 }, "StatusBadge");

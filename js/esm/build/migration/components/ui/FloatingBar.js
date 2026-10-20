@@ -1,4 +1,4 @@
-import i from"./Icon";import{jsx as a,jsxs as o}from"react/jsx-runtime";/**
+import s from"./Icon";import{jsx as a,jsxs as o}from"react/jsx-runtime";/**
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
@@ -9,4 +9,4 @@ import i from"./Icon";import{jsx as a,jsxs as o}from"react/jsx-runtime";/**
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */const l=({summary:n,children:s,onClear:e,clearLabel:t})=>o("div",{className:"fbm-floating",role:"status","data-region":"bulk-actions",children:[a("span",{className:"fbm-floating-summary",children:n}),a("div",{className:"fbm-floating-actions",children:s}),o("button",{type:"button",className:"fbm-floating-clear",onClick:e,title:t,children:[a(i,{name:"xmark"}),a("span",{className:"fbm-sr",children:t})]})]});var m=l;export{m as default};
+ */const l=({summary:n,children:e,onClear:i,clearLabel:t})=>o("div",{className:"fbm-floating",role:"status","data-region":"bulk-actions",children:[a("span",{className:"fbm-floating-summary",children:n}),a("div",{className:"fbm-floating-actions",children:e}),o("button",{type:"button",className:"fbm-floating-clear",onClick:i,title:t,children:[a(s,{name:"xmark"}),a("span",{className:"filebank-visually-hidden",children:t})]})]});var m=l;export{m as default};

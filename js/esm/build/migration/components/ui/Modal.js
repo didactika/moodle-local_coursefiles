@@ -1,4 +1,4 @@
-import{useEffect as b,useRef as g}from"react";import u from"./Icon";import{jsx as o,jsxs as l}from"react/jsx-runtime";/**
+import{useEffect as b,useRef as u}from"react";import g from"./Icon";import{jsx as o,jsxs as l}from"react/jsx-runtime";/**
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
@@ -9,4 +9,4 @@ import{useEffect as b,useRef as g}from"react";import u from"./Icon";import{jsx a
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */const N=({open:a,title:m,onClose:n,closeLabel:t,children:c,footer:s,size:f="medium",busy:d=!1})=>{const i=g(null);b(()=>{const e=i.current;e&&(a&&!e.open?e.showModal():!a&&e.open&&e.close())},[a]);const r=()=>{d||n()};return o("dialog",{ref:i,className:`fbm-dialog fbm-dialog-${f}`,onCancel:e=>{e.preventDefault()},children:a&&l("div",{className:"fbm-dialog-body",children:[l("header",{className:"fbm-dialog-head",children:[o("h3",{className:"fbm-dialog-title",children:m}),l("button",{type:"button",className:"fbm-iconbtn",onClick:r,title:t,disabled:d,children:[o(u,{name:"xmark"}),o("span",{className:"fbm-sr",children:t})]})]}),o("div",{className:"fbm-dialog-scroll",children:c}),s&&o("footer",{className:"fbm-dialog-foot",children:s})]})})};var v=N;export{v as default};
+ */const N=({open:a,title:n,onClose:m,closeLabel:t,children:c,footer:d,size:f="medium",busy:s=!1})=>{const i=u(null);b(()=>{const e=i.current;e&&(a&&!e.open?e.showModal():!a&&e.open&&e.close())},[a]);const r=()=>{s||m()};return o("dialog",{ref:i,className:`fbm-dialog fbm-dialog-${f}`,onCancel:e=>{e.preventDefault()},children:a&&l("div",{className:"modal-content fbm-dialog-body",children:[l("header",{className:"modal-header fbm-dialog-head",children:[o("h3",{className:"modal-title h5",children:n}),l("button",{type:"button",className:"btn btn-link btn-icon",onClick:r,title:t,disabled:s,children:[o(g,{name:"xmark"}),o("span",{className:"filebank-visually-hidden",children:t})]})]}),o("div",{className:"modal-body fbm-dialog-scroll",children:c}),d&&o("footer",{className:"modal-footer fbm-dialog-foot",children:d})]})})};var v=N;export{v as default};

@@ -35,7 +35,7 @@ final class migration_files {
     /**
      * The groups the files can be filtered by.
      */
-    public const BUCKETS = ['', 'copy', 'existing', 'conflict', 'left'];
+    public const BUCKETS = ['', 'copy', 'existing', 'left'];
 
     /**
      * Read a page of files.
@@ -137,7 +137,6 @@ final class migration_files {
         $groups = [
             'copy' => ["o.decision IN ('copy', 'overwrite')", []],
             'existing' => ["o.decision IN ('skip_identical', 'skip_content')", []],
-            'conflict' => [$DB->sql_like('o.decision', ':conflict'), ['conflict' => 'blocked%']],
             'left' => ["o.decision = 'skip_conflict'", []],
         ];
         if ($bucket !== '') {
@@ -162,7 +161,7 @@ final class migration_files {
      */
     private static function counts(int $planid): array {
         global $DB;
-        $counts = ['all' => 0, 'copy' => 0, 'existing' => 0, 'conflict' => 0, 'left' => 0];
+        $counts = ['all' => 0, 'copy' => 0, 'existing' => 0, 'left' => 0];
         $rows = $DB->get_records_sql(
             'SELECT decision, COUNT(1) AS total FROM {local_filebank_operation} WHERE planid = :planid GROUP BY decision',
             ['planid' => $planid]
@@ -170,7 +169,7 @@ final class migration_files {
         foreach ($rows as $row) {
             $group = in_array($row->decision, ['copy', 'overwrite'], true) ? 'copy'
                 : (in_array($row->decision, ['skip_identical', 'skip_content'], true) ? 'existing'
-                : ($row->decision === 'skip_conflict' ? 'left' : 'conflict'));
+                : 'left');
             $counts[$group] += (int) $row->total;
             $counts['all'] += (int) $row->total;
         }

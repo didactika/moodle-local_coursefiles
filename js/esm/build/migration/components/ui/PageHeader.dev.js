@@ -16,7 +16,7 @@ const PageHeader = /* @__PURE__ */ __name(({ title, subtitle, badges, back, acti
   /* @__PURE__ */ jsxDEV("div", { className: "fbm-header-title", children: [
     back,
     /* @__PURE__ */ jsxDEV("div", { className: "fbm-header-line", children: [
-      /* @__PURE__ */ jsxDEV("h2", { className: "fbm-h2", children: title }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("h2", { className: "h2", children: title }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/PageHeader.tsx",
         lineNumber: 28,
         columnNumber: 13
@@ -27,7 +27,7 @@ const PageHeader = /* @__PURE__ */ __name(({ title, subtitle, badges, back, acti
       lineNumber: 27,
       columnNumber: 9
     }),
-    subtitle && /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted fbm-header-subtitle", children: subtitle }, void 0, false, {
+    subtitle && /* @__PURE__ */ jsxDEV("p", { className: "text-muted fbm-header-subtitle", children: subtitle }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/ui/PageHeader.tsx",
       lineNumber: 31,
       columnNumber: 22

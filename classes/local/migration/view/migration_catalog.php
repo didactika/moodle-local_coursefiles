@@ -40,6 +40,11 @@ final class migration_catalog {
     public const STATES = ['reviewable', 'queued', 'running', 'partial', 'completed', 'cancelled'];
 
     /**
+     * How many profiles, and how many earlier migrations, a list of choices offers at a time.
+     */
+    public const CHOICES = 10;
+
+    /**
      * Read a page of migrations, the newest first.
      *
      * @param string $search Part of the name of the profile.
@@ -82,12 +87,12 @@ final class migration_catalog {
         $migrations = [];
         foreach ($records as $record) {
             $document = json_decode($record->configjson, true);
-            $own = $totals[$record->id] ?? ['files' => 0, 'towrite' => 0, 'conflicts' => 0, 'done' => 0];
+            $own = $totals[$record->id] ?? ['files' => 0, 'towrite' => 0, 'done' => 0];
             $migrations[] = ['id' => (int) $record->id, 'profile' => display::plain($record->name),
                 'source' => self::side($document, 'source'), 'target' => self::side($document, 'target'),
                 'state' => $record->status, 'statelabel' => display::outcome($record->status),
                 'timecreated' => (int) $record->timecreated, 'datelabel' => userdate($record->timecreated),
-                'files' => $own['files'], 'towrite' => $own['towrite'], 'conflicts' => $own['conflicts'], 'done' => $own['done'],
+                'files' => $own['files'], 'towrite' => $own['towrite'], 'done' => $own['done'],
                 'candelete' => !in_array($record->status, ['queued', 'running'], true)];
         }
         return ['total' => $total, 'counts' => $counts, 'migrations' => $migrations];
@@ -96,13 +101,32 @@ final class migration_catalog {
     /**
      * What a new migration can be asked to do: the profiles, the filters of each profile and the rules to start from.
      *
-     * @return array The profiles that are enabled, with their filters and rules, and the kinds of source a rule can read.
+     * A list of choices is never the whole of what there is: it holds the first ten that match the search, the profile that is
+     * already chosen, and the last ten migrations of that profile to take the folders from.
+     *
+     * @param string $search Part of the name of the profiles to offer.
+     * @param int $profileid The profile that is chosen, or zero.
+     * @return array The profiles, the kinds of source a rule can read and the earlier migrations of the chosen profile.
      */
-    public static function options(): array {
+    public static function options(string $search = '', int $profileid = 0): array {
         global $DB;
         require_capability('local/filebank:planmigration', \context_system::instance());
+        $conditions = ['enabled = 1'];
+        $params = [];
+        $search = trim($search);
+        if ($search !== '') {
+            $conditions[] = $DB->sql_like('name', ':search', false);
+            $params['search'] = '%' . $DB->sql_like_escape($search) . '%';
+        }
+        $found = $DB->get_records_select('local_filebank', implode(' AND ', $conditions), $params, 'name', '*', 0, self::CHOICES);
+        if ($profileid > 0 && !isset($found[$profileid])) {
+            $own = $DB->get_record('local_filebank', ['id' => $profileid, 'enabled' => 1]);
+            if ($own) {
+                $found = [$profileid => $own] + $found;
+            }
+        }
         $profiles = [];
-        foreach ($DB->get_records('local_filebank', ['enabled' => 1], 'name') as $profile) {
+        foreach ($found as $profile) {
             [, , $rules] = profiles::load($profile->id);
             $dimensions = [];
             foreach (course_scope::choices($rules) as $key => $label) {
@@ -115,7 +139,35 @@ final class migration_catalog {
         foreach (\local_filebank\local\catalog\source_registry::module_names() as $module => $label) {
             $modules[] = ['value' => (string) $module, 'label' => (string) $label];
         }
-        return ['profiles' => $profiles, 'modules' => $modules];
+        return ['profiles' => $profiles, 'modules' => $modules, 'previous' => self::previous($profileid)];
+    }
+
+    /**
+     * The last migrations of a profile, to take their folders from.
+     *
+     * @param int $profileid The profile, or zero for none.
+     * @return array The identifier and a short name of each one.
+     */
+    private static function previous(int $profileid): array {
+        global $DB;
+        if ($profileid <= 0) {
+            return [];
+        }
+        $previous = [];
+        $records = $DB->get_records(
+            'local_filebank_plan',
+            ['profileid' => $profileid],
+            'id DESC',
+            'id, configjson',
+            0,
+            self::CHOICES
+        );
+        foreach ($records as $record) {
+            $document = json_decode($record->configjson, true);
+            $previous[] = ['id' => (int) $record->id, 'label' => '#' . $record->id . ' · ' . self::side($document, 'source')
+                . ' → ' . self::side($document, 'target')];
+        }
+        return $previous;
     }
 
     /**
@@ -147,7 +199,7 @@ final class migration_catalog {
      * What the files of each migration of a page are doing.
      *
      * @param int[] $planids The migrations of the page.
-     * @return array The files, the ones to write, the ones with a decision open and the ones done, by migration.
+     * @return array The files, the ones to write and the ones done, by migration.
      */
     private static function totals(array $planids): array {
         global $DB;
@@ -158,7 +210,6 @@ final class migration_catalog {
         $rows = $DB->get_records_sql(
             "SELECT planid AS id, COUNT(1) AS files,
                     SUM(CASE WHEN included = 1 AND decision IN ('copy', 'overwrite') THEN 1 ELSE 0 END) AS towrite,
-                    SUM(CASE WHEN decision LIKE 'blocked%' THEN 1 ELSE 0 END) AS conflicts,
                     SUM(CASE WHEN included = 1 AND state <> 'pending' THEN 1 ELSE 0 END) AS done
                FROM {local_filebank_operation}
               WHERE planid $insql
@@ -168,7 +219,7 @@ final class migration_catalog {
         $totals = [];
         foreach ($rows as $row) {
             $totals[(int) $row->id] = ['files' => (int) $row->files, 'towrite' => (int) $row->towrite,
-                'conflicts' => (int) $row->conflicts, 'done' => (int) $row->done];
+                'done' => (int) $row->done];
         }
         return $totals;
     }

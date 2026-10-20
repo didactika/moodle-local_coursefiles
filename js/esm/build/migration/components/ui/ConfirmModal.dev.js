@@ -46,12 +46,12 @@ const ConfirmModal = /* @__PURE__ */ __name(({
     onClose: onCancel,
     closeLabel: cancelLabel,
     footer: /* @__PURE__ */ jsxDEV(Fragment, { children: [
-      /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn", onClick: onCancel, disabled: busy, children: cancelLabel }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: onCancel, disabled: busy, children: cancelLabel }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
         lineNumber: 41,
         columnNumber: 9
       }),
-      /* @__PURE__ */ jsxDEV("button", { type: "button", className: `fbm-btn fbm-btn-${tone}`, onClick: onConfirm, disabled: busy, children: [
+      /* @__PURE__ */ jsxDEV("button", { type: "button", className: `btn btn-${tone}`, onClick: onConfirm, disabled: busy, children: [
         busy && /* @__PURE__ */ jsxDEV(Icon, { name: "spinner", gap: true, spin: true }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/ui/ConfirmModal.tsx",
           lineNumber: 43,

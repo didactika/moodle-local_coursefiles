@@ -11,6 +11,7 @@
  */
 import type {ReactNode} from 'react';
 import Icon from './Icon';
+import {alertClasses} from '../../lib/tones';
 import type {Tone} from './StatTile';
 
 const ICONS: Record<string, string> = {
@@ -31,7 +32,7 @@ interface AlertProps {
 }
 
 const Alert = ({tone = 'info', children, actions, live = false}: AlertProps) => <div
-    className={`fbm-alert tone-${tone}`}
+    className={`${alertClasses(tone)} fbm-alert`}
     role={live ? 'alert' : 'status'}
 >
     <span className="fbm-alert-icon"><Icon name={ICONS[tone]} /></span>

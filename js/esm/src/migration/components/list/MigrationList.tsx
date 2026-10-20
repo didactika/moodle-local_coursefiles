@@ -16,7 +16,8 @@ import {deleteMigrations, listMigrations} from '../../services/api';
 import type {MigrationPage, Text} from '../../types';
 import Alert from '../ui/Alert';
 import Check from '../ui/Check';
-import Chips from '../ui/Chips';
+import FilterMenu from '../ui/FilterMenu';
+import IconButton from '../ui/IconButton';
 import ConfirmModal from '../ui/ConfirmModal';
 import EmptyState from '../ui/EmptyState';
 import FloatingBar from '../ui/FloatingBar';
@@ -104,7 +105,7 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
         <PageHeader
             title={text('list_title')}
             subtitle={text('list_subtitle')}
-            actions={hasAny && <button type="button" className="fbm-btn fbm-btn-primary" onClick={onNew} data-action="new-migration">
+            actions={hasAny && <button type="button" className="btn btn-primary" onClick={onNew} data-action="new-migration">
                 <Icon name="plus" gap />{text('new_migration')}
             </button>}
         />
@@ -114,36 +115,33 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
             icon="right-left"
             title={text('list_empty_title')}
             text={text('list_empty_text')}
-            actions={<button type="button" className="fbm-btn fbm-btn-primary" onClick={onNew} data-action="new-migration">
+            actions={<button type="button" className="btn btn-primary" onClick={onNew} data-action="new-migration">
                 <Icon name="plus" gap />{text('new_migration')}
             </button>}
         />}
         {data !== null && (countOf('') > 0 || search !== '' || state !== '') && <>
             <div className="fbm-toolbar">
                 <SearchBox id="fbm-list-search" value={search} onChange={setSearch} placeholder={text('list_search')} clearLabel={text('clear')} />
-                <select
-                    className="fbm-select fbm-perpage"
-                    aria-label={text('per_page')}
-                    value={perpage}
-                    onChange={(event) => setPerpage(Number(event.target.value))}
-                >
-                    {pagesizes.map((size) => <option key={size} value={size}>{text('per_page_n', {n: size})}</option>)}
-                </select>
+                <FilterMenu
+                    label={text('filters')}
+                    resetLabel={text('filters_reset')}
+                    groups={[{
+                        id: 'state',
+                        label: text('list_states'),
+                        value: state,
+                        onChange: setState,
+                        options: STATES.map((value) => ({
+                            value,
+                            label: value === '' ? text('all') : text('state_' + value),
+                            count: countOf(value),
+                        })),
+                    }]}
+                />
             </div>
-            <Chips
-                label={text('list_states')}
-                value={state}
-                onChange={setState}
-                chips={STATES.map((value) => ({
-                    value,
-                    label: value === '' ? text('all') : text('state_' + value),
-                    count: countOf(value),
-                }))}
-            />
             {rows.length === 0
                 ? <EmptyState icon="magnifying-glass" title={text('list_nomatch_title')} text={text('list_nomatch_text')} />
-                : <div className="fbm-table-wrap">
-                    <table className="fbm-table">
+                : <div className="table-responsive">
+                    <table className="table table-hover">
                         <thead>
                             <tr>
                                 <th className="fbm-col-check">
@@ -160,7 +158,7 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
                                 <th>{text('col_files')}</th>
                                 <th>{text('col_state')}</th>
                                 <th>{text('col_created')}</th>
-                                <th><span className="fbm-sr">{text('col_actions')}</span></th>
+                                <th><span className="filebank-visually-hidden">{text('col_actions')}</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -174,7 +172,7 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
                                     />
                                 </td>
                                 <td>
-                                    <button type="button" className="fbm-link" onClick={() => onOpen(row.id)}>
+                                    <button type="button" className="btn btn-link p-0 fbm-link" onClick={() => onOpen(row.id)}>
                                         <strong>#{row.id}</strong> {row.profile}
                                     </button>
                                 </td>
@@ -186,10 +184,7 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
                                 <td>
                                     <span className="fbm-files-cell">
                                         <strong>{row.towrite}</strong>
-                                        <span className="fbm-muted">{text('list_of_files', {n: row.files})}</span>
-                                        {row.conflicts > 0 && <span className="fbm-badge tone-info">
-                                            <Icon name="hand-pointer" gap />{text('list_decisions', {n: row.conflicts})}
-                                        </span>}
+                                        <span className="text-muted">{text('list_of_files', {n: row.files})}</span>
                                     </span>
                                 </td>
                                 <td>
@@ -200,32 +195,33 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
                                         label={text('progress')}
                                     />}
                                 </td>
-                                <td className="fbm-muted">{row.datelabel}</td>
+                                <td className="text-muted">{row.datelabel}</td>
                                 <td className="fbm-col-actions">
-                                    <button type="button" className="fbm-btn fbm-btn-small" onClick={() => onOpen(row.id)}>
-                                        {text('open')}<Icon name="arrow-right" />
-                                    </button>
-                                    {row.candelete && <button
-                                        type="button"
-                                        className="fbm-iconbtn tone-danger"
-                                        title={text('delete')}
-                                        onClick={() => setAsking([row.id])}
-                                    >
-                                        <Icon name="trash" /><span className="fbm-sr">{text('delete')}</span>
-                                    </button>}
+                                    <div className="fbm-actions">
+                                        <IconButton icon="eye" label={text('open')} tone="primary" onClick={() => onOpen(row.id)} />
+                                        {row.candelete && <IconButton icon="trash" label={text('delete')} tone="danger" onClick={() => setAsking([row.id])} />}
+                                    </div>
                                 </td>
                             </tr>)}
                         </tbody>
                     </table>
                 </div>}
-            <Pagination page={page} perpage={perpage} total={data.total} onPage={setPage} text={text} />
+            <Pagination
+                page={page}
+                perpage={perpage}
+                total={data.total}
+                onPage={setPage}
+                text={text}
+                sizes={pagesizes}
+                onPerPage={setPerpage}
+            />
         </>}
         {chosen.length > 0 && <FloatingBar
             summary={text('selected_n', {n: chosen.length})}
             clearLabel={text('clear_selection')}
             onClear={() => setSelected([])}
         >
-            <button type="button" className="fbm-pill tone-danger" onClick={() => setAsking(chosen)}>
+            <button type="button" className="btn btn-sm btn-danger" onClick={() => setAsking(chosen)}>
                 <Icon name="trash" gap />{text('delete_selected')}
             </button>
         </FloatingBar>}
@@ -241,7 +237,7 @@ const MigrationList = ({text, pagesizes, onOpen, onNew}: MigrationListProps) => 
             onCancel={() => setAsking(null)}
         >
             <p>{text('delete_text', {n: asking?.length ?? 0})}</p>
-            <p className="fbm-muted">{text('delete_hint')}</p>
+            <p className="text-muted">{text('delete_hint')}</p>
         </ConfirmModal>
     </div>;
 };

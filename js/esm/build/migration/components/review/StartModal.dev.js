@@ -56,11 +56,11 @@ const StartModal = /* @__PURE__ */ __name(({ open, migration, text, busy, onConf
             lineNumber: 40,
             columnNumber: 41
           }),
-          /* @__PURE__ */ jsxDEV("li", { className: "fbm-muted", children: [
+          /* @__PURE__ */ jsxDEV("li", { className: "text-muted", children: [
             /* @__PURE__ */ jsxDEV("strong", { children: summary.existing }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
               lineNumber: 41,
-              columnNumber: 39
+              columnNumber: 40
             }),
             " ",
             text("start_existing")
@@ -79,14 +79,9 @@ const StartModal = /* @__PURE__ */ __name(({ open, migration, text, busy, onConf
           lineNumber: 43,
           columnNumber: 37
         }),
-        summary.conflicts + summary.openissues > 0 && /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted", children: text("start_left", { n: summary.conflicts + summary.openissues }) }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: text("start_background") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
           lineNumber: 44,
-          columnNumber: 56
-        }),
-        /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted", children: text("start_background") }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/review/StartModal.tsx",
-          lineNumber: 47,
           columnNumber: 9
         })
       ]

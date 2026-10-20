@@ -31,7 +31,7 @@ const ActionPanel = /* @__PURE__ */ __name(({ migration, text, busy, onStart, on
           lineNumber: 35,
           columnNumber: 17
         }),
-        /* @__PURE__ */ jsxDEV("span", { className: "fbm-muted", children: text("run_running_hint") }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: text("run_running_hint") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/ActionPanel.tsx",
           lineNumber: 36,
           columnNumber: 17
@@ -41,7 +41,7 @@ const ActionPanel = /* @__PURE__ */ __name(({ migration, text, busy, onStart, on
         lineNumber: 33,
         columnNumber: 13
       }),
-      run.cancancel && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn fbm-btn-danger", onClick: onStop, disabled: busy, children: [
+      run.cancancel && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-danger", onClick: onStop, disabled: busy, children: [
         /* @__PURE__ */ jsxDEV(Icon, { name: "stop", gap: true }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/ActionPanel.tsx",
           lineNumber: 39,
@@ -92,7 +92,7 @@ const ActionPanel = /* @__PURE__ */ __name(({ migration, text, busy, onStart, on
       Alert,
       {
         tone: "warning",
-        actions: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn fbm-btn-primary", onClick: onRework, disabled: busy, children: [
+        actions: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: onRework, disabled: busy, children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: "rotate", gap: true }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/ActionPanel.tsx",
             lineNumber: 55,
@@ -128,7 +128,7 @@ const ActionPanel = /* @__PURE__ */ __name(({ migration, text, busy, onStart, on
       Alert,
       {
         tone: "info",
-        actions: migration.editable && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn fbm-btn-primary", onClick: onEdit, disabled: busy, children: [
+        actions: migration.editable && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: onEdit, disabled: busy, children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: "sliders", gap: true }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/ActionPanel.tsx",
             lineNumber: 65,
@@ -166,7 +166,7 @@ const ActionPanel = /* @__PURE__ */ __name(({ migration, text, busy, onStart, on
         lineNumber: 73,
         columnNumber: 13
       }),
-      /* @__PURE__ */ jsxDEV("span", { className: "fbm-muted", children: summary.conflicts + summary.openissues > 0 ? text("start_with_decisions", { n: summary.conflicts + summary.openissues }) : text("start_all_set") }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: text("start_all_set") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/ActionPanel.tsx",
         lineNumber: 74,
         columnNumber: 13
@@ -176,20 +176,20 @@ const ActionPanel = /* @__PURE__ */ __name(({ migration, text, busy, onStart, on
       lineNumber: 72,
       columnNumber: 9
     }),
-    migration.canexecute ? /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn fbm-btn-success fbm-btn-large", onClick: onStart, disabled: busy, "data-action": "start", children: [
+    migration.canexecute ? /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-success btn-lg", onClick: onStart, disabled: busy, "data-action": "start", children: [
       /* @__PURE__ */ jsxDEV(Icon, { name: "play", gap: true }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/ActionPanel.tsx",
-        lineNumber: 82,
+        lineNumber: 78,
         columnNumber: 17
       }),
       text("start")
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/ActionPanel.tsx",
-      lineNumber: 81,
+      lineNumber: 77,
       columnNumber: 15
-    }) : /* @__PURE__ */ jsxDEV("span", { className: "fbm-muted", children: text("start_no_permission") }, void 0, false, {
+    }) : /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: text("start_no_permission") }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/ActionPanel.tsx",
-      lineNumber: 84,
+      lineNumber: 80,
       columnNumber: 15
     })
   ] }, void 0, true, {

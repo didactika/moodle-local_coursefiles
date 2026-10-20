@@ -25,7 +25,7 @@ const FloatingBar = ({summary, children, onClear, clearLabel}: FloatingBarProps)
     <span className="fbm-floating-summary">{summary}</span>
     <div className="fbm-floating-actions">{children}</div>
     <button type="button" className="fbm-floating-clear" onClick={onClear} title={clearLabel}>
-        <Icon name="xmark" /><span className="fbm-sr">{clearLabel}</span>
+        <Icon name="xmark" /><span className="filebank-visually-hidden">{clearLabel}</span>
     </button>
 </div>;
 

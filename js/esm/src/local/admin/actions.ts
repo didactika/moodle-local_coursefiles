@@ -36,6 +36,10 @@ export const createBulkActions = (form: HTMLFormElement) => {
             all.checked = checks.length > 0 && count === checks.length;
             all.indeterminate = count > 0 && count < checks.length;
         }
+        const counter = form.querySelector<HTMLElement>('[data-filebank-bulk-count]');
+        if (counter) {
+            counter.textContent = (counter.dataset.template ?? '').replace('__COUNT__', String(count));
+        }
         const bulk = form.querySelector<HTMLElement>(Selectors.bulkActions)!;
         if (bulk) {
             bulk.hidden = count === 0;

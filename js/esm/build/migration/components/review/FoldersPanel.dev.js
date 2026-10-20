@@ -102,7 +102,7 @@ const FoldersPanel = /* @__PURE__ */ __name(({ migration, text, busy, onSelect }
             lineNumber: 84,
             columnNumber: 25
           }),
-          /* @__PURE__ */ jsxDEV("span", { className: "fbm-muted", children: folder.sourcefolder }, void 0, false, {
+          /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: folder.sourcefolder }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
             lineNumber: 85,
             columnNumber: 25
@@ -123,7 +123,7 @@ const FoldersPanel = /* @__PURE__ */ __name(({ migration, text, busy, onSelect }
             lineNumber: 89,
             columnNumber: 25
           }),
-          /* @__PURE__ */ jsxDEV("span", { className: "fbm-muted", children: folder.targetfolder }, void 0, false, {
+          /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: folder.targetfolder }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/FoldersPanel.tsx",
             lineNumber: 90,
             columnNumber: 25

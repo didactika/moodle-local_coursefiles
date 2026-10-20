@@ -8,4 +8,4 @@ import{jsx as e,jsxs as a}from"react/jsx-runtime";/**
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */const r=({title:s,subtitle:d,badges:c,back:m,actions:t})=>a("header",{className:"fbm-header",children:[a("div",{className:"fbm-header-title",children:[m,a("div",{className:"fbm-header-line",children:[e("h2",{className:"fbm-h2",children:s}),c]}),d&&e("p",{className:"fbm-muted fbm-header-subtitle",children:d})]}),t&&e("div",{className:"fbm-header-actions",children:t})]});var o=r;export{o as default};
+ */const m=({title:s,subtitle:d,badges:c,back:r,actions:t})=>a("header",{className:"fbm-header",children:[a("div",{className:"fbm-header-title",children:[r,a("div",{className:"fbm-header-line",children:[e("h2",{className:"h2",children:s}),c]}),d&&e("p",{className:"text-muted fbm-header-subtitle",children:d})]}),t&&e("div",{className:"fbm-header-actions",children:t})]});var o=m;export{o as default};

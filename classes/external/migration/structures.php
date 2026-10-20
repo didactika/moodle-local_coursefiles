@@ -73,8 +73,8 @@ final class structures {
      */
     public static function summary(): external_single_structure {
         $numbers = [];
-        $counters = ['files', 'tocopy', 'tooverwrite', 'existing', 'conflicts', 'skipped', 'included', 'folders', 'sourcecourses',
-            'targetcourses', 'openissues'];
+        $counters = ['files', 'tocopy', 'tooverwrite', 'existing', 'skipped', 'included', 'folders', 'sourcecourses',
+            'targetcourses', 'different'];
         foreach ($counters as $name) {
             $numbers[$name] = new external_value(PARAM_INT, $name);
         }
@@ -88,21 +88,6 @@ final class structures {
             'What was left out because it did not match; none of it is an error'
         );
         return new external_single_structure($numbers);
-    }
-
-    /**
-     * One choice that can be taken for something that waits for a decision.
-     *
-     * @return external_multiple_structure The list of choices.
-     */
-    public static function choices(): external_multiple_structure {
-        return new external_multiple_structure(
-            new external_single_structure([
-                'value' => new external_value(PARAM_RAW_TRIMMED, 'What is sent to settle it'),
-                'label' => new external_value(PARAM_TEXT, 'What the choice says'),
-            ]),
-            'Choices'
-        );
     }
 
     /**
@@ -137,16 +122,6 @@ final class structures {
             'target' => new external_value(PARAM_TEXT, 'Where it goes, written'),
             'filters' => new external_single_structure(['source' => $side, 'target' => $side], 'The filters'),
             'rules' => new external_value(PARAM_RAW, 'The rules as the screens edit them, as JSON'),
-            'natures' => new external_multiple_structure(
-                new external_single_structure([
-                    'kind' => new external_value(PARAM_ALPHA, 'file or issue'),
-                    'nature' => new external_value(PARAM_ALPHANUMEXT, 'Decision of the files or reason of the issues'),
-                    'count' => new external_value(PARAM_INT, 'How many there are'),
-                    'label' => new external_value(PARAM_TEXT, 'What they are'),
-                    'choices' => self::choices(),
-                ]),
-                'What waits for a decision'
-            ),
             'run' => new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Run'),
                 'state' => new external_value(PARAM_ALPHANUMEXT, 'State'),

@@ -31,7 +31,7 @@ const FloatingBar = /* @__PURE__ */ __name(({ summary, children, onClear, clearL
       lineNumber: 28,
       columnNumber: 9
     }),
-    /* @__PURE__ */ jsxDEV("span", { className: "fbm-sr", children: clearLabel }, void 0, false, {
+    /* @__PURE__ */ jsxDEV("span", { className: "filebank-visually-hidden", children: clearLabel }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/ui/FloatingBar.tsx",
       lineNumber: 28,
       columnNumber: 30

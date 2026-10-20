@@ -83,10 +83,6 @@ final class planning_store {
         $plan = $DB->get_record('local_filebank_plan', ['id' => $planid], '*', MUST_EXIST);
         log::record($replaceid > 0 ? 'migration_updated' : 'migration_previewed', $plan->uuid, [
             'operations' => count($operations),
-            'conflicts' => count(array_filter(
-                $operations,
-                static fn(array $operation): bool => str_starts_with($operation['decision'], 'blocked_')
-            )),
         ]);
         return $plan;
     }

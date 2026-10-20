@@ -8,20 +8,20 @@
 }}
 <main class="filebank-ui filebank-browser filebank-selection-review p-3">
     <div class="filebank-heading d-flex align-items-center justify-content-between flex-wrap mb-2">
-        <a href="{{backurl}}" class="fbm-btn fbm-btn-small filebank-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a>
-        <h2 class="fbm-h4">{{#str}}batchreview, local_filebank{{/str}}</h2>
-        <span class="fbm-small fbm-muted">{{count}} {{#str}}files, core{{/str}}</span>
+        <a href="{{backurl}}" class="btn btn-outline-secondary btn-sm filebank-back">{{#pix}}t/left, core{{/pix}} {{#str}}back, core{{/str}}</a>
+        <h2 class="h4">{{#str}}batchreview, local_filebank{{/str}}</h2>
+        <span class="small text-muted">{{count}} {{#str}}files, core{{/str}}</span>
     </div>
-    {{#renameerror}}<div class="fbm-alert tone-danger" role="alert"><div class="fbm-alert-body">{{renameerror}}</div></div>{{/renameerror}}
-    {{#error}}<div class="fbm-alert tone-danger" role="alert"><div class="fbm-alert-body">{{error}}</div></div>{{/error}}
+    {{#renameerror}}<div class="alert alert-danger" role="alert"><div class="fbm-alert-body">{{renameerror}}</div></div>{{/renameerror}}
+    {{#error}}<div class="alert alert-danger" role="alert"><div class="fbm-alert-body">{{error}}</div></div>{{/error}}
     {{^error}}
     <form method="post" action="{{action}}" class="filebank-review-form" id="filebank-review-form">
         <input type="hidden" name="sesskey" value="{{sesskey}}"><input type="hidden" name="scope" value="{{scope}}">
         <div class="filebank-results"><ul class="filebank-tree filebank-tree-root">{{#nodes}}{{> local_filebank/local/selection/review_node}}{{/nodes}}</ul></div>
     </form>
     <div class="filebank-footer fbm-footer">
-        {{#approved}}<button type="button" data-filebank-confirm disabled class="fbm-btn fbm-btn-primary">{{#str}}importselection, local_filebank{{/str}}</button>{{/approved}}
-        <span data-filebank-status role="status" class="fbm-small fbm-muted"></span>
-        <button name="removeselected" value="1" form="filebank-review-form" data-filebank-remove-selected hidden disabled class="fbm-btn fbm-btn-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_filebank{{/str}}</button>
+        {{#approved}}<button type="button" data-filebank-confirm disabled class="btn btn-primary">{{#str}}importselection, local_filebank{{/str}}</button>{{/approved}}
+        <span data-filebank-status role="status" class="small text-muted"></span>
+        <button name="removeselected" value="1" form="filebank-review-form" data-filebank-remove-selected hidden disabled class="btn btn-danger">{{#pix}}t/delete, core{{/pix}}{{#str}}removeselected, local_filebank{{/str}}</button>
     </div>{{/error}}
 </main>

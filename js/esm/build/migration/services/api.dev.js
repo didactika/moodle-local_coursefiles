@@ -23,14 +23,12 @@ const asArguments = /* @__PURE__ */ __name((parameters) => ({
   rules: JSON.stringify(parameters.rules)
 }), "asArguments");
 const listMigrations = /* @__PURE__ */ __name((search, state, page, perpage) => call("list", { search, state, page, perpage }), "listMigrations");
-const getOptions = /* @__PURE__ */ __name(() => call("options", {}), "getOptions");
+const getOptions = /* @__PURE__ */ __name((search = "", profileid = 0) => call("options", { search, profileid }), "getOptions");
 const checkMigration = /* @__PURE__ */ __name((parameters) => call("check", { profileid: parameters.profileid, ...asArguments(parameters) }), "checkMigration");
 const createMigration = /* @__PURE__ */ __name((parameters) => call("create", { profileid: parameters.profileid, ...asArguments(parameters) }), "createMigration");
 const getMigration = /* @__PURE__ */ __name((id) => call("get", { id }), "getMigration");
-const getDecisions = /* @__PURE__ */ __name((id, kind, nature, page, perpage) => call("decisions", { id, kind, nature, page, perpage }), "getDecisions");
 const getFiles = /* @__PURE__ */ __name((id, bucket, search, page, perpage) => call("files", { id, bucket, search, page, perpage }), "getFiles");
 const getFolders = /* @__PURE__ */ __name((id, search, page, perpage) => call("folders", { id, search, page, perpage }), "getFolders");
-const resolveDecisions = /* @__PURE__ */ __name((id, digest, kind, nature, ids, choice) => call("resolve", { id, digest, kind, nature, ids, choice }), "resolveDecisions");
 const reconfigureMigration = /* @__PURE__ */ __name((id, digest, parameters) => call("reconfigure", { id, digest, ...asArguments(parameters) }), "reconfigureMigration");
 const selectFiles = /* @__PURE__ */ __name((id, digest, action, visible = [], included = []) => call("select", { id, digest, action, visible, included }), "selectFiles");
 const selectFolder = /* @__PURE__ */ __name((id, digest, folder, included) => call("select", {
@@ -50,14 +48,12 @@ export {
   createMigration,
   deleteMigrations,
   executeMigration,
-  getDecisions,
   getFiles,
   getFolders,
   getMigration,
   getOptions,
   listMigrations,
   reconfigureMigration,
-  resolveDecisions,
   selectFiles,
   selectFolder
 };

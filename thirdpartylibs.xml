@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>lib/moment</location>
+        <name>Moment.js</name>
+        <description>Date library the date picker below is built on, shipped with its locales so that the calendar names its months and weekdays in the language the site is read in. Wrapped, unchanged, in the named AMD module local_filebank/datelib/moment (amd/src/datelib/moment.js); its licence is in lib/moment/LICENSE.</description>
+        <version>2.30.1</version>
+        <license>MIT</license>
+        <repository>https://github.com/moment/moment</repository>
+        <copyrights>
+            <copyright>JS Foundation and other contributors</copyright>
+        </copyrights>
+    </library>
+    <library>
+        <location>lib/daterangepicker</location>
+        <name>Date Range Picker</name>
+        <description>The calendar behind the date filters of the log. Wrapped, unchanged, in the named AMD module local_filebank/datelib/daterangepicker (amd/src/datelib/daterangepicker.js); its stylesheet is lib/daterangepicker/daterangepicker.css.</description>
+        <version>3.1.0</version>
+        <license>MIT</license>
+        <repository>https://github.com/dangrossman/daterangepicker</repository>
+        <copyrights>
+            <copyright>2012-2019 Dan Grossman</copyright>
+        </copyrights>
+    </library>
+</libraries>

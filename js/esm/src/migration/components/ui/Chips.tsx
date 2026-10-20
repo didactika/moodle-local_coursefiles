@@ -28,12 +28,12 @@ const Chips = ({label, value, chips, onChange}: ChipsProps) => <div className="f
     {chips.map((chip) => <button
         key={chip.value}
         type="button"
-        className={`fbm-chip${chip.value === value ? ' is-on' : ''}`}
+        className={`btn btn-sm btn-outline-secondary rounded-pill fbm-chip${chip.value === value ? ' active' : ''}`}
         aria-pressed={chip.value === value}
         onClick={() => onChange(chip.value)}
     >
         {chip.label}
-        {chip.count !== undefined && <span className="fbm-chip-count">{chip.count}</span>}
+        {chip.count !== undefined && <span className="badge rounded-pill fbm-chip-count">{chip.count}</span>}
     </button>)}
 </div>;
 

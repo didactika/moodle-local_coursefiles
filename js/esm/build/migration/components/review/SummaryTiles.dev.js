@@ -15,7 +15,6 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  */
 import StatTile from "../ui/StatTile";
 const SummaryTiles = /* @__PURE__ */ __name(({ summary, text, onFiles, onTab, active }) => {
-  const decisions = summary.conflicts + summary.openissues;
   const onFilesTab = active.tab === "files";
   return /* @__PURE__ */ jsxDEV("div", { className: "fbm-tiles", "data-region": "summary", children: [
     /* @__PURE__ */ jsxDEV(
@@ -33,7 +32,7 @@ const SummaryTiles = /* @__PURE__ */ __name(({ summary, text, onFiles, onTab, ac
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/SummaryTiles.tsx",
-        lineNumber: 30,
+        lineNumber: 29,
         columnNumber: 9
       }
     ),
@@ -52,7 +51,7 @@ const SummaryTiles = /* @__PURE__ */ __name(({ summary, text, onFiles, onTab, ac
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/SummaryTiles.tsx",
-        lineNumber: 39,
+        lineNumber: 38,
         columnNumber: 9
       }
     ),
@@ -71,26 +70,26 @@ const SummaryTiles = /* @__PURE__ */ __name(({ summary, text, onFiles, onTab, ac
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/SummaryTiles.tsx",
-        lineNumber: 48,
+        lineNumber: 47,
         columnNumber: 9
       }
     ),
     /* @__PURE__ */ jsxDEV(
       StatTile,
       {
-        label: text("summary_conflicts"),
-        value: decisions,
-        tone: decisions > 0 ? "info" : "neutral",
-        icon: "hand-pointer",
-        hint: decisions > 0 ? text("summary_conflicts_hint") : text("summary_conflicts_none"),
-        active: active.tab === "decisions",
-        onClick: () => onTab("decisions")
+        label: text("summary_left"),
+        value: summary.skipped,
+        tone: "neutral",
+        icon: "hand",
+        hint: text("summary_left_hint"),
+        active: onFilesTab && active.bucket === "left",
+        onClick: () => onFiles("left")
       },
       void 0,
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/SummaryTiles.tsx",
-        lineNumber: 57,
+        lineNumber: 56,
         columnNumber: 9
       }
     ),
@@ -109,13 +108,13 @@ const SummaryTiles = /* @__PURE__ */ __name(({ summary, text, onFiles, onTab, ac
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/SummaryTiles.tsx",
-        lineNumber: 66,
+        lineNumber: 65,
         columnNumber: 9
       }
     )
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/review/SummaryTiles.tsx",
-    lineNumber: 29,
+    lineNumber: 28,
     columnNumber: 12
   });
 }, "SummaryTiles");

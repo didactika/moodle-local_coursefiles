@@ -15,7 +15,7 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import MigrationList from "./migration/components/list/MigrationList";
 import Review from "./migration/components/review/Review";
 import Alert from "./migration/components/ui/Alert";
@@ -33,6 +33,9 @@ function Migration(props) {
     document.querySelectorAll(".fbm-boot").forEach((block) => block.remove());
     getOptions().then(setOptions).catch((problem) => setError(describeError(problem)));
   }, []);
+  const loadOptions = useCallback((search, profileid) => {
+    getOptions(search, profileid).then(setOptions).catch((problem) => setError(describeError(problem)));
+  }, []);
   let screen;
   if (route.mode === "new" || route.mode === "edit") {
     screen = /* @__PURE__ */ jsxDEV(
@@ -43,13 +46,14 @@ function Migration(props) {
         migrationId: route.mode === "edit" ? route.planid : route.from,
         text,
         onClose: () => route.mode === "edit" ? route.openReview(route.planid) : route.openList(),
-        onDone: route.openReview
+        onDone: route.openReview,
+        onOptions: loadOptions
       },
       `${route.mode}-${route.planid}-${route.from}`,
       false,
       {
         fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-        lineNumber: 46,
+        lineNumber: 51,
         columnNumber: 18
       },
       this
@@ -68,7 +72,7 @@ function Migration(props) {
       false,
       {
         fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-        lineNumber: 56,
+        lineNumber: 62,
         columnNumber: 18
       },
       this
@@ -76,20 +80,20 @@ function Migration(props) {
   } else {
     screen = /* @__PURE__ */ jsxDEV(MigrationList, { text, pagesizes: props.pagesizes, onOpen: route.openReview, onNew: () => route.openNew() }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-      lineNumber: 65,
+      lineNumber: 71,
       columnNumber: 18
     }, this);
   }
   return /* @__PURE__ */ jsxDEV("div", { className: "filebank-migration", "data-region": "fbm-app", children: [
     error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, children: error }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-      lineNumber: 69,
+      lineNumber: 75,
       columnNumber: 26
     }, this),
     screen
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/Migration.tsx",
-    lineNumber: 68,
+    lineNumber: 74,
     columnNumber: 12
   }, this);
 }

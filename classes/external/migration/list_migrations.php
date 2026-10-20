@@ -98,7 +98,6 @@ class list_migrations extends external_api {
                     'datelabel' => new external_value(PARAM_TEXT, 'Created, written'),
                     'files' => new external_value(PARAM_INT, 'Files it looks at'),
                     'towrite' => new external_value(PARAM_INT, 'Files it would write'),
-                    'conflicts' => new external_value(PARAM_INT, 'Files that wait for a decision'),
                     'done' => new external_value(PARAM_INT, 'Files processed'),
                     'candelete' => new external_value(PARAM_BOOL, 'Whether it can be deleted'),
                 ]),

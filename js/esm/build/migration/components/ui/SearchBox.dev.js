@@ -29,7 +29,7 @@ const SearchBox = /* @__PURE__ */ __name(({ value, onChange, placeholder, clearL
       type: "search",
       id,
       value,
-      className: "fbm-input fbm-search-input",
+      className: "form-control rounded-pill",
       placeholder,
       "aria-label": placeholder,
       autoComplete: "off",
@@ -54,7 +54,7 @@ const SearchBox = /* @__PURE__ */ __name(({ value, onChange, placeholder, clearL
       lineNumber: 40,
       columnNumber: 9
     }),
-    /* @__PURE__ */ jsxDEV("span", { className: "fbm-sr", children: clearLabel }, void 0, false, {
+    /* @__PURE__ */ jsxDEV("span", { className: "filebank-visually-hidden", children: clearLabel }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/ui/SearchBox.tsx",
       lineNumber: 40,
       columnNumber: 30

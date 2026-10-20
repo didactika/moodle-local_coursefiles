@@ -28,12 +28,12 @@ const EmptyState = /* @__PURE__ */ __name(({ icon, title, text, actions, plain =
         lineNumber: 28,
         columnNumber: 5
       }),
-      /* @__PURE__ */ jsxDEV("h4", { className: "fbm-h4", children: title }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("h4", { className: "h4", children: title }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/EmptyState.tsx",
         lineNumber: 29,
         columnNumber: 5
       }),
-      /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted fbm-empty-text", children: text }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("p", { className: "text-muted fbm-empty-text", children: text }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/EmptyState.tsx",
         lineNumber: 30,
         columnNumber: 5

@@ -20,8 +20,8 @@ interface ProgressProps {
 
 const Progress = ({value, max, label, tone = 'primary'}: ProgressProps) => {
     const percent = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
-    return <div className={`fbm-progress tone-${tone}`} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={value}>
-        <div className="fbm-progress-fill" style={{width: `${percent}%`}} />
+    return <div className="progress" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={value}>
+        <div className={`progress-bar bg-${tone === 'neutral' ? 'secondary' : tone}`} style={{width: `${percent}%`}} />
     </div>;
 };
 

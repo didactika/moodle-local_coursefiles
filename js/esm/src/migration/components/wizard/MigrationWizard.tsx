@@ -37,6 +37,8 @@ interface MigrationWizardProps {
     onClose: () => void;
     /** The migration was created or changed. */
     onDone: (id: number) => void;
+    /** Ask again for the options: the profiles whose name has the text, and the earlier migrations of the chosen profile. */
+    onOptions: (search: string, profileid: number) => void;
     text: Text;
 }
 
@@ -49,7 +51,7 @@ const STEP_ICONS: Record<StepKey, string> = {
     check: 'clipboard-check',
 };
 
-const MigrationWizard = ({mode, options, migrationId, onClose, onDone, text}: MigrationWizardProps) => {
+const MigrationWizard = ({mode, options, migrationId, onClose, onDone, onOptions, text}: MigrationWizardProps) => {
     const [parameters, setParameters] = useState<Parameters | null>(null);
     const [source, setSource] = useState<Migration | null>(null);
     const [step, setStep] = useState(0);
@@ -62,6 +64,8 @@ const MigrationWizard = ({mode, options, migrationId, onClose, onDone, text}: Mi
     const [error, setError] = useState('');
     const [leaving, setLeaving] = useState(false);
     const initial = useRef('');
+    const root = useRef<HTMLDivElement>(null);
+    const ready = options !== null && parameters !== null;
     const steps = STEP_KEYS;
 
     // What the page starts from: the migration that is changed or copied, or the first profile.
@@ -93,6 +97,21 @@ const MigrationWizard = ({mode, options, migrationId, onClose, onDone, text}: Mi
         };
     }, [options, migrationId]);
 
+    // The wizard takes the window from its own top down, so the step scrolls inside it and the page does not.
+    useEffect(() => {
+        if (ready && window.matchMedia('(min-width: 62rem) and (min-height: 36rem)').matches) {
+            root.current?.scrollIntoView({block: 'start'});
+        }
+    }, [ready]);
+
+    // The earlier migrations of the profile come with the options of that profile.
+    const chosen = parameters?.profileid ?? 0;
+    useEffect(() => {
+        if (chosen > 0) {
+            onOptions('', chosen);
+        }
+    }, [chosen]);
+
     // Leaving the page with something that was typed asks first.
     const dirty = parameters !== null && keyOf(parameters) !== initial.current;
     useEffect(() => {
@@ -107,7 +126,7 @@ const MigrationWizard = ({mode, options, migrationId, onClose, onDone, text}: Mi
     }, [dirty]);
 
     const heading = mode === 'edit' ? text('edit_title') : text('wizard_title');
-    const back = <button type="button" className="fbm-back" onClick={() => (dirty ? setLeaving(true) : onClose())}>
+    const back = <button type="button" className="btn btn-link btn-sm p-0 fbm-back" onClick={() => (dirty ? setLeaving(true) : onClose())}>
         <Icon name="arrow-left" gap />{text(mode === 'edit' ? 'back_to_migration' : 'back_to_list')}
     </button>;
 
@@ -129,16 +148,15 @@ const MigrationWizard = ({mode, options, migrationId, onClose, onDone, text}: Mi
         setSummary(null);
     };
 
-    const runCheck = async() => {
+    const runCheck = async(asked: Parameters = parameters, keepResult = false) => {
         setChecking(true);
-        setSummary(null);
+        if (!keepResult) {
+            setSummary(null);
+        }
         setError('');
-        const asked = keyOf(parameters);
         try {
-            const result = await checkMigration(parameters);
-            if (asked === keyOf(parameters)) {
-                setSummary(result);
-            }
+            const result = await checkMigration(asked);
+            setSummary(result);
         } catch (problem) {
             setError(describeError(problem));
         } finally {
@@ -184,9 +202,11 @@ const MigrationWizard = ({mode, options, migrationId, onClose, onDone, text}: Mi
         }
     };
 
-    const canSave = summary !== null && (mode === 'edit' || summary.files > 0 || summary.openissues > 0);
+    // A migration with nothing to write is not created: the conflicts are decided in this step, so there is always something to do or
+    // a reason that says why there is not.
+    const canSave = summary !== null && summary.haswork && !checking;
 
-    return <div className="fbm-wizard" data-region="migration-wizard" data-mode={mode}>
+    return <div className="fbm-wizard" data-region="migration-wizard" data-mode={mode} ref={root}>
         <PageHeader
             title={mode === 'edit' ? text('edit_title_n', {n: source?.id ?? migrationId}) : heading}
             subtitle={text(mode === 'edit' ? 'edit_hint' : 'wizard_subtitle')}
@@ -198,31 +218,45 @@ const MigrationWizard = ({mode, options, migrationId, onClose, onDone, text}: Mi
                 <header className="fbm-wizard-head">
                     <span className="fbm-wizard-icon"><Icon name={STEP_ICONS[key]} /></span>
                     <div>
-                        <h3 className="fbm-h3">{text('step_' + key)}</h3>
-                        <p className="fbm-muted fbm-wizard-help">{text('step_' + key + '_help')}</p>
+                        <h3 className="h3">{text('step_' + key)}</h3>
+                        <p className="text-muted fbm-wizard-help">{text('step_' + key + '_help')}</p>
                     </div>
                 </header>
+                <div className="fbm-wizard-scroll">
                 {error !== '' && <Alert tone="danger" live>{error}</Alert>}
                 {key === 'check'
-                    ? <CheckResult summary={summary} loading={checking} error="" text={text} />
+                    ? <CheckResult
+                        summary={summary}
+                        loading={checking}
+                        error=""
+                        text={text}
+                        policy={parameters.rules.conflictpolicy}
+                        onPolicy={(conflictpolicy) => {
+                            const next = {...parameters, rules: {...parameters.rules, conflictpolicy}};
+                            setParameters(next);
+                            void runCheck(next, true);
+                        }}
+                    />
                     : <ParametersEditor
                         step={key}
                         options={options}
                         parameters={parameters}
                         onChange={change}
+                        onOptions={onOptions}
                         text={text}
                         lockProfile={mode === 'edit'}
                         problems={problems}
                     />}
-                {key === 'check' && summary !== null && !canSave && <p className="fbm-muted fbm-wizard-hint">{text('wizard_change_hint')}</p>}
+                {key === 'check' && summary !== null && !canSave && <p className="text-muted fbm-wizard-hint">{text('wizard_change_hint')}</p>}
+                </div>
                 <footer className="fbm-wizard-foot">
-                    <button type="button" className="fbm-btn" onClick={() => go(step - 1)} disabled={step === 0 || saving}>
+                    <button type="button" className="btn btn-outline-secondary" onClick={() => go(step - 1)} disabled={step === 0 || saving}>
                         <Icon name="arrow-left" gap />{text('wizard_previous')}
                     </button>
                     {last
                         ? <button
                             type="button"
-                            className="fbm-btn fbm-btn-primary"
+                            className="btn btn-primary"
                             onClick={() => void save()}
                             disabled={!canSave || saving}
                             data-action="save-migration"
@@ -230,7 +264,7 @@ const MigrationWizard = ({mode, options, migrationId, onClose, onDone, text}: Mi
                             {saving ? <Icon name="spinner" gap spin /> : <Icon name="check" gap />}
                             {text(mode === 'edit' ? 'edit_save' : 'wizard_create')}
                         </button>
-                        : <button type="button" className="fbm-btn fbm-btn-primary" onClick={next} data-action="next-step">
+                        : <button type="button" className="btn btn-primary" onClick={next} data-action="next-step">
                             {text(steps[step + 1] === 'check' ? 'wizard_check' : 'wizard_next')}<Icon name="arrow-right" />
                         </button>}
                 </footer>

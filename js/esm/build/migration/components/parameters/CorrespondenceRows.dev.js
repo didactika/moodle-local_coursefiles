@@ -13,8 +13,9 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { emptyCorrespondence, MAX_CORRESPONDENCES, sameNameCorrespondence } from "../../lib/parameters";
+import { emptyCorrespondence, MAX_CORRESPONDENCES } from "../../lib/parameters";
 import Icon from "../ui/Icon";
+import IconButton from "../ui/IconButton";
 const FIELDS = ["name", "idnumber"];
 const METHODS = ["equals", "pattern", "template"];
 const Side = /* @__PURE__ */ __name(({ side, index, row, modules, onField, text, missing }) => {
@@ -24,46 +25,46 @@ const Side = /* @__PURE__ */ __name(({ side, index, row, modules, onField, text,
   return /* @__PURE__ */ jsxDEV("div", { className: `fbm-side fbm-side-${side}`, children: [
     /* @__PURE__ */ jsxDEV("div", { className: "fbm-side-title", children: text(side === "source" ? "rules_source_folder" : "rules_target_folder") }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-      lineNumber: 52,
+      lineNumber: 54,
       columnNumber: 9
     }),
     side === "source" && /* @__PURE__ */ jsxDEV("div", { className: "fbm-field", children: [
-      /* @__PURE__ */ jsxDEV("label", { className: "fbm-label", htmlFor: id("type"), children: text("rules_kind") }, void 0, false, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 54,
-        columnNumber: 13
-      }),
-      /* @__PURE__ */ jsxDEV("select", { id: id("type"), className: "fbm-select", value: row.sourcetype, onChange: (event) => onField("sourcetype", event.target.value), children: modules.map((module) => /* @__PURE__ */ jsxDEV("option", { value: module.value, children: module.label }, module.value, false, {
+      /* @__PURE__ */ jsxDEV("label", { className: "form-label", htmlFor: id("type"), children: text("rules_kind") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
         lineNumber: 56,
+        columnNumber: 13
+      }),
+      /* @__PURE__ */ jsxDEV("select", { id: id("type"), className: "form-select", value: row.sourcetype, onChange: (event) => onField("sourcetype", event.target.value), children: modules.map((module) => /* @__PURE__ */ jsxDEV("option", { value: module.value, children: module.label }, module.value, false, {
+        fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
+        lineNumber: 58,
         columnNumber: 42
       })) }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 55,
+        lineNumber: 57,
         columnNumber: 13
       })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-      lineNumber: 53,
+      lineNumber: 55,
       columnNumber: 31
     }),
     /* @__PURE__ */ jsxDEV("div", { className: "fbm-field-row", children: [
       /* @__PURE__ */ jsxDEV("div", { className: "fbm-field", children: [
-        /* @__PURE__ */ jsxDEV("label", { className: "fbm-label", htmlFor: id("field"), children: text("rules_field") }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("label", { className: "form-label", htmlFor: id("field"), children: text("rules_field") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-          lineNumber: 61,
+          lineNumber: 63,
           columnNumber: 17
         }),
         /* @__PURE__ */ jsxDEV(
           "select",
           {
             id: id("field"),
-            className: "fbm-select",
+            className: "form-select",
             value: row[key("field")],
             onChange: (event) => onField(key("field"), event.target.value),
             children: FIELDS.map((field) => /* @__PURE__ */ jsxDEV("option", { value: field, children: text("rules_field_" + field) }, field, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-              lineNumber: 68,
+              lineNumber: 70,
               columnNumber: 44
             }))
           },
@@ -71,31 +72,31 @@ const Side = /* @__PURE__ */ __name(({ side, index, row, modules, onField, text,
           false,
           {
             fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-            lineNumber: 62,
+            lineNumber: 64,
             columnNumber: 17
           }
         )
       ] }, void 0, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 60,
+        lineNumber: 62,
         columnNumber: 13
       }),
       /* @__PURE__ */ jsxDEV("div", { className: "fbm-field", children: [
-        /* @__PURE__ */ jsxDEV("label", { className: "fbm-label", htmlFor: id("method"), children: text("rules_match") }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("label", { className: "form-label", htmlFor: id("method"), children: text("rules_match") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-          lineNumber: 72,
+          lineNumber: 74,
           columnNumber: 17
         }),
         /* @__PURE__ */ jsxDEV(
           "select",
           {
             id: id("method"),
-            className: "fbm-select",
+            className: "form-select",
             value: row[key("method")],
             onChange: (event) => onField(key("method"), event.target.value),
             children: METHODS.map((method) => /* @__PURE__ */ jsxDEV("option", { value: method, children: text("rules_match_" + method) }, method, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-              lineNumber: 79,
+              lineNumber: 81,
               columnNumber: 46
             }))
           },
@@ -103,24 +104,24 @@ const Side = /* @__PURE__ */ __name(({ side, index, row, modules, onField, text,
           false,
           {
             fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-            lineNumber: 73,
+            lineNumber: 75,
             columnNumber: 17
           }
         )
       ] }, void 0, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 71,
+        lineNumber: 73,
         columnNumber: 13
       })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-      lineNumber: 59,
+      lineNumber: 61,
       columnNumber: 9
     }),
     /* @__PURE__ */ jsxDEV("div", { className: "fbm-field", children: [
-      /* @__PURE__ */ jsxDEV("label", { className: "fbm-label", htmlFor: id("value"), children: text("rules_value") }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("label", { className: "form-label", htmlFor: id("value"), children: text("rules_value") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 84,
+        lineNumber: 86,
         columnNumber: 13
       }),
       /* @__PURE__ */ jsxDEV(
@@ -128,7 +129,7 @@ const Side = /* @__PURE__ */ __name(({ side, index, row, modules, onField, text,
         {
           id: id("value"),
           type: "text",
-          className: `fbm-input${missing && value.trim() === "" ? " is-invalid" : ""}`,
+          className: `form-control${missing && value.trim() === "" ? " is-invalid" : ""}`,
           maxLength: 2048,
           value,
           onChange: (event) => onField(key("value"), event.target.value)
@@ -137,22 +138,22 @@ const Side = /* @__PURE__ */ __name(({ side, index, row, modules, onField, text,
         false,
         {
           fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-          lineNumber: 85,
+          lineNumber: 87,
           columnNumber: 13
         }
       )
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-      lineNumber: 83,
+      lineNumber: 85,
       columnNumber: 9
     })
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-    lineNumber: 51,
+    lineNumber: 53,
     columnNumber: 12
   });
 }, "Side");
-const CorrespondenceRows = /* @__PURE__ */ __name(({ rows, profileRows, modules, onChange, text, missing }) => {
+const CorrespondenceRows = /* @__PURE__ */ __name(({ rows, previous, onReuse, modules, onChange, text, missing }) => {
   const change = /* @__PURE__ */ __name((index, key, value) => onChange(
     rows.map((row, position) => position === index ? { ...row, [key]: value } : row)
   ), "change");
@@ -161,66 +162,54 @@ const CorrespondenceRows = /* @__PURE__ */ __name(({ rows, profileRows, modules,
     rows.length === 0 && /* @__PURE__ */ jsxDEV("div", { className: `fbm-rows-empty${missing ? " has-problem" : ""}`, "data-region": "no-correspondences", children: [
       /* @__PURE__ */ jsxDEV("div", { className: "fbm-empty-icon", children: /* @__PURE__ */ jsxDEV(Icon, { name: "folder-open" }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 105,
+        lineNumber: 107,
         columnNumber: 45
       }) }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 105,
+        lineNumber: 107,
         columnNumber: 13
       }),
-      /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted fbm-empty-text", children: text("rules_empty") }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("p", { className: "text-muted fbm-empty-text", children: text("rules_empty") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 106,
+        lineNumber: 108,
         columnNumber: 13
       }),
       missing && /* @__PURE__ */ jsxDEV("p", { className: "fbm-problem", children: text("rules_required") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 107,
+        lineNumber: 109,
         columnNumber: 25
       })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-      lineNumber: 104,
+      lineNumber: 106,
       columnNumber: 31
     }),
     rows.map((row, index) => /* @__PURE__ */ jsxDEV("div", { className: "fbm-row-card", children: [
       /* @__PURE__ */ jsxDEV("div", { className: "fbm-row-head", children: [
         /* @__PURE__ */ jsxDEV("span", { className: "fbm-row-number", children: index + 1 }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-          lineNumber: 111,
+          lineNumber: 113,
           columnNumber: 17
         }),
         /* @__PURE__ */ jsxDEV(
-          "button",
+          IconButton,
           {
-            type: "button",
-            className: "fbm-iconbtn",
-            onClick: () => onChange(rows.filter((_, position) => position !== index)),
-            title: text("rules_remove"),
-            children: [
-              /* @__PURE__ */ jsxDEV(Icon, { name: "trash" }, void 0, false, {
-                fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-                lineNumber: 118,
-                columnNumber: 21
-              }),
-              /* @__PURE__ */ jsxDEV("span", { className: "fbm-sr", children: text("rules_remove") }, void 0, false, {
-                fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-                lineNumber: 118,
-                columnNumber: 42
-              })
-            ]
+            icon: "trash",
+            label: text("rules_remove"),
+            tone: "danger",
+            onClick: () => onChange(rows.filter((_, position) => position !== index))
           },
           void 0,
-          true,
+          false,
           {
             fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-            lineNumber: 112,
+            lineNumber: 114,
             columnNumber: 17
           }
         )
       ] }, void 0, true, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 110,
+        lineNumber: 112,
         columnNumber: 13
       }),
       /* @__PURE__ */ jsxDEV("div", { className: "fbm-row-sides", children: [
@@ -250,7 +239,7 @@ const CorrespondenceRows = /* @__PURE__ */ __name(({ rows, profileRows, modules,
       })
     ] }, index, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-      lineNumber: 109,
+      lineNumber: 111,
       columnNumber: 35
     })),
     /* @__PURE__ */ jsxDEV("div", { className: "fbm-row-add", children: [
@@ -258,7 +247,7 @@ const CorrespondenceRows = /* @__PURE__ */ __name(({ rows, profileRows, modules,
         "button",
         {
           type: "button",
-          className: "fbm-btn fbm-btn-primary",
+          className: "btn btn-primary",
           disabled: !room,
           onClick: () => onChange([...rows, emptyCorrespondence()]),
           "data-action": "add-correspondence",
@@ -279,33 +268,38 @@ const CorrespondenceRows = /* @__PURE__ */ __name(({ rows, profileRows, modules,
           columnNumber: 13
         }
       ),
-      /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn", disabled: !room, onClick: () => onChange([...rows, sameNameCorrespondence()]), children: [
-        /* @__PURE__ */ jsxDEV(Icon, { name: "equals", gap: true }, void 0, false, {
+      previous.length > 0 && rows.length === 0 && /* @__PURE__ */ jsxDEV(
+        "select",
+        {
+          className: "form-select fbm-select-auto",
+          "aria-label": text("rules_reuse"),
+          value: "",
+          onChange: (event) => onReuse(Number(event.target.value)),
+          "data-action": "reuse-correspondences",
+          children: [
+            /* @__PURE__ */ jsxDEV("option", { value: "", disabled: true, children: text("rules_reuse") }, void 0, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
+              lineNumber: 144,
+              columnNumber: 17
+            }),
+            previous.map((item) => /* @__PURE__ */ jsxDEV("option", { value: item.id, children: item.label }, item.id, false, {
+              fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
+              lineNumber: 145,
+              columnNumber: 41
+            }))
+          ]
+        },
+        void 0,
+        true,
+        {
           fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-          lineNumber: 138,
-          columnNumber: 17
-        }),
-        text("rules_add_same")
-      ] }, void 0, true, {
+          lineNumber: 137,
+          columnNumber: 58
+        }
+      ),
+      /* @__PURE__ */ jsxDEV("span", { className: "text-muted", children: text("rules_limit", { n: MAX_CORRESPONDENCES }) }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 137,
-        columnNumber: 13
-      }),
-      profileRows.length > 0 && rows.length === 0 && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn", onClick: () => onChange(profileRows), children: [
-        /* @__PURE__ */ jsxDEV(Icon, { name: "layer-group", gap: true }, void 0, false, {
-          fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-          lineNumber: 141,
-          columnNumber: 17
-        }),
-        text("rules_add_profile", { n: profileRows.length })
-      ] }, void 0, true, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 140,
-        columnNumber: 61
-      }),
-      /* @__PURE__ */ jsxDEV("span", { className: "fbm-muted", children: text("rules_limit", { n: MAX_CORRESPONDENCES }) }, void 0, false, {
-        fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-        lineNumber: 143,
+        lineNumber: 147,
         columnNumber: 13
       })
     ] }, void 0, true, {
@@ -315,7 +309,7 @@ const CorrespondenceRows = /* @__PURE__ */ __name(({ rows, profileRows, modules,
     })
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/parameters/CorrespondenceRows.tsx",
-    lineNumber: 103,
+    lineNumber: 105,
     columnNumber: 12
   });
 }, "CorrespondenceRows");

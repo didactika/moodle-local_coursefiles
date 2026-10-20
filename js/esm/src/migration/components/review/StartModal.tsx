@@ -38,13 +38,10 @@ const StartModal = ({open, migration, text, busy, onConfirm, onCancel}: StartMod
         <ul className="fbm-confirm-list">
             <li><strong>{summary.tocopy}</strong> {text('start_copy')}</li>
             {summary.tooverwrite > 0 && <li className="is-warning"><strong>{summary.tooverwrite}</strong> {text('start_overwrite')}</li>}
-            <li className="fbm-muted"><strong>{summary.existing}</strong> {text('start_existing')}</li>
+            <li className="text-muted"><strong>{summary.existing}</strong> {text('start_existing')}</li>
         </ul>
         {summary.tooverwrite > 0 && <Alert tone="warning">{text('start_overwrite_warning')}</Alert>}
-        {summary.conflicts + summary.openissues > 0 && <p className="fbm-muted">
-            {text('start_left', {n: summary.conflicts + summary.openissues})}
-        </p>}
-        <p className="fbm-muted">{text('start_background')}</p>
+        <p className="text-muted">{text('start_background')}</p>
     </ConfirmModal>;
 };
 

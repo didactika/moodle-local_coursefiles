@@ -33,7 +33,7 @@ const CourseFilters = ({dimensions, parameters, onChange, text, missing}: Course
     };
 
     if (dimensions.length === 0) {
-        return <p className="fbm-muted">{text('wizard_no_filters')}</p>;
+        return <p className="text-muted">{text('wizard_no_filters')}</p>;
     }
 
     return <div className={`fbm-sides${missing ? ' has-problem' : ''}`}>
@@ -43,11 +43,11 @@ const CourseFilters = ({dimensions, parameters, onChange, text, missing}: Course
                 {text(side === 'source' ? 'wizard_from' : 'wizard_to')}
             </legend>
             {dimensions.map((dimension) => <div key={dimension.key} className="fbm-field">
-                <label className="fbm-label" htmlFor={`fbm-${side}-${dimension.key}`}>{dimension.label}</label>
+                <label className="form-label" htmlFor={`fbm-${side}-${dimension.key}`}>{dimension.label}</label>
                 <input
                     id={`fbm-${side}-${dimension.key}`}
                     type="text"
-                    className="fbm-input"
+                    className="form-control"
                     maxLength={255}
                     value={parameters[side][dimension.key] ?? ''}
                     placeholder={text('wizard_any')}

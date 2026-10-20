@@ -13,10 +13,10 @@
     </details>{{/folder}}
     {{^folder}}<div class="filebank-tree-file">
         <div class="filebank-review-row">
-            <div class="d-flex align-items-center filebank-review-name"><input type="checkbox" name="removefiles[]" value="{{hash}}" aria-label="{{name}}" class="filebank-gap-end">{{#pix}}f/document, core{{/pix}}<input type="hidden" name="renames[{{hash}}]" value="{{name}}"><span class="fbm-break" data-filebank-file-name>{{name}}</span><button type="button" class="fbm-iconbtn filebank-pencil" data-filebank-rename aria-label="{{#str}}renamefile, local_filebank{{/str}}">{{#pix}}t/edit, core{{/pix}}</button></div>
-            <div class="filebank-review-actions"><span class="fbm-badge {{#blocked}}tone-danger{{/blocked}}{{^blocked}}{{#copy}}tone-success{{/copy}}{{^copy}}tone-neutral{{/copy}}{{/blocked}}">{{decision}}</span><button class="fbm-iconbtn tone-danger" name="removeitem" value="{{hash}}" aria-label="{{#str}}removeselected, local_filebank{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div>
+            <div class="d-flex align-items-center filebank-review-name"><input type="checkbox" name="removefiles[]" value="{{hash}}" aria-label="{{name}}" class="filebank-gap-end">{{#pix}}f/document, core{{/pix}}<input type="hidden" name="renames[{{hash}}]" value="{{name}}"><span class="text-break" data-filebank-file-name>{{name}}</span><button type="button" class="btn btn-link btn-icon filebank-pencil" data-filebank-rename aria-label="{{#str}}renamefile, local_filebank{{/str}}">{{#pix}}t/edit, core{{/pix}}</button></div>
+            <div class="filebank-review-actions"><span class="badge rounded-pill {{#blocked}}tone-danger{{/blocked}}{{^blocked}}{{#copy}}tone-success{{/copy}}{{^copy}}tone-neutral{{/copy}}{{/blocked}}">{{decision}}</span><button class="btn btn-link btn-icon tone-danger" name="removeitem" value="{{hash}}" aria-label="{{#str}}removeselected, local_filebank{{/str}}">{{#pix}}t/delete, core{{/pix}}</button></div>
         </div>
-        <div class="fbm-small fbm-muted">{{#str}}author, repository{{/str}}: {{author}} · {{#str}}license, repository{{/str}}: {{license}}</div>
+        <div class="small text-muted">{{#str}}author, repository{{/str}}: {{author}} · {{#str}}license, repository{{/str}}: {{license}}</div>
     </div>{{/folder}}
 </li>
 {{#standalone}}</ul>{{/standalone}}

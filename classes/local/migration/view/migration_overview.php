@@ -34,23 +34,14 @@ use local_filebank\local\profile\profiles;
 use local_filebank\output\display;
 
 /**
- * The header of a migration: where it goes, what it would do, what waits for a decision, and how its last run went.
+ * The header of a migration: where it goes, what it would do, and how its last run went.
  */
 final class migration_overview {
-    /**
-     * What can be chosen for every file that has a given decision.
-     */
-    private const FILE_CHOICES = [
-        'blocked_content' => ['skip', 'overwrite'],
-        'blocked_attribution' => ['skip'],
-        'blocked_policy' => ['skip'],
-    ];
-
     /**
      * Describe a migration.
      *
      * @param int $planid The migration.
-     * @return array The migration: identity, state, digest, counters, parameters, what waits for a decision and the last run.
+     * @return array The migration: identity, state, digest, counters, parameters and the last run.
      */
     public static function get(int $planid): array {
         global $DB;
@@ -86,7 +77,6 @@ final class migration_overview {
             'target' => migration_catalog::side($document, 'target'),
             'filters' => self::filters($rules, $document),
             'rules' => json_encode(migration_rules::to_ui($document['migration'] ?? [])),
-            'natures' => self::natures($planid, $document),
         ];
         if ($run) {
             $overview['run'] = self::run($run, $summary, $canexecute);
@@ -143,65 +133,6 @@ final class migration_overview {
             }
         }
         return $filters;
-    }
-
-    /**
-     * What waits for a decision, with what can be chosen for all of it at once.
-     *
-     * @param int $planid The migration.
-     * @param array $document Document of the migration.
-     * @return array The natures: kind, nature, label, count and the choices that apply to every one of them.
-     */
-    private static function natures(int $planid, array $document): array {
-        global $DB;
-        $natures = [];
-        $rows = $DB->get_records_sql(
-            'SELECT decision, COUNT(1) AS total
-               FROM {local_filebank_operation}
-              WHERE planid = :planid AND ' . $DB->sql_like('decision', ':blocked') . '
-           GROUP BY decision
-           ORDER BY decision',
-            ['planid' => $planid, 'blocked' => 'blocked%']
-        );
-        foreach ($rows as $row) {
-            $natures[] = ['kind' => 'file', 'nature' => $row->decision, 'count' => (int) $row->total,
-                'label' => get_string_manager()->string_exists('nature_' . $row->decision, 'local_filebank')
-                    ? get_string('nature_' . $row->decision, 'local_filebank') : $row->decision,
-                'choices' => self::file_choices($row->decision)];
-        }
-        $reasons = [];
-        foreach ($document['issues'] ?? [] as $issue) {
-            $reasons[$issue['reason']] = ($reasons[$issue['reason']] ?? 0) + 1;
-        }
-        ksort($reasons);
-        foreach ($reasons as $reason => $count) {
-            $natures[] = ['kind' => 'issue', 'nature' => (string) $reason, 'count' => $count,
-                'label' => display::reason((string) $reason), 'choices' => self::choices(['exclude'])];
-        }
-        return $natures;
-    }
-
-    /**
-     * What can be chosen for a file that has a given decision.
-     *
-     * @param string $decision The decision of the file.
-     * @return array The choices with their labels.
-     */
-    public static function file_choices(string $decision): array {
-        return self::choices(self::FILE_CHOICES[$decision] ?? ['skip']);
-    }
-
-    /**
-     * The choices that apply to a whole nature.
-     *
-     * @param string[] $values The choice codes.
-     * @return array Each choice with its label.
-     */
-    private static function choices(array $values): array {
-        return array_map(
-            static fn(string $value): array => ['value' => $value, 'label' => get_string('choice_' . $value, 'local_filebank')],
-            $values
-        );
     }
 
     /**

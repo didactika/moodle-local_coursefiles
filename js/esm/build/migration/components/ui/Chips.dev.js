@@ -16,12 +16,12 @@ const Chips = /* @__PURE__ */ __name(({ label, value, chips, onChange }) => /* @
   "button",
   {
     type: "button",
-    className: `fbm-chip${chip.value === value ? " is-on" : ""}`,
+    className: `btn btn-sm btn-outline-secondary rounded-pill fbm-chip${chip.value === value ? " active" : ""}`,
     "aria-pressed": chip.value === value,
     onClick: () => onChange(chip.value),
     children: [
       chip.label,
-      chip.count !== void 0 && /* @__PURE__ */ jsxDEV("span", { className: "fbm-chip-count", children: chip.count }, void 0, false, {
+      chip.count !== void 0 && /* @__PURE__ */ jsxDEV("span", { className: "badge rounded-pill fbm-chip-count", children: chip.count }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/ui/Chips.tsx",
         lineNumber: 36,
         columnNumber: 38

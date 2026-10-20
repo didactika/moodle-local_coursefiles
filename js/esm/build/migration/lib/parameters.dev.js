@@ -14,17 +14,6 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 const MAX_CORRESPONDENCES = 20;
 const MAX_SECTION_PAIRS = 200;
 const STEP_KEYS = ["profile", "courses", "folders", "sections", "policies", "check"];
-const sameNameCorrespondence = /* @__PURE__ */ __name(() => ({
-  sourcetype: "folder",
-  sourcefield: "name",
-  sourcemethod: "pattern",
-  sourcevalue: "~^(?<name>.+)$~",
-  targetfield: "name",
-  targetmethod: "template",
-  // The template of the destination, in which ${name} is the name that the pattern of the source captured.
-  // eslint-disable-next-line no-template-curly-in-string
-  targetvalue: "${name}"
-}), "sameNameCorrespondence");
 const emptyCorrespondence = /* @__PURE__ */ __name(() => ({
   sourcetype: "folder",
   sourcefield: "name",
@@ -100,7 +89,6 @@ export {
   parametersOf,
   problemsOf,
   profileRules,
-  sameNameCorrespondence,
   stepProblems
 };
 //# sourceMappingURL=parameters.dev.js.map

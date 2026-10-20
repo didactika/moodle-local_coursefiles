@@ -13,7 +13,7 @@ import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMigration } from "../../hooks/useMigration";
 import { describeError } from "../../lib/errors";
 import { parametersOf } from "../../lib/parameters";
@@ -23,18 +23,17 @@ import {
   deleteMigrations,
   executeMigration,
   reconfigureMigration,
-  resolveDecisions,
   selectFiles,
   selectFolder
 } from "../../services/api";
 import Alert from "../ui/Alert";
 import ConfirmModal from "../ui/ConfirmModal";
+import IconButton from "../ui/IconButton";
 import Icon from "../ui/Icon";
 import PageHeader from "../ui/PageHeader";
 import Skeleton from "../ui/Skeleton";
 import StatusBadge from "../ui/StatusBadge";
 import ActionPanel from "./ActionPanel";
-import DecisionsPanel from "./DecisionsPanel";
 import FilesPanel from "./FilesPanel";
 import FoldersPanel from "./FoldersPanel";
 import Notes from "./Notes";
@@ -43,35 +42,28 @@ import SummaryTiles from "./SummaryTiles";
 const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
   const state = useMigration(id);
   const { migration, busy } = state;
-  const [tab, setTab] = useState("");
+  const [tab, setTab] = useState("files");
   const [bucket, setBucket] = useState("");
   const [starting, setStarting] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const parameters = useMemo(() => migration ? parametersOf(migration) : null, [migration?.digest]);
-  const opened = migration !== null;
-  const waiting = migration !== null && migration.natures.length > 0;
-  useEffect(() => {
-    if (opened && tab === "") {
-      setTab(waiting ? "decisions" : "files");
-    }
-  }, [opened, waiting, tab]);
   if (!migration || !parameters) {
     return /* @__PURE__ */ jsxDEV("div", { className: "fbm-review", children: [
       /* @__PURE__ */ jsxDEV(
         PageHeader,
         {
           title: text("review_title", { n: id }),
-          back: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-back", onClick: onBack, children: [
+          back: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-link btn-sm p-0 fbm-back", onClick: onBack, children: [
             /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-left", gap: true }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-              lineNumber: 69,
-              columnNumber: 83
+              lineNumber: 60,
+              columnNumber: 107
             }),
             text("back_to_list")
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 69,
+            lineNumber: 60,
             columnNumber: 23
           })
         },
@@ -79,42 +71,31 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
         false,
         {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-          lineNumber: 67,
+          lineNumber: 58,
           columnNumber: 13
         }
       ),
-      state.error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, actions: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn", onClick: () => void state.reload(), children: text("retry") }, void 0, false, {
+      state.error !== "" && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, actions: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: () => void state.reload(), children: text("retry") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 71,
+        lineNumber: 62,
         columnNumber: 71
       }), children: state.error }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 71,
+        lineNumber: 62,
         columnNumber: 36
       }),
       state.loading && /* @__PURE__ */ jsxDEV(Skeleton, { rows: 6, label: text("loading") }, void 0, false, {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 74,
+        lineNumber: 65,
         columnNumber: 31
       })
     ] }, void 0, true, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-      lineNumber: 66,
+      lineNumber: 57,
       columnNumber: 16
     });
   }
-  const decisions = migration.natures.reduce((sum, nature) => sum + nature.count, 0);
-  const current = tab === "" ? decisions > 0 ? "decisions" : "files" : tab;
-  const resolve = /* @__PURE__ */ __name(async (nature, ids, choice) => {
-    const answer = await state.apply(
-      () => resolveDecisions(migration.id, migration.digest, nature.kind, ids.length > 0 ? "" : nature.nature, ids, choice),
-      (result) => result.migration
-    );
-    if (answer) {
-      void addToast(text("resolved_n", { n: answer.changed }));
-    }
-    return answer !== null;
-  }, "resolve");
+  const current = tab;
   const start = /* @__PURE__ */ __name(async () => {
     const answer = await state.apply(() => executeMigration(migration.id, migration.digest));
     setStarting(false);
@@ -144,41 +125,41 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
         title: text("review_title", { n: migration.id }),
         badges: /* @__PURE__ */ jsxDEV(StatusBadge, { status: migration.state, label: migration.statelabel }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-          lineNumber: 120,
+          lineNumber: 99,
           columnNumber: 21
         }),
-        back: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-back", onClick: onBack, children: [
+        back: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-link btn-sm p-0 fbm-back", onClick: onBack, children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-left", gap: true }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 121,
-            columnNumber: 79
+            lineNumber: 100,
+            columnNumber: 103
           }),
           text("back_to_list")
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-          lineNumber: 121,
+          lineNumber: 100,
           columnNumber: 19
         }),
         subtitle: /* @__PURE__ */ jsxDEV(Fragment, { children: [
           /* @__PURE__ */ jsxDEV("span", { className: "fbm-route", children: [
             /* @__PURE__ */ jsxDEV("strong", { children: migration.source }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-              lineNumber: 124,
+              lineNumber: 103,
               columnNumber: 21
             }),
             /* @__PURE__ */ jsxDEV(Icon, { name: "arrow-right" }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-              lineNumber: 124,
+              lineNumber: 103,
               columnNumber: 56
             }),
             /* @__PURE__ */ jsxDEV("strong", { children: migration.target }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-              lineNumber: 124,
+              lineNumber: 103,
               columnNumber: 83
             })
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 123,
+            lineNumber: 102,
             columnNumber: 17
           }),
           " \xB7 ",
@@ -187,53 +168,42 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
           migration.datelabel
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-          lineNumber: 122,
+          lineNumber: 101,
           columnNumber: 23
         }),
         actions: /* @__PURE__ */ jsxDEV(Fragment, { children: [
-          migration.editable && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn", onClick: onEdit, disabled: busy, "data-action": "edit-parameters", children: [
+          migration.editable && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: onEdit, disabled: busy, "data-action": "edit-parameters", children: [
             /* @__PURE__ */ jsxDEV(Icon, { name: "sliders", gap: true }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-              lineNumber: 130,
+              lineNumber: 109,
               columnNumber: 21
             }),
             text("edit_parameters")
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 129,
+            lineNumber: 108,
             columnNumber: 40
           }),
-          /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn", onClick: onNew, "data-action": "new-from", children: [
+          /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: onNew, "data-action": "new-from", children: [
             /* @__PURE__ */ jsxDEV(Icon, { name: "plus", gap: true }, void 0, false, {
               fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-              lineNumber: 133,
+              lineNumber: 112,
               columnNumber: 21
             }),
             text("new_migration")
           ] }, void 0, true, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 132,
+            lineNumber: 111,
             columnNumber: 17
           }),
-          !migration.run?.active && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-iconbtn tone-danger", title: text("delete"), onClick: () => setDeleting(true), children: [
-            /* @__PURE__ */ jsxDEV(Icon, { name: "trash" }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-              lineNumber: 136,
-              columnNumber: 21
-            }),
-            /* @__PURE__ */ jsxDEV("span", { className: "fbm-sr", children: text("delete") }, void 0, false, {
-              fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-              lineNumber: 136,
-              columnNumber: 42
-            })
-          ] }, void 0, true, {
+          !migration.run?.active && /* @__PURE__ */ jsxDEV(IconButton, { icon: "trash", label: text("delete"), tone: "danger", onClick: () => setDeleting(true) }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 135,
+            lineNumber: 114,
             columnNumber: 44
           })
         ] }, void 0, true, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-          lineNumber: 128,
+          lineNumber: 107,
           columnNumber: 22
         })
       },
@@ -241,22 +211,22 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 118,
+        lineNumber: 97,
         columnNumber: 9
       }
     ),
-    state.stale && /* @__PURE__ */ jsxDEV(Alert, { tone: "warning", live: true, actions: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "fbm-btn", onClick: () => void state.reload(), children: text("reload") }, void 0, false, {
+    state.stale && /* @__PURE__ */ jsxDEV(Alert, { tone: "warning", live: true, actions: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: () => void state.reload(), children: text("reload") }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-      lineNumber: 140,
+      lineNumber: 117,
       columnNumber: 61
     }), children: text("stale") }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-      lineNumber: 140,
+      lineNumber: 117,
       columnNumber: 25
     }),
     state.error !== "" && !state.stale && /* @__PURE__ */ jsxDEV(Alert, { tone: "danger", live: true, children: state.error }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-      lineNumber: 143,
+      lineNumber: 120,
       columnNumber: 48
     }),
     /* @__PURE__ */ jsxDEV(
@@ -275,7 +245,7 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 144,
+        lineNumber: 121,
         columnNumber: 9
       }
     ),
@@ -294,17 +264,16 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 154,
+        lineNumber: 131,
         columnNumber: 9
       }
     ),
     /* @__PURE__ */ jsxDEV(Notes, { notes: migration.summary.notes, text }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-      lineNumber: 163,
+      lineNumber: 140,
       columnNumber: 9
     }),
-    /* @__PURE__ */ jsxDEV("div", { className: "fbm-tabs", role: "tablist", "aria-label": text("review_sections"), children: [
-      ["decisions", "hand-pointer", decisions],
+    /* @__PURE__ */ jsxDEV("div", { className: "nav nav-tabs", role: "tablist", "aria-label": text("review_sections"), children: [
       ["files", "file-lines", migration.summary.files],
       ["folders", "folder-tree", migration.summary.folders]
     ].map(([value, icon, count]) => /* @__PURE__ */ jsxDEV(
@@ -313,19 +282,19 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
         type: "button",
         role: "tab",
         "aria-selected": current === value,
-        className: `fbm-tab${current === value ? " is-on" : ""}${value === "decisions" && decisions > 0 ? " needs-attention" : ""}`,
+        className: `nav-link${current === value ? " active" : ""}`,
         onClick: () => setTab(value),
         "data-tab": value,
         children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: icon, gap: true }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 178,
+            lineNumber: 154,
             columnNumber: 17
           }),
           text("tab_" + value),
-          /* @__PURE__ */ jsxDEV("span", { className: "fbm-count", children: count }, void 0, false, {
+          /* @__PURE__ */ jsxDEV("span", { className: "badge rounded-pill fbm-count", children: count }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 178,
+            lineNumber: 154,
             columnNumber: 63
           })
         ]
@@ -334,18 +303,13 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       true,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 169,
+        lineNumber: 145,
         columnNumber: 78
       }
     )) }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-      lineNumber: 164,
+      lineNumber: 141,
       columnNumber: 9
-    }),
-    current === "decisions" && /* @__PURE__ */ jsxDEV(DecisionsPanel, { migration, text, busy, onResolve: resolve }, void 0, false, {
-      fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-      lineNumber: 181,
-      columnNumber: 37
     }),
     current === "files" && /* @__PURE__ */ jsxDEV(
       FilesPanel,
@@ -361,7 +325,7 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 182,
+        lineNumber: 157,
         columnNumber: 33
       }
     ),
@@ -377,13 +341,13 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 190,
+        lineNumber: 165,
         columnNumber: 35
       }
     ),
     /* @__PURE__ */ jsxDEV(StartModal, { open: starting, migration, text, busy, onConfirm: () => void start(), onCancel: () => setStarting(false) }, void 0, false, {
       fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-      lineNumber: 196,
+      lineNumber: 171,
       columnNumber: 9
     }),
     /* @__PURE__ */ jsxDEV(
@@ -400,7 +364,7 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
         onCancel: () => setStopping(false),
         children: /* @__PURE__ */ jsxDEV("p", { children: text("stop_text") }, void 0, false, {
           fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-          lineNumber: 208,
+          lineNumber: 183,
           columnNumber: 13
         })
       },
@@ -408,7 +372,7 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       false,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 197,
+        lineNumber: 172,
         columnNumber: 9
       }
     ),
@@ -426,12 +390,12 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
         children: [
           /* @__PURE__ */ jsxDEV("p", { children: text("delete_text", { n: 1 }) }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 220,
+            lineNumber: 195,
             columnNumber: 13
           }),
-          /* @__PURE__ */ jsxDEV("p", { className: "fbm-muted", children: text("delete_hint") }, void 0, false, {
+          /* @__PURE__ */ jsxDEV("p", { className: "text-muted", children: text("delete_hint") }, void 0, false, {
             fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-            lineNumber: 221,
+            lineNumber: 196,
             columnNumber: 13
           })
         ]
@@ -440,13 +404,13 @@ const Review = /* @__PURE__ */ __name(({ id, text, onBack, onEdit, onNew }) => {
       true,
       {
         fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-        lineNumber: 210,
+        lineNumber: 185,
         columnNumber: 9
       }
     )
   ] }, void 0, true, {
     fileName: "public/local/filebank/js/esm/src/migration/components/review/Review.tsx",
-    lineNumber: 117,
+    lineNumber: 96,
     columnNumber: 12
   });
 }, "Review");

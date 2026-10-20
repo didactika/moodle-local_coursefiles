@@ -42,7 +42,7 @@ export default function ViewSelector({initialLayout, views}: ViewSelectorProps) 
         ref={index === 0 ? firstButton : undefined}
         key={view.value}
         type="button"
-        className={`fbm-segment-button${active === view.value ? ' active' : ''}`}
+        className={`btn btn-sm btn-outline-secondary fbm-segment-button${active === view.value ? ' active' : ''}`}
         data-filebank-layout={view.value}
         data-filebank-react-view="true"
         aria-pressed={active === view.value}

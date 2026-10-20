@@ -1,4 +1,4 @@
-import m from"./Icon";import{jsx as e,jsxs as a}from"react/jsx-runtime";/**
+import o from"./Icon";import{jsx as e,jsxs as a}from"react/jsx-runtime";/**
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
@@ -8,4 +8,4 @@ import m from"./Icon";import{jsx as e,jsxs as a}from"react/jsx-runtime";/**
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */const p=({title:l,icon:o,count:n,actions:s,flush:t=!1,region:c,children:i})=>a("section",{className:"fbm-panel","data-region":c,children:[a("header",{className:"fbm-panel-head",children:[a("h3",{className:"fbm-panel-title",children:[e("span",{className:"fbm-panel-icon",children:e(m,{name:o,gap:!0})}),l,n!==void 0&&e("span",{className:"fbm-count",children:n})]}),s&&e("div",{className:"fbm-panel-actions",children:s})]}),e("div",{className:t?"fbm-panel-flush":"fbm-panel-body",children:i})]});var f=p;export{f as default};
+ */const r=({title:t,icon:c,count:n,actions:s,flush:d=!1,region:i,children:l})=>a("section",{className:"card","data-region":i,children:[a("header",{className:"card-header d-flex flex-wrap align-items-center justify-content-between",children:[a("h3",{className:"card-title h5 mb-0 d-flex align-items-center",children:[e("span",{className:"fbm-panel-icon",children:e(o,{name:c,gap:!0})}),t,n!==void 0&&e("span",{className:"badge rounded-pill fbm-count",children:n})]}),s&&e("div",{className:"fbm-panel-actions",children:s})]}),e("div",{className:d?"card-body p-0":"card-body",children:l})]});var p=r;export{p as default};
